@@ -1,5 +1,5 @@
 import {utils} from '../../utils';
-import {bezier, getBezierPoint} from '../bezier';
+import {getBezierPoint, splitCubicSegment as split} from '../bezier';
 
 /**
  * Returns intermediate line or curve between two sources.
@@ -694,22 +694,15 @@ function getDistance(x0, y0, x, y) {
 }
 
 function splitCubicSegment(t, [p0, c0, c1, p1]) {
-    var r = Object.keys(p1)
-        .reduce((memo, k) => {
-            if (k === 'x' || k === 'y') {
-                memo[k] = bezier(t, p0[k], c0[k], c1[k], p1[k]);
-            } else if (k !== 'id') {
-                memo[k] = interpolateValue(p0[k], p1[k], t);
-            }
-            return memo;
-        }, {});
-    var c2 = getBezierPoint(t, p0, c0);
-    var c3 = getBezierPoint(t, p0, c0, c1);
-    var c4 = getBezierPoint(t, c0, c1, p1);
-    var c5 = getBezierPoint(t, c1, p1);
-    [c2, c3, c4, c5].forEach(c => c.isCubicControl = true);
+    var seg = split(t, p0, c0, c1, p1);
+    [seg[1], seg[2], seg[4], seg[5]].forEach(c => c.isCubicControl = true);
+    Object.keys(p1).forEach((k) => {
+        if (k !== 'x' && k !== 'y' && k !== 'id') {
+            seg[3][k] = interpolateValue(p0[k], p1[k], t);
+        }
+    });
 
-    return [p0, c2, c3, r, c4, c5, p1];
+    return seg;
 }
 
 function multipleSplitCubicSegment(ts, seg) {
