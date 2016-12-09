@@ -593,7 +593,7 @@ var d3_createPathTween = (
         }
 
         var points = utils.unique(data, idGetter).map(pointConvertor);
-        var interpolateLine = getLineInterpolator(interpolationType) || getLineInterpolator('linear');
+        var interpolateLine = getLineInterpolator(interpolationType);
         var pointsTo = interpolateLine(points);
         var pointsFrom = this[pointStore];
 
