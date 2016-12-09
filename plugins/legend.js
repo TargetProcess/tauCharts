@@ -271,7 +271,10 @@
                                     '      style="stop-color:' + fillScale(x) + ';stop-opacity:1" />');
                             });
 
-                        var labelsLength = 3;
+                        var labelsLength = (!fillScale.isInteger ? 3 :
+                            ((numDomain[1] - numDomain[0]) % 3 === 0) ? 4 :
+                                ((numDomain[1] - numDomain[0]) % 2 === 0) ? 3 : 2
+                        );
                         var labels = splitEvenly(numDomain, labelsLength)
                             .reverse()
                             .map(function (x, i, list) {
