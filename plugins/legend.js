@@ -343,7 +343,6 @@
                             var base = Math.pow(10, xF);
                             var step = (last - first) / 5;
                             var steps = [first, first + step, first + step * 2, first + step * 3, last];
-                            values = steps;
 
                             var realValues = utils.unique(
                                 self._chart
@@ -356,26 +355,26 @@
                                     return (a - b);
                                 });
 
-                            for (var i = 1, ir = 0, found; i < values.length - 1; i++) {
+                            for (var i = 1, ir = 0, found; i < steps.length - 1; i++) {
                                 found = false;
                                 while (
                                     (ir < realValues.length - 1) &&
-                                    (realValues[ir] < values[i + 1])
+                                    (realValues[ir] < steps[i + 1])
                                 ) {
-                                    if (realValues[ir] >= values[i]) {
-                                        values[i] = realValues[ir];
+                                    if (realValues[ir] >= steps[i]) {
+                                        steps[i] = realValues[ir];
                                         found = true;
                                         break;
                                     }
                                     ir++;
                                 }
                                 if (!found) {
-                                    values.splice(i, 1);
+                                    steps.splice(i, 1);
                                     i--;
                                 }
                             }
 
-                            values = utils.unique(values
+                            values = utils.unique(steps
                                 .map(function (x) {
                                     return (Math.round(x * base) / base);
                                 }));
