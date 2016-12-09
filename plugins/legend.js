@@ -343,13 +343,42 @@
                             var base = Math.pow(10, xF);
                             var step = (last - first) / 5;
                             var steps = [first, first + step, first + step * 2, first + step * 3, last];
-                            values = utils.unique(steps
+                            values = steps;
+
+                            var realValues = utils.unique(
+                                self._chart
+                                    .getDataSources({excludeFilter: ['legend']})[sizeScale.source]
+                                    .data
+                                    .map(function (d) {
+                                        return d[sizeScale.dim];
+                                    }))
+                                .sort(function (a, b) {
+                                    return (a - b);
+                                });
+
+                            for (var i = 1, ir = 0, found; i < values.length - 1; i++) {
+                                found = false;
+                                while (
+                                    (ir < realValues.length - 1) &&
+                                    (realValues[ir] < values[i + 1])
+                                ) {
+                                    if (realValues[ir] >= values[i]) {
+                                        values[i] = realValues[ir];
+                                        found = true;
+                                        break;
+                                    }
+                                    ir++;
+                                }
+                                if (!found) {
+                                    values.splice(i, 1);
+                                    i--;
+                                }
+                            }
+
+                            values = utils.unique(values
                                 .map(function (x) {
-                                    return (x === last || x === first) ? x : Math.round(x * base) / base;
+                                    return (Math.round(x * base) / base);
                                 }));
-                        }
-                        if (sizeScale.isInteger) {
-                            values = values.map(Math.round);
                         }
 
                         self._container
