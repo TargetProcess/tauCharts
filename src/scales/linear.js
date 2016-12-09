@@ -9,7 +9,6 @@ export class LinearScale extends BaseScale {
         super(xSource, scaleConfig);
 
         var props = this.scaleConfig;
-        var values = this.vars;
         var vars = d3.extent(this.vars);
 
         var min = Number.isFinite(props.min) ? props.min : vars[0];
