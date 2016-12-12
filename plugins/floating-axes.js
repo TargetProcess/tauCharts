@@ -31,7 +31,10 @@
 
     function floatingAxes(_settings) {
 
-        var settings = _settings || {};
+        var settings = utils.defaults(_settings || {}, {
+            detectBackground: true,
+            bgcolor: '#fff'
+        });
 
         return {
 
@@ -53,6 +56,14 @@
             },
 
             onRender: function () {
+
+                if (settings.detectBackground) {
+                    var bg = this.detectChartBackgroundColor();
+                    if (bg) {
+                        settings.bgcolor = bg;
+                    }
+                }
+                SHADOW_COLOR_1 = settings.bgcolor;
 
                 var applicable = true;
                 this.chart.traverseSpec(this.chart.getSpec(), function (unit) {
@@ -278,7 +289,7 @@
 
                     var g = d3Svg.append('g')
                         .attr('class', 'floating-axes floating-axes__x')
-                        .attr('clip-path', 'url(#floating-axes__x-axis-clip-path-' + id + ')');
+                        .call(addBackground, pos.svgWidth, axisHeight, 0, pos.minXAxesY);
 
                     transferAxes(g, axesInfo.x);
 
@@ -311,7 +322,7 @@
                 var yAxes = (function extractYAxes() {
                     var g = d3Svg.append('g')
                         .attr('class', 'floating-axes floating-axes__y')
-                        .attr('clip-path', 'url(#floating-axes__y-axis-clip-path-' + id + ')');
+                        .call(addBackground, pos.maxYAxesX, pos.svgHeight);
 
                     transferAxes(g, axesInfo.y);
 
@@ -340,6 +351,42 @@
 
                     return g;
                 })();
+
+                var corner = (function createCorner() {
+                    var xAxesHeight = pos.svgHeight - pos.minXAxesY + pos.scrollbarHeight;
+
+                    var g = d3Svg.append('g')
+                        .attr('class', 'floating-axes floating-axes__corner')
+                        .call(addBackground, pos.maxYAxesX, xAxesHeight);
+
+                    scrollManager
+                        .handleVisibilityFor(g, 'xy')
+                        .onScroll(function (scrollLeft, scrollTop) {
+                            var bottomY = scrollTop + pos.visibleHeight;
+                            var xLimit = 0;
+                            var x = Math.max(scrollLeft, xLimit);
+                            var yLimit = pos.minXAxesY;
+                            var y = Math.min(
+                                (scrollTop + pos.visibleHeight - xAxesHeight),
+                                yLimit
+                            );
+                            g.attr('transform', translate(x, y));
+                        });
+
+                    return g;
+                })();
+
+                function addBackground(g, w, h, x, y) {
+                    x = x || 0;
+                    y = y || 0;
+                    g.append('rect')
+                        .attr('class', 'i-role-bg')
+                        .attr('x', x - 1)
+                        .attr('y', y - 1)
+                        .attr('width', w + 2)
+                        .attr('height', h + 2)
+                        .attr('fill', settings.bgcolor);
+                }
 
                 var shadows = (function createShadows() {
                     var yAxesWidth = pos.maxYAxesX;
@@ -446,6 +493,21 @@
                         );
                     });
                 }
+            },
+
+            detectChartBackgroundColor: function () {
+                var current = this.chart.getLayout().layout;
+                var s;
+                do {
+                    s = window.getComputedStyle(current);
+                    if (s.backgroundImage !== 'none') {
+                        return null;
+                    }
+                    if (s.backgroundColor !== 'transparent' && s.backgroundColor !== 'rgba(0, 0, 0, 0)') {
+                        return s.backgroundColor;
+                    }
+                } while (current = current.parentElement);
+                return null;
             }
         };
     }
