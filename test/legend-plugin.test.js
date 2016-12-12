@@ -372,13 +372,10 @@ define(function (require) {
                 var legendBlock = sidebar.querySelector('.graphical-report__legend');
                 var nodeList = legendBlock.querySelectorAll('.graphical-report__legend__guide');
 
-                expect(nodeList.length).to.equal(5);
+                expect(nodeList.length).to.equal(2);
 
                 expect(getText(nodeList[0])).to.equal('123');
-                expect(getText(nodeList[1])).to.equal('77.8');
-                expect(getText(nodeList[2])).to.equal('55.2');
-                expect(getText(nodeList[3])).to.equal('32.6');
-                expect(getText(nodeList[4])).to.equal('10');
+                expect(getText(nodeList[1])).to.equal('10');
             });
         },
         {
