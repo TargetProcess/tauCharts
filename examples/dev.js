@@ -10,7 +10,6 @@
     var PATHS = {
         'specs/': [
             fileRange('ex-', range(0, 3), 5, range(9, 15)),
-            'bug',
             'horizontal-scroll',
             'logarithmic-scale',
             'smooth-line',
@@ -37,24 +36,6 @@
     // NOTE: Filter specs here.
     //
     function filterSpecs(allSpecs) {
-        // return [{
-        //     x: 'x',
-        //     y: 'y',
-        //     color: 'c',
-        //     type: 'line',
-        //     guide: { interpolate: 'smooth-keep-extremum' },
-        //     data: [
-        //         {x: 0, y: 0, c:'a'},
-        //         {x: 20, y: 10, c:'a'},
-        //         {x: 30, y: 10, c:'a'},
-        //         {x: 32, y: 20, c:'a'},
-
-        //         {x: 0, y: 0, c:'b'},
-        //         {x: 20, y: 3, c:'b'},
-        //         {x: 30, y: 10, c:'b'},
-        //         {x: 32, y: 20, c:'b'}
-        //     ]
-        // }]
         return allSpecs;
     };
 
@@ -141,10 +122,9 @@
      */
     DevApp.prototype.drop = function (dropCfg) {
         var spec = dropCfg.spec;
-        var isArrayRow = dropCfg.data.length && Array.isArray(dropCfg.data[0]);
         spec.data = dropCfg.data.map(function (row) {
             return dropCfg.header.reduce(function (memo, h, i) {
-                memo[h] = row[isArrayRow ? i : h];
+                memo[h] = row[i];
                 return memo;
             }, {});
         });
