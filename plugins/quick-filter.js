@@ -43,9 +43,13 @@
                 var spec = this._chart.getSpec();
                 var sources = spec.sources['/'];
 
-                this._fields = ((Array.isArray(xSettings) && xSettings.length > 0) ?
-                    (xSettings) :
+                var fields = (xSettings && xSettings.fields || xSettings);
+
+                this._fields = ((Array.isArray(fields) && fields.length > 0) ?
+                    (fields) :
                     (Object.keys(sources.dims)));
+
+                this._applyImmediately = Boolean(xSettings && xSettings.applyImmediately);
 
                 var chartData = self._chart.getChartModelData();
 
@@ -111,10 +115,10 @@
                     .on('brushstart', function () {
                         self._layout.style['overflow-y'] = 'hidden';
                     })
-                    .on('brush', brushing)
+                    .on('brush', (this._applyImmediately ? applyBrush : updateBrush))
                     .on('brushend', function () {
                         self._layout.style['overflow-y'] = '';
-                        brushing();
+                        applyBrush();
                     });
 
                 var svg = d3.select(this._container[dim]).append('svg')
@@ -193,9 +197,9 @@
                     }
                 }
 
-                brushing();
+                applyBrush();
 
-                function brushing() {
+                function updateBrush() {
                     var filter = self._filter[dim] = brush.extent();
                     var filterMin = isDate ? (new Date(filter[0])).getTime() : filter[0];
                     var filterMax = isDate ? (new Date(filter[1])).getTime() : filter[1];
@@ -216,7 +220,10 @@
                         sTxt.text(s);
                         eTxt.text(e);
                     }
+                }
 
+                function applyBrush() {
+                    updateBrush();
                     self._applyFilter(dim);
                 }
             },
