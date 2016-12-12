@@ -23,38 +23,58 @@
         return [min].concat(chunks).concat(max);
     };
 
-    var splitRealValuesEvenly = function (values, count) {
-        var result = [values[0]];
+    var iterator = function (array) {
+        var i = 0;
+        return {
+            next: function () {
+                return (i < array.length ?
+                    {value: array[i++], done: false} :
+                    {done: true}
+                );
+            }
+        };
+    };
+
+    var splitRealValuesEvenly = function (_values, count) {
+        var values = iterator(_values);
+        var result = [values.next().value];
+
         if (values.length === 1) {
             return result;
         }
+
         var length = (values[values.length - 1] - values[0]);
-        var i, j, s, btm, top, minDiff, closest, diff;
-        for (i = 1, j = 0; i < count - 1; i++) {
-            s = (length * i / (count - 1));
-            btm = Math.max(
-                (result[result.length - 1] + length * 0.5 / (count - 1)),
-                (length * (i - 0.5) / (count - 1)));
-            top = (length * (i + 0.5) / (count - 1));
-            minDiff = Number.MAX_VALUE;
-            closest = null;
-            while (
-                (++j < values.length - 1) &&
-                (values[j] < top)
-            ) {
-                if (values[j] >= btm) {
-                    diff = Math.abs(values[j] - s);
-                    if (diff < minDiff) {
-                        minDiff = diff;
-                        closest = values[j];
+        utils.range(1, count)
+            .map((d, i) => ({
+                min: (length * (i - 0.5) / (count - 1)),
+                mid: (length * i / (count - 1)),
+                max: (length * (i + 0.5) / (count - 1))
+            }))
+            .forEach(({min, mid, max}, i) => {
+                min = Math.max(min, (result[result.length - 1] + length * 0.5 / (count - 1)));
+                var minDiff = Number.MAX_VALUE;
+                var closest = null;
+
+                for (
+                    var d = values.next();
+                    (!d.done && d.value < max);
+                    d = values.next()
+                ) {
+                    if (d.value >= min) {
+                        diff = Math.abs(d.value - mid);
+                        if (diff < minDiff) {
+                            minDiff = diff;
+                            closest = d.value;
+                        }
                     }
                 }
-            }
-            if (closest !== null) {
-                result.push(closest);
-            }
-        }
+                if (closest !== null) {
+                    result.push(closest);
+                }
+            });
+
         result.push(values[values.length - 1]);
+
         return result;
     };
 
