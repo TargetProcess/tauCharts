@@ -88,7 +88,6 @@
 
         return result;
     };
-    splitRealValuesEvenly([0,20,40],5);
 
     var getSignificantDigitsFormatter = function (start, end) {
         var diff = Math.abs(end - start);
@@ -467,7 +466,7 @@
                         var colorScale = firstNode.getScale('color');
                         var dataSource = self
                             ._chart
-                            .getDataSources({ excludeFilter: ['legend'] });
+                            .getDataSources({excludeFilter: ['legend']});
 
                         var domain = utils.unique(dataSource[colorScale.source].data
                             .map(function (x) {
@@ -574,7 +573,7 @@
 
                 var isRowMatch = doHighlight ?
                     (createIsRowMatchInterceptor(dim, val)) :
-                    (function (row) { return null; });
+                    (function (row) {return null;});
 
                 this._chart
                     .select(function (unit) {
@@ -608,7 +607,7 @@
 
                     var fullLegendDataSource = self
                         ._chart
-                        .getDataSources({ excludeFilter: ['legend'] });
+                        .getDataSources({excludeFilter: ['legend']});
 
                     var fullLegendDomain = self
                         ._chart
