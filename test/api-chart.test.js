@@ -156,11 +156,9 @@ define(function (require) {
         };
 
         function checkSizes(chart, width, height) {
-            if (modernizer.flexbox) {
-                var svg = chart.getSVG();
-                expect(parseInt($(svg).attr('width'))).to.be.equal(width);
-                expect(parseInt($(svg).attr('height'))).to.be.equal(height);
-            }
+            var svg = chart.getSVG();
+            expect(parseInt(svg.getAttribute('width'))).to.be.closeTo(width, 10);
+            expect(parseInt(svg.getAttribute('height'))).to.be.closeTo(height, 10);
         }
 
         beforeEach(function () {

@@ -5,25 +5,5 @@ tauCharts.api.globalSettings.animationSpeed = 0;
 tauCharts.api.globalSettings.renderingTimeout = 0;
 tauCharts.api.globalSettings.asyncRendering = false;
 
-// Setup font for tests
-(function () {
-    var s = document.createElement('style');
-    var font = navigator.appVersion.indexOf('Linux') >= 0 ? 'sans-serif' : 'serif';
-    s.textContent = [
-        '* {',
-        '    font-family: ' + font + ' !important;',
-        '    font-style: normal !important;',
-        '    font-weight: normal !important;',
-        '}'
-    ].join('\n');
-    document.head.appendChild(s);
-})();
-
-var tests = [];
-for (var file in window.__karma__.files) {
-    if (/test.js$/.test(file)) {
-        tests.push(file);
-    }
-}
 var testsContext = require.context('.', true, /test\.js$/);
 testsContext.keys().forEach(testsContext);
