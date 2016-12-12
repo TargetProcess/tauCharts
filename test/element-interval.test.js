@@ -47,6 +47,9 @@ define(function (require) {
 
     var getGroupBar = testUtils.getGroupBar;
     var attrib = testUtils.attrib;
+    var roundAttr = function (el, attr) {
+        return Math.round(el.getAttribute(attr));
+    };
 
     function generateCoordIfChangeDesign() {
         var map = [].map;
@@ -185,7 +188,7 @@ define(function (require) {
         var bars = getGroupBar();
 
         var convertToFixed = function (x) {
-            return parseFloat(x).toFixed(4);
+            return parseFloat(x).toFixed(0);
         };
 
         bars.forEach(function (bar, index) {
@@ -259,12 +262,12 @@ define(function (require) {
 
             it('should contain correct interval elements', function () {
 
-                var barWidth = 56.25;
+                var barWidth = 56;
 
                 expectCoordsElement(expect, [
                     [
                         {
-                            "x": 65.625,
+                            "x": 66,
                             "y": 0,
                             "width": barWidth,
                             "height": 400
@@ -272,19 +275,19 @@ define(function (require) {
                     ],
                     [
                         {
-                            "x": 421.875,
+                            "x": 422,
                             "y": 200,
                             "width": barWidth,
                             "height": 200
                         },
                         {
-                            "x": 721.875,
+                            "x": 722,
                             "y": 400,
                             "width": barWidth,
                             "height": 0
                         },
                         {
-                            "x": 721.875,
+                            "x": 722,
                             "y": 400,
                             "width": barWidth,
                             "height": 200
@@ -292,7 +295,7 @@ define(function (require) {
                     ],
                     [
                         {
-                            "x": 778.125,
+                            "x": 778,
                             "y": 400,
                             "width": barWidth,
                             "height": 400
@@ -348,31 +351,31 @@ define(function (require) {
                 expectCoordsElement(expect, [
                     [
                         {
-                            "x": 99.5,  // a100
+                            "x": 100,  // a100
                             "y": 100,
                             width: 1,
                             height: 20
                         },
                         {
-                            "x": 74.5,  // b50
+                            "x": 75,  // b50
                             "y": 60,
                             width: 1,
                             height: 60
                         },
                         {
-                            "x": 24.5,  // c-50
+                            "x": 25,  // c-50
                             "y": 20,
                             width: 1,
                             height: 100
                         },
                         {
-                            "x": -0.5,  // c-100
+                            "x": -1,  // c-100
                             "y": 20,
                             width: 1,
                             height: 100
                         },
                         {
-                            "x": 49.5000,// c0
+                            "x": 50,  // c0
                             "y": 20,
                             width: 1,
                             height: 100
@@ -507,7 +510,7 @@ define(function (require) {
                     [
                         {
                             "x": 50,    // 100
-                            "y": 88.75,
+                            "y": 89,
                             height: barWidth,
                             width: 50
                         }
@@ -515,13 +518,13 @@ define(function (require) {
                     [
                         {
                             "x": 50,    // 50
-                            "y": 56.25,
+                            "y": 56,
                             height: barWidth,
                             width: 25
                         },
                         {
                             "x": 50,    // 0
-                            "y": 16.25,
+                            "y": 16,
                             height: barWidth,
                             width: 0
                         }
@@ -529,7 +532,7 @@ define(function (require) {
                     [
                         {
                             "x": 0,     // -100
-                            "y": 23.75,
+                            "y": 24,
                             height: barWidth,
                             width: 50
                         }
@@ -578,25 +581,25 @@ define(function (require) {
                     [
                         {
                             "x": 0,
-                            "y": 170.5,
+                            "y": 171,
                             height: 1,
                             width: 20
                         },
                         {
                             "x": 0,
-                            "y": 192.5,
+                            "y": 192,
                             height: 1,
                             width: 60
                         },
                         {
                             "x": 0,
-                            "y": -0.5,
+                            "y": -1,
                             height: 1,
                             width: 100
                         },
                         {
                             "x": 0,
-                            "y": 299.5,
+                            "y": 300,
                             height: 1,
                             width: 100
                         }
@@ -721,7 +724,7 @@ define(function (require) {
 
                 bars.forEach(function (bar, barIndex) {
                     Array.from(bar.childNodes).forEach(function (el, elIndex) {
-                        expect(parseFloat(attrib(el, 'height')))
+                        expect(roundAttr(el, 'height'))
                             .to.equal(testExpectCoordForTimeAdCount[barIndex][elIndex]);
                     });
                 });
@@ -748,7 +751,7 @@ define(function (require) {
                 var bars = getGroupBar();
                 bars.forEach(function (bar, barIndex) {
                     Array.from(bar.childNodes).forEach(function (el, elIndex) {
-                        expect(parseFloat(attrib(el, 'width')))
+                        expect(roundAttr(el, 'width'))
                             .to.equal(testExpectCoordForTimeAdCount[barIndex][elIndex]);
                     });
                 });
@@ -809,8 +812,8 @@ define(function (require) {
                 var bars = getGroupBar();
                 bars.forEach(function (bar, barIndex) {
                     Array.from(bar.childNodes).forEach(function (el, elIndex) {
-                        expect(parseFloat(attrib(el, 'y'))).to.equal(ys[barIndex][elIndex]);
-                        expect(parseFloat(attrib(el, 'height'))).to.equal(coords[barIndex][elIndex]);
+                        expect(roundAttr(el, 'y')).to.equal(ys[barIndex][elIndex]);
+                        expect(roundAttr(el, 'height')).to.equal(coords[barIndex][elIndex]);
                     });
                 });
             });
@@ -870,8 +873,8 @@ define(function (require) {
                 var bars = getGroupBar();
                 bars.forEach(function (bar, barIndex) {
                     Array.from(bar.childNodes).forEach(function (el, elIndex) {
-                        expect(parseFloat(attrib(el, 'x'))).to.equal(xs[barIndex][elIndex]);
-                        expect(parseFloat(attrib(el, 'width'))).to.equal(coords[barIndex][elIndex]);
+                        expect(roundAttr(el, 'x')).to.equal(xs[barIndex][elIndex]);
+                        expect(roundAttr(el, 'width')).to.equal(coords[barIndex][elIndex]);
                     });
                 });
             });

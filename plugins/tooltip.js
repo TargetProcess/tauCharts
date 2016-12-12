@@ -53,6 +53,15 @@
             };
         }
 
+        function getHighlightEvtObj(e, data) {
+            var filter = function (row) {
+                return (raw === data ? true : null);
+            };
+            filter.domEvent = e;
+            filter.data = data;
+            return filter;
+        }
+
         var plugin = {
 
             init: function (chart) {
@@ -111,7 +120,7 @@
 
                 var self = this;
                 var timeoutHide;
-                this.showTooltip = function (data, pos) {
+                this.showTooltip = function (data, cursor, element) {
 
                     clearTimeout(timeoutHide);
 
@@ -132,7 +141,8 @@
                     }
 
                     self._tooltip
-                        .show(pos.x, pos.y)
+                        .position(element)
+                        .show()
                         .updateSize();
                 };
 
@@ -149,14 +159,14 @@
                     .getElement()
                     .addEventListener('mouseover', function (e) {
                         clearTimeout(timeoutHide);
-                        self._accentFocus();
+                        self._accentFocus(e);
                     }, false);
 
                 this._tooltip
                     .getElement()
                     .addEventListener('mouseleave', function (e) {
                         self._tooltip.hide();
-                        self._removeFocus();
+                        self._removeFocus(e);
                     }, false);
 
                 this.afterInit(this._tooltip.getElement());
@@ -224,26 +234,22 @@
                 return this.circle;
             },
 
-            _removeFocus: function () {
+            _removeFocus: function (e) {
                 if (this.circle) {
                     this.circle.remove();
                 }
 
                 if (this._currentUnit) {
-                    this._currentUnit.fire('highlight-data-points', function (row) {
-                        return false;
-                    });
+                    this._currentUnit.fire('highlight-data-points', getHighlightEvtObj(e, null));
                 }
 
                 return this;
             },
 
-            _accentFocus: function () {
+            _accentFocus: function (e) {
                 var self = this;
                 if (self._currentUnit && self._currentData) {
-                    self._currentUnit.fire('highlight-data-points', function (row) {
-                        return row === self._currentData;
-                    });
+                    self._currentUnit.fire('highlight-data-points', getHighlightEvtObj(e, self._currentUnit));
                 }
 
                 return this;
@@ -322,37 +328,27 @@
                     'ELEMENT.AREA',
                     'ELEMENT.PATH',
                     'ELEMENT.INTERVAL',
-                    'ELEMENT.INTERVAL.STACKED'
+                    'ELEMENT.INTERVAL.STACKED',
+                    'ELEMENT.POINT'
                 ];
-
-                var mouseOverHandler = function (sender, e) {
-                    var data = e.data;
-                    // TODO: get back to "nearest point" feature when GoG models are ready
-                    // var coords = (settings.dockToData ?
-                    //    self._getNearestDataCoordinates(sender, e) :
-                    //    self._getMouseCoordinates(sender, e));
-
-                    var coords = self._getMouseCoordinates(sender, e);
-
-                    self._currentUnit = sender;
-                    self.showTooltip(data, {x: coords.left, y: coords.top});
-                };
 
                 this._chart
                     .select(function (node) {
-                        return true;
+                        return (elementsToMatch.indexOf(node.config.type) >= 0);
                     })
                     .forEach(function (node) {
 
-                        node.on('mouseout.chart', function (sender, e) {
-                            self.hideTooltip(e);
+                        node.on('highlight-data-points', function (sender, e) {
+                            if (e.data) {
+                                self.showTooltip(
+                                    e.data,
+                                    {x: e.domEvent.clientX, y: e.domEvent.clientY},
+                                    e.targetElements[0]
+                                );
+                            } else {
+                                self.hideTooltip(e);
+                            }
                         });
-
-                        node.on('mouseover.chart', mouseOverHandler);
-
-                        if (elementsToMatch.indexOf(node.config.type) > -1) {
-                            node.on('mousemove.chart', mouseOverHandler);
-                        }
                     });
             },
 

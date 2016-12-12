@@ -23,7 +23,16 @@ export function getBezierPoint(t, ...p) {
     x.unshift(t);
     y.unshift(t);
     return {
-        x: bezier.apply(null, x),
-        y: bezier.apply(null, y)
+        x: bezier(...x),
+        y: bezier(...y)
     };
+}
+
+export function splitCubicSegment(t, p0, c0, c1, p1) {
+    var c2 = getBezierPoint(t, p0, c0);
+    var c3 = getBezierPoint(t, p0, c0, c1);
+    var c4 = getBezierPoint(t, c0, c1, p1);
+    var c5 = getBezierPoint(t, c1, p1);
+    var m = getBezierPoint(t, c3, c4);
+    return [p0, c2, c3, m, c4, c5, p1];
 }

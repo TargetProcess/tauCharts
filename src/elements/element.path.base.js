@@ -150,8 +150,14 @@ const BasePath = {
         node.on('highlight-data-points', (sender, e) => this.highlightDataPoints(e));
 
         if (config.guide.showAnchors !== 'never') {
-            const activate = ((sender, e) => sender.fire('highlight-data-points', (row) => (row === e.data)));
-            const deactivate = ((sender) => sender.fire('highlight-data-points', () => (false)));
+            const getHighlightEvtObj = (e, data) => {
+                const filter = ((d) => d === data);
+                filter.data = data;
+                filter.domEvent = e;
+                return filter;
+            };
+            const activate = ((sender, e) => sender.fire('highlight-data-points', getHighlightEvtObj(e.event, e.data)));
+            const deactivate = ((sender, e) => sender.fire('highlight-data-points', getHighlightEvtObj(e.event, null)));
             node.on('mouseover', activate);
             node.on('mousemove', activate);
             node.on('mouseout', deactivate);
@@ -349,19 +355,21 @@ const BasePath = {
         const cssClass = 'i-data-anchor';
         const screenModel = this.node().screenModel;
         const showOnHover = this.node().config.guide.showAnchors === 'hover';
-        this.node()
+        const rmin = 3; // Min highlight radius
+        const rx = 1.25; // Highlight multiplier
+        var anchors = this.node()
             .config
             .options
             .container
             .selectAll(`.${cssClass}`)
             .attr({
                 r: (showOnHover ?
-                    ((d) => filter(d) ? (screenModel.size(d) / 2) : 0) :
+                    ((d) => filter(d) ? Math.max(rmin, (screenModel.size(d) / 2)) : 0) :
                     ((d) => {
                         // NOTE: Highlight point with larger radius.
                         var r = screenModel.size(d) / 2;
                         if (filter(d)) {
-                            return Math.ceil(r * 1.25);
+                            r = Math.max(rmin, Math.ceil(r * rx));
                         }
                         return r;
                     })
@@ -370,6 +378,12 @@ const BasePath = {
                 fill: (d) => screenModel.color(d),
                 class: (d) => utilsDom.classes(cssClass, screenModel.class(d))
             });
+
+        // Add highlighted elements to event
+        filter.targetElements = [];
+        anchors.filter(filter).each(function () {
+            filter.targetElements.push(this);
+        });
     }
 };
 

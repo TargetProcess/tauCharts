@@ -235,8 +235,8 @@ var calcXYGuide = function (guide, settings, xMeta, yMeta, inlineLabels) {
 
     var xValues = xMeta.values;
     var yValues = yMeta.values;
-    var xIsEmptyAxis = (xMeta.isEmpty);
-    var yIsEmptyAxis = (yMeta.isEmpty);
+    var xIsEmptyAxis = (xMeta.isEmpty || guide.x.hideTicks);
+    var yIsEmptyAxis = (yMeta.isEmpty || guide.y.hideTicks);
 
     var maxXTickBox = getMaxTickLabelSize(
         xValues,
@@ -342,7 +342,7 @@ var calcXYGuide = function (guide, settings, xMeta, yMeta, inlineLabels) {
     return guide;
 };
 
-var calcUnitGuide = function (unit, meta, settings, allowXVertical, allowYVertical, inlineLabels) {
+var calcUnitGuide = function ({unit, meta, settings, allowXVertical, allowYVertical, inlineLabels}) {
 
     var dimX = meta.dimension(unit.x);
     var dimY = meta.dimension(unit.y);
@@ -574,18 +574,19 @@ var SpecEngineTypeMap = {
 
                 if (selectorPredicates.isLeafParent) {
 
-                    return calcUnitGuide(
+                    return calcUnitGuide({
                         unit,
                         meta,
-                        utils.defaults(
+                        settings: utils.defaults(
                             {
                                 xTickWordWrapLinesLimit: 1,
                                 yTickWordWrapLinesLimit: 1
                             },
                             settings),
-                        true,
-                        false,
-                        true);
+                        allowXVertical: true,
+                        allowYVertical: false,
+                        inlineLabels: true
+                    });
                 }
 
                 // facet level
@@ -594,10 +595,10 @@ var SpecEngineTypeMap = {
                 unit.guide.y.cssClass += ' facet-axis compact';
                 unit.guide.y.avoidCollisions = true;
 
-                return calcUnitGuide(
+                return calcUnitGuide({
                     unit,
                     meta,
-                    utils.defaults(
+                    settings: utils.defaults(
                         {
                             xAxisPadding: 0,
                             yAxisPadding: 0,
@@ -607,9 +608,75 @@ var SpecEngineTypeMap = {
                             yTickWordWrapLinesLimit: 1
                         },
                         settings),
-                    false,
-                    true,
-                    false);
+                    allowXVertical: false,
+                    allowYVertical: true,
+                    inlineLabels: false
+                });
+            });
+
+        return spec;
+    },
+
+    'BUILD-SPARKLINE': (srcSpec, meta, settings) => {
+
+        var spec = utils.clone(srcSpec);
+        fnTraverseSpec(
+            utils.clone(spec.unit),
+            spec.unit,
+            (selectorPredicates, unit) => {
+
+                if (selectorPredicates.isLeaf) {
+                    return unit;
+                }
+
+                if (!unit.guide.hasOwnProperty('showGridLines')) {
+                    unit.guide.showGridLines = selectorPredicates.isLeafParent ? 'xy' : '';
+                }
+
+                if (selectorPredicates.isLeafParent) {
+                    unit.guide.x.hideTicks = true;
+                    unit.guide.y.hideTicks = true;
+
+                    return calcUnitGuide({
+                        unit,
+                        meta,
+                        settings: utils.defaults(
+                            {
+                                xTickWordWrapLinesLimit: 1,
+                                yTickWordWrapLinesLimit: 1
+                            },
+                            settings),
+                        allowXVertical: false,
+                        allowYVertical: false,
+                        inlineLabels: true
+                    });
+                }
+
+                // facet level
+                unit.guide.x.cssClass += ' facet-axis compact';
+                unit.guide.x.avoidCollisions = true;
+                unit.guide.x.hideTicks = true;
+                unit.guide.y.cssClass += ' facet-axis compact';
+                unit.guide.y.avoidCollisions = true;
+                unit.guide.y.hideTicks = true;
+
+                return calcUnitGuide({
+                    unit,
+                    meta,
+                    settings: utils.defaults(
+                        {
+                            xAxisPadding: 0,
+                            yAxisPadding: 0,
+                            distToXAxisLabel: 0,
+                            distToYAxisLabel: 0,
+                            xTickWordWrapLinesLimit: 1,
+                            yTickWordWrapLinesLimit: 1
+                        },
+                        settings),
+                    allowXVertical: false,
+                    allowYVertical: true,
+                    inlineLabels: false
+                });
             });
 
         return spec;
@@ -625,6 +692,13 @@ SpecEngineTypeMap.AUTO = (srcSpec, meta, settings) => {
 
 SpecEngineTypeMap.COMPACT = (srcSpec, meta, settings) => {
     return ['BUILD-LABELS', 'BUILD-COMPACT'].reduce(
+        (spec, engineName) => SpecEngineTypeMap[engineName](spec, meta, settings),
+        srcSpec
+    );
+};
+
+SpecEngineTypeMap.SPARKLINE = (srcSpec, meta, settings) => {
+    return ['BUILD-LABELS', 'BUILD-SPARKLINE'].reduce(
         (spec, engineName) => SpecEngineTypeMap[engineName](spec, meta, settings),
         srcSpec
     );
@@ -697,7 +771,10 @@ export class SpecTransformAutoLayout {
 
         var size = spec.settings.size;
 
-        var rule = spec.settings.specEngine.find((rule) => (size.width <= rule.width));
+        var rule = spec.settings.specEngine.find((rule) => (
+            (size.width <= rule.width) ||
+            (size.height <= rule.height)
+        ));
 
         return SpecEngineFactory.get(
             rule.name,

@@ -454,7 +454,7 @@ define(function (require) {
             expect(scale0.domain()).to.deep.equal([low, high]);
 
             expect(scale0(low)).to.equal(0);
-            expect(scale0(medium)).to.equal(
+            expect(Math.round(scale0(medium))).to.equal(
                 Math.round((Math.log(medium) - Math.log(low)) / (Math.log(high) - Math.log(low)) * width)
             );
             expect(scale0(high)).to.equal(width);
@@ -481,7 +481,7 @@ define(function (require) {
                 }).create([0, width]);
 
             expect(scale1.domain()).to.deep.equal([niceLow, niceHigh]);
-            expect(scale1(medium)).to.equal(
+            expect(Math.round(scale1(medium))).to.equal(
                 Math.round((Math.log(medium) - Math.log(niceLow)) / (Math.log(niceHigh) - Math.log(niceLow)) * width)
             );
 
@@ -493,7 +493,7 @@ define(function (require) {
                 }).create([0, width]);
 
             expect(scale2.domain()).to.deep.equal([-niceHigh, -niceLow]);
-            expect(scale2(-medium)).to.equal(
+            expect(Math.round(scale2(-medium))).to.equal(
                 Math.round((1 - (Math.log(medium) - Math.log(niceLow)) / (Math.log(niceHigh) - Math.log(niceLow))) * width)
             );
 

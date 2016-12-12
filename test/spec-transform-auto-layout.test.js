@@ -54,6 +54,7 @@ define(function (require) {
 
             var specGPL = new SpecConverter({spec: specClone, data: data}).convert();
 
+            // BUG: This seems to override global settings and charts appear to have one spec engine.
             specGPL.settings = specGPL.settings || testUtils.chartSettings;
             specGPL.settings.fitSize = false;
             specGPL.settings.size = {width: 100, height: 100};
@@ -404,6 +405,119 @@ define(function (require) {
             expect(full.unit.guide.x.tickFormatNullAlias).to.equal('(NIL)');
             expect(full.unit.guide.showGridLines).to.equal('x');
             expect(part.guide.showGridLines).to.equal('');
+        });
+
+        it('should support [SPARKLINE] spec engine', function () {
+
+            var spec = {
+                "dimensions": {
+                    "team": {
+                        "type": "order",
+                        "scale": "ordinal"
+                    },
+                    "count": {
+                        "type": "measure",
+                        "scale": "linear"
+                    }
+                },
+                "unit": {
+                    "type": "COORDS.RECT",
+                    "x": "team",
+                    "y": "count",
+                    "unit": [
+                        {
+                            "type": "ELEMENT.INTERVAL"
+                        }
+                    ]
+                }
+            };
+
+            var fullSpec = convSpec(spec, 'SPARKLINE');
+
+            var testSpecEngine = new SpecAutoLayout(fullSpec);
+            var full = testSpecEngine.transform(chartAPI(fullSpec));
+            var measurer = full.settings;
+
+            var x = full.unit.guide.x;
+            var y = full.unit.guide.y;
+
+            expect(full.unit.guide.showGridLines).to.equal('xy');
+
+            expect(x.rotate).to.equal(0);
+            expect(x.hideTicks).to.be.true;
+            expect(x.label.rotate).to.equal(0);
+            expect(x.label.cssClass).to.equal('label inline');
+
+            expect(y.rotate).to.equal(0);
+            expect(y.hideTicks).to.be.true;
+            expect(y.label.rotate).to.equal(-90);
+            expect(y.label.cssClass).to.equal('label inline');
+        });
+
+        it('should support [SPARKLINE] spec engine (facet)', function () {
+
+            var spec = {
+                "dimensions": {
+                    "team": {
+                        "type": "order",
+                        "scale": "ordinal"
+                    },
+                    "count": {
+                        "type": "measure",
+                        "scale": "linear"
+                    },
+                    "date": {
+                        "type": "measure",
+                        "scale": "time"
+                    }
+                },
+                "unit": {
+                    "type": "COORDS.RECT",
+                    "x": "team",
+                    "y": null,
+                    "unit": [
+                        {
+                            "type": "COORDS.RECT",
+                            "x": "date",
+                            "y": "count",
+                            "unit": [
+                                {
+                                    "type": "ELEMENT.INTERVAL"
+                                }
+                            ]
+                        }
+                    ]
+                }
+            };
+
+            var fullSpec = convSpec(spec, 'SPARKLINE');
+
+            var testSpecEngine = new SpecAutoLayout(fullSpec);
+            var full = testSpecEngine.transform(chartAPI(fullSpec));
+            var measurer = full.settings;
+
+            var x = full.unit.guide.x;
+            var y = full.unit.guide.y;
+
+            expect(full.unit.guide.showGridLines).to.equal('');
+
+            expect(x.rotate).to.equal(0);
+            expect(x.hideTicks).to.be.true;
+            expect(x.label.rotate).to.equal(0);
+            expect(x.label.cssClass).to.equal('label');
+
+            expect(y.rotate).to.equal(-90);
+            expect(y.hideTicks).to.be.true;
+            expect(y.label.rotate).to.equal(-90);
+            expect(y.label.cssClass).to.equal('label');
+
+            var part = full.unit.units[0];
+            var px = part.guide.x;
+            var py = part.guide.y;
+
+            expect(part.guide.showGridLines).to.equal('xy');
+            expect(px.label.cssClass).to.equal('label inline');
+            expect(py.label.cssClass).to.equal('label inline');
         });
 
         it('should support [COMPACT] spec engine (facet)', function () {

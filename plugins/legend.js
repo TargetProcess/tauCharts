@@ -23,6 +23,72 @@
         return [min].concat(chunks).concat(max);
     };
 
+    var splitRealValuesEvenly = function (values, count) {
+
+        if (values.length < 3) {
+            return values.slice(0);
+        }
+
+        var result = [values[0]];
+        var length = (values[values.length - 1] - values[0]);
+        var halfStep = (0.5 * length / (count - 1));
+
+        var steps = utils.range(1, count - 1)
+            .map(function (i) {
+                var mid = (length * i / (count - 1));
+                return {
+                    min: mid - halfStep,
+                    mid: mid,
+                    max: mid + halfStep,
+                    diff: Number.MAX_VALUE,
+                    closest: null
+                };
+            });
+        var si = 0;
+        var step;
+        var nextStep = function () {
+            if (si === steps.length) {
+                return;
+            }
+            var prevStep = step;
+            step = steps[si++];
+            step.min = Math.max(
+                (step.min),
+                ((prevStep && prevStep.closest !== null ? prevStep.closest : result[0]) + halfStep)
+            );
+        };
+        nextStep();
+
+        values.forEach(function (value) {
+            if (value < step.min) {
+                return;
+            }
+            if (value > step.max) {
+                nextStep();
+            }
+            var diff = Math.abs(value - step.mid);
+            if (diff < step.diff && diff < halfStep) {
+                step.diff = diff;
+                step.closest = value;
+            } else {
+                nextStep();
+            }
+            if (diff === 0) {
+                nextStep();
+            }
+        });
+
+        steps.forEach(function (s) {
+            if (s.closest !== null) {
+                result.push(s.closest);
+            }
+        });
+
+        result.push(values[values.length - 1]);
+
+        return result;
+    };
+
     var getSignificantDigitsFormatter = function (start, end) {
         var diff = Math.abs(end - start);
         var significantNumbers = 2;
@@ -271,7 +337,10 @@
                                     '      style="stop-color:' + fillScale(x) + ';stop-opacity:1" />');
                             });
 
-                        var labelsLength = 3;
+                        var labelsLength = (!fillScale.isInteger ? 3 :
+                            ((numDomain[1] - numDomain[0]) % 3 === 0) ? 4 :
+                                ((numDomain[1] - numDomain[0]) % 2 === 0) ? 3 : 2
+                        );
                         var labels = splitEvenly(numDomain, labelsLength)
                             .reverse()
                             .map(function (x, i, list) {
@@ -338,11 +407,27 @@
                             var count = log10(last - first);
                             var xF = Math.round((4 - count));
                             var base = Math.pow(10, xF);
-                            var step = (last - first) / 5;
-                            var steps = [first, first + step, first + step * 2, first + step * 3, last];
+
+                            var realValues = utils.unique(
+                                self._chart
+                                    .getDataSources({
+                                        excludeFilter: ['legend']
+                                    })[sizeScale.source]
+                                    .data
+                                    .map(function (d) {
+                                        return d[sizeScale.dim];
+                                    })
+                                    .filter(function (s) {
+                                        return (s >= first && s <= last);
+                                    }))
+                                .sort(function (a, b) {
+                                    return (a - b);
+                                });
+                            var steps = splitRealValuesEvenly(realValues, 5);
+
                             values = utils.unique(steps
                                 .map(function (x) {
-                                    return (x === last || x === first) ? x : Math.round(x * base) / base;
+                                    return (Math.round(x * base) / base);
                                 }));
                         }
 

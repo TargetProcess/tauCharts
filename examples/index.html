@@ -214,6 +214,10 @@
             flex-direction: column;
         }
 
+        .filter-section table input {
+            width: 100%;
+        }
+
         /*-------------------------
             Content section
         -------------------------*/
@@ -245,16 +249,22 @@
         }
 
         .sample {
+            flex-direction: column;
+            display: inline-flex;
             padding: 1em 0 2em 0;
+            height: 28em;
+            overflow: hidden;
             width: 100%;
         }
 
         .sample__name {
+            flex: none;
             font-weight: 300;
             margin: 0;
         }
 
         .sample__desc {
+            flex: none;
             font-weight: 400;
             margin: 0;
         }
@@ -264,8 +274,16 @@
         }
 
         .sample__chart {
-            height: 24em;
+            flex: 1 1 auto;
             position: relative;
+        }
+
+        .sample__chart > * {
+            height: 100%;
+            left: 0;
+            position: absolute;
+            top: 0;
+            width: 100%;
         }
 
         .sample__chart:empty::before {
@@ -296,6 +314,7 @@
             background-color: #ccc;
         }
     </style>
+    <style id="chartSizeStyle"></style>
 </head>
 
 <body>
@@ -311,6 +330,19 @@
         <div class="filter-section">
             <h2 class="filter-section__header">Plug-ins</h2>
             <div id="pluginsContainer" class="check-group"></div>
+        </div>
+        <div class="filter-section">
+            <h2 class="filter-section__header">Chart size</h2>
+            <table>
+                <tr>
+                    <td>Width</td>
+                    <td><input id="inputWidth" /></td>
+                </tr>
+                <tr>
+                    <td>Height</td>
+                    <td><input id="inputHeight" /></td>
+                </tr>
+            </table>
         </div>
     </div>
     <main>
