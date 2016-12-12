@@ -45,26 +45,33 @@
 
         var length = (values[values.length - 1] - values[0]);
         utils.range(1, count)
-            .map((d, i) => ({
-                min: (length * (i - 0.5) / (count - 1)),
-                mid: (length * i / (count - 1)),
-                max: (length * (i + 0.5) / (count - 1))
-            }))
-            .forEach(({min, mid, max}, i) => {
-                min = Math.max(min, (result[result.length - 1] + length * 0.5 / (count - 1)));
+            .map(function (d, i) {
+                return {
+                    min: (length * (i - 0.5) / (count - 1)),
+                    mid: (length * i / (count - 1)),
+                    max: (length * (i + 0.5) / (count - 1))
+                };
+            })
+            .forEach(function (m) {
+                var min = Math.max(
+                    m.min,
+                    (result[result.length - 1] + length * 0.5 / (count - 1))
+                );
+                var mid = m.mid;
+                var max = m.max;
                 var minDiff = Number.MAX_VALUE;
                 var closest = null;
 
                 for (
-                    var d = values.next();
-                    (!d.done && d.value < max);
-                    d = values.next()
+                    var v = values.next();
+                    (!v.done && v.value < max);
+                    v = values.next()
                 ) {
-                    if (d.value >= min) {
-                        diff = Math.abs(d.value - mid);
+                    if (v.value >= min) {
+                        diff = Math.abs(v.value - mid);
                         if (diff < minDiff) {
                             minDiff = diff;
-                            closest = d.value;
+                            closest = v.value;
                         }
                     }
                 }
