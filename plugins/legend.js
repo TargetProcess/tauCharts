@@ -291,7 +291,7 @@
                         .select(function (unit) {
                             return (unit.config.color === c);
                         })
-                    [0];
+                        [0];
 
                     if (firstNode) {
 
@@ -385,7 +385,7 @@
                         .select(function (unit) {
                             return (unit.config.size === c);
                         })
-                    [0];
+                        [0];
 
                     if (firstNode) {
 
@@ -457,7 +457,7 @@
                         .select(function (unit) {
                             return (unit.config.color === c);
                         })
-                    [0];
+                        [0];
 
                     if (firstNode) {
 
@@ -573,7 +573,7 @@
 
                 var isRowMatch = doHighlight ?
                     (createIsRowMatchInterceptor(dim, val)) :
-                    (function (row) {return null;});
+                    (function (row) { return null; });
 
                 this._chart
                     .select(function (unit) {
@@ -591,9 +591,9 @@
                 var limit = defBrewer.length; // 20;
 
                 return domain.reduce(function (memo, val, i) {
-                    memo[val] = defBrewer[i % limit];
-                    return memo;
-                },
+                        memo[val] = defBrewer[i % limit];
+                        return memo;
+                    },
                     {});
             },
 
