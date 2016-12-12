@@ -416,6 +416,9 @@
                                     .data
                                     .map(function (d) {
                                         return d[sizeScale.dim];
+                                    })
+                                    .filter(function (s) {
+                                        return (s >= first && s <= last);
                                     }))
                                 .sort(function (a, b) {
                                     return (a - b);
