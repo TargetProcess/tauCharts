@@ -58,8 +58,8 @@
             onRender: function () {
 
                 if (settings.detectBackground) {
-                    var bg = window.getComputedStyle(this.chart.getLayout().layout).backgroundColor;
-                    if (bg !== 'transparent' && bg !== 'rgba(0, 0, 0, 0)') {
+                    var bg = this.detectChartBackgroundColor();
+                    if (bg) {
                         settings.bgcolor = bg;
                     }
                 }
@@ -439,6 +439,21 @@
                         );
                     });
                 }
+            },
+
+            detectChartBackgroundColor: function () {
+                var current = this.chart.getLayout().layout;
+                var s;
+                do {
+                    s = window.getComputedStyle(current);
+                    if (s.backgroundImage !== 'none') {
+                        return null;
+                    }
+                    if (s.backgroundColor !== 'transparent' && s.backgroundColor !== 'rgba(0, 0, 0, 0)') {
+                        return s.backgroundColor;
+                    }
+                } while (current = current.parentElement);
+                return null;
             }
         };
     }

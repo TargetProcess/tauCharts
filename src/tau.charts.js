@@ -93,7 +93,6 @@ var api = {
     globalSettings: {
 
         animationSpeed: 750,
-        detectBackground: true,
         renderingTimeout: 10000,
         asyncRendering: false,
         syncRenderingDuration: 50,
