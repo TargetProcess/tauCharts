@@ -346,8 +346,8 @@
                             .map(function (x, i, list) {
                                 var p = (i / (labelsLength - 1));
                                 var vPad = 0.5 * ((i === 0) ?
-                                    fontHeight :
-                                    ((i === list.length - 1) ? (-fontHeight) : 0));
+                                        fontHeight :
+                                        ((i === list.length - 1) ? (-fontHeight) : 0));
                                 var y = (height * p) + vPad + fontHeight / 2;
                                 return '<text x="25" y="' + y + '">' + castNum(x) + '</text>';
                             });
