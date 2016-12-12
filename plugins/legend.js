@@ -23,67 +23,72 @@
         return [min].concat(chunks).concat(max);
     };
 
-    var iterator = function (array) {
-        var i = 0;
-        return {
-            next: function () {
-                return (i < array.length ?
-                    {value: array[i++], done: false} :
-                    {done: true}
-                );
-            }
-        };
-    };
+    var splitRealValuesEvenly = function (values, count) {
 
-    var splitRealValuesEvenly = function (_values, count) {
-        var values = iterator(_values);
-        var result = [values.next().value];
-
-        if (values.length === 1) {
-            return result;
+        if (values.length < 3) {
+            return values.slice(0);
         }
 
+        var result = [values[0]];
         var length = (values[values.length - 1] - values[0]);
-        utils.range(1, count)
-            .map(function (d, i) {
-                return {
-                    min: (length * (i - 0.5) / (count - 1)),
-                    mid: (length * i / (count - 1)),
-                    max: (length * (i + 0.5) / (count - 1))
-                };
-            })
-            .forEach(function (m) {
-                var min = Math.max(
-                    m.min,
-                    (result[result.length - 1] + length * 0.5 / (count - 1))
-                );
-                var mid = m.mid;
-                var max = m.max;
-                var minDiff = Number.MAX_VALUE;
-                var closest = null;
+        var halfStep = (0.5 * length / (count - 1));
 
-                for (
-                    var v = values.next();
-                    (!v.done && v.value < max);
-                    v = values.next()
-                ) {
-                    if (v.value >= min) {
-                        diff = Math.abs(v.value - mid);
-                        if (diff < minDiff) {
-                            minDiff = diff;
-                            closest = v.value;
-                        }
-                    }
-                }
-                if (closest !== null) {
-                    result.push(closest);
-                }
+        var steps = utils.range(1, count - 1)
+            .map(function (i) {
+                var mid = (length * i / (count - 1));
+                return {
+                    min: mid - halfStep,
+                    mid: mid,
+                    max: mid + halfStep,
+                    diff: Number.MAX_VALUE,
+                    closest: null
+                };
             });
+        var si = 0;
+        var step;
+        var nextStep = function () {
+            if (si === steps.length) {
+                return;
+            }
+            var prevStep = step;
+            step = steps[si++];
+            step.min = Math.max(
+                (step.min),
+                ((prevStep && prevStep.closest !== null ? prevStep.closest : result[0]) + halfStep)
+            );
+        };
+        nextStep();
+
+        values.forEach(function (value) {
+            if (value < step.min) {
+                return;
+            }
+            if (value > step.max) {
+                nextStep();
+            }
+            var diff = Math.abs(value - step.mid);
+            if (diff < step.diff && diff < halfStep) {
+                step.diff = diff;
+                step.closest = value;
+            } else {
+                nextStep();
+            }
+            if (diff === 0) {
+                nextStep();
+            }
+        });
+
+        steps.forEach(function (s) {
+            if (s.closest !== null) {
+                result.push(s.closest);
+            }
+        });
 
         result.push(values[values.length - 1]);
 
         return result;
     };
+    splitRealValuesEvenly([0,20,40],5);
 
     var getSignificantDigitsFormatter = function (start, end) {
         var diff = Math.abs(end - start);
@@ -287,7 +292,7 @@
                         .select(function (unit) {
                             return (unit.config.color === c);
                         })
-                        [0];
+                    [0];
 
                     if (firstNode) {
 
@@ -342,8 +347,8 @@
                             .map(function (x, i, list) {
                                 var p = (i / (labelsLength - 1));
                                 var vPad = 0.5 * ((i === 0) ?
-                                        fontHeight :
-                                        ((i === list.length - 1) ? (-fontHeight) : 0));
+                                    fontHeight :
+                                    ((i === list.length - 1) ? (-fontHeight) : 0));
                                 var y = (height * p) + vPad + fontHeight / 2;
                                 return '<text x="25" y="' + y + '">' + castNum(x) + '</text>';
                             });
@@ -381,7 +386,7 @@
                         .select(function (unit) {
                             return (unit.config.size === c);
                         })
-                        [0];
+                    [0];
 
                     if (firstNode) {
 
@@ -453,7 +458,7 @@
                         .select(function (unit) {
                             return (unit.config.color === c);
                         })
-                        [0];
+                    [0];
 
                     if (firstNode) {
 
@@ -462,7 +467,7 @@
                         var colorScale = firstNode.getScale('color');
                         var dataSource = self
                             ._chart
-                            .getDataSources({excludeFilter: ['legend']});
+                            .getDataSources({ excludeFilter: ['legend'] });
 
                         var domain = utils.unique(dataSource[colorScale.source].data
                             .map(function (x) {
@@ -587,9 +592,9 @@
                 var limit = defBrewer.length; // 20;
 
                 return domain.reduce(function (memo, val, i) {
-                        memo[val] = defBrewer[i % limit];
-                        return memo;
-                    },
+                    memo[val] = defBrewer[i % limit];
+                    return memo;
+                },
                     {});
             },
 
@@ -603,7 +608,7 @@
 
                     var fullLegendDataSource = self
                         ._chart
-                        .getDataSources({excludeFilter: ['legend']});
+                        .getDataSources({ excludeFilter: ['legend'] });
 
                     var fullLegendDomain = self
                         ._chart
