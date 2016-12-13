@@ -13,6 +13,11 @@
 
     var utils = tauCharts.api.utils;
 
+    var counter = 0;
+    var getId = function () {
+        return ++counter;
+    };
+
     var splitEvenly = function (domain, parts) {
         var min = domain[0];
         var max = domain[1];
@@ -136,7 +141,7 @@
             element.addEventListener(eventName, function (e) {
                 var target = e.target;
                 while (target !== e.currentTarget && target !== null) {
-                    if (target.classList.contains(selector)) {
+                    if (target.matches(selector)) {
                         callback(e, target);
                     }
                     target = target.parentNode;
@@ -147,6 +152,7 @@
         return {
 
             init: function (chart) {
+                this.instanceId = getId();
 
                 this._chart = chart;
                 this._currentFilters = {};
@@ -213,7 +219,7 @@
                         _delegateEvent(
                             this._container,
                             'click',
-                            'graphical-report__legend__item-color',
+                            '.graphical-report__legend__item-color',
                             function (e, currentTarget) {
                                 this._toggleLegendItem(currentTarget);
                             }.bind(this));
@@ -221,7 +227,7 @@
                         _delegateEvent(
                             this._container,
                             'mouseover',
-                            'graphical-report__legend__item-color',
+                            '.graphical-report__legend__item-color',
                             function (e, currentTarget) {
                                 this._highlightToggle(currentTarget, true);
                             }.bind(this)
@@ -230,7 +236,7 @@
                         _delegateEvent(
                             this._container,
                             'mouseout',
-                            'graphical-report__legend__item-color',
+                            '.graphical-report__legend__item-color',
                             function (e, currentTarget) {
                                 this._highlightToggle(currentTarget, false);
                             }.bind(this)
@@ -353,15 +359,16 @@
                             });
 
                         var title = ((guide.color || {}).label || {}).text || fillScale.dim;
+                        var gradientId = 'legend-gradient-' + self.instanceId;
 
                         var gradient = [
                             '<svg height="' + height + '" width="100%" style="margin: 0 0 10px 10px">',
                             '   <defs>',
-                            '       <linearGradient id="grad1" x1="0%" y1="0%" x2="0%" y2="100%">',
+                            '       <linearGradient id="' + gradientId + '" x1="0%" y1="0%" x2="0%" y2="100%">',
                             stops.join(''),
                             '       </linearGradient>',
                             '   </defs>',
-                            '   <rect x="0" y="0" height="100%" width="20" fill="url(#grad1)"></rect>',
+                            '   <rect x="0" y="0" height="100%" width="20" fill="url(#' + gradientId + ')"></rect>',
                             labels.join(''),
                             '   Sorry, your browser does not support inline SVG.',
                             '</svg>'
@@ -566,7 +573,7 @@
 
             _highlightToggle: function (target, doHighlight) {
 
-                if (target.classList.contains('disabled')) {
+                if (target.matches('.disabled')) {
                     return;
                 }
 

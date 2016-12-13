@@ -33,7 +33,9 @@ dev.spec({
             {});
 
         return Object.keys(processedData)
-            .map(key => processedData[key])
+            .map(function (key) {
+                return processedData[key];
+            })
             .filter(function (row) {
                 return ['Biathlon', 'Ice Hockey'].indexOf(row['Sport']) >= 0;
             });
