@@ -359,16 +359,16 @@
                             });
 
                         var title = ((guide.color || {}).label || {}).text || fillScale.dim;
-                        var id = self.instanceId;
+                        var gradientId = 'legend-gradient-' + self.instanceId;
 
                         var gradient = [
                             '<svg height="' + height + '" width="100%" style="margin: 0 0 10px 10px">',
                             '   <defs>',
-                            '       <linearGradient id="legend-gradient-' + id + '" x1="0%" y1="0%" x2="0%" y2="100%">',
+                            '       <linearGradient id="' + gradientId + '" x1="0%" y1="0%" x2="0%" y2="100%">',
                             stops.join(''),
                             '       </linearGradient>',
                             '   </defs>',
-                            '   <rect x="0" y="0" height="100%" width="20" fill="url(#legend-gradient-' + id + ')"></rect>',
+                            '   <rect x="0" y="0" height="100%" width="20" fill="url(#' + gradientId + ')"></rect>',
                             labels.join(''),
                             '   Sorry, your browser does not support inline SVG.',
                             '</svg>'
