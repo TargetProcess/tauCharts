@@ -69,7 +69,9 @@
             },
 
             createXIndex: function (data, screenModel) {
-                return utils.unique(data.map(x => x[screenModel.model.scaleX.dim]), String)
+                return utils.unique(data.map(function (x) {
+                        return x[screenModel.model.scaleX.dim];
+                    }), String)
                     .sort(function(x1, x2) {
                         return x1 - x2;
                     })
@@ -294,7 +296,9 @@
 
             getContent: function(dateRange, states) {
                 var str = [];
-                var max = Math.max.apply(null, states.map(state => state['value']));
+                var max = Math.max.apply(null, states.map(function (state) {
+                    return state['value'];
+                }));
                 str.push('<div style="padding: 5px">');
                 str.push('<strong>');
                 str.push(this.formatRange(dateRange));
@@ -1919,7 +1923,9 @@ var orderIndex = [
     "A cadrer(UserStory)"
 ].reverse();
 
-var orderRange = d3.extent(Object.keys(orderByState).map(key => orderByState[key]));
+var orderRange = d3.extent(Object.keys(orderByState).map(function (key) {
+    return orderByState[key];
+}));
 
 dev.spec({
     z: 777,

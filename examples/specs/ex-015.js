@@ -26,7 +26,9 @@ dev.spec({
                 return memo;
             }, {});
 
-        return Object.keys(processedData).map(key => processedData[key]);
+        return Object.keys(processedData).map(function (key) {
+            return processedData[key];
+        });
 
     })
 

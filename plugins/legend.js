@@ -136,7 +136,7 @@
             element.addEventListener(eventName, function (e) {
                 var target = e.target;
                 while (target !== e.currentTarget && target !== null) {
-                    if (target.classList.contains(selector)) {
+                    if (target.matches(selector)) {
                         callback(e, target);
                     }
                     target = target.parentNode;
@@ -213,7 +213,7 @@
                         _delegateEvent(
                             this._container,
                             'click',
-                            'graphical-report__legend__item-color',
+                            '.graphical-report__legend__item-color',
                             function (e, currentTarget) {
                                 this._toggleLegendItem(currentTarget);
                             }.bind(this));
@@ -221,7 +221,7 @@
                         _delegateEvent(
                             this._container,
                             'mouseover',
-                            'graphical-report__legend__item-color',
+                            '.graphical-report__legend__item-color',
                             function (e, currentTarget) {
                                 this._highlightToggle(currentTarget, true);
                             }.bind(this)
@@ -230,7 +230,7 @@
                         _delegateEvent(
                             this._container,
                             'mouseout',
-                            'graphical-report__legend__item-color',
+                            '.graphical-report__legend__item-color',
                             function (e, currentTarget) {
                                 this._highlightToggle(currentTarget, false);
                             }.bind(this)
@@ -566,7 +566,7 @@
 
             _highlightToggle: function (target, doHighlight) {
 
-                if (target.classList.contains('disabled')) {
+                if (target.matches('.disabled')) {
                     return;
                 }
 

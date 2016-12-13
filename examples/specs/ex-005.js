@@ -35,7 +35,9 @@ dev.spec({
 
 
         return Object.keys(processedData)
-            .map(key => processedData[key])
+            .map(function (key) {
+                return processedData[key];
+            })
             .filter(function (row) {
                 return (
                     (['United States', 'Canada'].indexOf(row['Country']) >= 0)

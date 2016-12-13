@@ -136,3 +136,12 @@ if (typeof Object.assign != 'function') {
         });
     })();
 }
+
+if (!Element.prototype.matches) {
+    Object.defineProperty(Element.prototype, 'matches', {
+        value: Element.prototype.msMatchesSelector,
+        configurable: true,
+        enumerable: true,
+        writable: true
+    });
+}
