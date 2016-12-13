@@ -4,6 +4,13 @@ import {SpecTransformOptimize} from './spec-transform-optimize';
 var byOptimisticMaxText = ((gx) => gx.$maxTickTextW);
 var byPessimisticMaxText = ((gx) => ((gx.rotate == 0) ? gx.$maxTickTextW : gx.$maxTickTextH));
 var byDensity = ((gx) => gx.density);
+var byLabelHeight = ((guide, frame) => {
+    var len = 0;
+    if (frame && frame._data && frame._data.length > 0) {
+        len = frame._data.length * 5;
+    }
+    return Math.max(guide.density, len);
+});
 
 var fitModelStrategies = {
 
@@ -41,7 +48,7 @@ var fitModelStrategies = {
             }
         }
 
-        var newH = Math.max(srcSize.height, calcSize('y', specRef.unit, byDensity));
+        var newH = Math.max(srcSize.height, calcSize('y', specRef.unit, byLabelHeight));
 
         return {newW, newH};
     },
@@ -116,7 +123,7 @@ export class SpecTransformCalcSize {
             var xCfg = (prop === 'x') ? root.x : root.y;
             var yCfg = (prop === 'x') ? root.y : root.x;
             var guide = root.guide;
-            var xSize = (prop === 'x') ? takeStepSizeStrategy(guide.x) : takeStepSizeStrategy(guide.y);
+            var xSize = (prop === 'x') ? takeStepSizeStrategy(guide.x, frame) : takeStepSizeStrategy(guide.y, frame);
 
             var resScaleSize = (prop === 'x') ?
                 (guide.padding.l + guide.padding.r) :
