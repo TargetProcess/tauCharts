@@ -99,7 +99,6 @@
                 var root = this.rootNode;
                 var svg = this.chart.getSVG();
                 var d3Svg = d3.select(svg);
-                var frameRoot = d3Svg.selectAll('.frame-root');
                 var animationSpeed = this.chart.configGPL.settings.animationSpeed;
                 var scrollManager = this.scrollManager = new ScrollManager(root);
 
@@ -147,7 +146,6 @@
                 var scrollbars = tauCharts.api.globalSettings.getScrollbarSize(root);
 
                 function getPositions() {
-                    var chartTransform = parseTransform(frameRoot.attr('transform'));
                     return {
                         scrollLeft: root.scrollLeft,
                         scrollTop: root.scrollTop,
@@ -157,8 +155,6 @@
                         scrollbarHeight: scrollbars.height,
                         svgWidth: Number(d3Svg.attr('width')),
                         svgHeight: Number(d3Svg.attr('height')),
-                        frameRootX: chartTransform.x,
-                        frameRootY: chartTransform.y,
                         minXAxesY: minXAxesY,
                         maxYAxesX: maxYAxesX
                     };
@@ -169,53 +165,6 @@
                 var defs = (function createSVGDefinitions() {
                     var defs = d3Svg.append('defs')
                         .attr('class', 'floating-axes floating-axes__defs');
-
-                    var chartClip = defs.append('clipPath')
-                        .attr('id', 'floating-axes__chart-clip-path-' + id)
-                        .append('rect');
-
-                    var xAxisClip = defs.append('clipPath')
-                        .attr('id', 'floating-axes__x-axis-clip-path-' + id)
-                        .append('rect');
-
-                    var yAxisClip = defs.append('clipPath')
-                        .attr('id', 'floating-axes__y-axis-clip-path-' + id)
-                        .append('rect');
-
-                    scrollManager
-                        .onScroll(function (scrollLeft, scrollTop) {
-
-                            chartClip
-                                .attr('x', (scrollLeft + maxYAxesX - pos.frameRootX))
-                                .attr('y', (scrollTop - pos.frameRootY))
-                                .attr('width', (pos.visibleWidth - pos.maxYAxesX))
-                                .attr('height', (
-                                    pos.visibleHeight -
-                                    pos.svgHeight +
-                                    pos.minXAxesY -
-                                    pos.scrollbarHeight
-                                ));
-
-                            xAxisClip
-                                .attr('x', (pos.maxYAxesX + scrollLeft))
-                                .attr('y', (pos.minXAxesY))
-                                .attr('width', (pos.visibleWidth - pos.maxYAxesX))
-                                .attr('height', (pos.svgHeight - pos.minXAxesY));
-
-                            yAxisClip
-                                .attr('x', 0)
-                                .attr('y', scrollTop)
-                                .attr('width', (pos.maxYAxesX))
-                                .attr('height', (
-                                    pos.visibleHeight -
-                                    pos.svgHeight +
-                                    pos.minXAxesY -
-                                    pos.scrollbarHeight
-                                ));
-                        });
-
-                    frameRoot
-                        .attr('clip-path', 'url(#floating-axes__chart-clip-path-' + id + ')');
 
                     var directions = {
                         ns: {x1: 0, y1: 0, x2: 0, y2: 1},
@@ -470,8 +419,6 @@
                 }
 
                 var d3Svg = d3.select(this.chart.getSVG());
-                d3Svg.selectAll('.frame-root')
-                    .attr('clip-path', null);
 
                 // TODO: Reuse elements.
                 d3Svg.selectAll('.floating-axes').remove();
