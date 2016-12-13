@@ -373,8 +373,8 @@ GrammarRegistry
             var startPad = model.flip ? _endPad : _startPad;
             var endPad = model.flip ? _startPad : _endPad;
 
-            var startVal = domain[0] - ((flip ? endPad : startPad) * koeff);
-            var endVal = domain[1] + ((flip ? startPad : endPad) * koeff);
+            var startVal = Number(domain[0]) - ((flip ? endPad : startPad) * koeff);
+            var endVal = Number(domain[1]) + ((flip ? startPad : endPad) * koeff);
 
             scale.fixup((prev) => {
                 var next = {};
