@@ -138,6 +138,8 @@
                                     (label0.textContent === '0' ? '100' : Math.round(Math.abs(label1.textContent - label0.textContent) / label0.textContent * 100)) + '%'
                                 );
 
+                                labelToShow.setAttribute('y', -5);
+
                                 labelToHide.parentNode.removeChild(labelToHide);
 
                             } else {
@@ -146,7 +148,6 @@
                             }
                         });
                     });
-                    // debugger;
                 },
 
                 destroy: function () {
