@@ -58,8 +58,8 @@
                     var id = this.instanceId;
                     var chart = this.chart;
                     var svg = chart.getSVG()
-                    var defs = svg.querySelector('.diff__defs');
-                    if (!defs) {
+                    var defs = d3.select(svg).select('.diff__defs');
+                    if (defs.empty()) {
                         defs = d3.select(svg).append('defs')
                             .attr('class', 'diff__defs');
                     }
@@ -86,8 +86,6 @@
                                 .attr('y', 0)
                                 .attr('width', 16)
                                 .attr('height', 16);
-                            // .attr('width', 2)
-                            // .attr('height', 2);
 
                             if (decreasing) {
                                 bar0.setAttribute('x', attr0.x);
@@ -103,42 +101,6 @@
                                     .attr('d', 'M0,1 v14 l1,1 h14 Z M16,15 v-14 l-1,-1 h-14 Z')
                                     .attr('opacity', 0.125)
                                     .attr('fill', d3.interpolate(fill, 'red')(0.5));
-                                // pattern.append('path')
-                                //     .attr('d', 'M0,1 v-1 h1 l15,15 v1 h-1 Z M15,0 h1 v1 Z M1,16 v-1 h-1 Z')
-                                //     .attr('fill', fill);
-                                // pattern.append('path')
-                                //     .attr('d', 'M0,1 v-1 h1 l15,15 v1 h-1 Z M15,0 h1 v1 Z M1,16 v-1 h-1 Z')
-                                // //     .attr('fill', '#d75');
-                                // pattern.append('circle')
-                                //     .attr('cx', 1)
-                                //     .attr('cy', 1)
-                                //     .attr('r', 1)
-                                //     .attr('fill', fill);
-                                // pattern.append('circle')
-                                //     .attr('cx', 9)
-                                //     .attr('cy', 9)
-                                //     .attr('r', 1)
-                                //     .attr('fill', fill);
-                                // pattern.append('circle')
-                                //     .attr('cx', 24)
-                                //     .attr('cy', 8)
-                                //     .attr('r', 2)
-                                //     .attr('fill', '#d75');
-                                // pattern.append('circle')
-                                //     .attr('cx', 0)
-                                //     .attr('cy', 24)
-                                //     .attr('r', 2)
-                                //     .attr('fill', '#d75');
-                                // pattern.append('circle')
-                                //     .attr('cx', 16)
-                                //     .attr('cy', 24)
-                                //     .attr('r', 2)
-                                //     .attr('fill', '#d75');
-                                // pattern.append('circle')
-                                //     .attr('cx', 32)
-                                //     .attr('cy', 24)
-                                //     .attr('r', 2)
-                                //     .attr('fill', '#d75');
                                 d3.select(bar0).style('fill', 'url(#' + patternId + ')');
                             } else {
                                 bar0.setAttribute('x', attr0.x);
@@ -152,43 +114,7 @@
 
                                 pattern.append('path')
                                     .attr('d', 'M0,15 v-14 l1,-1 h14 Z M16,1 v14 l-1,1 h-14 Z')
-                                    // .attr('opacity', 0.875)
                                     .attr('fill', fill);
-                                // pattern.append('rect')
-                                //     .attr('x', 0)
-                                //     .attr('y', 0)
-                                //     .attr('width', 16)
-                                //     .attr('height', 16)
-                                //     .attr('fill', fill);
-                                // pattern.append('path')
-                                //     .attr('d', 'M1,16 h-1 v-1 l15,-15 h1 v1 Z M0,1 v-1 h1 Z M16,15 v1 h-1 Z')
-                                //     .attr('fill', '#5ec');
-
-                                // pattern.append('circle')
-                                //     .attr('cx', 8)
-                                //     .attr('cy', 8)
-                                //     .attr('r', 8)
-                                //     .attr('fill', fill);
-                                // pattern.append('circle')
-                                //     .attr('cx', 24)
-                                //     .attr('cy', 8)
-                                //     .attr('r', 8)
-                                //     .attr('fill', fill);
-                                // pattern.append('circle')
-                                //     .attr('cx', 0)
-                                //     .attr('cy', 24)
-                                //     .attr('r', 8)
-                                //     .attr('fill', fill);
-                                // pattern.append('circle')
-                                //     .attr('cx', 16)
-                                //     .attr('cy', 24)
-                                //     .attr('r', 8)
-                                //     .attr('fill', fill);
-                                // pattern.append('circle')
-                                //     .attr('cx', 32)
-                                //     .attr('cy', 24)
-                                //     .attr('r', 8)
-                                //     .attr('fill', fill);
                                 d3.select(bar1).style('fill', 'url(#' + patternId + ')');
                             }
 
@@ -208,16 +134,11 @@
                                 var labelToShow = label1;
 
                                 labelToShow.textContent = (
-                                    // label1.textContent +
-                                    // '(' +
                                     (decreasing ? '▼' : '▲') +
-                                    // Math.abs(label1.textContent - label0.textContent)// +
-                                    Math.round(Math.abs(label1.textContent - label0.textContent) / Math.max(label1.textContent, label0.textContent) * 100) + '%'// +
-                                    // ')'
+                                    (label0.textContent === '0' ? '100' : Math.round(Math.abs(label1.textContent - label0.textContent) / label0.textContent * 100)) + '%'
                                 );
 
                                 labelToHide.parentNode.removeChild(labelToHide);
-                                // d3.select(labelToShow).style('fill', decreasing ? 'rgb(195, 47, 24)' : 'rgb(49, 167, 80)');
 
                             } else {
                                 label0 && label0.parentNode.removeChild(label0);
