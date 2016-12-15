@@ -4,13 +4,6 @@ import {SpecTransformOptimize} from './spec-transform-optimize';
 var byOptimisticMaxText = ((gx) => gx.$maxTickTextW);
 var byPessimisticMaxText = ((gx) => ((gx.rotate == 0) ? gx.$maxTickTextW : gx.$maxTickTextH));
 var byDensity = ((gx) => gx.density);
-var byLabelHeight = ((guide, frame) => {
-    var len = 0;
-    if (frame && frame._data && frame._data.length > 0) {
-        len = frame._data.length * 5;
-    }
-    return Math.max(guide.density, len);
-});
 
 var fitModelStrategies = {
 
@@ -48,7 +41,7 @@ var fitModelStrategies = {
             }
         }
 
-        var newH = Math.max(srcSize.height, calcSize('y', specRef.unit, byLabelHeight));
+        var newH = Math.max(srcSize.height, calcSize('y', specRef.unit, byDensity));
 
         return {newW, newH};
     },
@@ -129,7 +122,16 @@ export class SpecTransformCalcSize {
                 (guide.padding.l + guide.padding.r) :
                 (guide.padding.b + guide.padding.t);
 
-            if (root.units[0].type !== 'COORDS.RECT') {
+            if (root.units[0].type === 'ELEMENT.INTERVAL' &&
+                ((prop === 'y') === Boolean(root.units[0].flip))
+            ) {
+
+                // BUG: Label font size is missing in guide.
+                const labelFontSize = 10;
+                var rowsTotal = root.frames.reduce((sum, f) => f.full().length * labelFontSize, 0);
+                return resScaleSize + rowsTotal;
+
+            } else if (root.units[0].type !== 'COORDS.RECT') {
 
                 var xScale = chart.getScaleInfo(xCfg, frame);
                 return resScaleSize + calcScaleSize(xScale, xSize);
