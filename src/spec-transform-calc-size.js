@@ -126,8 +126,7 @@ export class SpecTransformCalcSize {
                 ((prop === 'y') === Boolean(root.units[0].flip))
             ) {
 
-                // BUG: Label font size is missing in guide.
-                const labelFontSize = 10;
+                const labelFontSize = (guide.label && guide.label.fontSize ? guide.label.fontSize : 10);
                 var rowsTotal = root.frames.reduce((sum, f) => f.full().length * labelFontSize, 0);
                 return resScaleSize + rowsTotal;
 
