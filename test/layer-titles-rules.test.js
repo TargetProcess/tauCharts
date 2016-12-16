@@ -54,18 +54,18 @@ define(function (require) {
             var m = createModel(['t'], seedModel);
             expect(m.x(r)).to.equal(100, 'x');
             expect(m.y(r)).to.equal(100, 'y');
-            expect(m.dy(r)).to.equal(0, 'dy');
+            expect(m.dy(r)).to.equal(-borderPad, 'dy');
         });
 
         it('should support [t+] as top for positive ordinate value', function () {
             var m = createModel(['t+'], seedModel);
             var pos = {y:10};
             expect(m.y(pos)).to.equal(100, 'pos y');
-            expect(m.dy(pos)).to.equal(0, 'pos dy');
+            expect(m.dy(pos)).to.equal(-borderPad, 'pos dy');
 
             var zero = {y: 0};
             expect(m.y(zero)).to.equal(100, 'zero y');
-            expect(m.dy(zero)).to.equal(0, 'zero dy');
+            expect(m.dy(zero)).to.equal(-borderPad, 'zero dy');
 
             var neg = {y:-1};
             expect(m.y(neg)).to.equal(100, 'neg y');
@@ -84,7 +84,7 @@ define(function (require) {
 
             var neg = {y:-1};
             expect(m.y(neg)).to.equal(100, 'neg y');
-            expect(m.dy(neg)).to.equal(0, 'neg dy');
+            expect(m.dy(neg)).to.equal(-borderPad, 'neg dy');
         });
 
         it('should support [T] as top with radius', function () {
@@ -93,7 +93,7 @@ define(function (require) {
             expect(m.x(r)).to.equal(100, 'x');
             expect(m.dx(r)).to.equal(0, 'dx');
             expect(m.y(r)).to.equal(100, 'y');
-            expect(m.dy(r)).to.equal(-5, 'dy');
+            expect(m.dy(r)).to.equal(-5 - borderPad, 'dy');
         });
 
         it('should support [b] as bottom', function () {
@@ -102,7 +102,7 @@ define(function (require) {
             expect(m.x(r)).to.equal(100, 'x');
             expect(m.dx(r)).to.equal(0, 'dx');
             expect(m.y(r)).to.equal(100, 'y');
-            expect(m.dy(r)).to.equal(fontSize, 'dy'); // no border padding for vertical alignment
+            expect(m.dy(r)).to.equal(fontSize + borderPad, 'dy');
         });
 
         it('should support [l] as left', function () {
