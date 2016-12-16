@@ -190,7 +190,12 @@ define(function (require) {
             if (!style) {
                 style = document.createElement('style');
                 style.id = 'noScrollStyle';
-                style.textContent = '.graphical-report__layout__content, .graphical-report__layout__sidebar-right { padding: 0 !important; }';
+                style.textContent = [
+                    '.graphical-report__layout__content, .graphical-report__layout__sidebar-right {',
+                    '  overflow: visible !important;',
+                    '  padding: 0 !important;',
+                    '}'
+                ].join('\n');
                 document.head.appendChild(style);
             }
         },
