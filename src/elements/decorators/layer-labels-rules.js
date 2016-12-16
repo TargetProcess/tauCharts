@@ -64,7 +64,7 @@ var alignByY = (exp) => {
                 var k = (exp[1]);
                 var u = (exp[0] === exp[0].toUpperCase()) ? 1 : 0;
 
-                return prev.dy(row) + ((k * (prev.h(row) / 2)) + (k * u * prev.model.size(row) / 2));
+                return prev.dy(row) + (k * (prev.h(row) / 2)) + (k * u * prev.model.size(row) / 2) + k * 2;
             }
         };
     };
