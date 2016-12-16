@@ -158,6 +158,7 @@ export class LayerLabels {
             this.style('fill', color)
                 .style('font-size', `${self.guide.fontSize}px`)
                 .style('display', ((__, i) => labels[i].hide ? 'none' : null))
+                .attr('class', 'i-role-label')
                 .attr('text-anchor', 'middle')
                 .attr('transform', (d, i) => `translate(${xi(d, i)},${yi(d, i)}) rotate(${angle(d, i)})`)
                 .text(label);
@@ -172,7 +173,6 @@ export class LayerLabels {
         text.call(update);
         text.enter()
             .append('text')
-            .attr('class', 'i-role-label')
             .call(update);
 
         return text;
