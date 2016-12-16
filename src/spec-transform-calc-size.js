@@ -116,7 +116,7 @@ export class SpecTransformCalcSize {
             var xCfg = (prop === 'x') ? root.x : root.y;
             var yCfg = (prop === 'x') ? root.y : root.x;
             var guide = root.guide;
-            var xSize = (prop === 'x') ? takeStepSizeStrategy(guide.x, frame) : takeStepSizeStrategy(guide.y, frame);
+            var xSize = (prop === 'x') ? takeStepSizeStrategy(guide.x) : takeStepSizeStrategy(guide.y);
 
             var resScaleSize = (prop === 'x') ?
                 (guide.padding.l + guide.padding.r) :
