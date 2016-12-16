@@ -122,7 +122,17 @@ export class SpecTransformCalcSize {
                 (guide.padding.l + guide.padding.r) :
                 (guide.padding.b + guide.padding.t);
 
-            if (root.units[0].type !== 'COORDS.RECT') {
+            if (root.units[0].type === 'ELEMENT.INTERVAL' &&
+                (prop === 'y') === Boolean(root.units[0].flip) &&
+                root.units[0].label &&
+                !chart.getScaleInfo(root.units[0].label, frame).isEmpty()
+            ) {
+
+                const labelFontSize = (guide.label && guide.label.fontSize ? guide.label.fontSize : 10);
+                var rowsTotal = root.frames.reduce((sum, f) => f.full().length * labelFontSize, 0);
+                return resScaleSize + rowsTotal;
+
+            } else if (root.units[0].type !== 'COORDS.RECT') {
 
                 var xScale = chart.getScaleInfo(xCfg, frame);
                 return resScaleSize + calcScaleSize(xScale, xSize);

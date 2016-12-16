@@ -196,6 +196,16 @@ const Interval = {
 
         node.subscribe(new LayerLabels(screenModel.model, screenModel.model.flip, config.guide.label, options)
             .draw(fibers));
+
+        // Put labels after bars
+        const container = options.container.node();
+        const children = Array.prototype.slice.call(container.childNodes, 0);
+        const lastBarIndex = (children.length - 1 - children.slice(0).reverse()
+            .findIndex((el) => el.matches('.i-role-bar-group')));
+        const afterBar = container.childNodes.item(lastBarIndex + 1);
+        children.slice(0, lastBarIndex)
+            .filter((el) => el.matches('.i-role-label'))
+            .forEach((el) => container.insertBefore(el, afterBar));
     },
 
     buildModel(screenModel, {prettify, minBarH, minBarW, baseCssClass}) {

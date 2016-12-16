@@ -65,6 +65,7 @@ export class BaseScale {
             .addField('isInteger', originalSeries.every(Number.isInteger))
             .addField('originalSeries', (() => originalSeries))
             .addField('isContains', ((x) => this.isInDomain(x)))
+            .addField('isEmptyScale', ((x) => this.isEmpty(x)))
             .addField('fixup', (fn) => {
                 var cfg = this.scaleConfig;
                 cfg.__fixup__ = cfg.__fixup__ || {};
@@ -90,6 +91,10 @@ export class BaseScale {
 
     getField(key) {
         return this._fields[key];
+    }
+
+    isEmpty() {
+        return !Boolean(this._fields.dim);
     }
 
     toBaseScale(func, dynamicProps = null) {

@@ -10,6 +10,7 @@
     var PATHS = {
         'specs/': [
             fileRange('ex-', range(0, 3), 5, range(9, 15)),
+            'bar-labels',
             'horizontal-scroll',
             'logarithmic-scale',
             'smooth-line',
@@ -37,7 +38,7 @@
     //
     function filterSpecs(allSpecs) {
         return allSpecs;
-    };
+    }
 
     //------------------------------
     // NOTE: Modify chart spec here.
@@ -122,9 +123,10 @@
      */
     DevApp.prototype.drop = function (dropCfg) {
         var spec = dropCfg.spec;
+        var isArrayRow = dropCfg.data && Array.isArray(dropCfg.data[0]);
         spec.data = dropCfg.data.map(function (row) {
             return dropCfg.header.reduce(function (memo, h, i) {
-                memo[h] = row[i];
+                memo[h] = row[isArrayRow ? i : h];
                 return memo;
             }, {});
         });
@@ -450,7 +452,7 @@
     function DatasetLoader(name, filter) {
         this.name = name;
         this._filter = filter;
-    };
+    }
     DatasetLoader.prototype.filter = function (data) {
         if (this._filter) {
             return this._filter.call(null, data);
@@ -519,7 +521,7 @@
         }).filter(function (d) {
             return Boolean(d);
         });
-    };
+    }
 
     function fileRange(prefix, numbers) {
         numbers = Array.prototype.slice.call(arguments, 1);
