@@ -123,7 +123,8 @@ export class SpecTransformCalcSize {
                 (guide.padding.b + guide.padding.t);
 
             if (root.units[0].type === 'ELEMENT.INTERVAL' &&
-                ((prop === 'y') === Boolean(root.units[0].flip))
+                (prop === 'y') === Boolean(root.units[0].flip) &&
+                root.units[0].label !== 'label_undefined' // TODO: Setup some flag if there is label scale dimension
             ) {
 
                 const labelFontSize = (guide.label && guide.label.fontSize ? guide.label.fontSize : 10);

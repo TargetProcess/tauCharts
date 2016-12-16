@@ -25,11 +25,16 @@
 
     dev.spec((function () {
         return {
-            type: 'bar',
-            y: 'hours',
-            x: ['team', 'type'],
+            type: 'horizontal-bar',
+            x: 'hours',
+            y: ['team', 'type'],
             color: 'status',
             label: 'hours',
+            guide: [{}, {
+                label: {
+                    fontSize: 12
+                }
+            }],
             data: barData
         };
     })());
