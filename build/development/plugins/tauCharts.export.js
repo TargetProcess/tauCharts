@@ -231,6 +231,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	                    d3.select(svg).attr('version', 1.1).attr('xmlns', 'http://www.w3.org/2000/svg');
 	                    svg.insertBefore(style, svg.firstChild);
 	                    this._renderAdditionalInfo(svg, chart);
+	                    this._addBackground(svg, this._backgroundColor);
 	                    var canvas = document.createElement('canvas');
 	                    canvas.height = svg.getAttribute('height');
 	                    canvas.width = svg.getAttribute('width');
@@ -552,6 +553,19 @@ return /******/ (function(modules) { // webpackBootstrap
 	                }
 	            },
 
+	            _addBackground: function _addBackground(svg, color) {
+	                if (!color || color === 'transparent') {
+	                    return;
+	                }
+	                var rect = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+	                rect.setAttribute('fill', color);
+	                rect.setAttribute('x', 0);
+	                rect.setAttribute('y', 0);
+	                rect.setAttribute('width', svg.getAttribute('width'));
+	                rect.setAttribute('height', svg.getAttribute('height'));
+	                svg.insertBefore(rect, svg.firstChild);
+	            },
+
 	            onUnitDraw: function onUnitDraw(chart, unit) {
 	                if (tauCharts.api.isChartElement(unit)) {
 	                    this._unit = unit;
@@ -647,10 +661,18 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	            init: function init(chart) {
 	                settings = settings || {};
+	                settings = utils.defaults(settings, {
+	                    backgroundColor: 'white',
+	                    visible: true,
+	                    fontSize: 13,
+	                    paddingTop: 30
+	                });
+
 	                this._chart = chart;
 	                this._info = {};
 	                this._cssPaths = settings.cssPaths;
 	                this._fileName = settings.fileName;
+	                this._backgroundColor = settings.backgroundColor || 'white';
 	                this._destroyListeners = [];
 
 	                this._csvSeparator = settings.csvSeparator || ',';
@@ -662,12 +684,6 @@ return /******/ (function(modules) { // webpackBootstrap
 	                    this._cssPaths = [];
 	                    tauCharts.api.globalSettings.log('[export plugin]: the "cssPath" parameter should be specified for correct operation', 'warn');
 	                }
-
-	                settings = utils.defaults(settings, {
-	                    visible: true,
-	                    fontSize: 13,
-	                    paddingTop: 30
-	                });
 
 	                var menuStyle = settings.visible ? '' : 'display:none';
 	                this._container = chart.insertToHeader('<a class="graphical-report__export" style="' + menuStyle + '">Export</a>');

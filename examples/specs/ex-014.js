@@ -38,7 +38,9 @@ dev.spec({
             }, {});
 
         return Object.keys(processedData)
-            .map(key => processedData[key])
+            .map(function (key) {
+                return processedData[key];
+            })
             .sort(function(x1, x2) {
                 return x1['FullYear'] - x2['FullYear'];
             })

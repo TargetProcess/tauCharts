@@ -1,4 +1,4 @@
-/*! taucharts - v0.10.0-beta.3 - 2016-11-17
+/*! taucharts - v0.10.0-beta.4 - 2016-12-16
 * https://github.com/TargetProcess/tauCharts
 * Copyright (c) 2016 Taucraft Limited; Licensed Apache License 2.0 */
 (function webpackUniversalModuleDefinition(root, factory) {
@@ -68,21 +68,23 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	var _utils = __webpack_require__(3);
 
-	var _tau = __webpack_require__(81);
+	var _tau = __webpack_require__(82);
 
-	var _tau2 = __webpack_require__(85);
+	var _tau2 = __webpack_require__(86);
 
-	var _tau3 = __webpack_require__(102);
+	var _tau3 = __webpack_require__(103);
 
-	var _unitDomainPeriodGenerator = __webpack_require__(83);
+	var _unitDomainPeriodGenerator = __webpack_require__(84);
 
-	var _formatterRegistry = __webpack_require__(97);
+	var _formatterRegistry = __webpack_require__(98);
 
-	var _unitsRegistry = __webpack_require__(90);
+	var _unitsRegistry = __webpack_require__(91);
 
-	var _scalesRegistry = __webpack_require__(91);
+	var _scalesRegistry = __webpack_require__(92);
 
-	var _coords = __webpack_require__(104);
+	var _grammarRegistry = __webpack_require__(7);
+
+	var _coords = __webpack_require__(105);
 
 	var _coords2 = __webpack_require__(106);
 
@@ -122,7 +124,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	var _fill = __webpack_require__(136);
 
-	var _chartAliasRegistry = __webpack_require__(103);
+	var _chartAliasRegistry = __webpack_require__(104);
 
 	var _chartMap = __webpack_require__(137);
 
@@ -163,6 +165,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    errorCodes: _error.errorCodes,
 	    unitsRegistry: _unitsRegistry.unitsRegistry,
 	    scalesRegistry: _scalesRegistry.scalesRegistry,
+	    grammarRegistry: _grammarRegistry.GrammarRegistry,
 	    tickFormat: _formatterRegistry.FormatterRegistry,
 	    isChartElement: _utils.utils.isChartElement,
 	    d3: _d2.default,
@@ -222,11 +225,17 @@ return /******/ (function(modules) { // webpackBootstrap
 	        facetLabelDelimiter: ' \u2192 ',
 	        excludeNull: true,
 	        specEngine: [{
+	            name: 'SPARKLINE',
+	            width: 300,
+	            height: 200
+	        }, {
 	            name: 'COMPACT',
-	            width: 600
+	            width: 600,
+	            height: 400
 	        }, {
 	            name: 'AUTO',
-	            width: Number.MAX_VALUE
+	            width: Number.MAX_VALUE,
+	            height: Number.MAX_VALUE
 	        }],
 
 	        fitModel: 'normal',
@@ -239,6 +248,8 @@ return /******/ (function(modules) { // webpackBootstrap
 	        }),
 
 	        getScrollbarSize: _utilsDom.utilsDom.getScrollbarSize,
+
+	        avoidScrollAtRatio: 1.5,
 
 	        xAxisTickLabelLimit: 150,
 	        yAxisTickLabelLimit: 150,
@@ -326,7 +337,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	}]));
 
 	/* global VERSION:false */
-	var version = ("0.10.0-beta.3");
+	var version = ("0.10.0-beta.4");
 	exports.GPL = _tau.GPL;
 	exports.Plot = _tau2.Plot;
 	exports.Chart = _tau3.Chart;
@@ -357,7 +368,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	var _utils = __webpack_require__(3);
 
-	var _weakMap = __webpack_require__(15);
+	var _weakMap = __webpack_require__(16);
 
 	var _weakMap2 = _interopRequireDefault(_weakMap);
 
@@ -1211,20 +1222,21 @@ return /******/ (function(modules) { // webpackBootstrap
 	    },
 
 	    unique: function unique(array, func) {
-	        var mappedArray = array;
-	        var filter = function filter(elem, pos, arr) {
-	            return arr.indexOf(elem) === pos;
+	        var hash = {};
+	        var result = [];
+	        var len = array.length;
+	        var hasher = func || function (x) {
+	            return String(x);
 	        };
-	        if (typeof func === 'function') {
-	            mappedArray = array.map(func);
-	            filter = function filter(elem, pos) {
-	                var mappedElem = mappedArray[pos];
-	                return mappedArray.findIndex(function (x) {
-	                    return x === mappedElem;
-	                }) === pos;
-	            };
+	        for (var i = 0; i < len; ++i) {
+	            var item = array[i];
+	            var key = hasher(item);
+	            if (!hash.hasOwnProperty(key)) {
+	                hash[key] = true;
+	                result.push(item);
+	            }
 	        }
-	        return array.filter(filter);
+	        return result;
 	    },
 
 	    groupBy: function groupBy(array, func) {
@@ -1394,7 +1406,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	var _element = __webpack_require__(5);
 
-	var _cartesianGrammar = __webpack_require__(7);
+	var _grammarRegistry = __webpack_require__(7);
 
 	var _d3Decorators = __webpack_require__(9);
 
@@ -1407,6 +1419,8 @@ return /******/ (function(modules) { // webpackBootstrap
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 	function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
+
+	function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr2 = Array(arr.length); i < arr.length; i++) { arr2[i] = arr[i]; } return arr2; } else { return Array.from(arr); } }
 
 	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
@@ -1434,7 +1448,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	        var enableStack = _this.config.stack;
 	        var enableColorPositioning = _this.config.guide.enableColorToBarPosition;
 
-	        var defaultDecorators = [config.flip && _cartesianGrammar.CartesianGrammar.decorator_flip, _cartesianGrammar.CartesianGrammar.decorator_groupOrderByColor, enableStack && _cartesianGrammar.CartesianGrammar.decorator_stack, enableColorPositioning && _cartesianGrammar.CartesianGrammar.decorator_positioningByColor];
+	        var defaultDecorators = [config.flip && _grammarRegistry.GrammarRegistry.get('flip'), enableStack && _grammarRegistry.GrammarRegistry.get('stack'), enableColorPositioning && _grammarRegistry.GrammarRegistry.get('positioningByColor')];
 
 	        _this.decorators = (_this.config.transformRules || defaultDecorators).concat(config.transformModel || []);
 	        _this.adjusters = _this.config.adjustRules || [];
@@ -1449,49 +1463,112 @@ return /******/ (function(modules) { // webpackBootstrap
 	            var config = this.config;
 	            this.regScale('x', fnCreateScale('pos', config.x, [0, config.options.width])).regScale('y', fnCreateScale('pos', config.y, [config.options.height, 0])).regScale('size', fnCreateScale('size', config.size, {})).regScale('color', fnCreateScale('color', config.color, {})).regScale('split', fnCreateScale('split', config.split, {})).regScale('label', fnCreateScale('label', config.label, {})).regScale('identity', fnCreateScale('identity', config.identity, {}));
 
-	            return new _cartesianGrammar.CartesianGrammar({
+	            var scaleX = this.getScale('x');
+	            var scaleY = this.getScale('y');
+	            var scaleSize = this.getScale('size');
+	            var scaleLabel = this.getScale('label');
+	            var scaleColor = this.getScale('color');
+	            var scaleSplit = this.getScale('split');
+	            var scaleIdentity = this.getScale('identity');
+
+	            var ys = scaleY.domain();
+	            var min = scaleY.discrete ? ys[0] : Math.max(0, Math.min.apply(Math, _toConsumableArray(ys))); // NOTE: max also can be below 0
+	            var _y = scaleY.value(min) + scaleY.stepSize(min) * 0.5;
+	            var _order = scaleColor.domain();
+	            var delimiter = '(@taucharts@)';
+
+	            return {
 	                data: function data() {
 	                    return _this2.data();
 	                },
-	                scaleX: this.getScale('x'),
-	                scaleY: this.getScale('y'),
-	                scaleSize: this.getScale('size'),
-	                scaleLabel: this.getScale('label'),
-	                scaleColor: this.getScale('color'),
-	                scaleSplit: this.getScale('split'),
-	                scaleIdentity: this.getScale('identity')
+	                flip: false,
+	                scaleX: scaleX,
+	                scaleY: scaleY,
+	                scaleSize: scaleSize,
+	                scaleLabel: scaleLabel,
+	                scaleColor: scaleColor,
+	                scaleSplit: scaleSplit,
+	                scaleIdentity: scaleIdentity,
+	                color: function color(d) {
+	                    return scaleColor.value(d[scaleColor.dim]);
+	                },
+	                label: function label(d) {
+	                    return scaleLabel.value(d[scaleLabel.dim]);
+	                },
+	                group: function group(d) {
+	                    return '' + d[scaleColor.dim] + delimiter + d[scaleSplit.dim];
+	                },
+	                order: function order(group) {
+	                    var color = group.split(delimiter)[0];
+	                    var i = _order.indexOf(color);
+	                    return i < 0 ? Number.MAX_VALUE : i;
+	                },
+	                size: function size(d) {
+	                    return scaleSize.value(d[scaleSize.dim]);
+	                },
+	                id: function id(row) {
+	                    return scaleIdentity.value(row[scaleIdentity.dim], row);
+	                },
+	                xi: function xi(d) {
+	                    return scaleX.value(d[scaleX.dim]);
+	                },
+	                yi: function yi(d) {
+	                    return scaleY.value(d[scaleY.dim]);
+	                },
+	                y0: function y0() {
+	                    return _y;
+	                }
+	            };
+	        }
+	    }, {
+	        key: 'getGrammarRules',
+	        value: function getGrammarRules() {
+	            return this.decorators.filter(function (x) {
+	                return x;
 	            });
 	        }
 	    }, {
-	        key: 'evalGrammarRules',
-	        value: function evalGrammarRules(grammarModel) {
-	            var args = {
-	                dataSource: this.data()
-	            };
-
-	            return this.decorators.filter(function (x) {
-	                return x;
-	            }).reduce(function (model, rule) {
-	                return _cartesianGrammar.CartesianGrammar.compose(model, rule(model, args));
-	            }, grammarModel);
-	        }
-	    }, {
-	        key: 'adjustScales',
-	        value: function adjustScales(grammarModel) {
-	            var args = {
-	                dataSource: this.data()
-	            };
-
+	        key: 'getAdjustScalesRules',
+	        value: function getAdjustScalesRules() {
 	            return (this.adjusters || []).filter(function (x) {
 	                return x;
-	            }).reduce(function (model, rule) {
-	                return _cartesianGrammar.CartesianGrammar.compose(model, rule(model, args));
-	            }, grammarModel);
+	            });
 	        }
 	    }, {
 	        key: 'createScreenModel',
 	        value: function createScreenModel(grammarModel) {
-	            return grammarModel.toScreenModel();
+	            var flip = grammarModel.flip;
+	            var iff = function iff(statement, yes, no) {
+	                return statement ? yes : no;
+	            };
+	            return {
+	                flip: flip,
+	                id: grammarModel.id,
+	                x: iff(flip, grammarModel.yi, grammarModel.xi),
+	                y: iff(flip, grammarModel.xi, grammarModel.yi),
+	                x0: iff(flip, grammarModel.y0, grammarModel.xi),
+	                y0: iff(flip, grammarModel.xi, grammarModel.y0),
+	                size: grammarModel.size,
+	                group: grammarModel.group,
+	                order: grammarModel.order,
+	                label: grammarModel.label,
+	                color: function color(d) {
+	                    return grammarModel.scaleColor.toColor(grammarModel.color(d));
+	                },
+	                class: function _class(d) {
+	                    return grammarModel.scaleColor.toClass(grammarModel.color(d));
+	                },
+	                model: grammarModel,
+	                toFibers: function toFibers() {
+	                    var data = grammarModel.data();
+	                    var groups = _utils.utils.groupBy(data, grammarModel.group);
+	                    return Object.keys(groups).sort(function (a, b) {
+	                        return grammarModel.order(a) - grammarModel.order(b);
+	                    }).reduce(function (memo, k) {
+	                        return memo.concat([groups[k]]);
+	                    }, []);
+	                }
+	            };
 	        }
 	    }, {
 	        key: 'drawFrames',
@@ -1715,14 +1792,14 @@ return /******/ (function(modules) { // webpackBootstrap
 	            return {};
 	        }
 	    }, {
-	        key: 'evalGrammarRules',
-	        value: function evalGrammarRules(initialModel) {
-	            return initialModel;
+	        key: 'getGrammarRules',
+	        value: function getGrammarRules() {
+	            return [];
 	        }
 	    }, {
-	        key: 'adjustScales',
-	        value: function adjustScales(grammarModel) {
-	            // return nothing
+	        key: 'getAdjustScalesRules',
+	        value: function getAdjustScalesRules() {
+	            return [];
 	        }
 	    }, {
 	        key: 'createScreenModel',
@@ -1960,9 +2037,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	Object.defineProperty(exports, "__esModule", {
 	    value: true
 	});
-	exports.CartesianGrammar = undefined;
-
-	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+	exports.GrammarRegistry = undefined;
 
 	var _utils = __webpack_require__(3);
 
@@ -1970,546 +2045,433 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr2 = Array(arr.length); i < arr.length; i++) { arr2[i] = arr[i]; } return arr2; } else { return Array.from(arr); } }
 
-	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+	var rules = {};
+	var GrammarRegistry = {
+	    get: function get(name) {
+	        return rules[name];
+	    },
+	    reg: function reg(name, func) {
+	        rules[name] = func;
+	        return this;
+	    }
+	};
 
-	var delimiter = '(@taucharts@)';
+	GrammarRegistry.reg('identity', function () {
+	    return {};
+	}).reg('flip', function (model) {
+	    var baseScale = model.scaleY;
+	    var valsScale = model.scaleX;
 
-	var CartesianGrammar = exports.CartesianGrammar = function () {
-	    function CartesianGrammar(model) {
-	        var _this = this;
+	    var k = -0.5;
+	    var ys = valsScale.domain();
+	    var min = valsScale.discrete ? ys[0] : Math.max(0, Math.min.apply(Math, _toConsumableArray(ys))); // NOTE: max also can be below 0
+	    var _y = valsScale.value(min) + valsScale.stepSize(min) * k;
 
-	        _classCallCheck(this, CartesianGrammar);
-
-	        var createFunc = function createFunc(x) {
-	            return function () {
-	                return x;
-	            };
-	        };
-	        this.scaleX = model.scaleX;
-	        this.scaleY = model.scaleY;
-	        this.scaleSize = model.scaleSize;
-	        this.scaleLabel = model.scaleLabel;
-	        this.scaleColor = model.scaleColor;
-	        this.scaleSplit = model.scaleSplit;
-	        this.scaleIdentity = model.scaleIdentity;
-
-	        var sid = this.scaleIdentity;
-	        this.flip = model.flip || false;
-	        this.id = model.id || function (row) {
-	            return sid.value(row[sid.dim], row);
-	        };
-	        this.xi = model.xi || function (d) {
-	            return model.scaleX.value(d[model.scaleX.dim]);
-	        };
-	        this.yi = model.yi || function (d) {
-	            return model.scaleY.value(d[model.scaleY.dim]);
-	        };
-	        this.color = model.color || function (d) {
-	            return model.scaleColor.value(d[model.scaleColor.dim]);
-	        };
-	        this.label = model.label || function (d) {
-	            return model.scaleLabel.value(d[model.scaleLabel.dim]);
-	        };
-	        this.group = model.group || function (d) {
-	            return '' + d[model.scaleColor.dim] + delimiter + d[model.scaleSplit.dim];
-	        };
-	        this.size = model.size || function (d) {
-	            return model.scaleSize.value(d[model.scaleSize.dim]);
-	        };
-
-	        if (model.y0) {
-	            this.y0 = model.y0;
-	        } else {
-	            (function () {
-	                var ys = model.scaleY.domain();
-	                var min = model.scaleY.discrete ? ys[0] : Math.max(0, Math.min.apply(Math, _toConsumableArray(ys))); // NOTE: max also can be below 0
-
-	                var y0 = model.scaleY.value(min) + model.scaleY.stepSize(min) * 0.5;
-	                _this.y0 = function () {
-	                    return y0;
-	                };
-	            })();
+	    return {
+	        flip: true,
+	        scaleX: baseScale,
+	        scaleY: valsScale,
+	        xi: function xi(d) {
+	            return baseScale.value(d[baseScale.dim]);
+	        },
+	        yi: function yi(d) {
+	            return valsScale.value(d[valsScale.dim]);
+	        },
+	        y0: function y0() {
+	            return _y;
 	        }
+	    };
+	}).reg('positioningByColor', function (model) {
 
-	        this.order = model.order || createFunc(0);
-	        this.data = model.data || function () {
-	            return [];
+	    var method = model.scaleX.discrete ? function (model) {
+	        var baseScale = model.scaleX;
+	        var scaleColor = model.scaleColor;
+	        var categories = scaleColor.discrete ? scaleColor.domain() : scaleColor.originalSeries().sort(function (a, b) {
+	            return a - b;
+	        });
+	        var categoriesCount = categories.length || 1;
+	        // -1 (not found) to 0
+	        var colorIndexScale = function colorIndexScale(d) {
+	            return Math.max(0, categories.indexOf(d[model.scaleColor.dim]));
 	        };
+	        var space = function space(d) {
+	            return baseScale.stepSize(d[baseScale.dim]) * (categoriesCount / (1 + categoriesCount));
+	        };
+
+	        return {
+	            xi: function xi(d) {
+	                var availableSpace = space(d);
+	                var absTickStart = model.xi(d) - availableSpace / 2;
+	                var middleStep = availableSpace / (categoriesCount + 1);
+	                var relSegmStart = (1 + colorIndexScale(d)) * middleStep;
+	                return absTickStart + relSegmStart;
+	            }
+	        };
+	    } : function () {
+	        return {};
+	    };
+
+	    return method(model);
+	}).reg('groupOrderByAvg', function (model) {
+
+	    var dataSource = model.data();
+
+	    var avg = function avg(arr) {
+	        return arr.map(model.yi).reduce(function (sum, i) {
+	            return sum + i;
+	        }, 0) / arr.length;
+	    };
+
+	    var groups = dataSource.reduce(function (memo, row) {
+	        var k = model.group(row);
+	        memo[k] = memo[k] || [];
+	        memo[k].push(row);
+	        return memo;
+	    }, {});
+
+	    var _order = Object.keys(groups).map(function (k) {
+	        return [k, avg(groups[k])];
+	    }).sort(function (a, b) {
+	        return a[1] - b[1];
+	    }).map(function (r) {
+	        return r[0];
+	    });
+
+	    return {
+	        order: function order(group) {
+	            var i = _order.indexOf(group);
+	            return i < 0 ? Number.MAX_VALUE : i;
+	        }
+	    };
+	}).reg('stack', function (model) {
+
+	    var dataSource = model.data();
+
+	    var xScale = model.scaleX;
+	    var yScale = model.scaleY;
+
+	    if (yScale.discrete || yScale.domain().some(function (x) {
+	        return typeof x !== 'number';
+	    })) {
+	        throw new _error.TauChartError('Stacked field [' + yScale.dim + '] should be a number', _error.errorCodes.STACKED_FIELD_NOT_NUMBER, { field: yScale.dim });
 	    }
 
-	    _createClass(CartesianGrammar, [{
-	        key: 'toScreenModel',
-	        value: function toScreenModel() {
-	            var flip = this.flip;
-	            var iff = function iff(statement, yes, no) {
-	                return statement ? yes : no;
-	            };
-	            var grammarModel = this;
-	            return {
-	                flip: flip,
-	                id: grammarModel.id,
-	                x: iff(flip, grammarModel.yi, grammarModel.xi),
-	                y: iff(flip, grammarModel.xi, grammarModel.yi),
-	                x0: iff(flip, grammarModel.y0, grammarModel.xi),
-	                y0: iff(flip, grammarModel.xi, grammarModel.y0),
-	                size: grammarModel.size,
-	                group: grammarModel.group,
-	                order: grammarModel.order,
-	                label: grammarModel.label,
-	                color: function color(d) {
-	                    return grammarModel.scaleColor.toColor(grammarModel.color(d));
-	                },
-	                class: function _class(d) {
-	                    return grammarModel.scaleColor.toClass(grammarModel.color(d));
-	                },
-	                model: grammarModel,
-	                toFibers: function toFibers() {
-	                    var data = grammarModel.data();
-	                    var groups = _utils.utils.groupBy(data, grammarModel.group);
-	                    return Object.keys(groups).sort(function (a, b) {
-	                        return grammarModel.order(a) - grammarModel.order(b);
-	                    }).reduce(function (memo, k) {
-	                        return memo.concat([groups[k]]);
-	                    }, []);
-	                }
-	            };
-	        }
-	    }], [{
-	        key: 'compose',
-	        value: function compose(prev) {
-	            var updates = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
+	    var createFnStack = function createFnStack(totalState) {
+	        return function (d) {
+	            var x = d[xScale.dim];
+	            var y = d[yScale.dim];
 
-	            return Object.keys(updates).reduce(function (memo, propName) {
-	                memo[propName] = updates[propName];
-	                return memo;
-	            }, new CartesianGrammar(prev));
+	            var state = y >= 0 ? totalState.positive : totalState.negative;
+
+	            var prevStack = state[x] || 0;
+	            var nextStack = prevStack + y;
+	            state[x] = nextStack;
+
+	            return { nextStack: nextStack, prevStack: prevStack };
+	        };
+	    };
+
+	    var stackYi = createFnStack({ positive: {}, negative: {} });
+	    var stackY0 = createFnStack({ positive: {}, negative: {} });
+
+	    var memoize = function memoize(fn) {
+	        return _utils.utils.memoize(fn, model.id);
+	    };
+
+	    var trackedMinY = Number.MAX_VALUE;
+	    var trackedMaxY = Number.MIN_VALUE;
+	    var trackAndEval = function trackAndEval(y) {
+	        trackedMinY = y < trackedMinY ? y : trackedMinY;
+	        trackedMaxY = y > trackedMaxY ? y : trackedMaxY;
+	        return yScale.value(y);
+	    };
+
+	    var nextYi = memoize(function (d) {
+	        return trackAndEval(stackYi(d).nextStack);
+	    });
+	    var nextY0 = memoize(function (d) {
+	        return trackAndEval(stackY0(d).prevStack);
+	    });
+	    var nextGroup = function nextGroup(row) {
+	        return model.group(row) + '/' + (row[yScale.dim] >= 0 ? 1 : -1);
+	    };
+
+	    var groups = _utils.utils.groupBy(dataSource, nextGroup);
+	    var nextData = Object.keys(groups).sort(function (a, b) {
+	        return model.order(a) - model.order(b);
+	    }).reduce(function (memo, k) {
+	        return memo.concat(groups[k]);
+	    }, []);
+
+	    nextData.forEach(function (row) {
+	        nextYi(row);
+	        nextY0(row);
+	    });
+
+	    yScale.fixup(function (yScaleConfig) {
+
+	        var newConf = {};
+
+	        if (!yScaleConfig.hasOwnProperty('max') || yScaleConfig.max < trackedMaxY) {
+	            newConf.max = trackedMaxY;
 	        }
+
+	        if (!yScaleConfig.hasOwnProperty('min') || yScaleConfig.min > trackedMinY) {
+	            newConf.min = trackedMinY;
+	        }
+
+	        return newConf;
+	    });
+
+	    return {
+	        group: nextGroup,
+	        data: function data() {
+	            return nextData;
+	        },
+	        yi: nextYi,
+	        y0: nextY0
+	    };
+	}).reg('size_distribute_evenly', function (model, _ref) {
+	    var minLimit = _ref.minLimit,
+	        maxLimit = _ref.maxLimit,
+	        defMin = _ref.defMin,
+	        defMax = _ref.defMax;
+
+
+	    var dataSource = model.data();
+
+	    var asc = function asc(a, b) {
+	        return a - b;
+	    };
+
+	    var stepSize = model.scaleX.discrete ? model.scaleX.stepSize() / 2 : Number.MAX_VALUE;
+
+	    var xs = dataSource.map(function (row) {
+	        return model.xi(row);
+	    }).sort(asc);
+
+	    var prev = xs[0];
+	    var diff = xs.slice(1).map(function (curr) {
+	        var diff = curr - prev;
+	        prev = curr;
+	        return diff;
+	    }).filter(function (diff) {
+	        return diff > 0;
+	    }).sort(asc).concat(Number.MAX_VALUE)[0];
+
+	    var minDiff = Math.min(diff, stepSize);
+
+	    var currMinSize = typeof minLimit === 'number' ? minLimit : defMin;
+	    var curr = {
+	        minSize: currMinSize,
+	        maxSize: typeof maxLimit === 'number' ? maxLimit : Math.max(currMinSize, Math.min(defMax, minDiff))
+	    };
+
+	    model.scaleSize.fixup(function (prev) {
+
+	        var next = {};
+
+	        if (!prev.fixed) {
+	            next.fixed = true;
+	            next.minSize = curr.minSize;
+	            next.maxSize = curr.maxSize;
+	        } else {
+	            if (prev.maxSize > curr.maxSize) {
+	                next.maxSize = curr.maxSize;
+	            }
+	        }
+
+	        return next;
+	    });
+
+	    return {};
+	}).reg('adjustStaticSizeScale', function (model, _ref2) {
+	    var minLimit = _ref2.minLimit,
+	        maxLimit = _ref2.maxLimit,
+	        defMin = _ref2.defMin,
+	        defMax = _ref2.defMax;
+
+
+	    var curr = {
+	        minSize: typeof minLimit === 'number' ? minLimit : defMin,
+	        maxSize: typeof maxLimit === 'number' ? maxLimit : defMax
+	    };
+
+	    model.scaleSize.fixup(function (prev) {
+
+	        var next = {};
+
+	        if (!prev.fixed) {
+	            next.fixed = true;
+	            next.minSize = curr.minSize;
+	            next.maxSize = curr.maxSize;
+	        }
+
+	        return next;
+	    });
+
+	    return {};
+	}).reg('adjustSigmaSizeScale', function (model, _ref3) {
+	    var minLimit = _ref3.minLimit,
+	        maxLimit = _ref3.maxLimit,
+	        defMin = _ref3.defMin,
+	        defMax = _ref3.defMax;
+
+
+	    var dataSource = model.data();
+
+	    var asc = function asc(a, b) {
+	        return a - b;
+	    };
+
+	    var xs = dataSource.map(function (row) {
+	        return model.xi(row);
+	    }).sort(asc);
+
+	    var prev = xs[0];
+	    var diffX = xs.slice(1).map(function (curr) {
+	        var diff = curr - prev;
+	        prev = curr;
+	        return diff;
+	    }).filter(function (diff) {
+	        return diff > 0;
+	    }).sort(asc).concat(Number.MAX_VALUE)[0];
+
+	    var stepSize = model.scaleX.discrete ? model.scaleX.stepSize() / 2 : Number.MAX_VALUE;
+
+	    var maxSize = Math.min(diffX, stepSize);
+
+	    var currMinSize = typeof minLimit === 'number' ? minLimit : defMin;
+	    var maxSizeLimit = typeof maxLimit === 'number' ? maxLimit : defMax;
+
+	    var sigma = function sigma(x) {
+	        var Ab = (currMinSize + maxSizeLimit) / 2;
+	        var At = maxSizeLimit;
+	        var X0 = currMinSize;
+	        var Wx = 0.5;
+
+	        return Math.round(Ab + (At - Ab) / (1 + Math.exp(-(x - X0) / Wx)));
+	    };
+
+	    var curr = {
+	        minSize: currMinSize,
+	        maxSize: Math.max(currMinSize, Math.min(maxSizeLimit, sigma(maxSize)))
+	    };
+
+	    model.scaleSize.fixup(function (prev) {
+
+	        var next = {};
+
+	        if (!prev.fixed) {
+	            next.fixed = true;
+	            next.minSize = curr.minSize;
+	            next.maxSize = curr.maxSize;
+	        } else {
+	            if (prev.maxSize > curr.maxSize) {
+	                next.maxSize = curr.maxSize;
+	            }
+	        }
+
+	        return next;
+	    });
+
+	    return {};
+	}).reg('avoidScalesOverflow', function (model, _ref4) {
+	    var sizeDirection = _ref4.sizeDirection;
+
+
+	    // TODO: Don't ignore logarithmic scale,
+	    // add scale method for extending it's domain.
+	    var shouldIgnoreScale = function shouldIgnoreScale(scale, direction) {
+	        return !scale || scale.discrete || scale.scaleType === 'logarithmic' || sizeDirection.indexOf(direction) < 0;
+	    };
+
+	    var ignoreX = shouldIgnoreScale(model.scaleX, 'x');
+	    var ignoreY = shouldIgnoreScale(model.scaleY, 'y');
+
+	    if (ignoreX && ignoreY) {
+	        return {};
+	    }
+
+	    var plannedMinSize;
+	    var plannedMaxSize;
+	    model.scaleSize.fixup(function (prev) {
+	        plannedMinSize = prev.minSize;
+	        plannedMaxSize = prev.maxSize;
+	        return prev;
+	    });
+
+	    var border = model.data().reduce(function (memo, row) {
+	        var s = model.size(row);
+	        var r = (s >= plannedMinSize ? s : plannedMinSize + s * (plannedMaxSize - plannedMinSize)) / 2;
+	        var x, y;
+	        if (!ignoreX) {
+	            x = model.xi(row);
+	            memo.left = Math.min(memo.left, x - r);
+	            memo.right = Math.max(memo.right, x + r);
+	        }
+	        if (!ignoreY) {
+	            y = model.yi(row);
+	            memo.top = Math.min(memo.top, y - r);
+	            memo.bottom = Math.max(memo.bottom, y + r);
+	        }
+	        return memo;
 	    }, {
-	        key: 'decorator_identity',
-	        value: function decorator_identity(model) {
-	            return model;
-	        }
-	    }, {
-	        key: 'decorator_flip',
-	        value: function decorator_flip(model) {
+	        top: Number.MAX_VALUE,
+	        right: -Number.MAX_VALUE,
+	        bottom: -Number.MAX_VALUE,
+	        left: Number.MAX_VALUE
+	    });
 
-	            var baseScale = model.scaleY;
-	            var valsScale = model.scaleX;
+	    var fixScale = function fixScale(scale, start, end, flip) {
 
-	            var k = -0.5;
-	            var ys = valsScale.domain();
-	            var min = valsScale.discrete ? ys[0] : Math.max(0, Math.min.apply(Math, _toConsumableArray(ys))); // NOTE: max also can be below 0
-	            var _y = valsScale.value(min) + valsScale.stepSize(min) * k;
+	        var domain = scale.domain();
+	        var length = Math.abs(scale.value(domain[1]) - scale.value(domain[0]));
+	        var koeff = (domain[1] - domain[0]) / length;
 
-	            return {
-	                flip: true,
-	                scaleX: baseScale,
-	                scaleY: valsScale,
-	                xi: function xi(d) {
-	                    return baseScale.value(d[baseScale.dim]);
-	                },
-	                yi: function yi(d) {
-	                    return valsScale.value(d[valsScale.dim]);
-	                },
-	                y0: function y0() {
-	                    return _y;
-	                }
-	            };
-	        }
-	    }, {
-	        key: 'decorator_positioningByColor',
-	        value: function decorator_positioningByColor(model) {
+	        var _startPad = Math.max(0, -start);
+	        var _endPad = Math.max(0, end - length);
 
-	            var method = model.scaleX.discrete ? CartesianGrammar.decorator_discrete_positioningByColor : CartesianGrammar.decorator_identity;
+	        var startPad = model.flip ? _endPad : _startPad;
+	        var endPad = model.flip ? _startPad : _endPad;
 
-	            return method(model);
-	        }
-	    }, {
-	        key: 'decorator_discrete_positioningByColor',
-	        value: function decorator_discrete_positioningByColor(model) {
-	            var baseScale = model.scaleX;
-	            var scaleColor = model.scaleColor;
-	            var categories = scaleColor.discrete ? scaleColor.domain() : scaleColor.originalSeries().sort(function (a, b) {
-	                return a - b;
-	            });
-	            var categoriesCount = categories.length || 1;
-	            var colorIndexScale = function colorIndexScale(d) {
-	                return Math.max(0, categories.indexOf(d[model.scaleColor.dim]));
-	            }; // -1 (not found) to 0
-	            var space = function space(d) {
-	                return baseScale.stepSize(d[baseScale.dim]) * (categoriesCount / (1 + categoriesCount));
-	            };
+	        var startVal = Number(domain[0]) - (flip ? endPad : startPad) * koeff;
+	        var endVal = Number(domain[1]) + (flip ? startPad : endPad) * koeff;
 
-	            return {
-	                xi: function xi(d) {
-	                    var availableSpace = space(d);
-	                    var absTickStart = model.xi(d) - availableSpace / 2;
-	                    var middleStep = availableSpace / (categoriesCount + 1);
-	                    var relSegmStart = (1 + colorIndexScale(d)) * middleStep;
-	                    return absTickStart + relSegmStart;
-	                }
-	            };
-	        }
-	    }, {
-	        key: 'decorator_groupOrderByColor',
-	        value: function decorator_groupOrderByColor(model) {
-	            var _order = model.scaleColor.domain();
-	            return {
-	                order: function order(group) {
-	                    var color = group.split(delimiter)[0];
-	                    var i = _order.indexOf(color);
-	                    return i < 0 ? Number.MAX_VALUE : i;
-	                }
-	            };
-	        }
-	    }, {
-	        key: 'decorator_groupOrderByAvg',
-	        value: function decorator_groupOrderByAvg(model) {
-
-	            var dataSource = model.data();
-
-	            var avg = function avg(arr) {
-	                return arr.map(model.yi).reduce(function (sum, i) {
-	                    return sum + i;
-	                }, 0) / arr.length;
-	            };
-
-	            var groups = dataSource.reduce(function (memo, row) {
-	                var k = model.group(row);
-	                memo[k] = memo[k] || [];
-	                memo[k].push(row);
-	                return memo;
-	            }, {});
-
-	            var _order2 = Object.keys(groups).map(function (k) {
-	                return [k, avg(groups[k])];
-	            }).sort(function (a, b) {
-	                return a[1] - b[1];
-	            }).map(function (r) {
-	                return r[0];
-	            });
-
-	            return {
-	                order: function order(group) {
-	                    var i = _order2.indexOf(group);
-	                    return i < 0 ? Number.MAX_VALUE : i;
-	                }
-	            };
-	        }
-	    }, {
-	        key: 'decorator_stack',
-	        value: function decorator_stack(model) {
-
-	            var dataSource = model.data();
-
-	            var xScale = model.scaleX;
-	            var yScale = model.scaleY;
-
-	            if (yScale.discrete || yScale.domain().some(function (x) {
-	                return typeof x !== 'number';
-	            })) {
-	                throw new _error.TauChartError('Stacked field [' + yScale.dim + '] should be a number', _error.errorCodes.STACKED_FIELD_NOT_NUMBER, { field: yScale.dim });
+	        scale.fixup(function (prev) {
+	            var next = {};
+	            if (!prev.fixed) {
+	                next.fixed = true;
+	                next.min = startVal;
+	                next.max = endVal;
+	                next.nice = false;
+	            } else {
+	                next.min = prev.min > startVal ? next.min : prev.min;
+	                next.max = prev.max < endVal ? next.max : prev.max;
 	            }
 
-	            var createFnStack = function createFnStack(totalState) {
-	                return function (d) {
-	                    var x = d[xScale.dim];
-	                    var y = d[yScale.dim];
-
-	                    var state = y >= 0 ? totalState.positive : totalState.negative;
-
-	                    var prevStack = state[x] || 0;
-	                    var nextStack = prevStack + y;
-	                    state[x] = nextStack;
-
-	                    return { nextStack: nextStack, prevStack: prevStack };
-	                };
-	            };
-
-	            var stackYi = createFnStack({ positive: {}, negative: {} });
-	            var stackY0 = createFnStack({ positive: {}, negative: {} });
-
-	            var memoize = function memoize(fn) {
-	                return _utils.utils.memoize(fn, model.id);
-	            };
-
-	            var trackedMinY = Number.MAX_VALUE;
-	            var trackedMaxY = Number.MIN_VALUE;
-	            var trackAndEval = function trackAndEval(y) {
-	                trackedMinY = y < trackedMinY ? y : trackedMinY;
-	                trackedMaxY = y > trackedMaxY ? y : trackedMaxY;
-	                return yScale.value(y);
-	            };
-
-	            var nextYi = memoize(function (d) {
-	                return trackAndEval(stackYi(d).nextStack);
-	            });
-	            var nextY0 = memoize(function (d) {
-	                return trackAndEval(stackY0(d).prevStack);
-	            });
-	            var nextGroup = function nextGroup(row) {
-	                return model.group(row) + '/' + (row[yScale.dim] >= 0 ? 1 : -1);
-	            };
-
-	            var groups = _utils.utils.groupBy(dataSource, nextGroup);
-	            var nextData = Object.keys(groups).sort(function (a, b) {
-	                return model.order(a) - model.order(b);
-	            }).reduce(function (memo, k) {
-	                return memo.concat(groups[k]);
-	            }, []);
-
-	            nextData.forEach(function (row) {
-	                nextYi(row);
-	                nextY0(row);
-	            });
-
-	            yScale.fixup(function (yScaleConfig) {
-
-	                var newConf = {};
-
-	                if (!yScaleConfig.hasOwnProperty('max') || yScaleConfig.max < trackedMaxY) {
-	                    newConf.max = trackedMaxY;
-	                }
-
-	                if (!yScaleConfig.hasOwnProperty('min') || yScaleConfig.min > trackedMinY) {
-	                    newConf.min = trackedMinY;
-	                }
-
-	                return newConf;
-	            });
-
-	            return {
-	                group: nextGroup,
-	                data: function data() {
-	                    return nextData;
-	                },
-	                yi: nextYi,
-	                y0: nextY0
-	            };
-	        }
-	    }, {
-	        key: 'decorator_size_distribute_evenly',
-	        value: function decorator_size_distribute_evenly(model, _ref) {
-	            var minLimit = _ref.minLimit,
-	                maxLimit = _ref.maxLimit,
-	                defMin = _ref.defMin,
-	                defMax = _ref.defMax;
-
-
-	            var dataSource = model.data();
-
-	            var asc = function asc(a, b) {
-	                return a - b;
-	            };
-
-	            var stepSize = model.scaleX.discrete ? model.scaleX.stepSize() / 2 : Number.MAX_VALUE;
-
-	            var xs = dataSource.map(function (row) {
-	                return model.xi(row);
-	            }).sort(asc);
-
-	            var prev = xs[0];
-	            var diff = xs.slice(1).map(function (curr) {
-	                var diff = curr - prev;
-	                prev = curr;
-	                return diff;
-	            }).filter(function (diff) {
-	                return diff > 0;
-	            }).sort(asc).concat(Number.MAX_VALUE)[0];
-
-	            var minDiff = Math.min(diff, stepSize);
-
-	            var currMinSize = typeof minLimit === 'number' ? minLimit : defMin;
-	            var curr = {
-	                minSize: currMinSize,
-	                maxSize: typeof maxLimit === 'number' ? maxLimit : Math.max(currMinSize, Math.min(defMax, minDiff))
-	            };
-
-	            model.scaleSize.fixup(function (prev) {
-
-	                var next = {};
-
-	                if (!prev.fixed) {
-	                    next.fixed = true;
-	                    next.minSize = curr.minSize;
-	                    next.maxSize = curr.maxSize;
-	                } else {
-	                    if (prev.maxSize > curr.maxSize) {
-	                        next.maxSize = curr.maxSize;
-	                    }
-	                }
-
-	                return next;
-	            });
-
-	            return {};
-	        }
-	    }, {
-	        key: 'adjustStaticSizeScale',
-	        value: function adjustStaticSizeScale(model, _ref2) {
-	            var minLimit = _ref2.minLimit,
-	                maxLimit = _ref2.maxLimit,
-	                defMin = _ref2.defMin,
-	                defMax = _ref2.defMax;
-
-
-	            var curr = {
-	                minSize: typeof minLimit === 'number' ? minLimit : defMin,
-	                maxSize: typeof maxLimit === 'number' ? maxLimit : defMax
-	            };
-
-	            model.scaleSize.fixup(function (prev) {
-
-	                var next = {};
-
-	                if (!prev.fixed) {
-	                    next.fixed = true;
-	                    next.minSize = curr.minSize;
-	                    next.maxSize = curr.maxSize;
-	                }
-
-	                return next;
-	            });
-
-	            return {};
-	        }
-	    }, {
-	        key: 'adjustSigmaSizeScale',
-	        value: function adjustSigmaSizeScale(model, _ref3) {
-	            var minLimit = _ref3.minLimit,
-	                maxLimit = _ref3.maxLimit,
-	                defMin = _ref3.defMin,
-	                defMax = _ref3.defMax;
-
-
-	            var dataSource = model.data();
-
-	            var asc = function asc(a, b) {
-	                return a - b;
-	            };
-
-	            var xs = dataSource.map(function (row) {
-	                return model.xi(row);
-	            }).sort(asc);
-
-	            var prev = xs[0];
-	            var diffX = xs.slice(1).map(function (curr) {
-	                var diff = curr - prev;
-	                prev = curr;
-	                return diff;
-	            }).filter(function (diff) {
-	                return diff > 0;
-	            }).sort(asc).concat(Number.MAX_VALUE)[0];
-
-	            var stepSize = model.scaleX.discrete ? model.scaleX.stepSize() / 2 : Number.MAX_VALUE;
-
-	            var maxSize = Math.min(diffX, stepSize);
-
-	            var currMinSize = typeof minLimit === 'number' ? minLimit : defMin;
-	            var maxSizeLimit = typeof maxLimit === 'number' ? maxLimit : defMax;
-
-	            var sigma = function sigma(x) {
-	                var Ab = (currMinSize + maxSizeLimit) / 2;
-	                var At = maxSizeLimit;
-	                var X0 = currMinSize;
-	                var Wx = 0.5;
-
-	                return Math.round(Ab + (At - Ab) / (1 + Math.exp(-(x - X0) / Wx)));
-	            };
-
-	            var curr = {
-	                minSize: currMinSize,
-	                maxSize: Math.max(currMinSize, Math.min(maxSizeLimit, sigma(maxSize)))
-	            };
-
-	            model.scaleSize.fixup(function (prev) {
-
-	                var next = {};
-
-	                if (!prev.fixed) {
-	                    next.fixed = true;
-	                    next.minSize = curr.minSize;
-	                    next.maxSize = curr.maxSize;
-	                } else {
-	                    if (prev.maxSize > curr.maxSize) {
-	                        next.maxSize = curr.maxSize;
-	                    }
-	                }
-
-	                return next;
-	            });
-
-	            return {};
-	        }
-	    }, {
-	        key: 'avoidBaseScaleOverflow',
-	        value: function avoidBaseScaleOverflow(model) {
-
-	            var dataSource = model.data();
-
-	            if (model.scaleX.discrete) {
-	                return {};
-	            }
-
-	            var plannedMaxSize;
-	            model.scaleSize.fixup(function (prev) {
-	                plannedMaxSize = prev.maxSize;
-	                return prev;
-	            });
-
-	            if (plannedMaxSize <= 10) {
-	                return {};
-	            }
-
-	            var xs = dataSource.map(function (row) {
-	                return model.xi(row);
-	            }).sort(function (a, b) {
-	                return a - b;
-	            });
-
-	            var domain = model.scaleX.domain();
-	            var length = Math.abs(model.scaleX.value(domain[1]) - model.scaleX.value(domain[0]));
-	            var koeff = (domain[1] - domain[0]) / length;
-
-	            var lPad = Math.abs(Math.min(0, xs[0] - plannedMaxSize / 2));
-	            var rPad = Math.abs(Math.min(0, length - (xs[xs.length - 1] + plannedMaxSize / 2)));
-
-	            var lxPad = model.flip ? rPad : lPad;
-	            var rxPad = model.flip ? lPad : rPad;
-
-	            var lVal = domain[0] - lxPad * koeff;
-	            var rVal = domain[1] - -1 * rxPad * koeff;
-
-	            model.scaleX.fixup(function (prev) {
-	                var next = {};
-	                if (!prev.fixed) {
-	                    next.fixed = true;
-	                    next.min = lVal;
-	                    next.max = rVal;
-	                } else {
-	                    if (prev.min > lVal) {
-	                        next.min = lVal;
-	                    }
-
-	                    if (prev.max < rVal) {
-	                        next.max = rVal;
-	                    }
-	                }
-
-	                return next;
-	            });
-
-	            var linearlyScaledMaxSize = plannedMaxSize * (1 - (lPad + rPad) / length) - 1;
-	            model.scaleSize.fixup(function () {
-	                return { maxSize: linearlyScaledMaxSize };
-	            });
-
-	            return {};
-	        }
-	    }]);
-
-	    return CartesianGrammar;
-	}();
+	            return next;
+	        });
+
+	        return length / (startPad + length + endPad);
+	    };
+
+	    var kx = ignoreX ? 1 : fixScale(model.scaleX, border.left, border.right, false);
+	    var ky = ignoreY ? 1 : fixScale(model.scaleY, border.top, border.bottom, true);
+
+	    var linearlyScaledMinSize = Math.min(plannedMinSize * kx, plannedMinSize * ky);
+	    var linearlyScaledMaxSize = Math.min(plannedMaxSize * kx, plannedMaxSize * ky);
+	    model.scaleSize.fixup(function () {
+	        return {
+	            minSize: linearlyScaledMinSize,
+	            maxSize: linearlyScaledMaxSize
+	        };
+	    });
+
+	    return {};
+	});
+
+	exports.GrammarRegistry = GrammarRegistry;
 
 /***/ },
 /* 8 */
@@ -2581,7 +2543,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	var _pathPoints2 = _interopRequireDefault(_pathPoints);
 
-	var _interpolatorsRegistry = __webpack_require__(12);
+	var _interpolatorsRegistry = __webpack_require__(13);
 
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
@@ -3143,7 +3105,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	        }
 
 	        var points = _utils.utils.unique(data, idGetter).map(pointConvertor);
-	        var interpolateLine = (0, _interpolatorsRegistry.getLineInterpolator)(interpolationType);
+	        var interpolateLine = (0, _interpolatorsRegistry.getLineInterpolator)(interpolationType) || (0, _interpolatorsRegistry.getLineInterpolator)('linear');
 	        var pointsTo = interpolateLine(points);
 	        var pointsFrom = this[pointStore];
 
@@ -3235,6 +3197,8 @@ return /******/ (function(modules) { // webpackBootstrap
 	exports.default = interpolatePathPoints;
 
 	var _utils = __webpack_require__(3);
+
+	var _bezier = __webpack_require__(12);
 
 	/**
 	 * Returns intermediate line or curve between two sources.
@@ -3380,7 +3344,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	        p = pointsFrom[i + 1];
 	        d = pointsFrom[i];
 	        if (!d.isCubicControl && !p.isCubicControl) {
-	            pointsFrom.splice(i + 1, 0, getBezierPoint(1 / 3, p, d), getBezierPoint(2 / 3, p, d));
+	            pointsFrom.splice(i + 1, 0, (0, _bezier.getBezierPoint)(1 / 3, p, d), (0, _bezier.getBezierPoint)(2 / 3, p, d));
 	            pointsFrom[i + 1].isCubicControl = true;
 	            pointsFrom[i + 2].isCubicControl = true;
 	        }
@@ -3615,9 +3579,6 @@ return /******/ (function(modules) { // webpackBootstrap
 	}
 
 	function interpolateValue(a, b, t) {
-	    if (a === undefined) {
-	        return b;
-	    }
 	    if (b === undefined) {
 	        return a;
 	    }
@@ -3632,7 +3593,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	        return b;
 	    }
 	    var c = {};
-	    var props = _utils.utils.unique(Object.keys(a), Object.keys(b));
+	    var props = Object.keys(a);
 	    props.forEach(function (k) {
 	        return c[k] = interpolateValue(a[k], b[k], t);
 	    });
@@ -3959,23 +3920,17 @@ return /******/ (function(modules) { // webpackBootstrap
 	        c1 = _ref11[2],
 	        p1 = _ref11[3];
 
-	    var r = _utils.utils.unique(Object.keys(p0), Object.keys(p1)).reduce(function (memo, k) {
-	        if (k === 'x' || k === 'y') {
-	            memo[k] = bezier(t, [p0[k], c0[k], c1[k], p1[k]]);
-	        } else if (k !== 'id') {
-	            memo[k] = interpolateValue(p0[k], p1[k], t);
-	        }
-	        return memo;
-	    }, {});
-	    var c2 = getBezierPoint(t, p0, c0);
-	    var c3 = getBezierPoint(t, p0, c0, c1);
-	    var c4 = getBezierPoint(t, c0, c1, p1);
-	    var c5 = getBezierPoint(t, c1, p1);
-	    [c2, c3, c4, c5].forEach(function (c) {
+	    var seg = (0, _bezier.splitCubicSegment)(t, p0, c0, c1, p1);
+	    [seg[1], seg[2], seg[4], seg[5]].forEach(function (c) {
 	        return c.isCubicControl = true;
 	    });
+	    Object.keys(p1).forEach(function (k) {
+	        if (k !== 'x' && k !== 'y' && k !== 'id') {
+	            seg[3][k] = interpolateValue(p0[k], p1[k], t);
+	        }
+	    });
 
-	    return [p0, c2, c3, r, c4, c5, p1];
+	    return seg;
 	}
 
 	function multipleSplitCubicSegment(ts, seg) {
@@ -3991,14 +3946,29 @@ return /******/ (function(modules) { // webpackBootstrap
 	    return result;
 	}
 
-	function bezier(t, p) {
-	    if (p.length === 2) {
-	        return p[0] * (1 - t) + p[1] * t;
+/***/ },
+/* 12 */
+/***/ function(module, exports) {
+
+	"use strict";
+
+	Object.defineProperty(exports, "__esModule", {
+	    value: true
+	});
+	exports.bezier = bezier;
+	exports.getBezierPoint = getBezierPoint;
+	exports.splitCubicSegment = splitCubicSegment;
+
+	function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr2 = Array(arr.length); i < arr.length; i++) { arr2[i] = arr[i]; } return arr2; } else { return Array.from(arr); } }
+
+	function bezier(t) {
+	    if ((arguments.length <= 1 ? 0 : arguments.length - 1) === 2) {
+	        return (arguments.length <= 1 ? undefined : arguments[1]) * (1 - t) + (arguments.length <= 2 ? undefined : arguments[2]) * t;
 	    }
-	    if (p.length === 3) {
-	        return p[0] * (1 - t) * (1 - t) + 2 * p[1] * (1 - t) * t + p[2] * t * t;
+	    if ((arguments.length <= 1 ? 0 : arguments.length - 1) === 3) {
+	        return (arguments.length <= 1 ? undefined : arguments[1]) * (1 - t) * (1 - t) + 2 * (arguments.length <= 2 ? undefined : arguments[2]) * (1 - t) * t + (arguments.length <= 3 ? undefined : arguments[3]) * t * t;
 	    }
-	    return p[0] * (1 - t) * (1 - t) * (1 - t) + 3 * p[1] * (1 - t) * (1 - t) * t + 3 * p[2] * (1 - t) * t * t + p[3] * t * t * t;
+	    return (arguments.length <= 1 ? undefined : arguments[1]) * (1 - t) * (1 - t) * (1 - t) + 3 * (arguments.length <= 2 ? undefined : arguments[2]) * (1 - t) * (1 - t) * t + 3 * (arguments.length <= 3 ? undefined : arguments[3]) * (1 - t) * t * t + (arguments.length <= 4 ? undefined : arguments[4]) * t * t * t;
 	}
 
 	function getBezierPoint(t) {
@@ -4006,18 +3976,31 @@ return /******/ (function(modules) { // webpackBootstrap
 	        p[_key - 1] = arguments[_key];
 	    }
 
+	    var x = p.map(function (p) {
+	        return p.x;
+	    });
+	    var y = p.map(function (p) {
+	        return p.y;
+	    });
+	    x.unshift(t);
+	    y.unshift(t);
 	    return {
-	        x: bezier(t, p.map(function (p) {
-	            return p.x;
-	        })),
-	        y: bezier(t, p.map(function (p) {
-	            return p.y;
-	        }))
+	        x: bezier.apply(undefined, _toConsumableArray(x)),
+	        y: bezier.apply(undefined, _toConsumableArray(y))
 	    };
 	}
 
+	function splitCubicSegment(t, p0, c0, c1, p1) {
+	    var c2 = getBezierPoint(t, p0, c0);
+	    var c3 = getBezierPoint(t, p0, c0, c1);
+	    var c4 = getBezierPoint(t, c0, c1, p1);
+	    var c5 = getBezierPoint(t, c1, p1);
+	    var m = getBezierPoint(t, c3, c4);
+	    return [p0, c2, c3, m, c4, c5, p1];
+	}
+
 /***/ },
-/* 12 */
+/* 13 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -4028,9 +4011,9 @@ return /******/ (function(modules) { // webpackBootstrap
 	exports.getLineInterpolator = getLineInterpolator;
 	exports.getInterpolatorSplineType = getInterpolatorSplineType;
 
-	var _smooth = __webpack_require__(13);
+	var _smooth = __webpack_require__(14);
 
-	var _step = __webpack_require__(14);
+	var _step = __webpack_require__(15);
 
 	var polylineInterpolators = {
 	    linear: function linear(d) {
@@ -4057,16 +4040,19 @@ return /******/ (function(modules) { // webpackBootstrap
 	}
 
 /***/ },
-/* 13 */
-/***/ function(module, exports) {
+/* 14 */
+/***/ function(module, exports, __webpack_require__) {
 
-	"use strict";
+	'use strict';
 
 	Object.defineProperty(exports, "__esModule", {
 	    value: true
 	});
 	exports.getCurve = getCurve;
 	exports.getCurveKeepingExtremums = getCurveKeepingExtremums;
+
+	var _bezier = __webpack_require__(12);
+
 	/**
 	 * Returns smooth cubic spline.
 	 * Applicable to math functions.
@@ -4099,50 +4085,74 @@ return /******/ (function(modules) { // webpackBootstrap
 	    }
 
 	    var curve = new Array((points.length - 1) * 3 + 1);
-	    var p0, p1, p2, c1x, c1y, c2x, c2y, dx1, dy1, dx2, dy2, tan;
+	    var c0, p1, c3, c1x, c1y, c2x, c2y, qx, qy, qt, tan, dx1, dx2, kl;
 	    for (var i = 0; i < points.length; i++) {
 	        curve[i * 3] = points[i];
-	    }
-	    for (i = 2; i < points.length; i++) {
-	        p0 = points[i - 2];
-	        p1 = points[i - 1];
-	        p2 = points[i];
-	        c1x = interpolate(p0.x, p1.x, 2 / 3);
-	        c2x = interpolate(p1.x, p2.x, 1 / 3);
-	        dx1 = p1.x - p0.x;
-	        dy1 = p1.y - p0.y;
-	        dx2 = p2.x - p1.x;
-	        dy2 = p2.y - p1.y;
-	        if (dx1 * dx2 === 0) {
-	            c1y = p1.y - dy1 / 3;
-	            c2y = p1.y + dy2 / 3;
-	        } else if (limited && dy1 * dy2 <= 0) {
-	            c1y = p1.y;
-	            c2y = p1.y;
-	        } else {
-	            if (limited) {
-	                tan = (dy1 < 0 ? Math.max : Math.min)((dy1 / dx1 + dy2 / dx2) / 2, 3 * dy1 / dx1, 3 * dy2 / dx2);
-	            } else {
-	                tan = (dy1 / dx1 + dy2 / dx2) / 2;
-	            }
-
-	            c1y = p1.y - tan * dx1 / 3;
-	            c2y = p1.y + tan * dx2 / 3;
+	        if (i > 0) {
+	            curve[i * 3 - 2] = (0, _bezier.getBezierPoint)(1 / 3, points[i - 1], points[i]);
+	            curve[i * 3 - 1] = (0, _bezier.getBezierPoint)(2 / 3, points[i - 1], points[i]);
 	        }
-	        curve[i * 3 - 4] = { x: c1x, y: c1y };
-	        curve[i * 3 - 2] = { x: c2x, y: c2y };
 	    }
-	    curve[1] = {
-	        x: interpolate(curve[0].x, curve[3].x, 1 / 3),
-	        y: interpolate(curve[0].y, interpolate(curve[3].y, curve[2].y, 3 / 2), 2 / 3)
-	    };
-	    var last = curve.length - 1;
-	    curve[last - 1] = {
-	        x: interpolate(curve[last].x, curve[last - 3].x, 1 / 3),
-	        y: interpolate(curve[last].y, interpolate(curve[last - 3].y, curve[last - 2].y, 3 / 2), 2 / 3)
-	    };
+	    var result = curve.slice(0);
+	    for (var j = 0, last; j < 3; j++) {
+	        for (i = 6; i < result.length; i += 3) {
+	            c0 = result[i - 5];
+	            p1 = result[i - 3];
+	            c3 = result[i - 1];
+	            if ((p1.x - c0.x) * (c3.x - p1.x) * 1e12 < 1) {
+	                c1x = interpolate(c0.x, p1.x, 0.5);
+	                c2x = interpolate(p1.x, c3.x, 0.5);
+	                c1y = interpolate(c0.y, p1.y, 0.5);
+	                c2y = interpolate(p1.y, c3.y, 0.5);
+	            } else {
+	                qt = (p1.x - c0.x) / (c3.x - c0.x);
+	                qx = (p1.x - c0.x * (1 - qt) * (1 - qt) - c3.x * qt * qt) / (2 * (1 - qt) * qt);
+	                qy = (p1.y - c0.y * (1 - qt) * (1 - qt) - c3.y * qt * qt) / (2 * (1 - qt) * qt);
+	                c1x = interpolate(c0.x, qx, qt);
+	                c2x = interpolate(qx, c3.x, qt);
+	                c1y = interpolate(c0.y, qy, qt);
+	                c2y = interpolate(qy, c3.y, qt);
 
-	    return curve;
+	                if (limited) {
+	                    dx1 = p1.x - c1x;
+	                    dx2 = c2x - p1.x;
+	                    tan = (c2y - p1.y) / dx2;
+	                    if ((p1.y - c0.y) * (c3.y - p1.y) <= 0) {
+	                        tan = 0;
+	                    } else {
+	                        if (p1.y > c0.y === c2y > c3.y) {
+	                            kl = (c3.y - p1.y) / (c2y - p1.y);
+	                            dx2 = interpolate(dx2 * kl, dx2, 1 / (1 + Math.abs(kl)));
+	                            tan = (c3.y - p1.y) / dx2;
+	                        }
+	                        if (p1.y > c0.y === c1y < c0.y) {
+	                            kl = (p1.y - c0.y) / (p1.y - c1y);
+	                            dx1 = interpolate(dx1 * kl, dx1, 1 / (1 + Math.abs(kl)));
+	                            tan = (p1.y - c0.y) / dx1;
+	                        }
+	                    }
+	                    c1x = p1.x - dx1;
+	                    c2x = p1.x + dx2;
+	                    c1y = p1.y - tan * dx1;
+	                    c2y = p1.y + tan * dx2;
+	                }
+	            }
+	            curve[i - 4] = { x: c1x, y: c1y };
+	            curve[i - 2] = { x: c2x, y: c2y };
+	        }
+	        curve[1] = {
+	            x: interpolate(curve[0].x, curve[3].x, 1 / 3),
+	            y: interpolate(curve[0].y, interpolate(curve[3].y, curve[2].y, 3 / 2), 2 / 3)
+	        };
+	        last = curve.length - 1;
+	        curve[last - 1] = {
+	            x: interpolate(curve[last].x, curve[last - 3].x, 1 / 3),
+	            y: interpolate(curve[last].y, interpolate(curve[last - 3].y, curve[last - 2].y, 3 / 2), 2 / 3)
+	        };
+	        result = curve.slice(0);
+	    }
+
+	    return result;
 	}
 
 	function interpolate(a, b, t) {
@@ -4150,7 +4160,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	}
 
 /***/ },
-/* 14 */
+/* 15 */
 /***/ function(module, exports) {
 
 	"use strict";
@@ -4243,29 +4253,29 @@ return /******/ (function(modules) { // webpackBootstrap
 	}
 
 /***/ },
-/* 15 */
+/* 16 */
 /***/ function(module, exports, __webpack_require__) {
 
-	__webpack_require__(16);
 	__webpack_require__(17);
-	__webpack_require__(63);
-	module.exports = __webpack_require__(30).WeakMap;
+	__webpack_require__(18);
+	__webpack_require__(64);
+	module.exports = __webpack_require__(31).WeakMap;
 
 /***/ },
-/* 16 */
+/* 17 */
 /***/ function(module, exports) {
 
 	
 
 /***/ },
-/* 17 */
+/* 18 */
 /***/ function(module, exports, __webpack_require__) {
 
-	__webpack_require__(18);
-	var global        = __webpack_require__(29)
-	  , hide          = __webpack_require__(33)
-	  , Iterators     = __webpack_require__(21)
-	  , TO_STRING_TAG = __webpack_require__(60)('toStringTag');
+	__webpack_require__(19);
+	var global        = __webpack_require__(30)
+	  , hide          = __webpack_require__(34)
+	  , Iterators     = __webpack_require__(22)
+	  , TO_STRING_TAG = __webpack_require__(61)('toStringTag');
 
 	for(var collections = ['NodeList', 'DOMTokenList', 'MediaList', 'StyleSheetList', 'CSSRuleList'], i = 0; i < 5; i++){
 	  var NAME       = collections[i]
@@ -4276,20 +4286,20 @@ return /******/ (function(modules) { // webpackBootstrap
 	}
 
 /***/ },
-/* 18 */
+/* 19 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
-	var addToUnscopables = __webpack_require__(19)
-	  , step             = __webpack_require__(20)
-	  , Iterators        = __webpack_require__(21)
-	  , toIObject        = __webpack_require__(22);
+	var addToUnscopables = __webpack_require__(20)
+	  , step             = __webpack_require__(21)
+	  , Iterators        = __webpack_require__(22)
+	  , toIObject        = __webpack_require__(23);
 
 	// 22.1.3.4 Array.prototype.entries()
 	// 22.1.3.13 Array.prototype.keys()
 	// 22.1.3.29 Array.prototype.values()
 	// 22.1.3.30 Array.prototype[@@iterator]()
-	module.exports = __webpack_require__(26)(Array, 'Array', function(iterated, kind){
+	module.exports = __webpack_require__(27)(Array, 'Array', function(iterated, kind){
 	  this._t = toIObject(iterated); // target
 	  this._i = 0;                   // next index
 	  this._k = kind;                // kind
@@ -4315,13 +4325,13 @@ return /******/ (function(modules) { // webpackBootstrap
 	addToUnscopables('entries');
 
 /***/ },
-/* 19 */
+/* 20 */
 /***/ function(module, exports) {
 
 	module.exports = function(){ /* empty */ };
 
 /***/ },
-/* 20 */
+/* 21 */
 /***/ function(module, exports) {
 
 	module.exports = function(done, value){
@@ -4329,34 +4339,34 @@ return /******/ (function(modules) { // webpackBootstrap
 	};
 
 /***/ },
-/* 21 */
+/* 22 */
 /***/ function(module, exports) {
 
 	module.exports = {};
 
 /***/ },
-/* 22 */
+/* 23 */
 /***/ function(module, exports, __webpack_require__) {
 
 	// to indexed object, toObject with fallback for non-array-like ES3 strings
-	var IObject = __webpack_require__(23)
-	  , defined = __webpack_require__(25);
+	var IObject = __webpack_require__(24)
+	  , defined = __webpack_require__(26);
 	module.exports = function(it){
 	  return IObject(defined(it));
 	};
 
 /***/ },
-/* 23 */
+/* 24 */
 /***/ function(module, exports, __webpack_require__) {
 
 	// fallback for non-array-like ES3 and non-enumerable old V8 strings
-	var cof = __webpack_require__(24);
+	var cof = __webpack_require__(25);
 	module.exports = Object('z').propertyIsEnumerable(0) ? Object : function(it){
 	  return cof(it) == 'String' ? it.split('') : Object(it);
 	};
 
 /***/ },
-/* 24 */
+/* 25 */
 /***/ function(module, exports) {
 
 	var toString = {}.toString;
@@ -4366,7 +4376,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	};
 
 /***/ },
-/* 25 */
+/* 26 */
 /***/ function(module, exports) {
 
 	// 7.2.1 RequireObjectCoercible(argument)
@@ -4376,20 +4386,20 @@ return /******/ (function(modules) { // webpackBootstrap
 	};
 
 /***/ },
-/* 26 */
+/* 27 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
-	var LIBRARY        = __webpack_require__(27)
-	  , $export        = __webpack_require__(28)
-	  , redefine       = __webpack_require__(43)
-	  , hide           = __webpack_require__(33)
-	  , has            = __webpack_require__(44)
-	  , Iterators      = __webpack_require__(21)
-	  , $iterCreate    = __webpack_require__(45)
-	  , setToStringTag = __webpack_require__(59)
-	  , getPrototypeOf = __webpack_require__(61)
-	  , ITERATOR       = __webpack_require__(60)('iterator')
+	var LIBRARY        = __webpack_require__(28)
+	  , $export        = __webpack_require__(29)
+	  , redefine       = __webpack_require__(44)
+	  , hide           = __webpack_require__(34)
+	  , has            = __webpack_require__(45)
+	  , Iterators      = __webpack_require__(22)
+	  , $iterCreate    = __webpack_require__(46)
+	  , setToStringTag = __webpack_require__(60)
+	  , getPrototypeOf = __webpack_require__(62)
+	  , ITERATOR       = __webpack_require__(61)('iterator')
 	  , BUGGY          = !([].keys && 'next' in [].keys()) // Safari has buggy iterators w/o `next`
 	  , FF_ITERATOR    = '@@iterator'
 	  , KEYS           = 'keys'
@@ -4451,19 +4461,19 @@ return /******/ (function(modules) { // webpackBootstrap
 	};
 
 /***/ },
-/* 27 */
+/* 28 */
 /***/ function(module, exports) {
 
 	module.exports = true;
 
 /***/ },
-/* 28 */
+/* 29 */
 /***/ function(module, exports, __webpack_require__) {
 
-	var global    = __webpack_require__(29)
-	  , core      = __webpack_require__(30)
-	  , ctx       = __webpack_require__(31)
-	  , hide      = __webpack_require__(33)
+	var global    = __webpack_require__(30)
+	  , core      = __webpack_require__(31)
+	  , ctx       = __webpack_require__(32)
+	  , hide      = __webpack_require__(34)
 	  , PROTOTYPE = 'prototype';
 
 	var $export = function(type, name, source){
@@ -4523,7 +4533,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	module.exports = $export;
 
 /***/ },
-/* 29 */
+/* 30 */
 /***/ function(module, exports) {
 
 	// https://github.com/zloirock/core-js/issues/86#issuecomment-115759028
@@ -4532,18 +4542,18 @@ return /******/ (function(modules) { // webpackBootstrap
 	if(typeof __g == 'number')__g = global; // eslint-disable-line no-undef
 
 /***/ },
-/* 30 */
+/* 31 */
 /***/ function(module, exports) {
 
 	var core = module.exports = {version: '2.4.0'};
 	if(typeof __e == 'number')__e = core; // eslint-disable-line no-undef
 
 /***/ },
-/* 31 */
+/* 32 */
 /***/ function(module, exports, __webpack_require__) {
 
 	// optional / simple context binding
-	var aFunction = __webpack_require__(32);
+	var aFunction = __webpack_require__(33);
 	module.exports = function(fn, that, length){
 	  aFunction(fn);
 	  if(that === undefined)return fn;
@@ -4564,7 +4574,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	};
 
 /***/ },
-/* 32 */
+/* 33 */
 /***/ function(module, exports) {
 
 	module.exports = function(it){
@@ -4573,12 +4583,12 @@ return /******/ (function(modules) { // webpackBootstrap
 	};
 
 /***/ },
-/* 33 */
+/* 34 */
 /***/ function(module, exports, __webpack_require__) {
 
-	var dP         = __webpack_require__(34)
-	  , createDesc = __webpack_require__(42);
-	module.exports = __webpack_require__(38) ? function(object, key, value){
+	var dP         = __webpack_require__(35)
+	  , createDesc = __webpack_require__(43);
+	module.exports = __webpack_require__(39) ? function(object, key, value){
 	  return dP.f(object, key, createDesc(1, value));
 	} : function(object, key, value){
 	  object[key] = value;
@@ -4586,15 +4596,15 @@ return /******/ (function(modules) { // webpackBootstrap
 	};
 
 /***/ },
-/* 34 */
+/* 35 */
 /***/ function(module, exports, __webpack_require__) {
 
-	var anObject       = __webpack_require__(35)
-	  , IE8_DOM_DEFINE = __webpack_require__(37)
-	  , toPrimitive    = __webpack_require__(41)
+	var anObject       = __webpack_require__(36)
+	  , IE8_DOM_DEFINE = __webpack_require__(38)
+	  , toPrimitive    = __webpack_require__(42)
 	  , dP             = Object.defineProperty;
 
-	exports.f = __webpack_require__(38) ? Object.defineProperty : function defineProperty(O, P, Attributes){
+	exports.f = __webpack_require__(39) ? Object.defineProperty : function defineProperty(O, P, Attributes){
 	  anObject(O);
 	  P = toPrimitive(P, true);
 	  anObject(Attributes);
@@ -4607,17 +4617,17 @@ return /******/ (function(modules) { // webpackBootstrap
 	};
 
 /***/ },
-/* 35 */
+/* 36 */
 /***/ function(module, exports, __webpack_require__) {
 
-	var isObject = __webpack_require__(36);
+	var isObject = __webpack_require__(37);
 	module.exports = function(it){
 	  if(!isObject(it))throw TypeError(it + ' is not an object!');
 	  return it;
 	};
 
 /***/ },
-/* 36 */
+/* 37 */
 /***/ function(module, exports) {
 
 	module.exports = function(it){
@@ -4625,24 +4635,24 @@ return /******/ (function(modules) { // webpackBootstrap
 	};
 
 /***/ },
-/* 37 */
-/***/ function(module, exports, __webpack_require__) {
-
-	module.exports = !__webpack_require__(38) && !__webpack_require__(39)(function(){
-	  return Object.defineProperty(__webpack_require__(40)('div'), 'a', {get: function(){ return 7; }}).a != 7;
-	});
-
-/***/ },
 /* 38 */
 /***/ function(module, exports, __webpack_require__) {
 
-	// Thank's IE8 for his funny defineProperty
-	module.exports = !__webpack_require__(39)(function(){
-	  return Object.defineProperty({}, 'a', {get: function(){ return 7; }}).a != 7;
+	module.exports = !__webpack_require__(39) && !__webpack_require__(40)(function(){
+	  return Object.defineProperty(__webpack_require__(41)('div'), 'a', {get: function(){ return 7; }}).a != 7;
 	});
 
 /***/ },
 /* 39 */
+/***/ function(module, exports, __webpack_require__) {
+
+	// Thank's IE8 for his funny defineProperty
+	module.exports = !__webpack_require__(40)(function(){
+	  return Object.defineProperty({}, 'a', {get: function(){ return 7; }}).a != 7;
+	});
+
+/***/ },
+/* 40 */
 /***/ function(module, exports) {
 
 	module.exports = function(exec){
@@ -4654,11 +4664,11 @@ return /******/ (function(modules) { // webpackBootstrap
 	};
 
 /***/ },
-/* 40 */
+/* 41 */
 /***/ function(module, exports, __webpack_require__) {
 
-	var isObject = __webpack_require__(36)
-	  , document = __webpack_require__(29).document
+	var isObject = __webpack_require__(37)
+	  , document = __webpack_require__(30).document
 	  // in old IE typeof document.createElement is 'object'
 	  , is = isObject(document) && isObject(document.createElement);
 	module.exports = function(it){
@@ -4666,11 +4676,11 @@ return /******/ (function(modules) { // webpackBootstrap
 	};
 
 /***/ },
-/* 41 */
+/* 42 */
 /***/ function(module, exports, __webpack_require__) {
 
 	// 7.1.1 ToPrimitive(input [, PreferredType])
-	var isObject = __webpack_require__(36);
+	var isObject = __webpack_require__(37);
 	// instead of the ES6 spec version, we didn't implement @@toPrimitive case
 	// and the second argument - flag - preferred type is a string
 	module.exports = function(it, S){
@@ -4683,7 +4693,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	};
 
 /***/ },
-/* 42 */
+/* 43 */
 /***/ function(module, exports) {
 
 	module.exports = function(bitmap, value){
@@ -4696,13 +4706,13 @@ return /******/ (function(modules) { // webpackBootstrap
 	};
 
 /***/ },
-/* 43 */
+/* 44 */
 /***/ function(module, exports, __webpack_require__) {
 
-	module.exports = __webpack_require__(33);
+	module.exports = __webpack_require__(34);
 
 /***/ },
-/* 44 */
+/* 45 */
 /***/ function(module, exports) {
 
 	var hasOwnProperty = {}.hasOwnProperty;
@@ -4711,17 +4721,17 @@ return /******/ (function(modules) { // webpackBootstrap
 	};
 
 /***/ },
-/* 45 */
+/* 46 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
-	var create         = __webpack_require__(46)
-	  , descriptor     = __webpack_require__(42)
-	  , setToStringTag = __webpack_require__(59)
+	var create         = __webpack_require__(47)
+	  , descriptor     = __webpack_require__(43)
+	  , setToStringTag = __webpack_require__(60)
 	  , IteratorPrototype = {};
 
 	// 25.1.2.1.1 %IteratorPrototype%[@@iterator]()
-	__webpack_require__(33)(IteratorPrototype, __webpack_require__(60)('iterator'), function(){ return this; });
+	__webpack_require__(34)(IteratorPrototype, __webpack_require__(61)('iterator'), function(){ return this; });
 
 	module.exports = function(Constructor, NAME, next){
 	  Constructor.prototype = create(IteratorPrototype, {next: descriptor(1, next)});
@@ -4729,27 +4739,27 @@ return /******/ (function(modules) { // webpackBootstrap
 	};
 
 /***/ },
-/* 46 */
+/* 47 */
 /***/ function(module, exports, __webpack_require__) {
 
 	// 19.1.2.2 / 15.2.3.5 Object.create(O [, Properties])
-	var anObject    = __webpack_require__(35)
-	  , dPs         = __webpack_require__(47)
-	  , enumBugKeys = __webpack_require__(57)
-	  , IE_PROTO    = __webpack_require__(54)('IE_PROTO')
+	var anObject    = __webpack_require__(36)
+	  , dPs         = __webpack_require__(48)
+	  , enumBugKeys = __webpack_require__(58)
+	  , IE_PROTO    = __webpack_require__(55)('IE_PROTO')
 	  , Empty       = function(){ /* empty */ }
 	  , PROTOTYPE   = 'prototype';
 
 	// Create object with fake `null` prototype: use iframe Object with cleared prototype
 	var createDict = function(){
 	  // Thrash, waste and sodomy: IE GC bug
-	  var iframe = __webpack_require__(40)('iframe')
+	  var iframe = __webpack_require__(41)('iframe')
 	    , i      = enumBugKeys.length
 	    , lt     = '<'
 	    , gt     = '>'
 	    , iframeDocument;
 	  iframe.style.display = 'none';
-	  __webpack_require__(58).appendChild(iframe);
+	  __webpack_require__(59).appendChild(iframe);
 	  iframe.src = 'javascript:'; // eslint-disable-line no-script-url
 	  // createDict = iframe.contentWindow.Object;
 	  // html.removeChild(iframe);
@@ -4776,14 +4786,14 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 /***/ },
-/* 47 */
+/* 48 */
 /***/ function(module, exports, __webpack_require__) {
 
-	var dP       = __webpack_require__(34)
-	  , anObject = __webpack_require__(35)
-	  , getKeys  = __webpack_require__(48);
+	var dP       = __webpack_require__(35)
+	  , anObject = __webpack_require__(36)
+	  , getKeys  = __webpack_require__(49);
 
-	module.exports = __webpack_require__(38) ? Object.defineProperties : function defineProperties(O, Properties){
+	module.exports = __webpack_require__(39) ? Object.defineProperties : function defineProperties(O, Properties){
 	  anObject(O);
 	  var keys   = getKeys(Properties)
 	    , length = keys.length
@@ -4794,25 +4804,25 @@ return /******/ (function(modules) { // webpackBootstrap
 	};
 
 /***/ },
-/* 48 */
+/* 49 */
 /***/ function(module, exports, __webpack_require__) {
 
 	// 19.1.2.14 / 15.2.3.14 Object.keys(O)
-	var $keys       = __webpack_require__(49)
-	  , enumBugKeys = __webpack_require__(57);
+	var $keys       = __webpack_require__(50)
+	  , enumBugKeys = __webpack_require__(58);
 
 	module.exports = Object.keys || function keys(O){
 	  return $keys(O, enumBugKeys);
 	};
 
 /***/ },
-/* 49 */
+/* 50 */
 /***/ function(module, exports, __webpack_require__) {
 
-	var has          = __webpack_require__(44)
-	  , toIObject    = __webpack_require__(22)
-	  , arrayIndexOf = __webpack_require__(50)(false)
-	  , IE_PROTO     = __webpack_require__(54)('IE_PROTO');
+	var has          = __webpack_require__(45)
+	  , toIObject    = __webpack_require__(23)
+	  , arrayIndexOf = __webpack_require__(51)(false)
+	  , IE_PROTO     = __webpack_require__(55)('IE_PROTO');
 
 	module.exports = function(object, names){
 	  var O      = toIObject(object)
@@ -4828,14 +4838,14 @@ return /******/ (function(modules) { // webpackBootstrap
 	};
 
 /***/ },
-/* 50 */
+/* 51 */
 /***/ function(module, exports, __webpack_require__) {
 
 	// false -> Array#indexOf
 	// true  -> Array#includes
-	var toIObject = __webpack_require__(22)
-	  , toLength  = __webpack_require__(51)
-	  , toIndex   = __webpack_require__(53);
+	var toIObject = __webpack_require__(23)
+	  , toLength  = __webpack_require__(52)
+	  , toIndex   = __webpack_require__(54);
 	module.exports = function(IS_INCLUDES){
 	  return function($this, el, fromIndex){
 	    var O      = toIObject($this)
@@ -4854,18 +4864,18 @@ return /******/ (function(modules) { // webpackBootstrap
 	};
 
 /***/ },
-/* 51 */
+/* 52 */
 /***/ function(module, exports, __webpack_require__) {
 
 	// 7.1.15 ToLength
-	var toInteger = __webpack_require__(52)
+	var toInteger = __webpack_require__(53)
 	  , min       = Math.min;
 	module.exports = function(it){
 	  return it > 0 ? min(toInteger(it), 0x1fffffffffffff) : 0; // pow(2, 53) - 1 == 9007199254740991
 	};
 
 /***/ },
-/* 52 */
+/* 53 */
 /***/ function(module, exports) {
 
 	// 7.1.4 ToInteger
@@ -4876,10 +4886,10 @@ return /******/ (function(modules) { // webpackBootstrap
 	};
 
 /***/ },
-/* 53 */
+/* 54 */
 /***/ function(module, exports, __webpack_require__) {
 
-	var toInteger = __webpack_require__(52)
+	var toInteger = __webpack_require__(53)
 	  , max       = Math.max
 	  , min       = Math.min;
 	module.exports = function(index, length){
@@ -4888,20 +4898,20 @@ return /******/ (function(modules) { // webpackBootstrap
 	};
 
 /***/ },
-/* 54 */
+/* 55 */
 /***/ function(module, exports, __webpack_require__) {
 
-	var shared = __webpack_require__(55)('keys')
-	  , uid    = __webpack_require__(56);
+	var shared = __webpack_require__(56)('keys')
+	  , uid    = __webpack_require__(57);
 	module.exports = function(key){
 	  return shared[key] || (shared[key] = uid(key));
 	};
 
 /***/ },
-/* 55 */
+/* 56 */
 /***/ function(module, exports, __webpack_require__) {
 
-	var global = __webpack_require__(29)
+	var global = __webpack_require__(30)
 	  , SHARED = '__core-js_shared__'
 	  , store  = global[SHARED] || (global[SHARED] = {});
 	module.exports = function(key){
@@ -4909,7 +4919,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	};
 
 /***/ },
-/* 56 */
+/* 57 */
 /***/ function(module, exports) {
 
 	var id = 0
@@ -4919,7 +4929,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	};
 
 /***/ },
-/* 57 */
+/* 58 */
 /***/ function(module, exports) {
 
 	// IE 8- don't enum bug keys
@@ -4928,30 +4938,30 @@ return /******/ (function(modules) { // webpackBootstrap
 	).split(',');
 
 /***/ },
-/* 58 */
-/***/ function(module, exports, __webpack_require__) {
-
-	module.exports = __webpack_require__(29).document && document.documentElement;
-
-/***/ },
 /* 59 */
 /***/ function(module, exports, __webpack_require__) {
 
-	var def = __webpack_require__(34).f
-	  , has = __webpack_require__(44)
-	  , TAG = __webpack_require__(60)('toStringTag');
+	module.exports = __webpack_require__(30).document && document.documentElement;
+
+/***/ },
+/* 60 */
+/***/ function(module, exports, __webpack_require__) {
+
+	var def = __webpack_require__(35).f
+	  , has = __webpack_require__(45)
+	  , TAG = __webpack_require__(61)('toStringTag');
 
 	module.exports = function(it, tag, stat){
 	  if(it && !has(it = stat ? it : it.prototype, TAG))def(it, TAG, {configurable: true, value: tag});
 	};
 
 /***/ },
-/* 60 */
+/* 61 */
 /***/ function(module, exports, __webpack_require__) {
 
-	var store      = __webpack_require__(55)('wks')
-	  , uid        = __webpack_require__(56)
-	  , Symbol     = __webpack_require__(29).Symbol
+	var store      = __webpack_require__(56)('wks')
+	  , uid        = __webpack_require__(57)
+	  , Symbol     = __webpack_require__(30).Symbol
 	  , USE_SYMBOL = typeof Symbol == 'function';
 
 	var $exports = module.exports = function(name){
@@ -4962,13 +4972,13 @@ return /******/ (function(modules) { // webpackBootstrap
 	$exports.store = store;
 
 /***/ },
-/* 61 */
+/* 62 */
 /***/ function(module, exports, __webpack_require__) {
 
 	// 19.1.2.9 / 15.2.3.2 Object.getPrototypeOf(O)
-	var has         = __webpack_require__(44)
-	  , toObject    = __webpack_require__(62)
-	  , IE_PROTO    = __webpack_require__(54)('IE_PROTO')
+	var has         = __webpack_require__(45)
+	  , toObject    = __webpack_require__(63)
+	  , IE_PROTO    = __webpack_require__(55)('IE_PROTO')
 	  , ObjectProto = Object.prototype;
 
 	module.exports = Object.getPrototypeOf || function(O){
@@ -4980,26 +4990,26 @@ return /******/ (function(modules) { // webpackBootstrap
 	};
 
 /***/ },
-/* 62 */
+/* 63 */
 /***/ function(module, exports, __webpack_require__) {
 
 	// 7.1.13 ToObject(argument)
-	var defined = __webpack_require__(25);
+	var defined = __webpack_require__(26);
 	module.exports = function(it){
 	  return Object(defined(it));
 	};
 
 /***/ },
-/* 63 */
+/* 64 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
-	var each         = __webpack_require__(64)(0)
-	  , redefine     = __webpack_require__(43)
-	  , meta         = __webpack_require__(68)
-	  , assign       = __webpack_require__(69)
-	  , weak         = __webpack_require__(72)
-	  , isObject     = __webpack_require__(36)
+	var each         = __webpack_require__(65)(0)
+	  , redefine     = __webpack_require__(44)
+	  , meta         = __webpack_require__(69)
+	  , assign       = __webpack_require__(70)
+	  , weak         = __webpack_require__(73)
+	  , isObject     = __webpack_require__(37)
 	  , getWeak      = meta.getWeak
 	  , isExtensible = Object.isExtensible
 	  , uncaughtFrozenStore = weak.ufstore
@@ -5028,7 +5038,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	};
 
 	// 23.3 WeakMap Objects
-	var $WeakMap = module.exports = __webpack_require__(80)('WeakMap', wrapper, methods, weak, true, true);
+	var $WeakMap = module.exports = __webpack_require__(81)('WeakMap', wrapper, methods, weak, true, true);
 
 	// IE11 WeakMap frozen keys fix
 	if(new $WeakMap().set((Object.freeze || Object)(tmp), 7).get(tmp) != 7){
@@ -5051,7 +5061,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	}
 
 /***/ },
-/* 64 */
+/* 65 */
 /***/ function(module, exports, __webpack_require__) {
 
 	// 0 -> Array#forEach
@@ -5061,11 +5071,11 @@ return /******/ (function(modules) { // webpackBootstrap
 	// 4 -> Array#every
 	// 5 -> Array#find
 	// 6 -> Array#findIndex
-	var ctx      = __webpack_require__(31)
-	  , IObject  = __webpack_require__(23)
-	  , toObject = __webpack_require__(62)
-	  , toLength = __webpack_require__(51)
-	  , asc      = __webpack_require__(65);
+	var ctx      = __webpack_require__(32)
+	  , IObject  = __webpack_require__(24)
+	  , toObject = __webpack_require__(63)
+	  , toLength = __webpack_require__(52)
+	  , asc      = __webpack_require__(66);
 	module.exports = function(TYPE, $create){
 	  var IS_MAP        = TYPE == 1
 	    , IS_FILTER     = TYPE == 2
@@ -5100,23 +5110,23 @@ return /******/ (function(modules) { // webpackBootstrap
 	};
 
 /***/ },
-/* 65 */
+/* 66 */
 /***/ function(module, exports, __webpack_require__) {
 
 	// 9.4.2.3 ArraySpeciesCreate(originalArray, length)
-	var speciesConstructor = __webpack_require__(66);
+	var speciesConstructor = __webpack_require__(67);
 
 	module.exports = function(original, length){
 	  return new (speciesConstructor(original))(length);
 	};
 
 /***/ },
-/* 66 */
+/* 67 */
 /***/ function(module, exports, __webpack_require__) {
 
-	var isObject = __webpack_require__(36)
-	  , isArray  = __webpack_require__(67)
-	  , SPECIES  = __webpack_require__(60)('species');
+	var isObject = __webpack_require__(37)
+	  , isArray  = __webpack_require__(68)
+	  , SPECIES  = __webpack_require__(61)('species');
 
 	module.exports = function(original){
 	  var C;
@@ -5132,28 +5142,28 @@ return /******/ (function(modules) { // webpackBootstrap
 	};
 
 /***/ },
-/* 67 */
+/* 68 */
 /***/ function(module, exports, __webpack_require__) {
 
 	// 7.2.2 IsArray(argument)
-	var cof = __webpack_require__(24);
+	var cof = __webpack_require__(25);
 	module.exports = Array.isArray || function isArray(arg){
 	  return cof(arg) == 'Array';
 	};
 
 /***/ },
-/* 68 */
+/* 69 */
 /***/ function(module, exports, __webpack_require__) {
 
-	var META     = __webpack_require__(56)('meta')
-	  , isObject = __webpack_require__(36)
-	  , has      = __webpack_require__(44)
-	  , setDesc  = __webpack_require__(34).f
+	var META     = __webpack_require__(57)('meta')
+	  , isObject = __webpack_require__(37)
+	  , has      = __webpack_require__(45)
+	  , setDesc  = __webpack_require__(35).f
 	  , id       = 0;
 	var isExtensible = Object.isExtensible || function(){
 	  return true;
 	};
-	var FREEZE = !__webpack_require__(39)(function(){
+	var FREEZE = !__webpack_require__(40)(function(){
 	  return isExtensible(Object.preventExtensions({}));
 	});
 	var setMeta = function(it){
@@ -5200,20 +5210,20 @@ return /******/ (function(modules) { // webpackBootstrap
 	};
 
 /***/ },
-/* 69 */
+/* 70 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 	// 19.1.2.1 Object.assign(target, source, ...)
-	var getKeys  = __webpack_require__(48)
-	  , gOPS     = __webpack_require__(70)
-	  , pIE      = __webpack_require__(71)
-	  , toObject = __webpack_require__(62)
-	  , IObject  = __webpack_require__(23)
+	var getKeys  = __webpack_require__(49)
+	  , gOPS     = __webpack_require__(71)
+	  , pIE      = __webpack_require__(72)
+	  , toObject = __webpack_require__(63)
+	  , IObject  = __webpack_require__(24)
 	  , $assign  = Object.assign;
 
 	// should work with symbols and should have deterministic property order (V8 bug)
-	module.exports = !$assign || __webpack_require__(39)(function(){
+	module.exports = !$assign || __webpack_require__(40)(function(){
 	  var A = {}
 	    , B = {}
 	    , S = Symbol()
@@ -5238,30 +5248,30 @@ return /******/ (function(modules) { // webpackBootstrap
 	} : $assign;
 
 /***/ },
-/* 70 */
+/* 71 */
 /***/ function(module, exports) {
 
 	exports.f = Object.getOwnPropertySymbols;
 
 /***/ },
-/* 71 */
+/* 72 */
 /***/ function(module, exports) {
 
 	exports.f = {}.propertyIsEnumerable;
 
 /***/ },
-/* 72 */
+/* 73 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
-	var redefineAll       = __webpack_require__(73)
-	  , getWeak           = __webpack_require__(68).getWeak
-	  , anObject          = __webpack_require__(35)
-	  , isObject          = __webpack_require__(36)
-	  , anInstance        = __webpack_require__(74)
-	  , forOf             = __webpack_require__(75)
-	  , createArrayMethod = __webpack_require__(64)
-	  , $has              = __webpack_require__(44)
+	var redefineAll       = __webpack_require__(74)
+	  , getWeak           = __webpack_require__(69).getWeak
+	  , anObject          = __webpack_require__(36)
+	  , isObject          = __webpack_require__(37)
+	  , anInstance        = __webpack_require__(75)
+	  , forOf             = __webpack_require__(76)
+	  , createArrayMethod = __webpack_require__(65)
+	  , $has              = __webpack_require__(45)
 	  , arrayFind         = createArrayMethod(5)
 	  , arrayFindIndex    = createArrayMethod(6)
 	  , id                = 0;
@@ -5338,10 +5348,10 @@ return /******/ (function(modules) { // webpackBootstrap
 	};
 
 /***/ },
-/* 73 */
+/* 74 */
 /***/ function(module, exports, __webpack_require__) {
 
-	var hide = __webpack_require__(33);
+	var hide = __webpack_require__(34);
 	module.exports = function(target, src, safe){
 	  for(var key in src){
 	    if(safe && target[key])target[key] = src[key];
@@ -5350,7 +5360,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	};
 
 /***/ },
-/* 74 */
+/* 75 */
 /***/ function(module, exports) {
 
 	module.exports = function(it, Constructor, name, forbiddenField){
@@ -5360,15 +5370,15 @@ return /******/ (function(modules) { // webpackBootstrap
 	};
 
 /***/ },
-/* 75 */
+/* 76 */
 /***/ function(module, exports, __webpack_require__) {
 
-	var ctx         = __webpack_require__(31)
-	  , call        = __webpack_require__(76)
-	  , isArrayIter = __webpack_require__(77)
-	  , anObject    = __webpack_require__(35)
-	  , toLength    = __webpack_require__(51)
-	  , getIterFn   = __webpack_require__(78)
+	var ctx         = __webpack_require__(32)
+	  , call        = __webpack_require__(77)
+	  , isArrayIter = __webpack_require__(78)
+	  , anObject    = __webpack_require__(36)
+	  , toLength    = __webpack_require__(52)
+	  , getIterFn   = __webpack_require__(79)
 	  , BREAK       = {}
 	  , RETURN      = {};
 	var exports = module.exports = function(iterable, entries, fn, that, ITERATOR){
@@ -5390,11 +5400,11 @@ return /******/ (function(modules) { // webpackBootstrap
 	exports.RETURN = RETURN;
 
 /***/ },
-/* 76 */
+/* 77 */
 /***/ function(module, exports, __webpack_require__) {
 
 	// call something on iterator step with safe closing on error
-	var anObject = __webpack_require__(35);
+	var anObject = __webpack_require__(36);
 	module.exports = function(iterator, fn, value, entries){
 	  try {
 	    return entries ? fn(anObject(value)[0], value[1]) : fn(value);
@@ -5407,12 +5417,12 @@ return /******/ (function(modules) { // webpackBootstrap
 	};
 
 /***/ },
-/* 77 */
+/* 78 */
 /***/ function(module, exports, __webpack_require__) {
 
 	// check on default Array iterator
-	var Iterators  = __webpack_require__(21)
-	  , ITERATOR   = __webpack_require__(60)('iterator')
+	var Iterators  = __webpack_require__(22)
+	  , ITERATOR   = __webpack_require__(61)('iterator')
 	  , ArrayProto = Array.prototype;
 
 	module.exports = function(it){
@@ -5420,25 +5430,25 @@ return /******/ (function(modules) { // webpackBootstrap
 	};
 
 /***/ },
-/* 78 */
+/* 79 */
 /***/ function(module, exports, __webpack_require__) {
 
-	var classof   = __webpack_require__(79)
-	  , ITERATOR  = __webpack_require__(60)('iterator')
-	  , Iterators = __webpack_require__(21);
-	module.exports = __webpack_require__(30).getIteratorMethod = function(it){
+	var classof   = __webpack_require__(80)
+	  , ITERATOR  = __webpack_require__(61)('iterator')
+	  , Iterators = __webpack_require__(22);
+	module.exports = __webpack_require__(31).getIteratorMethod = function(it){
 	  if(it != undefined)return it[ITERATOR]
 	    || it['@@iterator']
 	    || Iterators[classof(it)];
 	};
 
 /***/ },
-/* 79 */
+/* 80 */
 /***/ function(module, exports, __webpack_require__) {
 
 	// getting tag from 19.1.3.6 Object.prototype.toString()
-	var cof = __webpack_require__(24)
-	  , TAG = __webpack_require__(60)('toStringTag')
+	var cof = __webpack_require__(25)
+	  , TAG = __webpack_require__(61)('toStringTag')
 	  // ES3 wrong here
 	  , ARG = cof(function(){ return arguments; }()) == 'Arguments';
 
@@ -5461,23 +5471,23 @@ return /******/ (function(modules) { // webpackBootstrap
 	};
 
 /***/ },
-/* 80 */
+/* 81 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
-	var global         = __webpack_require__(29)
-	  , $export        = __webpack_require__(28)
-	  , meta           = __webpack_require__(68)
-	  , fails          = __webpack_require__(39)
-	  , hide           = __webpack_require__(33)
-	  , redefineAll    = __webpack_require__(73)
-	  , forOf          = __webpack_require__(75)
-	  , anInstance     = __webpack_require__(74)
-	  , isObject       = __webpack_require__(36)
-	  , setToStringTag = __webpack_require__(59)
-	  , dP             = __webpack_require__(34).f
-	  , each           = __webpack_require__(64)(0)
-	  , DESCRIPTORS    = __webpack_require__(38);
+	var global         = __webpack_require__(30)
+	  , $export        = __webpack_require__(29)
+	  , meta           = __webpack_require__(69)
+	  , fails          = __webpack_require__(40)
+	  , hide           = __webpack_require__(34)
+	  , redefineAll    = __webpack_require__(74)
+	  , forOf          = __webpack_require__(76)
+	  , anInstance     = __webpack_require__(75)
+	  , isObject       = __webpack_require__(37)
+	  , setToStringTag = __webpack_require__(60)
+	  , dP             = __webpack_require__(35).f
+	  , each           = __webpack_require__(65)(0)
+	  , DESCRIPTORS    = __webpack_require__(39);
 
 	module.exports = function(NAME, wrapper, methods, common, IS_MAP, IS_WEAK){
 	  var Base  = global[NAME]
@@ -5525,7 +5535,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	};
 
 /***/ },
-/* 81 */
+/* 82 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -5541,9 +5551,9 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	var _utils = __webpack_require__(3);
 
-	var _algebra = __webpack_require__(82);
+	var _algebra = __webpack_require__(83);
 
-	var _dataFrame = __webpack_require__(84);
+	var _dataFrame = __webpack_require__(85);
 
 	function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr2 = Array(arr.length); i < arr.length; i++) { arr2[i] = arr[i]; } return arr2; } else { return Array.from(arr); } }
 
@@ -5557,14 +5567,38 @@ return /******/ (function(modules) { // webpackBootstrap
 	    return _utils.utils.isDate(v) ? v.getTime() : v;
 	};
 
+	var MixinModel = function MixinModel(prev) {
+	    var _this = this;
+
+	    Object.keys(prev).forEach(function (k) {
+	        return _this[k] = prev[k];
+	    });
+	};
+
+	var compose = function compose(prev) {
+	    var updates = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
+
+	    return Object.assign(new MixinModel(prev), updates);
+	};
+
+	var evalGrammarRules = function evalGrammarRules(grammarRules, initialGrammarModel, grammarRegistry) {
+	    return grammarRules.map(function (rule) {
+	        return typeof rule === 'string' ? grammarRegistry.get(rule) : rule;
+	    }).filter(function (x) {
+	        return x;
+	    }).reduce(function (prevModel, rule) {
+	        return compose(prevModel, rule(prevModel, {}));
+	    }, initialGrammarModel);
+	};
+
 	var GPL = exports.GPL = function (_Emitter) {
 	    _inherits(GPL, _Emitter);
 
-	    function GPL(config, scalesRegistryInstance, unitsRegistry) {
+	    function GPL(config, scalesRegistryInstance, unitsRegistry, grammarRules) {
 	        _classCallCheck(this, GPL);
 
 	        // jscs:disable
-	        var _this = _possibleConstructorReturn(this, (GPL.__proto__ || Object.getPrototypeOf(GPL)).call(this));
+	        var _this2 = _possibleConstructorReturn(this, (GPL.__proto__ || Object.getPrototypeOf(GPL)).call(this));
 
 	        _utils.utils.defaults(config.scales, {
 	            'size_null': { type: 'size', source: '?' },
@@ -5582,13 +5616,14 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	        config.settings = config.settings || {};
 
-	        _this.config = config;
-	        _this.sources = config.sources;
-	        _this.scales = config.scales;
-	        _this.unitSet = unitsRegistry;
-	        _this.scalesHub = scalesRegistryInstance;
+	        _this2.config = config;
+	        _this2.sources = config.sources;
+	        _this2.scales = config.scales;
+	        _this2.unitSet = unitsRegistry;
+	        _this2.grammarRules = grammarRules;
+	        _this2.scalesHub = scalesRegistryInstance;
 
-	        _this.transformations = Object.assign(config.transformations || {}, {
+	        _this2.transformations = Object.assign(config.transformations || {}, {
 	            where: function where(data, tuple) {
 	                var predicates = Object.keys(tuple || {}).map(function (k) {
 	                    return function (row) {
@@ -5602,7 +5637,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	                });
 	            }
 	        });
-	        return _this;
+	        return _this2;
 	    }
 
 	    _createClass(GPL, [{
@@ -5614,33 +5649,34 @@ return /******/ (function(modules) { // webpackBootstrap
 	    }, {
 	        key: 'getDrawScenario',
 	        value: function getDrawScenario(root) {
-	            var _this2 = this;
+	            var _this3 = this;
 
+	            var grammarRules = this.grammarRules;
 	            this._flattenDrawScenario(root, function (parentInstance, unit, rootFrame) {
 	                // Rule to cancel parent frame inheritance
 	                var frame = unit.expression.inherit === false ? null : rootFrame;
-	                var scalesFactoryMethod = _this2._createFrameScalesFactoryMethod(frame);
-	                var instance = _this2.unitSet.create(unit.type, Object.assign({}, unit, { options: parentInstance.allocateRect(rootFrame.key) }));
+	                var scalesFactoryMethod = _this3._createFrameScalesFactoryMethod(frame);
+	                var instance = _this3.unitSet.create(unit.type, Object.assign({}, unit, { options: parentInstance.allocateRect(rootFrame.key) }));
 
-	                var initialModel = instance.defineGrammarModel(scalesFactoryMethod);
-	                var grammarModel = instance.evalGrammarRules(initialModel);
-	                instance.adjustScales(grammarModel);
+	                var initialModel = new MixinModel(instance.defineGrammarModel(scalesFactoryMethod));
+	                var grammarModel = evalGrammarRules(instance.getGrammarRules(), initialModel, grammarRules);
+	                evalGrammarRules(instance.getAdjustScalesRules(), grammarModel, grammarRules);
 	                instance.node().screenModel = instance.createScreenModel(grammarModel);
 
 	                return instance;
 	            });
 
 	            Object.keys(this.scales).forEach(function (k) {
-	                return _this2.scalesHub.createScaleInfo(_this2.scales[k]).commit();
+	                return _this3.scalesHub.createScaleInfo(_this3.scales[k]).commit();
 	            });
 
 	            return this._flattenDrawScenario(root, function (parentInstance, unit, rootFrame) {
 	                var frame = unit.expression.inherit === false ? null : rootFrame;
-	                var scalesFactoryMethod = _this2._createFrameScalesFactoryMethod(frame);
-	                var instance = _this2.unitSet.create(unit.type, Object.assign({}, unit, { options: parentInstance.allocateRect(rootFrame.key) }));
+	                var scalesFactoryMethod = _this3._createFrameScalesFactoryMethod(frame);
+	                var instance = _this3.unitSet.create(unit.type, Object.assign({}, unit, { options: parentInstance.allocateRect(rootFrame.key) }));
 
-	                var initialModel = instance.defineGrammarModel(scalesFactoryMethod);
-	                var grammarModel = instance.evalGrammarRules(initialModel);
+	                var initialModel = new MixinModel(instance.defineGrammarModel(scalesFactoryMethod));
+	                var grammarModel = evalGrammarRules(instance.getGrammarRules(), initialModel, grammarRules);
 	                instance.node().screenModel = instance.createScreenModel(grammarModel);
 	                instance.parentUnit = parentInstance;
 	                instance.addInteraction();
@@ -5709,7 +5745,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    }, {
 	        key: '_expandUnitsStructure',
 	        value: function _expandUnitsStructure(root) {
-	            var _this3 = this;
+	            var _this4 = this;
 
 	            var parentPipe = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : [];
 
@@ -5748,7 +5784,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	            root.frames.forEach(function (f) {
 	                return f.units.forEach(function (unit) {
-	                    return _this3._expandUnitsStructure(unit, f.pipe);
+	                    return _this4._expandUnitsStructure(unit, f.pipe);
 	                });
 	            });
 
@@ -5771,7 +5807,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    }, {
 	        key: '_parseExpression',
 	        value: function _parseExpression(expr, parentPipe) {
-	            var _this4 = this;
+	            var _this5 = this;
 
 	            var funcName = expr.operator || 'none';
 	            var srcAlias = expr.source;
@@ -5784,7 +5820,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	            };
 
 	            var dataFn = function dataFn() {
-	                return _this4._datify(frameConfig).part();
+	                return _this5._datify(frameConfig).part();
 	            };
 
 	            var func = _algebra.FramesAlgebra[funcName];
@@ -5833,7 +5869,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	}(_event.Emitter);
 
 /***/ },
-/* 82 */
+/* 83 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -5845,7 +5881,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	var _utils = __webpack_require__(3);
 
-	var _unitDomainPeriodGenerator = __webpack_require__(83);
+	var _unitDomainPeriodGenerator = __webpack_require__(84);
 
 	function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
 
@@ -5944,7 +5980,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	exports.FramesAlgebra = FramesAlgebra;
 
 /***/ },
-/* 83 */
+/* 84 */
 /***/ function(module, exports) {
 
 	'use strict';
@@ -6056,7 +6092,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	exports.UnitDomainPeriodGenerator = UnitDomainPeriodGenerator;
 
 /***/ },
-/* 84 */
+/* 85 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -6121,7 +6157,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	}();
 
 /***/ },
-/* 85 */
+/* 86 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -6135,11 +6171,11 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	var _get = function get(object, property, receiver) { if (object === null) object = Function.prototype; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { return get(parent, property, receiver); } } else if ("value" in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } };
 
-	var _balloon = __webpack_require__(86);
+	var _balloon = __webpack_require__(87);
 
 	var _event = __webpack_require__(6);
 
-	var _plugins = __webpack_require__(89);
+	var _plugins = __webpack_require__(90);
 
 	var _utils = __webpack_require__(3);
 
@@ -6147,33 +6183,35 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	var _d3Decorators = __webpack_require__(9);
 
-	var _unitsRegistry = __webpack_require__(90);
+	var _grammarRegistry = __webpack_require__(7);
 
-	var _scalesRegistry = __webpack_require__(91);
+	var _unitsRegistry = __webpack_require__(91);
 
-	var _scalesFactory = __webpack_require__(92);
+	var _scalesRegistry = __webpack_require__(92);
 
-	var _dataProcessor = __webpack_require__(93);
+	var _scalesFactory = __webpack_require__(93);
 
-	var _weakMap = __webpack_require__(15);
+	var _dataProcessor = __webpack_require__(94);
+
+	var _weakMap = __webpack_require__(16);
 
 	var _weakMap2 = _interopRequireDefault(_weakMap);
 
-	var _layuotTemplate = __webpack_require__(94);
+	var _layuotTemplate = __webpack_require__(95);
 
-	var _specConverter = __webpack_require__(95);
+	var _specConverter = __webpack_require__(96);
 
-	var _specTransformAutoLayout = __webpack_require__(96);
+	var _specTransformAutoLayout = __webpack_require__(97);
 
-	var _specTransformCalcSize = __webpack_require__(98);
+	var _specTransformCalcSize = __webpack_require__(99);
 
-	var _specTransformApplyRatio = __webpack_require__(100);
+	var _specTransformApplyRatio = __webpack_require__(101);
 
-	var _specTransformExtractAxes = __webpack_require__(101);
+	var _specTransformExtractAxes = __webpack_require__(102);
 
-	var _const = __webpack_require__(87);
+	var _const = __webpack_require__(88);
 
-	var _tau = __webpack_require__(81);
+	var _tau = __webpack_require__(82);
 
 	var _d = __webpack_require__(2);
 
@@ -6410,7 +6448,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	            this.fire('specready', this._liveSpec);
 
-	            var xGpl = new _tau.GPL(this._liveSpec, this.getScaleFactory(), _unitsRegistry.unitsRegistry);
+	            var xGpl = new _tau.GPL(this._liveSpec, this.getScaleFactory(), _unitsRegistry.unitsRegistry, _grammarRegistry.GrammarRegistry);
 	            var structure = xGpl.unfoldStructure();
 
 	            this.onUnitsStructureExpanded(structure);
@@ -6893,7 +6931,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	Plot.renderingsInProgress = 0;
 
 /***/ },
-/* 86 */
+/* 87 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -6903,15 +6941,15 @@ return /******/ (function(modules) { // webpackBootstrap
 	});
 	exports.Tooltip = undefined;
 
-	var _const = __webpack_require__(87);
+	var _const = __webpack_require__(88);
 
-	var _tauTooltip = __webpack_require__(88);
+	var _tauTooltip = __webpack_require__(89);
 
 	_tauTooltip.Tooltip.defaults.baseClass = _const.CSS_PREFIX + 'tooltip';
 	exports.Tooltip = _tauTooltip.Tooltip;
 
 /***/ },
-/* 87 */
+/* 88 */
 /***/ function(module, exports) {
 
 	'use strict';
@@ -6922,7 +6960,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	var CSS_PREFIX = exports.CSS_PREFIX = 'graphical-report__';
 
 /***/ },
-/* 88 */
+/* 89 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var __WEBPACK_AMD_DEFINE_FACTORY__, __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;(function webpackUniversalModuleDefinition(root, factory) {
@@ -7639,7 +7677,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	;
 
 /***/ },
-/* 89 */
+/* 90 */
 /***/ function(module, exports) {
 
 	'use strict';
@@ -7692,7 +7730,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	exports.Plugins = Plugins;
 
 /***/ },
-/* 90 */
+/* 91 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -7722,11 +7760,11 @@ return /******/ (function(modules) { // webpackBootstrap
 	                defineGrammarModel: function defineGrammarModel(params) {
 	                    return this.node().defineGrammarModel(params);
 	                },
-	                evalGrammarRules: function evalGrammarRules(grammarModel) {
-	                    return this.node().evalGrammarRules(grammarModel);
+	                getGrammarRules: function getGrammarRules(grammarModel) {
+	                    return this.node().getGrammarRules(grammarModel);
 	                },
-	                adjustScales: function adjustScales(grammarModel) {
-	                    return this.node().adjustScales(grammarModel);
+	                getAdjustScalesRules: function getAdjustScalesRules(grammarModel) {
+	                    return this.node().getAdjustScalesRules(grammarModel);
 	                },
 	                createScreenModel: function createScreenModel(grammarModel) {
 	                    return this.node().createScreenModel(grammarModel);
@@ -7771,7 +7809,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	exports.unitsRegistry = unitsRegistry;
 
 /***/ },
-/* 91 */
+/* 92 */
 /***/ function(module, exports) {
 
 	"use strict";
@@ -7827,7 +7865,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	}();
 
 /***/ },
-/* 92 */
+/* 93 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -7839,7 +7877,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
-	var _dataFrame = __webpack_require__(84);
+	var _dataFrame = __webpack_require__(85);
 
 	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
@@ -7883,7 +7921,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	}();
 
 /***/ },
-/* 93 */
+/* 94 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -8086,7 +8124,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	exports.DataProcessor = DataProcessor;
 
 /***/ },
-/* 94 */
+/* 95 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -8096,7 +8134,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	});
 	exports.getLayout = undefined;
 
-	var _const = __webpack_require__(87);
+	var _const = __webpack_require__(88);
 
 	var createElement = function createElement(cssClass, parent) {
 	    var tag = 'div';
@@ -8134,7 +8172,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	exports.getLayout = getLayout;
 
 /***/ },
-/* 95 */
+/* 96 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -8543,7 +8581,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	}();
 
 /***/ },
-/* 96 */
+/* 97 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -8557,7 +8595,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	var _utils = __webpack_require__(3);
 
-	var _formatterRegistry = __webpack_require__(97);
+	var _formatterRegistry = __webpack_require__(98);
 
 	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
@@ -8780,8 +8818,8 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	    var xValues = xMeta.values;
 	    var yValues = yMeta.values;
-	    var xIsEmptyAxis = xMeta.isEmpty;
-	    var yIsEmptyAxis = yMeta.isEmpty;
+	    var xIsEmptyAxis = xMeta.isEmpty || guide.x.hideTicks;
+	    var yIsEmptyAxis = yMeta.isEmpty || guide.y.hideTicks;
 
 	    var maxXTickBox = getMaxTickLabelSize(xValues, _formatterRegistry.FormatterRegistry.get(guide.x.tickFormat, guide.x.tickFormatNullAlias), settings.getAxisTickLabelSize, settings.xAxisTickLabelLimit);
 
@@ -8854,7 +8892,14 @@ return /******/ (function(modules) { // webpackBootstrap
 	    return guide;
 	};
 
-	var calcUnitGuide = function calcUnitGuide(unit, meta, settings, allowXVertical, allowYVertical, inlineLabels) {
+	var calcUnitGuide = function calcUnitGuide(_ref2) {
+	    var unit = _ref2.unit,
+	        meta = _ref2.meta,
+	        settings = _ref2.settings,
+	        allowXVertical = _ref2.allowXVertical,
+	        allowYVertical = _ref2.allowYVertical,
+	        inlineLabels = _ref2.inlineLabels;
+
 
 	    var dimX = meta.dimension(unit.x);
 	    var dimY = meta.dimension(unit.y);
@@ -9051,10 +9096,17 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	            if (selectorPredicates.isLeafParent) {
 
-	                return calcUnitGuide(unit, meta, _utils.utils.defaults({
-	                    xTickWordWrapLinesLimit: 1,
-	                    yTickWordWrapLinesLimit: 1
-	                }, settings), true, false, true);
+	                return calcUnitGuide({
+	                    unit: unit,
+	                    meta: meta,
+	                    settings: _utils.utils.defaults({
+	                        xTickWordWrapLinesLimit: 1,
+	                        yTickWordWrapLinesLimit: 1
+	                    }, settings),
+	                    allowXVertical: true,
+	                    allowYVertical: false,
+	                    inlineLabels: true
+	                });
 	            }
 
 	            // facet level
@@ -9063,14 +9115,79 @@ return /******/ (function(modules) { // webpackBootstrap
 	            unit.guide.y.cssClass += ' facet-axis compact';
 	            unit.guide.y.avoidCollisions = true;
 
-	            return calcUnitGuide(unit, meta, _utils.utils.defaults({
-	                xAxisPadding: 0,
-	                yAxisPadding: 0,
-	                distToXAxisLabel: 0,
-	                distToYAxisLabel: 0,
-	                xTickWordWrapLinesLimit: 1,
-	                yTickWordWrapLinesLimit: 1
-	            }, settings), false, true, false);
+	            return calcUnitGuide({
+	                unit: unit,
+	                meta: meta,
+	                settings: _utils.utils.defaults({
+	                    xAxisPadding: 0,
+	                    yAxisPadding: 0,
+	                    distToXAxisLabel: 0,
+	                    distToYAxisLabel: 0,
+	                    xTickWordWrapLinesLimit: 1,
+	                    yTickWordWrapLinesLimit: 1
+	                }, settings),
+	                allowXVertical: false,
+	                allowYVertical: true,
+	                inlineLabels: false
+	            });
+	        });
+
+	        return spec;
+	    },
+
+	    'BUILD-SPARKLINE': function BUILDSPARKLINE(srcSpec, meta, settings) {
+
+	        var spec = _utils.utils.clone(srcSpec);
+	        fnTraverseSpec(_utils.utils.clone(spec.unit), spec.unit, function (selectorPredicates, unit) {
+
+	            if (selectorPredicates.isLeaf) {
+	                return unit;
+	            }
+
+	            if (!unit.guide.hasOwnProperty('showGridLines')) {
+	                unit.guide.showGridLines = selectorPredicates.isLeafParent ? 'xy' : '';
+	            }
+
+	            if (selectorPredicates.isLeafParent) {
+	                unit.guide.x.hideTicks = true;
+	                unit.guide.y.hideTicks = true;
+
+	                return calcUnitGuide({
+	                    unit: unit,
+	                    meta: meta,
+	                    settings: _utils.utils.defaults({
+	                        xTickWordWrapLinesLimit: 1,
+	                        yTickWordWrapLinesLimit: 1
+	                    }, settings),
+	                    allowXVertical: false,
+	                    allowYVertical: false,
+	                    inlineLabels: true
+	                });
+	            }
+
+	            // facet level
+	            unit.guide.x.cssClass += ' facet-axis compact';
+	            unit.guide.x.avoidCollisions = true;
+	            unit.guide.x.hideTicks = true;
+	            unit.guide.y.cssClass += ' facet-axis compact';
+	            unit.guide.y.avoidCollisions = true;
+	            unit.guide.y.hideTicks = true;
+
+	            return calcUnitGuide({
+	                unit: unit,
+	                meta: meta,
+	                settings: _utils.utils.defaults({
+	                    xAxisPadding: 0,
+	                    yAxisPadding: 0,
+	                    distToXAxisLabel: 0,
+	                    distToYAxisLabel: 0,
+	                    xTickWordWrapLinesLimit: 1,
+	                    yTickWordWrapLinesLimit: 1
+	                }, settings),
+	                allowXVertical: false,
+	                allowYVertical: true,
+	                inlineLabels: false
+	            });
 	        });
 
 	        return spec;
@@ -9085,6 +9202,12 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	SpecEngineTypeMap.COMPACT = function (srcSpec, meta, settings) {
 	    return ['BUILD-LABELS', 'BUILD-COMPACT'].reduce(function (spec, engineName) {
+	        return SpecEngineTypeMap[engineName](spec, meta, settings);
+	    }, srcSpec);
+	};
+
+	SpecEngineTypeMap.SPARKLINE = function (srcSpec, meta, settings) {
+	    return ['BUILD-LABELS', 'BUILD-SPARKLINE'].reduce(function (spec, engineName) {
 	        return SpecEngineTypeMap[engineName](spec, meta, settings);
 	    }, srcSpec);
 	};
@@ -9162,7 +9285,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	            var size = spec.settings.size;
 
 	            var rule = spec.settings.specEngine.find(function (rule) {
-	                return size.width <= rule.width;
+	                return size.width <= rule.width || size.height <= rule.height;
 	            });
 
 	            return SpecEngineFactory.get(rule.name, spec.settings, spec, function (type, alias) {
@@ -9175,7 +9298,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	}();
 
 /***/ },
-/* 97 */
+/* 98 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -9283,7 +9406,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	exports.FormatterRegistry = FormatterRegistry;
 
 /***/ },
-/* 98 */
+/* 99 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -9293,11 +9416,13 @@ return /******/ (function(modules) { // webpackBootstrap
 	});
 	exports.SpecTransformCalcSize = undefined;
 
+	var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
+
 	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
 	var _utils = __webpack_require__(3);
 
-	var _specTransformOptimize = __webpack_require__(99);
+	var _specTransformOptimize = __webpack_require__(100);
 
 	function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr2 = Array(arr.length); i < arr.length; i++) { arr2[i] = arr[i]; } return arr2; } else { return Array.from(arr); } }
 
@@ -9427,7 +9552,23 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	                var resScaleSize = prop === 'x' ? guide.padding.l + guide.padding.r : guide.padding.b + guide.padding.t;
 
-	                if (root.units[0].type !== 'COORDS.RECT') {
+	                if (root.units[0].type === 'ELEMENT.INTERVAL' && prop === 'y' === Boolean(root.units[0].flip) && root.units[0].label && !chart.getScaleInfo(root.units[0].label, frame).isEmpty()) {
+	                    var rowsTotal;
+
+	                    var _ret = function () {
+
+	                        var labelFontSize = guide.label && guide.label.fontSize ? guide.label.fontSize : 10;
+	                        rowsTotal = root.frames.reduce(function (sum, f) {
+	                            return f.full().length * labelFontSize;
+	                        }, 0);
+
+	                        return {
+	                            v: resScaleSize + rowsTotal
+	                        };
+	                    }();
+
+	                    if ((typeof _ret === 'undefined' ? 'undefined' : _typeof(_ret)) === "object") return _ret.v;
+	                } else if (root.units[0].type !== 'COORDS.RECT') {
 
 	                    var xScale = chart.getScaleInfo(xCfg, frame);
 	                    return resScaleSize + calcScaleSize(xScale, xSize);
@@ -9460,12 +9601,12 @@ return /******/ (function(modules) { // webpackBootstrap
 	                newH = newSize.newH;
 	            }
 
-	            var prettifySize = function prettifySize(srcSize, newSize) {
+	            var prettifySize = function prettifySize(srcSize, newSize, rScroll) {
 
 	                var scrollSize = specRef.settings.getScrollbarSize(chart.getLayout().contentContainer);
 
-	                var recommendedWidth = newSize.width;
-	                var recommendedHeight = newSize.height;
+	                var recommendedWidth = newSize.width > srcSize.width && newSize.width <= srcSize.width * rScroll ? srcSize.width : newSize.width;
+	                var recommendedHeight = newSize.height > srcSize.height && newSize.height <= srcSize.height * rScroll ? srcSize.height : newSize.height;
 
 	                var deltaW = srcSize.width - recommendedWidth;
 	                var deltaH = srcSize.height - recommendedHeight;
@@ -9479,7 +9620,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	                };
 	            };
 
-	            specRef.settings.size = prettifySize(srcSize, { width: newW, height: newH });
+	            specRef.settings.size = prettifySize(srcSize, { width: newW, height: newH }, specRef.settings.avoidScrollAtRatio);
 
 	            return specRef;
 	        }
@@ -9489,7 +9630,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	}();
 
 /***/ },
-/* 99 */
+/* 100 */
 /***/ function(module, exports) {
 
 	'use strict';
@@ -9546,7 +9687,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	}();
 
 /***/ },
-/* 100 */
+/* 101 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -9688,7 +9829,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	}();
 
 /***/ },
-/* 101 */
+/* 102 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -9822,7 +9963,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	}();
 
 /***/ },
-/* 102 */
+/* 103 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -9836,11 +9977,11 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	var _get = function get(object, property, receiver) { if (object === null) object = Function.prototype; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { return get(parent, property, receiver); } } else if ("value" in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } };
 
-	var _tau = __webpack_require__(85);
+	var _tau = __webpack_require__(86);
 
 	var _utils = __webpack_require__(3);
 
-	var _chartAliasRegistry = __webpack_require__(103);
+	var _chartAliasRegistry = __webpack_require__(104);
 
 	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
@@ -9914,7 +10055,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	exports.Chart = Chart;
 
 /***/ },
-/* 103 */
+/* 104 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -9973,7 +10114,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	exports.chartTypesRegistry = chartTypesRegistry;
 
 /***/ },
-/* 104 */
+/* 105 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -9991,17 +10132,15 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	var _element = __webpack_require__(5);
 
-	var _cartesian = __webpack_require__(105);
-
 	var _utilsDom = __webpack_require__(1);
 
 	var _utilsDraw = __webpack_require__(10);
 
 	var _utils = __webpack_require__(3);
 
-	var _const = __webpack_require__(87);
+	var _const = __webpack_require__(88);
 
-	var _formatterRegistry = __webpack_require__(97);
+	var _formatterRegistry = __webpack_require__(98);
 
 	var _d3Decorators = __webpack_require__(9);
 
@@ -10117,7 +10256,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	            this.xScale = fnCreateScale('pos', this.config.x, [0, w]);
 	            this.yScale = fnCreateScale('pos', this.config.y, [h, 0]);
 	            this.regScale('x', this.xScale).regScale('y', this.yScale);
-	            return new _cartesian.CartesianModel({
+	            return {
 	                scaleX: this.xScale,
 	                scaleY: this.yScale,
 	                xi: function xi() {
@@ -10132,21 +10271,34 @@ return /******/ (function(modules) { // webpackBootstrap
 	                sizeY: function sizeY() {
 	                    return h;
 	                }
-	            });
+	            };
 	        }
 	    }, {
-	        key: 'evalGrammarRules',
-	        value: function evalGrammarRules(grammarModel) {
-	            return [_cartesian.CartesianModel.decorator_size, _cartesian.CartesianModel.decorator_color].filter(function (x) {
-	                return x;
-	            }).reduce(function (model, rule) {
-	                return rule(model, {});
-	            }, grammarModel);
+	        key: 'getGrammarRules',
+	        value: function getGrammarRules() {
+	            return [function (prevModel) {
+	                var sx = prevModel.scaleX;
+	                var sy = prevModel.scaleY;
+	                return {
+	                    xi: function xi(d) {
+	                        return !d ? prevModel.xi(d) : sx(d[sx.dim]);
+	                    },
+	                    yi: function yi(d) {
+	                        return !d ? prevModel.yi(d) : sy(d[sy.dim]);
+	                    },
+	                    sizeX: function sizeX(d) {
+	                        return !d ? prevModel.sizeX(d) : sx.stepSize(d[sx.dim]);
+	                    },
+	                    sizeY: function sizeY(d) {
+	                        return !d ? prevModel.sizeY(d) : sy.stepSize(d[sy.dim]);
+	                    }
+	                };
+	            }];
 	        }
 	    }, {
 	        key: 'createScreenModel',
 	        value: function createScreenModel(grammarModel) {
-	            return grammarModel.toScreenModel();
+	            return grammarModel;
 	        }
 	    }, {
 	        key: 'allocateRect',
@@ -10255,7 +10407,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	                var isHorizontal = _utilsDraw.utilsDraw.getOrientation(scale.guide.scaleOrient) === 'h';
 	                var prettifyTick = scale.scaleType === 'ordinal' || scale.scaleType === 'period';
-	                if (prettifyTick) {
+	                if (prettifyTick && !scale.guide.hideTicks) {
 	                    (0, _d3Decorators.d3_decorator_prettify_categorical_axis_ticks)(transAxis, scale, isHorizontal, animationSpeed);
 	                }
 
@@ -10263,6 +10415,11 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	                if (!scale.guide.label.hide) {
 	                    (0, _d3Decorators.d3_decorator_prettify_axis_label)(axis, scale.guide.label, isHorizontal, size, animationSpeed);
+	                }
+
+	                if (scale.guide.hideTicks) {
+	                    axis.selectAll('.tick').remove();
+	                    return;
 	                }
 
 	                var activeTicks = scale.scaleObj.ticks ? scale.scaleObj.ticks() : scale.scaleObj.domain();
@@ -10378,81 +10535,6 @@ return /******/ (function(modules) { // webpackBootstrap
 	}(_element.Element);
 
 /***/ },
-/* 105 */
-/***/ function(module, exports) {
-
-	"use strict";
-
-	Object.defineProperty(exports, "__esModule", {
-	    value: true
-	});
-
-	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
-
-	function _objectDestructuringEmpty(obj) { if (obj == null) throw new TypeError("Cannot destructure undefined"); }
-
-	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
-
-	var CartesianModel = exports.CartesianModel = function () {
-	    function CartesianModel(model) {
-	        _classCallCheck(this, CartesianModel);
-
-	        var createFunc = function createFunc(x) {
-	            return function () {
-	                return x;
-	            };
-	        };
-	        this.scaleX = model.scaleX;
-	        this.scaleY = model.scaleY;
-	        this.yi = model.yi || createFunc(0);
-	        this.xi = model.xi || createFunc(0);
-	        this.sizeX = model.sizeX || createFunc(0);
-	        this.sizeY = model.sizeY || createFunc(0);
-	    }
-
-	    _createClass(CartesianModel, [{
-	        key: "toScreenModel",
-	        value: function toScreenModel() {
-	            return this;
-	        }
-	    }], [{
-	        key: "compose",
-	        value: function compose(prev) {
-	            var updates = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
-
-	            return Object.keys(updates).reduce(function (memo, propName) {
-	                memo[propName] = updates[propName];
-	                return memo;
-	            }, new CartesianModel(prev));
-	        }
-	    }, {
-	        key: "decorator_size",
-	        value: function decorator_size(model, _ref) {
-	            _objectDestructuringEmpty(_ref);
-
-	            var sx = model.scaleX;
-	            var sy = model.scaleY;
-	            return CartesianModel.compose(model, {
-	                xi: function xi(d) {
-	                    return !d ? model.xi(d) : sx(d[sx.dim]);
-	                },
-	                yi: function yi(d) {
-	                    return !d ? model.yi(d) : sy(d[sy.dim]);
-	                },
-	                sizeX: function sizeX(d) {
-	                    return !d ? model.sizeX(d) : sx.stepSize(d[sx.dim]);
-	                },
-	                sizeY: function sizeY(d) {
-	                    return !d ? model.sizeY(d) : sy.stepSize(d[sy.dim]);
-	                }
-	            });
-	        }
-	    }]);
-
-	    return CartesianModel;
-	}();
-
-/***/ },
 /* 106 */
 /***/ function(module, exports, __webpack_require__) {
 
@@ -10475,9 +10557,9 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	var _utils = __webpack_require__(3);
 
-	var _const = __webpack_require__(87);
+	var _const = __webpack_require__(88);
 
-	var _formatterRegistry = __webpack_require__(97);
+	var _formatterRegistry = __webpack_require__(98);
 
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
@@ -10544,7 +10626,8 @@ return /******/ (function(modules) { // webpackBootstrap
 	                return colsMap[p];
 	            };
 
-	            return this.regScale('columns', this.columnsScalesMap);
+	            this.regScale('columns', this.columnsScalesMap);
+	            return {};
 	        }
 	    }, {
 	        key: 'allocateRect',
@@ -10834,7 +10917,9 @@ return /******/ (function(modules) { // webpackBootstrap
 	            this.W = innerWidth;
 	            this.H = innerHeight;
 
-	            return this.regScale('latitude', this.latScale).regScale('longitude', this.lonScale).regScale('size', this.sizeScale).regScale('color', this.colorScale).regScale('code', this.codeScale).regScale('fill', this.fillScale);
+	            this.regScale('latitude', this.latScale).regScale('longitude', this.lonScale).regScale('size', this.sizeScale).regScale('color', this.colorScale).regScale('code', this.codeScale).regScale('fill', this.fillScale);
+
+	            return {};
 	        }
 	    }, {
 	        key: 'drawFrames',
@@ -12192,9 +12277,9 @@ return /******/ (function(modules) { // webpackBootstrap
 	});
 	exports.Point = undefined;
 
-	var _const = __webpack_require__(87);
+	var _const = __webpack_require__(88);
 
-	var _cartesianGrammar = __webpack_require__(7);
+	var _grammarRegistry = __webpack_require__(7);
 
 	var _layerLabels = __webpack_require__(111);
 
@@ -12211,7 +12296,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	        config.guide = _utils.utils.defaults(config.guide || {}, {
 	            animationSpeed: 0,
-	            prettify: true,
+	            avoidScalesOverflow: true,
 	            enableColorToBarPosition: false
 	        });
 
@@ -12221,6 +12306,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	            position: ['auto:avoid-label-label-overlap', 'auto:avoid-label-anchor-overlap', 'auto:adjust-on-label-overflow', 'auto:hide-on-label-label-overlap', 'auto:hide-on-label-anchor-overlap']
 	        });
 
+	        var avoidScalesOverflow = config.guide.avoidScalesOverflow;
 	        var enableColorPositioning = config.guide.enableColorToBarPosition;
 
 	        config.transformRules = [function (prevModel) {
@@ -12230,13 +12316,13 @@ return /******/ (function(modules) { // webpackBootstrap
 	                return discreteB * b.domain().length - discreteA * a.domain().length;
 	            })[0];
 	            var isHorizontal = prevModel.scaleY === bestBaseScale;
-	            return isHorizontal ? _cartesianGrammar.CartesianGrammar.decorator_flip(prevModel) : _cartesianGrammar.CartesianGrammar.decorator_identity(prevModel);
-	        }, config.stack && _cartesianGrammar.CartesianGrammar.decorator_stack, enableColorPositioning && _cartesianGrammar.CartesianGrammar.decorator_positioningByColor].filter(function (x) {
+	            return isHorizontal ? _grammarRegistry.GrammarRegistry.get('flip')(prevModel) : _grammarRegistry.GrammarRegistry.get('identity')(prevModel);
+	        }, config.stack && _grammarRegistry.GrammarRegistry.get('stack'), enableColorPositioning && _grammarRegistry.GrammarRegistry.get('positioningByColor')].filter(function (x) {
 	            return x;
 	        }).concat(config.transformModel || []);
 
-	        config.adjustRules = [config.stack && _cartesianGrammar.CartesianGrammar.adjustYScale, function (prevModel, args) {
-	            var isEmptySize = !prevModel.scaleSize.dim; // TODO: empty method for size scale???
+	        config.adjustRules = [config.stack && _grammarRegistry.GrammarRegistry.get('adjustYScale'), function (prevModel, args) {
+	            var isEmptySize = prevModel.scaleSize.isEmptyScale();
 	            var sizeCfg = _utils.utils.defaults(config.guide.size, {
 	                defMinSize: 10,
 	                defMaxSize: isEmptySize ? 10 : 40,
@@ -12249,9 +12335,14 @@ return /******/ (function(modules) { // webpackBootstrap
 	                maxLimit: sizeCfg.maxSize
 	            });
 
-	            var method = sizeCfg.enableDistributeEvenly ? _cartesianGrammar.CartesianGrammar.adjustSigmaSizeScale : _cartesianGrammar.CartesianGrammar.adjustStaticSizeScale;
+	            var method = sizeCfg.enableDistributeEvenly ? _grammarRegistry.GrammarRegistry.get('adjustSigmaSizeScale') : _grammarRegistry.GrammarRegistry.get('adjustStaticSizeScale');
 
 	            return method(prevModel, params);
+	        }, avoidScalesOverflow && function (prevModel, args) {
+	            var params = Object.assign({}, args, {
+	                sizeDirection: 'xy'
+	            });
+	            return _grammarRegistry.GrammarRegistry.get('avoidScalesOverflow')(prevModel, params);
 	        }].filter(function (x) {
 	            return x;
 	        });
@@ -12265,18 +12356,27 @@ return /******/ (function(modules) { // webpackBootstrap
 	        node.on('highlight', function (sender, e) {
 	            return _this.highlight(e);
 	        });
-	        node.on('mouseover', function (sender, e) {
-	            var identity = sender.screenModel.model.id;
-	            var id = identity(e.data);
-	            sender.fire('highlight', function (row) {
-	                return identity(row) === id ? true : null;
-	            });
+	        node.on('highlight-data-points', function (sender, e) {
+	            return _this.highlightDataPoints(e);
 	        });
-	        node.on('mouseout', function (sender) {
-	            return sender.fire('highlight', function () {
-	                return null;
-	            });
-	        });
+
+	        var getHighlightEvtObj = function getHighlightEvtObj(e, data) {
+	            var filter = function filter(d) {
+	                return d === data ? true : null;
+	            };
+	            filter.data = data;
+	            filter.domEvent = e;
+	            return filter;
+	        };
+	        var activate = function activate(sender, e) {
+	            return sender.fire('highlight-data-points', getHighlightEvtObj(e.event, e.data));
+	        };
+	        var deactivate = function deactivate(sender, e) {
+	            return sender.fire('highlight-data-points', getHighlightEvtObj(e.event, null));
+	        };
+	        node.on('mouseover', activate);
+	        node.on('mousemove', activate);
+	        node.on('mouseout', deactivate);
 	    },
 	    draw: function draw() {
 
@@ -12364,6 +12464,15 @@ return /******/ (function(modules) { // webpackBootstrap
 	        container.selectAll('.dot').classed(classed);
 
 	        container.selectAll('.i-role-label').classed(classed);
+	    },
+	    highlightDataPoints: function highlightDataPoints(filter) {
+	        this.highlight(filter);
+
+	        // Add highlighted elements to event.
+	        filter.targetElements = [];
+	        this.node().config.options.container.selectAll('.dot').filter(filter).each(function () {
+	            filter.targetElements.push(this);
+	        });
 	    }
 	};
 
@@ -12396,7 +12505,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	var _layerLabelsPenalties = __webpack_require__(115);
 
-	var _formatterRegistry = __webpack_require__(97);
+	var _formatterRegistry = __webpack_require__(98);
 
 	function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
 
@@ -12551,7 +12660,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	            var update = function update() {
 	                this.style('fill', color).style('font-size', self.guide.fontSize + 'px').style('display', function (__, i) {
 	                    return labels[i].hide ? 'none' : null;
-	                }).attr('text-anchor', 'middle').attr('transform', function (d, i) {
+	                }).attr('class', 'i-role-label').attr('text-anchor', 'middle').attr('transform', function (d, i) {
 	                    return 'translate(' + xi(d, i) + ',' + yi(d, i) + ') rotate(' + angle(d, i) + ')';
 	                }).text(label);
 	            };
@@ -12561,7 +12670,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	            }));
 	            text.exit().remove();
 	            text.call(update);
-	            text.enter().append('text').attr('class', 'i-role-label').call(update);
+	            text.enter().append('text').call(update);
 
 	            return text;
 	        }
@@ -12999,7 +13108,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	                var k = exp[1];
 	                var u = exp[0] === exp[0].toUpperCase() ? 1 : 0;
 
-	                return prev.dy(row) + (k * (prev.h(row) / 2) + k * u * prev.model.size(row) / 2);
+	                return prev.dy(row) + k * (prev.h(row) / 2) + k * u * prev.model.size(row) / 2 + k * 2;
 	            }
 	        };
 	    };
@@ -13426,7 +13535,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	var _d2 = _interopRequireDefault(_d);
 
-	var _const = __webpack_require__(87);
+	var _const = __webpack_require__(88);
 
 	var _utils = __webpack_require__(3);
 
@@ -13434,7 +13543,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	var _cssClassMap = __webpack_require__(118);
 
-	var _cartesianGrammar = __webpack_require__(7);
+	var _grammarRegistry = __webpack_require__(7);
 
 	var _d3Decorators = __webpack_require__(9);
 
@@ -13456,10 +13565,10 @@ return /******/ (function(modules) { // webpackBootstrap
 	        var config = _elementPath.BasePath.init(xConfig);
 	        var enableStack = config.stack;
 
-	        config.transformRules = [config.flip && _cartesianGrammar.CartesianGrammar.decorator_flip, enableStack ? _cartesianGrammar.CartesianGrammar.decorator_groupOrderByColor : _cartesianGrammar.CartesianGrammar.decorator_groupOrderByAvg, enableStack && _elementPath.BasePath.grammarRuleFillGaps, enableStack && _cartesianGrammar.CartesianGrammar.decorator_stack].concat(config.transformModel || []);
+	        config.transformRules = [config.flip && _grammarRegistry.GrammarRegistry.get('flip'), !enableStack && _grammarRegistry.GrammarRegistry.get('groupOrderByAvg'), enableStack && _elementPath.BasePath.grammarRuleFillGaps, enableStack && _grammarRegistry.GrammarRegistry.get('stack')].concat(config.transformModel || []);
 
 	        config.adjustRules = [function (prevModel, args) {
-	            var isEmptySize = !prevModel.scaleSize.dim; // TODO: empty method for size scale???
+	            var isEmptySize = prevModel.scaleSize.isEmptyScale();
 	            var sizeCfg = _utils.utils.defaults(config.guide.size || {}, {
 	                defMinSize: 2,
 	                defMaxSize: isEmptySize ? 6 : 40
@@ -13471,7 +13580,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	                maxLimit: sizeCfg.maxSize
 	            });
 
-	            return _cartesianGrammar.CartesianGrammar.adjustStaticSizeScale(prevModel, params);
+	            return _grammarRegistry.GrammarRegistry.get('adjustStaticSizeScale')(prevModel, params);
 	        }];
 
 	        return config;
@@ -13573,7 +13682,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	var _layerLabels = __webpack_require__(111);
 
-	var _const = __webpack_require__(87);
+	var _const = __webpack_require__(88);
 
 	var _d3Decorators = __webpack_require__(9);
 
@@ -13755,19 +13864,25 @@ return /******/ (function(modules) { // webpackBootstrap
 	        });
 
 	        if (config.guide.showAnchors !== 'never') {
-	            var activate = function activate(sender, e) {
-	                return sender.fire('highlight-data-points', function (row) {
-	                    return row === e.data;
-	                });
-	            };
-	            var deactivate = function deactivate(sender) {
-	                return sender.fire('highlight-data-points', function () {
-	                    return false;
-	                });
-	            };
-	            node.on('mouseover', activate);
-	            node.on('mousemove', activate);
-	            node.on('mouseout', deactivate);
+	            (function () {
+	                var getHighlightEvtObj = function getHighlightEvtObj(e, data) {
+	                    var filter = function filter(d) {
+	                        return d === data;
+	                    };
+	                    filter.data = data;
+	                    filter.domEvent = e;
+	                    return filter;
+	                };
+	                var activate = function activate(sender, e) {
+	                    return sender.fire('highlight-data-points', getHighlightEvtObj(e.event, e.data));
+	                };
+	                var deactivate = function deactivate(sender, e) {
+	                    return sender.fire('highlight-data-points', getHighlightEvtObj(e.event, null));
+	                };
+	                node.on('mouseover', activate);
+	                node.on('mousemove', activate);
+	                node.on('mouseout', deactivate);
+	            })();
 	        }
 	    },
 	    draw: function draw() {
@@ -13804,13 +13919,13 @@ return /******/ (function(modules) { // webpackBootstrap
 	                    // HACK: This call fixes stacked area tween (some paths are intersected on
 	                    // synthetic points). Maybe caused by async call of `toPoint`.
 	                    selection.attr(model.pathTween.attr, function (d) {
-	                        return model.pathTween.fn(d)(0);
+	                        return model.pathTween.fn.call(this, d)(0);
 	                    });
 
 	                    (0, _d3Decorators.d3_transition)(selection, config.guide.animationSpeed, 'pathTransition').attrTween(model.pathTween.attr, model.pathTween.fn);
 	                } else {
 	                    selection.attr(model.pathTween.attr, function (d) {
-	                        return model.pathTween.fn(d)(1);
+	                        return model.pathTween.fn.call(this, d)(1);
 	                    });
 	                }
 	            };
@@ -13929,14 +14044,16 @@ return /******/ (function(modules) { // webpackBootstrap
 	        var cssClass = 'i-data-anchor';
 	        var screenModel = this.node().screenModel;
 	        var showOnHover = this.node().config.guide.showAnchors === 'hover';
-	        this.node().config.options.container.selectAll('.' + cssClass).attr({
+	        var rmin = 3; // Min highlight radius
+	        var rx = 1.25; // Highlight multiplier
+	        var anchors = this.node().config.options.container.selectAll('.' + cssClass).attr({
 	            r: showOnHover ? function (d) {
-	                return filter(d) ? screenModel.size(d) / 2 : 0;
+	                return filter(d) ? Math.max(rmin, screenModel.size(d) / 2) : 0;
 	            } : function (d) {
 	                // NOTE: Highlight point with larger radius.
 	                var r = screenModel.size(d) / 2;
 	                if (filter(d)) {
-	                    return Math.ceil(r * 1.25);
+	                    r = Math.max(rmin, Math.ceil(r * rx));
 	                }
 	                return r;
 	            },
@@ -13949,6 +14066,12 @@ return /******/ (function(modules) { // webpackBootstrap
 	            class: function _class(d) {
 	                return _utilsDom.utilsDom.classes(cssClass, screenModel.class(d));
 	            }
+	        });
+
+	        // Add highlighted elements to event
+	        filter.targetElements = [];
+	        anchors.filter(filter).each(function () {
+	            filter.targetElements.push(this);
 	        });
 	    }
 	};
@@ -13966,7 +14089,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	});
 	exports.getLineClassesByCount = exports.getLineClassesByWidth = undefined;
 
-	var _const = __webpack_require__(87);
+	var _const = __webpack_require__(88);
 
 	var arrayNumber = [1, 2, 3, 4, 5];
 	var countLineClasses = arrayNumber.map(function (i) {
@@ -14033,9 +14156,9 @@ return /******/ (function(modules) { // webpackBootstrap
 	});
 	exports.Path = undefined;
 
-	var _const = __webpack_require__(87);
+	var _const = __webpack_require__(88);
 
-	var _cartesianGrammar = __webpack_require__(7);
+	var _grammarRegistry = __webpack_require__(7);
 
 	var _elementPath = __webpack_require__(117);
 
@@ -14056,10 +14179,10 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	        var config = _elementPath.BasePath.init(xConfig);
 
-	        config.transformRules = [config.flip && _cartesianGrammar.CartesianGrammar.decorator_flip].concat(config.transformModel || []);
+	        config.transformRules = [config.flip && _grammarRegistry.GrammarRegistry.get('flip')].concat(config.transformModel || []);
 
 	        config.adjustRules = [function (prevModel, args) {
-	            var isEmptySize = !prevModel.scaleSize.dim; // TODO: empty method for size scale???
+	            var isEmptySize = prevModel.scaleSize.isEmptyScale();
 	            var sizeCfg = _utils.utils.defaults(config.guide.size || {}, {
 	                defMinSize: 2,
 	                defMaxSize: isEmptySize ? 6 : 40
@@ -14071,7 +14194,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	                maxLimit: sizeCfg.maxSize
 	            });
 
-	            return _cartesianGrammar.CartesianGrammar.adjustStaticSizeScale(prevModel, params);
+	            return _grammarRegistry.GrammarRegistry.get('adjustStaticSizeScale')(prevModel, params);
 	        }];
 
 	        return config;
@@ -14171,11 +14294,11 @@ return /******/ (function(modules) { // webpackBootstrap
 	});
 	exports.Line = undefined;
 
-	var _const = __webpack_require__(87);
+	var _const = __webpack_require__(88);
 
 	var _elementPath = __webpack_require__(117);
 
-	var _cartesianGrammar = __webpack_require__(7);
+	var _grammarRegistry = __webpack_require__(7);
 
 	var _cssClassMap = __webpack_require__(118);
 
@@ -14183,7 +14306,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	var _d3Decorators = __webpack_require__(9);
 
-	var _interpolatorsRegistry = __webpack_require__(12);
+	var _interpolatorsRegistry = __webpack_require__(13);
 
 	var _brushLine = __webpack_require__(122);
 
@@ -14202,16 +14325,21 @@ return /******/ (function(modules) { // webpackBootstrap
 	        var enableStack = config.stack;
 
 	        config.guide = _utils.utils.defaults(config.guide || {}, {
+	            avoidScalesOverflow: true,
 	            interpolate: 'linear'
 	        });
 
-	        config.transformRules = [config.flip && _cartesianGrammar.CartesianGrammar.decorator_flip, enableStack ? _cartesianGrammar.CartesianGrammar.decorator_groupOrderByColor : _cartesianGrammar.CartesianGrammar.decorator_groupOrderByAvg, enableStack && _elementPath.BasePath.grammarRuleFillGaps, enableStack && _cartesianGrammar.CartesianGrammar.decorator_stack].concat(config.transformModel || []);
+	        config.transformRules = [config.flip && _grammarRegistry.GrammarRegistry.get('flip'), !enableStack && _grammarRegistry.GrammarRegistry.get('groupOrderByAvg'), enableStack && _elementPath.BasePath.grammarRuleFillGaps, enableStack && _grammarRegistry.GrammarRegistry.get('stack')].concat(config.transformModel || []);
+
+	        var avoidScalesOverflow = config.guide.avoidScalesOverflow;
+	        var isEmptySize = function isEmptySize(model) {
+	            return model.scaleSize.isEmptyScale();
+	        };
 
 	        config.adjustRules = [function (prevModel, args) {
-	            var isEmptySize = !prevModel.scaleSize.dim; // TODO: empty method for size scale???
 	            var sizeCfg = _utils.utils.defaults(config.guide.size || {}, {
 	                defMinSize: 2,
-	                defMaxSize: isEmptySize ? 6 : 40
+	                defMaxSize: isEmptySize(prevModel) ? 6 : 40
 	            });
 	            var params = Object.assign({}, args, {
 	                defMin: sizeCfg.defMinSize,
@@ -14220,9 +14348,20 @@ return /******/ (function(modules) { // webpackBootstrap
 	                maxLimit: sizeCfg.maxSize
 	            });
 
-	            return _cartesianGrammar.CartesianGrammar.adjustStaticSizeScale(prevModel, params);
-	        }];
-
+	            return _grammarRegistry.GrammarRegistry.get('adjustStaticSizeScale')(prevModel, params);
+	        }, avoidScalesOverflow && function (prevModel, args) {
+	            if (isEmptySize(prevModel)) {
+	                return function () {
+	                    return {};
+	                };
+	            }
+	            var params = Object.assign({}, args, {
+	                sizeDirection: 'xy'
+	            });
+	            return _grammarRegistry.GrammarRegistry.get('avoidScalesOverflow')(prevModel, params);
+	        }].filter(function (x) {
+	            return x;
+	        });
 	        return config;
 	    },
 	    buildModel: function buildModel(screenModel) {
@@ -14331,7 +14470,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 /***/ },
 /* 122 */
-/***/ function(module, exports) {
+/***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 
@@ -14340,6 +14479,11 @@ return /******/ (function(modules) { // webpackBootstrap
 	});
 	exports.getBrushLine = getBrushLine;
 	exports.getBrushCurve = getBrushCurve;
+
+	var _bezier = __webpack_require__(12);
+
+	function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr2 = Array(arr.length); i < arr.length; i++) { arr2[i] = arr[i]; } return arr2; } else { return Array.from(arr); } }
+
 	/**
 	 * Returns line with variable width.
 	 * @param points Linear points.
@@ -14349,11 +14493,11 @@ return /******/ (function(modules) { // webpackBootstrap
 	        return '';
 	    }
 	    if (points.length === 1) {
-	        return getSegment(points[0], points[0]);
+	        return getCirclePath(points[0]);
 	    }
 	    var segments = [];
 	    for (var i = 1; i < points.length; i++) {
-	        segments.push(getSegment(points[i - 1], points[i]));
+	        segments.push(getStraightSegmentPath(points[i - 1], points[i]));
 	    }
 	    return segments.join(' ');
 	}
@@ -14367,105 +14511,139 @@ return /******/ (function(modules) { // webpackBootstrap
 	        return '';
 	    }
 	    if (points.length === 1) {
-	        return getSegment(points[0], points[0]);
+	        return getCirclePath(points[0]);
 	    }
 	    var segments = [];
 	    for (var i = 3; i < points.length; i += 3) {
-	        segments.push(getCurveSegment(points[i - 3], points[i - 2], points[i - 1], points[i]));
+	        segments.push(getCurveSegmentPath(points[i - 3], points[i - 2], points[i - 1], points[i]));
 	    }
 	    return segments.join(' ');
 	}
 
-	/**
-	 * Returns single circle as part of SVG path.
-	 */
-	function getCircle(x, y, r) {
-	    return ['M' + x + ',' + (y - r), 'A' + r + ',' + r + ' 0 0 1', x + ',' + (y + r), 'A' + r + ',' + r + ' 0 0 1', x + ',' + (y - r), 'Z'].join(' ');
+	function getCirclePath(pt) {
+	    var r = pt.size / 2;
+	    return ['M' + pt.x + ',' + (pt.y - r), 'A' + r + ',' + r + ' 0 0 1', pt.x + ',' + (pt.y + r), 'A' + r + ',' + r + ' 0 0 1', pt.x + ',' + (pt.y - r), 'Z'].join(' ');
 	}
 
-	/**
-	 * Returns two circles joined with tangents.
-	 */
-	function getSegment(a, b) {
-	    var mainDistance = getDistance(a, b);
-	    if (mainDistance === 0 || mainDistance + a.size / 2 <= b.size / 2 || mainDistance + b.size / 2 <= a.size / 2) {
-	        // Return single circle, if one is inside another
-	        var largerPt = a.size > b.size ? a : b;
-	        var radius = largerPt.size / 2;
-	        return getCircle(largerPt.x, largerPt.y, radius);
+	function getStraightSegmentPath(a, b) {
+	    var tan = getCirclesTangents(a, b);
+	    if (!tan) {
+	        return getCirclePath(a.size > b.size ? a : b);
 	    }
-
-	    var mainAngle = getAngle(a, b);
-	    var tangentAngle = Math.asin((a.size - b.size) / mainDistance / 2);
-	    var angleLeft = mainAngle - Math.PI / 2 + tangentAngle;
-	    var angleRight = mainAngle + Math.PI / 2 - tangentAngle;
-
-	    var tangentLeftA = getPolarPoint(a, a.size / 2, angleLeft);
-	    var tangentLeftB = getPolarPoint(b, b.size / 2, angleLeft);
-	    var tangentRightA = getPolarPoint(a, a.size / 2, angleRight);
-	    var tangentRightB = getPolarPoint(b, b.size / 2, angleRight);
-
-	    return ['M' + tangentLeftA.x + ',' + tangentLeftA.y, 'L' + tangentLeftB.x + ',' + tangentLeftB.y, 'A' + b.size / 2 + ',' + b.size / 2 + ' 0 ' + Number(tangentAngle < 0) + ' 1', tangentRightB.x + ',' + tangentRightB.y, 'L' + tangentRightA.x + ',' + tangentRightA.y, 'A' + a.size / 2 + ',' + a.size / 2 + ' 0 ' + Number(tangentAngle > 0) + ' 1', tangentLeftA.x + ',' + tangentLeftA.y, 'Z'].join(' ');
+	    return ['M' + tan.left[0].x + ',' + tan.left[0].y, 'L' + tan.left[1].x + ',' + tan.left[1].y, 'A' + b.size / 2 + ',' + b.size / 2 + ' 0 ' + Number(a.size < b.size) + ' 1', tan.right[1].x + ',' + tan.right[1].y, 'L' + tan.right[0].x + ',' + tan.right[0].y, 'A' + a.size / 2 + ',' + a.size / 2 + ' 0 ' + Number(a.size > b.size) + ' 1', tan.left[0].x + ',' + tan.left[0].y, 'Z'].join(' ');
 	}
 
-	/**
-	 * Returns two circles joined with cubic curves.
-	 */
-	function getCurveSegment(a, c1, c2, b) {
-	    var mainDistance = getDistance(a, b);
-	    if (mainDistance === 0 || mainDistance + a.size / 2 <= b.size / 2 || mainDistance + b.size / 2 <= a.size / 2) {
-	        // Return single circle, if one is inside another
-	        var largerPt = a.size > b.size ? a : b;
-	        var radius = largerPt.size / 2;
-	        return getCircle(largerPt.x, largerPt.y, radius);
+	function getCurveSegmentPath(a, ca, cb, b) {
+	    var ctan = getCirclesCurveTangents(a, ca, cb, b);
+	    if (!ctan) {
+	        return getStraightSegmentPath(a, b);
 	    }
-
-	    var mainAngle = getAngle(a, b);
-	    var tangentAngle = Math.asin((a.size - b.size) / mainDistance / 2);
-	    var angleLeft = mainAngle - Math.PI / 2 + tangentAngle;
-	    var angleRight = mainAngle + Math.PI / 2 - tangentAngle;
-
-	    var angleA = getAngle(a, c1);
-	    var angleB = getAngle(c2, b);
-
-	    var tangentLeftA = getPolarPoint(a, a.size / 2, angleLeft + angleA - mainAngle);
-	    var tangentLeftB = getPolarPoint(b, b.size / 2, angleLeft + angleB - mainAngle);
-	    var tangentRightA = getPolarPoint(a, a.size / 2, angleRight + angleA - mainAngle);
-	    var tangentRightB = getPolarPoint(b, b.size / 2, angleRight + angleB - mainAngle);
-
-	    var cLeftA = getPolarPoint(tangentLeftA, getDistance(a, c1) / mainDistance * getDistance(tangentLeftA, tangentLeftB), angleLeft + angleA - mainAngle + Math.PI / 2);
-	    var cLeftB = getPolarPoint(tangentLeftB, getDistance(c2, b) / mainDistance * getDistance(tangentLeftA, tangentLeftB), angleLeft + angleB - mainAngle - Math.PI / 2);
-	    var cRightA = getPolarPoint(tangentRightA, getDistance(a, c1) / mainDistance * getDistance(tangentRightA, tangentRightB), angleRight + angleA - mainAngle - Math.PI / 2);
-	    var cRightB = getPolarPoint(tangentRightB, getDistance(c2, b) / mainDistance * getDistance(tangentRightA, tangentRightB), angleRight + angleB - mainAngle + Math.PI / 2);
-
-	    // Compensation for line width in the middle
-	    var midSize = (a.size + b.size) / 2;
-	    var applyWidthCompensation = function applyWidthCompensation(pt, c1, c2, reverse) {
-	        var a1 = getAngle(pt, c1);
-	        var a2 = getAngle(c1, c2);
-	        return getPolarPoint(pt, getDistance(pt, c1) + (reverse ? -1 : 1) * Math.sin(a2 - a1) * midSize / 3, a1);
-	    };
-	    var controls = [applyWidthCompensation(tangentLeftA, cLeftA, cLeftB), applyWidthCompensation(tangentLeftB, cLeftB, cLeftA, true), applyWidthCompensation(tangentRightA, cRightA, cRightB, true), applyWidthCompensation(tangentRightB, cRightB, cRightA)];
-	    cLeftA = controls[0];
-	    cLeftB = controls[1];
-	    cRightA = controls[2];
-	    cRightB = controls[3];
-
-	    return ['M' + tangentLeftA.x + ',' + tangentLeftA.y, 'C' + cLeftA.x + ',' + cLeftA.y, cLeftB.x + ',' + cLeftB.y, tangentLeftB.x + ',' + tangentLeftB.y, 'A' + b.size / 2 + ',' + b.size / 2 + ' 0 ' + Number(tangentAngle < 0) + ' 1', tangentRightB.x + ',' + tangentRightB.y, 'C' + cRightB.x + ',' + cRightB.y, cRightA.x + ',' + cRightA.y, tangentRightA.x + ',' + tangentRightA.y, 'A' + a.size / 2 + ',' + a.size / 2 + ' 0 ' + Number(tangentAngle > 0) + ' 1', tangentLeftA.x + ',' + tangentLeftA.y, 'Z'].join(' ');
+	    var qa = rotation(angle(a, ctan.right[0]), angle(a, ctan.left[0]));
+	    var qb = rotation(angle(b, ctan.right[1]), angle(b, ctan.left[1]));
+	    return ['M' + ctan.left[0].x + ',' + ctan.left[0].y, 'C' + ctan.left[1].x + ',' + ctan.left[1].y, ctan.left[2].x + ',' + ctan.left[2].y, ctan.left[3].x + ',' + ctan.left[3].y, 'A' + b.size / 2 + ',' + b.size / 2 + ' 0 ' + Number(qa > Math.PI) + ' 1', ctan.right[3].x + ',' + ctan.right[3].y, 'C' + ctan.right[2].x + ',' + ctan.right[2].y, ctan.right[1].x + ',' + ctan.right[1].y, ctan.right[0].x + ',' + ctan.right[0].y, 'A' + a.size / 2 + ',' + a.size / 2 + ' 0 ' + Number(qb > Math.PI) + ' 1', ctan.left[0].x + ',' + ctan.left[0].y, 'Z'].join(' ');
 	}
 
-	function getAngle(a, b) {
+	function angle(a, b) {
 	    return Math.atan2(b.y - a.y, b.x - a.x);
 	}
 
-	function getDistance(a, b) {
-	    return Math.sqrt((b.y - a.y) * (b.y - a.y) + (b.x - a.x) * (b.x - a.x));
+	function rotation(a, b) {
+	    if (b < a) {
+	        b += 2 * Math.PI;
+	    }
+	    return b - a;
 	}
 
-	function getPolarPoint(start, distance, angle) {
+	function dist() {
+	    var total = 0;
+
+	    for (var _len = arguments.length, p = Array(_len), _key = 0; _key < _len; _key++) {
+	        p[_key] = arguments[_key];
+	    }
+
+	    for (var i = 1; i < p.length; i++) {
+	        total += Math.sqrt((p[i].x - p[i - 1].x) * (p[i].x - p[i - 1].x) + (p[i].y - p[i - 1].y) * (p[i].y - p[i - 1].y));
+	    }
+	    return total;
+	}
+
+	function polar(start, d, a) {
 	    return {
-	        x: start.x + distance * Math.cos(angle),
-	        y: start.y + distance * Math.sin(angle)
+	        x: start.x + d * Math.cos(a),
+	        y: start.y + d * Math.sin(a)
+	    };
+	}
+
+	function splitCurveSegment(t, p0, c0, c1, p1) {
+	    var seg = (0, _bezier.splitCubicSegment)(t, p0, c0, c1, p1);
+	    var tl = 1 / (1 + dist(seg[3], seg[4], seg[5], seg[6], seg[3]) / dist(seg[0], seg[1], seg[2], seg[3], seg[0]));
+	    seg[3].size = p0.size * (1 - tl) + p1.size * tl;
+
+	    return seg;
+	}
+
+	function approximateQuadCurve(p0, p1, p2) {
+	    var m = (0, _bezier.getBezierPoint)(dist(p0, p1) / dist(p0, p1, p2), p0, p2);
+	    var c = (0, _bezier.getBezierPoint)(2, m, p1);
+	    return [p0, c, p2];
+	}
+
+	function getCirclesTangents(a, b) {
+	    var d = dist(a, b);
+	    if (d === 0 || d + a.size / 2 <= b.size / 2 || d + b.size / 2 <= a.size / 2) {
+	        return null;
+	    }
+
+	    var ma = angle(a, b);
+	    var ta = Math.asin((a.size - b.size) / d / 2);
+	    var aleft = ma - Math.PI / 2 + ta;
+	    var aright = ma + Math.PI / 2 - ta;
+
+	    return {
+	        left: [polar(a, a.size / 2, aleft), polar(b, b.size / 2, aleft)],
+	        right: [polar(a, a.size / 2, aright), polar(b, b.size / 2, aright)]
+	    };
+	}
+
+	function getCirclesCurveTangents(a, ca, cb, b) {
+	    var d = dist(a, b);
+	    if (d === 0 || d + a.size / 2 <= b.size / 2 || d + b.size / 2 <= a.size / 2) {
+	        return null;
+	    }
+
+	    // Get approximate endings tangents
+	    // TODO: Use formulas instead of approximate equations.
+	    var kt = 1 / 12;
+	    var getTangentsVectors = function getTangentsVectors(isEnd) {
+	        var curve = isEnd ? [b, cb, ca, a] : [a, ca, cb, b];
+	        var seg1 = splitCurveSegment.apply(undefined, [2 * kt].concat(curve));
+	        var seg2 = splitCurveSegment.apply(undefined, [0.5].concat(_toConsumableArray(seg1.slice(0, 4))));
+
+	        var m = seg2[3];
+	        var n = seg2[6];
+	        var mtan = getCirclesTangents(curve[0], m);
+	        var ntan = getCirclesTangents(m, n);
+
+	        var lpoints = [mtan.left[0], (0, _bezier.getBezierPoint)(0.5, mtan.left[1], ntan.left[0]), ntan.left[1]];
+	        var rpoints = [mtan.right[0], (0, _bezier.getBezierPoint)(0.5, mtan.right[1], ntan.right[0]), ntan.right[1]];
+
+	        var lq = approximateQuadCurve.apply(undefined, lpoints)[1];
+	        var rq = approximateQuadCurve.apply(undefined, rpoints)[1];
+	        var lc = (0, _bezier.getBezierPoint)(1 / 3 / kt, mtan.left[0], lq);
+	        var rc = (0, _bezier.getBezierPoint)(1 / 3 / kt, mtan.right[0], rq);
+
+	        return {
+	            left: isEnd ? [rc, rpoints[0]] : [lpoints[0], lc],
+	            right: isEnd ? [lc, lpoints[0]] : [rpoints[0], rc]
+	        };
+	    };
+
+	    var tstart = getTangentsVectors(false);
+	    var tend = getTangentsVectors(true);
+
+	    return {
+	        left: [].concat(_toConsumableArray(tstart.left), _toConsumableArray(tend.left)),
+	        right: [].concat(_toConsumableArray(tstart.right), _toConsumableArray(tend.right))
 	    };
 	}
 
@@ -14513,9 +14691,9 @@ return /******/ (function(modules) { // webpackBootstrap
 	});
 	exports.Interval = undefined;
 
-	var _const = __webpack_require__(87);
+	var _const = __webpack_require__(88);
 
-	var _cartesianGrammar = __webpack_require__(7);
+	var _grammarRegistry = __webpack_require__(7);
 
 	var _layerLabels = __webpack_require__(111);
 
@@ -14539,6 +14717,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	        config.guide = config.guide || {};
 	        config.guide = _utils.utils.defaults(config.guide, {
 	            animationSpeed: 0,
+	            avoidScalesOverflow: true,
 	            prettify: true,
 	            enableColorToBarPosition: !config.stack
 	        });
@@ -14551,10 +14730,11 @@ return /******/ (function(modules) { // webpackBootstrap
 	            position: config.flip ? ['r-', 'l+', 'hide-by-label-height-horizontal', 'cut-label-horizontal'] : config.stack ? ['rotate-on-size-overflow', 't-', 'b+', 'hide-by-label-height-vertical', 'cut-label-vertical', 'auto:hide-on-label-label-overlap'] : ['rotate-on-size-overflow', 't+', 'b-', 'hide-by-label-height-vertical', 'cut-label-vertical', 'auto:hide-on-label-label-overlap']
 	        });
 
+	        var avoidScalesOverflow = config.guide.avoidScalesOverflow;
 	        var enableColorPositioning = config.guide.enableColorToBarPosition;
 	        var enableDistributeEvenly = config.guide.size.enableDistributeEvenly;
 
-	        config.transformRules = [config.flip && _cartesianGrammar.CartesianGrammar.decorator_flip, _cartesianGrammar.CartesianGrammar.decorator_groupOrderByColor, config.stack && _cartesianGrammar.CartesianGrammar.decorator_stack, enableColorPositioning && _cartesianGrammar.CartesianGrammar.decorator_positioningByColor].filter(function (x) {
+	        config.transformRules = [config.flip && _grammarRegistry.GrammarRegistry.get('flip'), config.stack && _grammarRegistry.GrammarRegistry.get('stack'), enableColorPositioning && _grammarRegistry.GrammarRegistry.get('positioningByColor')].filter(function (x) {
 	            return x;
 	        }).concat(config.transformModel || []);
 
@@ -14570,8 +14750,13 @@ return /******/ (function(modules) { // webpackBootstrap
 	                maxLimit: sizeCfg.maxSize
 	            });
 
-	            return _cartesianGrammar.CartesianGrammar.decorator_size_distribute_evenly(prevModel, params);
-	        }, enableDistributeEvenly && config.guide.prettify && _cartesianGrammar.CartesianGrammar.avoidBaseScaleOverflow, config.stack && _cartesianGrammar.CartesianGrammar.adjustYScale].filter(function (x) {
+	            return _grammarRegistry.GrammarRegistry.get('size_distribute_evenly')(prevModel, params);
+	        }, avoidScalesOverflow && enableDistributeEvenly && function (prevModel, args) {
+	            var params = Object.assign({}, args, {
+	                sizeDirection: 'x'
+	            });
+	            return _grammarRegistry.GrammarRegistry.get('avoidScalesOverflow')(prevModel, params);
+	        }, config.stack && _grammarRegistry.GrammarRegistry.get('adjustYScale')].filter(function (x) {
 	            return x;
 	        });
 
@@ -14584,18 +14769,27 @@ return /******/ (function(modules) { // webpackBootstrap
 	        node.on('highlight', function (sender, e) {
 	            return _this.highlight(e);
 	        });
-	        node.on('mouseover', function (sender, e) {
-	            var identity = sender.screenModel.model.id;
-	            var id = identity(e.data);
-	            sender.fire('highlight', function (row) {
-	                return identity(row) === id ? true : null;
-	            });
+	        node.on('highlight-data-points', function (sender, e) {
+	            return _this.highlightDataPoints(e);
 	        });
-	        node.on('mouseout', function (sender) {
-	            return sender.fire('highlight', function () {
-	                return null;
-	            });
-	        });
+
+	        var getHighlightEvtObj = function getHighlightEvtObj(e, data) {
+	            var filter = function filter(d) {
+	                return d === data ? true : null;
+	            };
+	            filter.data = data;
+	            filter.domEvent = e;
+	            return filter;
+	        };
+	        var activate = function activate(sender, e) {
+	            return sender.fire('highlight-data-points', getHighlightEvtObj(e.event, e.data));
+	        };
+	        var deactivate = function deactivate(sender, e) {
+	            return sender.fire('highlight-data-points', getHighlightEvtObj(e.event, null));
+	        };
+	        node.on('mouseover', activate);
+	        node.on('mousemove', activate);
+	        node.on('mouseout', deactivate);
 	    },
 	    draw: function draw() {
 	        var node = this.node();
@@ -14650,6 +14844,19 @@ return /******/ (function(modules) { // webpackBootstrap
 	        elements.enter().append('g').call(updateBarContainer);
 
 	        node.subscribe(new _layerLabels.LayerLabels(screenModel.model, screenModel.model.flip, config.guide.label, options).draw(fibers));
+
+	        // Put labels after bars
+	        var container = options.container.node();
+	        var children = Array.prototype.slice.call(container.childNodes, 0);
+	        var lastBarIndex = children.length - 1 - children.slice(0).reverse().findIndex(function (el) {
+	            return el.matches('.i-role-bar-group');
+	        });
+	        var afterBar = container.childNodes.item(lastBarIndex + 1);
+	        children.slice(0, lastBarIndex).filter(function (el) {
+	            return el.matches('.i-role-label');
+	        }).forEach(function (el) {
+	            return container.insertBefore(el, afterBar);
+	        });
 	    },
 	    buildModel: function buildModel(screenModel, _ref) {
 	        var prettify = _ref.prettify,
@@ -14774,6 +14981,15 @@ return /******/ (function(modules) { // webpackBootstrap
 	        container.selectAll('.bar').classed(classed);
 
 	        container.selectAll('.i-role-label').classed(classed);
+	    },
+	    highlightDataPoints: function highlightDataPoints(filter) {
+	        this.highlight(filter);
+
+	        // Add highlighted elements to event.
+	        filter.targetElements = [];
+	        this.node().config.options.container.selectAll('.bar').filter(filter).each(function () {
+	            filter.targetElements.push(this);
+	        });
 	    }
 	};
 
@@ -14792,7 +15008,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
-	var _const = __webpack_require__(87);
+	var _const = __webpack_require__(88);
 
 	var _element = __webpack_require__(5);
 
@@ -14852,7 +15068,9 @@ return /******/ (function(modules) { // webpackBootstrap
 	                return colsMap[p];
 	            };
 
-	            return this.regScale('columns', this.scalesMap).regScale('color', this.color);
+	            this.regScale('columns', this.scalesMap).regScale('color', this.color);
+
+	            return {};
 	        }
 	    }, {
 	        key: 'drawFrames',
@@ -15068,10 +15286,12 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	        this.addField('dim', this.scaleConfig.dim).addField('scaleDim', this.scaleConfig.dim).addField('scaleType', this.scaleConfig.type).addField('source', this.scaleConfig.source).addField('domain', function () {
 	            return _this.vars;
-	        }).addField('originalSeries', function () {
+	        }).addField('isInteger', originalSeries.every(Number.isInteger)).addField('originalSeries', function () {
 	            return originalSeries;
 	        }).addField('isContains', function (x) {
 	            return _this.isInDomain(x);
+	        }).addField('isEmptyScale', function (x) {
+	            return _this.isEmpty(x);
 	        }).addField('fixup', function (fn) {
 	            var cfg = _this.scaleConfig;
 	            cfg.__fixup__ = cfg.__fixup__ || {};
@@ -15098,6 +15318,11 @@ return /******/ (function(modules) { // webpackBootstrap
 	        key: 'getField',
 	        value: function getField(key) {
 	            return this._fields[key];
+	        }
+	    }, {
+	        key: 'isEmpty',
+	        value: function isEmpty() {
+	            return !Boolean(this._fields.dim);
 	        }
 	    }, {
 	        key: 'toBaseScale',
@@ -15549,7 +15774,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	var _base = __webpack_require__(127);
 
-	var _unitDomainPeriodGenerator = __webpack_require__(83);
+	var _unitDomainPeriodGenerator = __webpack_require__(84);
 
 	var _utils = __webpack_require__(3);
 
@@ -15846,7 +16071,6 @@ return /******/ (function(modules) { // webpackBootstrap
 	        var _this = _possibleConstructorReturn(this, (LinearScale.__proto__ || Object.getPrototypeOf(LinearScale)).call(this, xSource, scaleConfig));
 
 	        var props = _this.scaleConfig;
-	        var values = _this.vars;
 	        var vars = _d2.default.extent(_this.vars);
 
 	        var min = Number.isFinite(props.min) ? props.min : vars[0];
@@ -15857,8 +16081,6 @@ return /******/ (function(modules) { // webpackBootstrap
 	        _this.vars = props.nice ? _utils.utils.niceZeroBased(vars) : _d2.default.extent(vars);
 
 	        _this.addField('scaleType', 'linear').addField('discrete', false);
-
-	        _this._isInteger = values.every(Number.isInteger);
 	        return _this;
 	    }
 
@@ -15877,7 +16099,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	            var domain = this.vars;
 
 	            var scale = this.extendScale(_d2.default.scale.linear());
-	            scale.domain(domain).rangeRound(interval, 1).clamp(true);
+	            scale.domain(domain).range(interval).clamp(true);
 
 	            return this.toBaseScale(scale, interval);
 	        }
@@ -15899,7 +16121,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	                    return _this2.extendScale(d3ScaleCopy.call(scale));
 	                },
 
-	                ticks: this._isInteger ? function (n) {
+	                ticks: this.getField('isInteger') ? function (n) {
 	                    return d3ScaleTicks.call(scale, n).filter(Number.isInteger);
 	                } : scale.ticks
 	            });
@@ -15984,7 +16206,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	            var domain = this.vars;
 	            throwIfCrossesZero(domain);
 
-	            var d3Scale = extendLogScale(_d2.default.scale.log()).domain(domain).rangeRound(interval, 1);
+	            var d3Scale = extendLogScale(_d2.default.scale.log()).domain(domain).range(interval);
 	            d3Scale.stepSize = function () {
 	                return 0;
 	            };
@@ -16549,7 +16771,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	});
 	exports.ChartLine = undefined;
 
-	var _dataProcessor = __webpack_require__(93);
+	var _dataProcessor = __webpack_require__(94);
 
 	var _converterHelpers = __webpack_require__(139);
 
@@ -16637,7 +16859,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	});
 	exports.ChartArea = undefined;
 
-	var _dataProcessor = __webpack_require__(93);
+	var _dataProcessor = __webpack_require__(94);
 
 	var _converterHelpers = __webpack_require__(139);
 
@@ -16814,7 +17036,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
-	var _formatterRegistry = __webpack_require__(97);
+	var _formatterRegistry = __webpack_require__(98);
 
 	var _unit = __webpack_require__(145);
 
@@ -17330,6 +17552,15 @@ return /******/ (function(modules) { // webpackBootstrap
 	            writable: true
 	        });
 	    })();
+	}
+
+	if (!Element.prototype.matches) {
+	    Object.defineProperty(Element.prototype, 'matches', {
+	        value: Element.prototype.msMatchesSelector,
+	        configurable: true,
+	        enumerable: true,
+	        writable: true
+	    });
 	}
 
 /***/ }

@@ -10,12 +10,17 @@
     var PATHS = {
         'specs/': [
             fileRange('ex-', range(0, 3), 5, range(9, 15)),
+            'bar-labels',
             'horizontal-scroll',
+            'logarithmic-scale',
+            'smooth-line',
             'whiskers'
         ],
         'dev-quick-test/': fileRange(
             'ex-',
-            range(0, 31), range(40, 55)
+            range(0, 31),
+            range(40, 48),
+            range(50, 55)
         ),
         'datasets/': [
             'cars',
@@ -33,7 +38,7 @@
     //
     function filterSpecs(allSpecs) {
         return allSpecs;
-    };
+    }
 
     //------------------------------
     // NOTE: Modify chart spec here.
@@ -118,9 +123,10 @@
      */
     DevApp.prototype.drop = function (dropCfg) {
         var spec = dropCfg.spec;
+        var isArrayRow = dropCfg.data && Array.isArray(dropCfg.data[0]);
         spec.data = dropCfg.data.map(function (row) {
             return dropCfg.header.reduce(function (memo, h, i) {
-                memo[h] = row[i];
+                memo[h] = row[isArrayRow ? i : h];
                 return memo;
             }, {});
         });
@@ -164,6 +170,8 @@
 
     DevApp.prototype._renderCharts = function () {
 
+        var settings = this._settings;
+
         //
         // Destroy previous charts
 
@@ -174,10 +182,18 @@
         var container = document.getElementById('samplesContainer');
         container.innerHTML = '';
 
+        // Set containers sizes
+        document.getElementById('chartSizeStyle')
+            .textContent = [
+                '.sample {',
+                settings.width ? ('  width: ' + settings.width + ';') : null,
+                settings.height ? ('  height: ' + settings.height + ';') : null,
+                '}'
+            ].filter(function (d) { return Boolean(d); }).join('\n');
+
         //
         // Filter specs
 
-        var settings = this._settings;
         var specs = filterSpecs(this._specs.slice(0));
         if (settings.types.length) {
             specs = specs.filter(function (s) {
@@ -340,6 +356,14 @@
         createCheckGroup(pluginsContainer, PLUGINS, settings.plugins);
 
         //
+        // Init chart size inputs
+
+        var widthInput = document.getElementById('inputWidth');
+        var heightInput = document.getElementById('inputHeight');
+        widthInput.value = settings.width;
+        heightInput.value = settings.height;
+
+        //
         // Handle input changes
 
         var onValueChanged = function (e) {
@@ -354,21 +378,29 @@
             var settings = {
                 path: pathInput.value.trim(),
                 types: getValues(typesContainer),
-                plugins: getValues(pluginsContainer)
+                plugins: getValues(pluginsContainer),
+                width: widthInput.value.trim(),
+                height: heightInput.value.trim()
             };
             this._settings = settings;
             this._saveSettings(settings);
             this._renderCharts();
         }.bind(this);
 
-        pathInput.onchange = onValueChanged;
-        pathInput.onkeydown = function (e) {
-            if (e.keyCode === 13) {
-                onValueChanged(e);
-            }
+        var listenTextChange = function (input) {
+            input.onchange = onValueChanged;
+            input.onkeydown = function (e) {
+                if (e.keyCode === 13) {
+                    onValueChanged(e);
+                }
+            };
         };
+
+        listenTextChange(pathInput);
         typesContainer.addEventListener('change', onValueChanged);
         pluginsContainer.addEventListener('change', onValueChanged);
+        listenTextChange(widthInput);
+        listenTextChange(heightInput);
 
         //
         // Init scroll
@@ -399,7 +431,9 @@
         settings = utils.defaults(settings, {
             path: '',
             types: [],
-            plugins: []
+            plugins: [],
+            width: '',
+            height: ''
         });
         settings.path = settings.path.trim();
         settings.types = filterEmptyValues(settings.types);
@@ -418,7 +452,7 @@
     function DatasetLoader(name, filter) {
         this.name = name;
         this._filter = filter;
-    };
+    }
     DatasetLoader.prototype.filter = function (data) {
         if (this._filter) {
             return this._filter.call(null, data);
@@ -487,7 +521,7 @@
         }).filter(function (d) {
             return Boolean(d);
         });
-    };
+    }
 
     function fileRange(prefix, numbers) {
         numbers = Array.prototype.slice.call(arguments, 1);

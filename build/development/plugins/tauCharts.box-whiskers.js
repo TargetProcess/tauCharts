@@ -103,11 +103,16 @@
     tauCharts.api.unitsRegistry.reg(
         'ELEMENT.BOX-WHISKERS',
         {
-            adjustScales: function (grammarModel) {
-                var node = this.node();
+            getAdjustScalesRules: function () {
+                var self = this;
+                var node = self.node();
+                var rules = [];
                 if (node.config.guide.fitScale) {
-                    this.fixScale(grammarModel, this.calcStat(grammarModel));
+                    rules.push(function (prevGrammarModel) {
+                        self.fixScale(prevGrammarModel, self.calcStat(prevGrammarModel));
+                    });
                 }
+                return rules;
             },
 
             fixScale: function (grammarModel, stat) {
@@ -137,7 +142,7 @@
             },
 
             calcStat: function (grammarModel) {
-                var cats = this.node().data().reduce(function (memo, row) {
+                var cats = grammarModel.data().reduce(function (memo, row) {
                     var k = row[grammarModel.scaleX.dim];
                     memo[k] = memo[k] || [];
                     memo[k].push(row[grammarModel.scaleY.dim]);

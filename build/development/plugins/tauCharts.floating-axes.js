@@ -24,15 +24,22 @@
     var parentProp = '__floatingAxesSrcParent__';
     var transProp = '__floatingAxesSrcTransform__';
 
+    var counter = 0;
+    var getId = function () {
+        return ++counter;
+    };
+
     function floatingAxes(_settings) {
 
         var settings = utils.defaults(_settings || {}, {
+            detectBackground: true,
             bgcolor: '#fff'
         });
 
         return {
 
             init: function (chart) {
+                this.instanceId = getId();
                 this.chart = chart;
                 this.rootNode = chart.getLayout().contentContainer;
 
@@ -49,6 +56,14 @@
             },
 
             onRender: function () {
+
+                if (settings.detectBackground) {
+                    var bg = this.detectChartBackgroundColor();
+                    if (bg) {
+                        settings.bgcolor = bg;
+                    }
+                }
+                SHADOW_COLOR_1 = settings.bgcolor;
 
                 var applicable = true;
                 this.chart.traverseSpec(this.chart.getSpec(), function (unit) {
@@ -80,6 +95,7 @@
 
             createFloatingLayout: function () {
 
+                var id = this.instanceId;
                 var root = this.rootNode;
                 var svg = this.chart.getSVG();
                 var d3Svg = d3.select(svg);
@@ -148,7 +164,7 @@
 
                 var defs = (function createSVGDefinitions() {
                     var defs = d3Svg.append('defs')
-                        .attr('class', 'floating-axes floating-axes-defs');
+                        .attr('class', 'floating-axes floating-axes__defs');
 
                     var directions = {
                         ns: {x1: 0, y1: 0, x2: 0, y2: 1},
@@ -159,22 +175,23 @@
                     Object.keys(directions).forEach(function (d) {
                         var coords = directions[d];
                         var g = defs.append('linearGradient')
-                            .attr('id', 'shadow-gradient-' + d)
+                            .attr('id', 'shadow-gradient-' + d + '-' + id)
                             .attr('x1', coords.x1)
                             .attr('y1', coords.y1)
                             .attr('x2', coords.x2)
                             .attr('y2', coords.y2);
                         g.append('stop')
-                            .attr('class', 'floating-axes_shadow-start')
+                            .attr('class', 'floating-axes__shadow-start')
                             .attr('offset', '0%')
                             .attr('stop-color', SHADOW_COLOR_0)
                             .attr('stop-opacity', SHADOW_OPACITY_0);
                         g.append('stop')
-                            .attr('class', 'floating-axes_shadow-end')
+                            .attr('class', 'floating-axes__shadow-end')
                             .attr('offset', '100%')
                             .attr('stop-color', SHADOW_COLOR_1)
                             .attr('stop-opacity', SHADOW_OPACITY_1);
                     });
+
                     return defs;
                 })();
 
@@ -220,7 +237,7 @@
                     var axisHeight = pos.svgHeight - pos.minXAxesY + 1 + pos.scrollbarHeight;
 
                     var g = d3Svg.append('g')
-                        .attr('class', 'floating-axes floating-axes-x')
+                        .attr('class', 'floating-axes floating-axes__x')
                         .call(addBackground, pos.svgWidth, axisHeight, 0, pos.minXAxesY);
 
                     transferAxes(g, axesInfo.x);
@@ -253,7 +270,7 @@
 
                 var yAxes = (function extractYAxes() {
                     var g = d3Svg.append('g')
-                        .attr('class', 'floating-axes floating-axes-y')
+                        .attr('class', 'floating-axes floating-axes__y')
                         .call(addBackground, pos.maxYAxesX, pos.svgHeight);
 
                     transferAxes(g, axesInfo.y);
@@ -270,7 +287,10 @@
                             g.attr('transform', translate(x, y));
                             labels.each(function () {
                                 var t = parseTransform(this[transProp]);
-                                var dy = -pos.svgHeight / 2 + pos.visibleHeight / 2 + scrollTop;
+                                var dy = (this.matches('.inline') ?
+                                    (scrollTop) :
+                                    (scrollTop - pos.svgHeight / 2 + pos.visibleHeight / 2)
+                                );
                                 this.setAttribute(
                                     'transform',
                                     'translate(' + t.x + ',' + (t.y + dy) + ') rotate(' + t.r + ')'
@@ -285,7 +305,7 @@
                     var xAxesHeight = pos.svgHeight - pos.minXAxesY + pos.scrollbarHeight;
 
                     var g = d3Svg.append('g')
-                        .attr('class', 'floating-axes floating-axes-corner')
+                        .attr('class', 'floating-axes floating-axes__corner')
                         .call(addBackground, pos.maxYAxesX, xAxesHeight);
 
                     scrollManager
@@ -322,12 +342,12 @@
                     var xAxesHeight = pos.svgHeight - pos.minXAxesY + pos.scrollbarHeight;
 
                     var g = d3Svg.append('g')
-                        .attr('class', 'floating-axes floating-axes-shadows')
+                        .attr('class', 'floating-axes floating-axes__shadows')
                         .attr('pointer-events', 'none');
 
                     var createShadow = function (direction, x, y, width, height) {
                         return g.append('rect')
-                            .attr('fill', 'url(#shadow-gradient-' + direction + ')')
+                            .attr('fill', 'url(#shadow-gradient-' + direction + '-' + id + ')')
                             .attr('x', x)
                             .attr('y', y)
                             .attr('width', width)
@@ -385,7 +405,6 @@
                     defs: defs,
                     xAxes: xAxes,
                     yAxes: yAxes,
-                    corner: corner,
                     shadows: shadows
                 };
             },
@@ -400,6 +419,7 @@
                 }
 
                 var d3Svg = d3.select(this.chart.getSVG());
+
                 // TODO: Reuse elements.
                 d3Svg.selectAll('.floating-axes').remove();
 
@@ -420,6 +440,21 @@
                         );
                     });
                 }
+            },
+
+            detectChartBackgroundColor: function () {
+                var current = this.chart.getLayout().layout;
+                var s;
+                do {
+                    s = window.getComputedStyle(current);
+                    if (s.backgroundImage !== 'none') {
+                        return null;
+                    }
+                    if (s.backgroundColor !== 'transparent' && s.backgroundColor !== 'rgba(0, 0, 0, 0)') {
+                        return s.backgroundColor;
+                    }
+                } while (current = current.parentElement);
+                return null;
             }
         };
     }
