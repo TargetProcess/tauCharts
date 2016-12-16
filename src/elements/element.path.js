@@ -22,7 +22,7 @@ const Path = {
 
         config.adjustRules = [
             ((prevModel, args) => {
-                const isEmptySize = !prevModel.scaleSize.dim; // TODO: empty method for size scale???
+                const isEmptySize = prevModel.scaleSize.isEmptyScale();
                 const sizeCfg = utils.defaults(
                     (config.guide.size || {}),
                     {

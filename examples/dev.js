@@ -11,7 +11,6 @@
         'specs/': [
             fileRange('ex-', range(0, 3), 5, range(9, 15)),
             'bar-labels',
-            'bug',
             'horizontal-scroll',
             'logarithmic-scale',
             'smooth-line',

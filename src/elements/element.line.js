@@ -35,7 +35,7 @@ const Line = {
         ].concat(config.transformModel || []);
 
         const avoidScalesOverflow = config.guide.avoidScalesOverflow;
-        const isEmptySize = ((model) => !model.scaleSize.dim); // TODO: empty method for size scale???
+        const isEmptySize = ((model) => model.scaleSize.isEmptyScale());
 
         config.adjustRules = [
             ((prevModel, args) => {

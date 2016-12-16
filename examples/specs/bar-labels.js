@@ -127,8 +127,6 @@
                                 var labelToHide = Number(label0.textContent) > Number(label1.textContent) ? label1 : label0;
                                 var labelToShow = Number(label0.textContent) > Number(label1.textContent) ? label0 : label1;
 
-                                labelToShow.setAttribute('y', -5);
-
                                 labelToHide.parentNode.removeChild(labelToHide);
 
                             } else {

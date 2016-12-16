@@ -124,7 +124,8 @@ export class SpecTransformCalcSize {
 
             if (root.units[0].type === 'ELEMENT.INTERVAL' &&
                 (prop === 'y') === Boolean(root.units[0].flip) &&
-                root.units[0].label !== 'label_undefined' // TODO: Setup some flag if there is label scale dimension
+                root.units[0].label &&
+                !chart.getScaleInfo(root.units[0].label, frame).isEmpty()
             ) {
 
                 const labelFontSize = (guide.label && guide.label.fontSize ? guide.label.fontSize : 10);
