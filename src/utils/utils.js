@@ -354,7 +354,7 @@ var utils = {
             // include 0 by default
             extent[0] = 0;
         } else {
-            var koeffLow = (deltaLow <= limit) ? step : 0;
+            var koeffLow = (deltaLow >= limit) ? -deltaLow : 0;
             extent[0] = (extent[0] - koeffLow);
         }
 
@@ -362,7 +362,7 @@ var utils = {
             // include 0 by default
             extent[1] = 0;
         } else {
-            var koeffTop = (deltaTop <= limit) ? step : 0;
+            var koeffTop = (deltaTop >= limit) ? -deltaTop : 0;
             extent[1] = extent[1] + koeffTop;
         }
 
