@@ -388,14 +388,14 @@ define(function (require) {
                 xSrc,
                 {
                     dim: 'i',
-                    min: -10,
-                    max: 10,
+                    min: -19,
+                    max: 19,
                     nice: true
                 }).create([0, 100]);
 
-            expect(scale1A.domain()).to.deep.equal([-12, 12]);
-            expect(scale1A(-12)).to.equal(0);
-            expect(scale1A(12)).to.equal(100);
+            expect(scale1A.domain()).to.deep.equal([-20, 20]);
+            expect(scale1A(-22)).to.equal(0);
+            expect(scale1A(22)).to.equal(100);
 
             var scale2 = new LinearScale(
                 xSrc,
@@ -404,10 +404,10 @@ define(function (require) {
                     nice: true
                 }).create([0, 100]);
 
-            expect(scale2.domain()).to.deep.equal([0, 3.2]);
+            expect(scale2.domain()).to.deep.equal([0, 3]);
             expect(scale2(0)).to.equal(0);
             expect(scale2(-10)).to.equal(0);
-            expect(scale2(3.2)).to.equal(100);
+            expect(scale2(3)).to.equal(100);
             expect(scale2(5)).to.equal(100);
 
             expect(scale2.hasOwnProperty('stepSize')).to.equal(true);
@@ -794,7 +794,7 @@ define(function (require) {
                     nice: true
                 }).create();
 
-            expect(scale0.domain()).to.deep.equal([-3.5, 3.5]);
+            expect(scale0.domain()).to.deep.equal([-3, 3]);
         });
 
         it('should support min / max on [fill] scale', function () {
@@ -816,12 +816,12 @@ define(function (require) {
                 xSrc,
                 {
                     dim: 's',
-                    min: -10,
+                    min: -19,
                     max: 100,
                     nice: true
                 }).create();
 
-            expect(scale0.domain()).to.deep.equal([-20, 110]);
+            expect(scale0.domain()).to.deep.equal([-20, 100]);
         });
 
         it('should support rgb-based [color] scale nice = false', function () {

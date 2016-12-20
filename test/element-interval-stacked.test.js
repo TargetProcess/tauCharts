@@ -286,32 +286,32 @@ describe('ELEMENT.INTERVAL.STACKED', function () {
                 [
                     {
                         "x": 0,
-                        "width": 545,
-                        "y": 749.5,
+                        "y": 750,
+                        "width": 600,
                         "height": 1
                     },
                     {
-                        "x": 545,
-                        "width": 273,
-                        "y": 749.5,
+                        "x": 600,
+                        "y": 750,
+                        "width": 300,
                         "height": 1
                     },
                     {
-                        "x": 818,
-                        "width": 91,
-                        "y": 749.5,
+                        "x": 900,
+                        "y": 750,
+                        "width": 100,
                         "height": 1
                     },
                     {
                         "x": 0,
-                        "width": 818,
-                        "y": 249.5,
+                        "y": 250,
+                        "width": 900,
                         "height": 1
                     },
                     {
-                        "x": 818,
-                        "width": 91,
-                        "y": 249.5,
+                        "x": 900,
+                        "y": 250,
+                        "width": 100,
                         "height": 1
                     }
                 ]

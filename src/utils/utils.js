@@ -321,6 +321,10 @@ var utils = {
             top = top - k * d / m;
         }
 
+        // include 0 by default
+        low = Math.min(0, low);
+        top = Math.max(0, top);
+
         var extent = [low, top];
         var span = extent[1] - extent[0];
         var step = Math.pow(10, Math.floor(Math.log(span / m) / Math.LN10));
@@ -350,18 +354,12 @@ var utils = {
 
         var limit = (step / 2);
 
-        if (low >= 0) {
-            // include 0 by default
-            extent[0] = 0;
-        } else {
+        if (low < 0) {
             var koeffLow = (deltaLow >= limit) ? -deltaLow : 0;
             extent[0] = (extent[0] - koeffLow);
         }
 
-        if (top <= 0) {
-            // include 0 by default
-            extent[1] = 0;
-        } else {
+        if (top > 0) {
             var koeffTop = (deltaTop >= limit) ? -deltaTop : 0;
             extent[1] = extent[1] + koeffTop;
         }
@@ -370,6 +368,35 @@ var utils = {
             parseFloat(extent[0].toFixed(15)),
             parseFloat(extent[1].toFixed(15))
         ];
+    },
+
+    niceTimeDomain(domain, niceIntervalFn) {
+        domain = d3.extent(domain);
+        var nice = domain.slice(0);
+        if ((domain[0] - domain[1]) === 0) {
+            var oneDay = 24 * 60 * 60 * 1000;
+            domain = [
+                new Date(domain[0].getTime() - oneDay),
+                new Date(domain[1].getTime() + oneDay)
+            ];
+            return d3.time.scale().domain(domain).nice(niceIntervalFn).domain();
+        }
+
+        var niceScale = d3.time.scale().domain(domain).nice(niceIntervalFn);
+        var ticks = niceScale.ticks();
+        if (ticks.length > 2) {
+            if ((domain[0] - ticks[0]) / (ticks[1] - ticks[0]) < 0.5) {
+                nice[0] = ticks[0];
+            }
+            var last = ticks.length - 1;
+            if ((domain[1] - ticks[last - 1]) / (ticks[last] - ticks[last - 1]) > 0.5) {
+                nice[1] = ticks[last];
+            }
+        } else if (ticks.length === 2) {
+            nice[0, 1] = ticks[0, 1];
+        }
+
+        return nice;
     },
 
     traverseJSON,
