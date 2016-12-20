@@ -32,21 +32,39 @@ export class TimeScale extends BaseScale {
                 this.niceIntervalFn = null;
             }
 
-            if ((vars[0] - vars[1]) === 0) {
-                var oneDay = 24 * 60 * 60 * 1000;
-                vars = [
-                    new Date(vars[0].getTime() - oneDay),
-                    new Date(vars[1].getTime() + oneDay)
-                ];
-            }
-
-            this.vars = d3.time.scale().domain(vars).nice(this.niceIntervalFn).domain();
+            this.vars = this._getNiceDomain(vars);
 
         } else {
             this.vars = vars;
         }
 
         this.addField('scaleType', 'time');
+    }
+
+    _getNiceDomain(domain) {
+        domain = d3.extent(domain);
+        var nice = domain.slice(0);
+        if ((domain[0] - domain[1]) === 0) {
+            var oneDay = 24 * 60 * 60 * 1000;
+            domain = [
+                new Date(domain[0].getTime() - oneDay),
+                new Date(domain[1].getTime() + oneDay)
+            ];
+        }
+
+        var niceScale = d3.time.scale().domain(domain).nice(this.niceIntervalFn);
+        var ticks = niceScale.ticks();
+        if (ticks.length > 1) {
+            if ((domain[0] - ticks[0]) / (ticks[1] - ticks[0]) < 0.5) {
+                nice[0] = ticks[0];
+            }
+            var last = ticks.length - 1;
+            if ((domain[1] - ticks[last - 1]) / (ticks[last] - ticks[last - 1]) > 0.5) {
+                nice[1] = ticks[last];
+            }
+        }
+
+        return nice;
     }
 
     isInDomain(aTime) {
@@ -61,10 +79,11 @@ export class TimeScale extends BaseScale {
 
         var varSet = this.vars;
 
-        var d3Domain = d3.time.scale().domain(varSet);
-        if (this.scaleConfig.nice) {
-            d3Domain = d3Domain.nice(this.niceIntervalFn);
-        }
+        var d3Domain = d3.time.scale().domain(
+            this.scaleConfig.nice ?
+                this._getNiceDomain(varSet) :
+                varSet
+        );
 
         var d3Scale = d3Domain.range(interval);
 
