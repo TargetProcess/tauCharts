@@ -382,21 +382,7 @@ var utils = {
             return d3.time.scale().domain(domain).nice(niceIntervalFn).domain();
         }
 
-        var niceScale = d3.time.scale().domain(domain).nice(niceIntervalFn);
-        var ticks = niceScale.ticks();
-        if (ticks.length > 2) {
-            if ((domain[0] - ticks[0]) / (ticks[1] - ticks[0]) < 0.5) {
-                nice[0] = ticks[0];
-            }
-            var last = ticks.length - 1;
-            if ((domain[1] - ticks[last - 1]) / (ticks[last] - ticks[last - 1]) > 0.5) {
-                nice[1] = ticks[last];
-            }
-        } else if (ticks.length === 2) {
-            nice[0, 1] = ticks[0, 1];
-        }
-
-        return nice;
+        return d3.time.scale().domain(domain).nice(niceIntervalFn).domain();
     },
 
     traverseJSON,
