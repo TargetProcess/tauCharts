@@ -371,18 +371,33 @@ var utils = {
     },
 
     niceTimeDomain(domain, niceIntervalFn) {
-        domain = d3.extent(domain);
-        var nice = domain.slice(0);
-        if ((domain[0] - domain[1]) === 0) {
+
+        var [low, top] = d3.extent(domain);
+        var span = (top - low);
+
+        if (span === 0) {
             var oneDay = 24 * 60 * 60 * 1000;
-            domain = [
-                new Date(domain[0].getTime() - oneDay),
-                new Date(domain[1].getTime() + oneDay)
-            ];
-            return d3.time.scale().domain(domain).nice(niceIntervalFn).domain();
+            low = new Date(low.getTime() - oneDay);
+            top = new Date(top.getTime() + oneDay);
+            return d3.time.scale().domain([low, top]).nice(niceIntervalFn).domain();
         }
 
-        return d3.time.scale().domain(domain).nice(niceIntervalFn).domain();
+        var niceScale = d3.time.scale().domain([low, top]).nice(niceIntervalFn);
+        if (niceIntervalFn) {
+            return niceScale.domain();
+        }
+
+        var [niceLow, niceTop] = d3.time.scale().domain([low, top]).nice(niceIntervalFn).domain();
+        var ticks = niceScale.ticks();
+        var last = ticks.length - 1;
+        if ((low - niceLow) / (ticks[1] - niceLow) < 0.5) {
+            low = niceLow;
+        }
+        if ((niceTop - top) / (niceTop - ticks[last - 1]) < 0.5) {
+            top = niceTop;
+        }
+
+        return [low, top];
     },
 
     traverseJSON,
