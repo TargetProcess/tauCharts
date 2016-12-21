@@ -13,6 +13,27 @@ define(function (require) {
         });
     };
 
+    var checkTime = function (samples) {
+        var dateString = ((date) => {
+            var y = date.getFullYear();
+            var m = (date.getMonth() + 1);
+            if (m < 10) {
+                m = ('0' + m);
+            }
+            var d = date.getDate();
+            if (d < 10) {
+                d = ('0' + d);
+            }
+            return `${y}-${m}-${d}`;
+        });
+        samples.forEach(function (s) {
+            var domain = s[0].map(d => new Date(d));
+            var nice = utils.niceTimeDomain(domain).map(dateString);
+            var expected = s[1].map(d => new Date(d)).map(dateString);
+            expect(nice).to.deep.equal(expected);
+        });
+    };
+
     describe('utils helper', function () {
 
         it('should expand domain up', function () {
@@ -67,6 +88,16 @@ define(function (require) {
             ];
 
             check(samples);
+        });
+
+        it('should nice time domain', function () {
+            var samples = [
+                [['2000-01-01', '2012-01-01'], ['2000-01-01', '2012-01-01']],
+                [['2004-09-03', '2012-03-01'], ['2004-09-03', '2012-03-01']],
+                [['2004-03-01', '2012-09-01'], ['2004-01-01', '2013-01-01']],
+                [['2012-09-03', '2012-09-03'], ['2012-09-02', '2012-09-04']]
+            ];
+            checkTime(samples);
         });
 
         var createLiveSpec = function (padding) {
