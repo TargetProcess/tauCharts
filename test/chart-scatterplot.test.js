@@ -93,7 +93,8 @@ define(function (require) {
             var dots = d3.select(element).selectAll('.dot');
             assert.equal(dots.size(), 10);
             var radiusArr = dots[0].map((node) => d3.select(node).attr('r'));
-            assert.equal(radiusArr.every(x => x == (22 / 2)), true, 'all radius are equal');
+            var r = radiusArr[0];
+            assert.equal(radiusArr.every(x => x == r), true, 'all radius are equal');
         })
     });
 });

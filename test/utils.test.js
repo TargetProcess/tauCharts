@@ -13,14 +13,35 @@ define(function (require) {
         });
     };
 
+    var checkTime = function (samples) {
+        var dateString = ((date) => {
+            var y = date.getFullYear();
+            var m = (date.getMonth() + 1);
+            if (m < 10) {
+                m = ('0' + m);
+            }
+            var d = date.getDate();
+            if (d < 10) {
+                d = ('0' + d);
+            }
+            return `${y}-${m}-${d}`;
+        });
+        samples.forEach(function (s) {
+            var domain = s[0].map(d => new Date(d));
+            var nice = utils.niceTimeDomain(domain).map(dateString);
+            var expected = s[1].map(d => new Date(d)).map(dateString);
+            expect(nice).to.deep.equal(expected);
+        });
+    };
+
     describe('utils helper', function () {
 
         it('should expand domain up', function () {
             var samples = [
-                [[0, 0.092], [0, 0.1]],
-                [[0, 99]   , [0, 110]],
-                [[0, 9]    , [0, 10]],
-                [[0, 5e-324], [0, 0.11]]
+                [[0, 0.096], [0, 0.1]],
+                [[0, 99]   , [0, 100]],
+                [[0, 9]    , [0, 9]],
+                [[0, 5e-324], [0, 0.1]]
             ];
 
             check(samples);
@@ -28,9 +49,9 @@ define(function (require) {
 
         it('should expand domain down', function () {
             var samples = [
-                [[-0.099, 0.092], [-0.12, 0.12]],
-                [[-10, 99]      , [-20, 110]],
-                [[-1, 9]        , [-2, 10]]
+                [[-0.099, 0.092], [-0.1, 0.1]],
+                [[-16, 99]      , [-20, 100]],
+                [[-1, 9]        , [-1, 9]]
             ];
 
             check(samples);
@@ -38,9 +59,9 @@ define(function (require) {
 
         it('should add 0 by default for positive numbers', function () {
             var samples = [
-                [[0.01, 0.092], [0, 0.1]],
-                [[10, 99]     , [0, 110]],
-                [[2, 9]       , [0, 10]]
+                [[0.01, 0.096], [0, 0.1]],
+                [[10, 99]     , [0, 100]],
+                [[2, 9]       , [0, 9]]
             ];
 
             check(samples);
@@ -48,9 +69,9 @@ define(function (require) {
 
         it('should add 0 by default for negative numbers', function () {
             var samples = [
-                [[-0.01, -0.092], [-0.1, 0]],
-                [[-10, -99]     , [-110, 0]],
-                [[-2, -9]       , [-10, 0]]
+                [[-0.01, -0.096], [-0.1, 0]],
+                [[-10, -99]     , [-100, 0]],
+                [[-2, -9]       , [-9, 0]]
             ];
 
             check(samples);
@@ -58,15 +79,25 @@ define(function (require) {
 
         it('should nice domain', function () {
             var samples = [
-                [[1, 2, 20, 40   ], [0, 45]],
-                [[20, 23, 45, 150], [0, 160]],
-                [[3], [0, 3.35]],
-                [[0], [0, 0.11]],
-                [[-3], [-3.05, 0]],
-                [[-30, -10], [-32, 0]]
+                [[1, 2, 20, 40   ], [0, 40]],
+                [[20, 23, 45, 155], [0, 160]],
+                [[3], [0, 3.5]],
+                [[0], [0, 0.1]],
+                [[-3], [-3, 0]],
+                [[-39, -10], [-40, 0]]
             ];
 
             check(samples);
+        });
+
+        it('should nice time domain', function () {
+            var samples = [
+                [['2000-01-01', '2012-01-01'], ['2000-01-01', '2012-01-01']],
+                [['2004-09-03', '2012-03-01'], ['2004-09-03', '2012-03-01']],
+                [['2004-03-01', '2012-09-01'], ['2004-01-01', '2013-01-01']],
+                [['2012-09-03', '2012-09-03'], ['2012-09-02', '2012-09-04']]
+            ];
+            checkTime(samples);
         });
 
         var createLiveSpec = function (padding) {

@@ -1,7 +1,6 @@
 import {BaseScale} from './base';
-/* jshint ignore:start */
-import {default as d3} from 'd3';
-/* jshint ignore:end */
+import d3 from 'd3';
+import {utils} from '../utils/utils';
 
 export class TimeScale extends BaseScale {
 
@@ -32,15 +31,7 @@ export class TimeScale extends BaseScale {
                 this.niceIntervalFn = null;
             }
 
-            if ((vars[0] - vars[1]) === 0) {
-                var oneDay = 24 * 60 * 60 * 1000;
-                vars = [
-                    new Date(vars[0].getTime() - oneDay),
-                    new Date(vars[1].getTime() + oneDay)
-                ];
-            }
-
-            this.vars = d3.time.scale().domain(vars).nice(this.niceIntervalFn).domain();
+            this.vars = utils.niceTimeDomain(vars, this.niceIntervalFn);
 
         } else {
             this.vars = vars;
@@ -61,10 +52,11 @@ export class TimeScale extends BaseScale {
 
         var varSet = this.vars;
 
-        var d3Domain = d3.time.scale().domain(varSet);
-        if (this.scaleConfig.nice) {
-            d3Domain = d3Domain.nice(this.niceIntervalFn);
-        }
+        var d3Domain = d3.time.scale().domain(
+            this.scaleConfig.nice ?
+                utils.niceTimeDomain(varSet, this.niceIntervalFn) :
+                varSet
+        );
 
         var d3Scale = d3Domain.range(interval);
 

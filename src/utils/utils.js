@@ -1,4 +1,5 @@
 import {GenericCartesian}   from '../elements/element.generic.cartesian';
+import d3 from 'd3';
 
 var traverseJSON = (srcObject, byProperty, fnSelectorPredicates, funcTransformRules) => {
 
@@ -321,6 +322,10 @@ var utils = {
             top = top - k * d / m;
         }
 
+        // include 0 by default
+        low = Math.min(0, low);
+        top = Math.max(0, top);
+
         var extent = [low, top];
         var span = extent[1] - extent[0];
         var step = Math.pow(10, Math.floor(Math.log(span / m) / Math.LN10));
@@ -350,19 +355,13 @@ var utils = {
 
         var limit = (step / 2);
 
-        if (low >= 0) {
-            // include 0 by default
-            extent[0] = 0;
-        } else {
-            var koeffLow = (deltaLow <= limit) ? step : 0;
+        if (low < 0) {
+            var koeffLow = (deltaLow >= limit) ? -deltaLow : 0;
             extent[0] = (extent[0] - koeffLow);
         }
 
-        if (top <= 0) {
-            // include 0 by default
-            extent[1] = 0;
-        } else {
-            var koeffTop = (deltaTop <= limit) ? step : 0;
+        if (top > 0) {
+            var koeffTop = (deltaTop >= limit) ? -deltaTop : 0;
             extent[1] = extent[1] + koeffTop;
         }
 
@@ -370,6 +369,36 @@ var utils = {
             parseFloat(extent[0].toFixed(15)),
             parseFloat(extent[1].toFixed(15))
         ];
+    },
+
+    niceTimeDomain(domain, niceIntervalFn) {
+
+        var [low, top] = d3.extent(domain);
+        var span = (top - low);
+
+        if (span === 0) {
+            var oneDay = 24 * 60 * 60 * 1000;
+            low = new Date(low.getTime() - oneDay);
+            top = new Date(top.getTime() + oneDay);
+            return d3.time.scale().domain([low, top]).nice(niceIntervalFn).domain();
+        }
+
+        var niceScale = d3.time.scale().domain([low, top]).nice(niceIntervalFn);
+        if (niceIntervalFn) {
+            return niceScale.domain();
+        }
+
+        var [niceLow, niceTop] = d3.time.scale().domain([low, top]).nice(niceIntervalFn).domain();
+        var ticks = niceScale.ticks();
+        var last = ticks.length - 1;
+        if ((low - niceLow) / (ticks[1] - niceLow) < 0.5) {
+            low = niceLow;
+        }
+        if ((niceTop - top) / (niceTop - ticks[last - 1]) < 0.5) {
+            top = niceTop;
+        }
+
+        return [low, top];
     },
 
     traverseJSON,
