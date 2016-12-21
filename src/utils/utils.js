@@ -1,4 +1,5 @@
 import {GenericCartesian}   from '../elements/element.generic.cartesian';
+import d3 from 'd3';
 
 var traverseJSON = (srcObject, byProperty, fnSelectorPredicates, funcTransformRules) => {
 
