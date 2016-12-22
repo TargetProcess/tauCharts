@@ -194,10 +194,11 @@ var d3_decorator_fixHorizontalAxisTicksOverflow = function (axisNode, activeTick
     axisNode.classed({'graphical-report__d3-time-overflown': hasOverflow});
 };
 
-var d3_decorator_fixEdgeAxisTicksOverflow = function (axisNode, activeTicks, animationSpeed) {
+var d3_decorator_fixEdgeAxisTicksOverflow = function (axisNode, activeTicks, animationSpeed, returnPhase) {
+
+    const store = '__transitionAttrs__';
 
     activeTicks = activeTicks.map(d => Number(d));
-
     var texts = axisNode
         .selectAll('.tick text')
         .filter(d => activeTicks.indexOf(Number(d)) >= 0)[0];
@@ -205,35 +206,44 @@ var d3_decorator_fixEdgeAxisTicksOverflow = function (axisNode, activeTicks, ani
         return;
     }
 
-    // Fix border ticks
     var svg = axisNode.node();
     while ((svg = svg.parentNode).tagName !== 'svg');
     var svgRect = svg.getBoundingClientRect();
-    var fixText = (node, dir) => {
-        var rect = node.getBoundingClientRect();
-        var side = dir > 0 ? 'right' : 'left';
-        var diff = dir * (rect[side] - svgRect[side]);
-        if (diff > 0) {
+
+    if (returnPhase) {
+        texts.forEach((n, i) => {
+            if (i === 0 || i === texts.length - 1) {
+                return;
+            }
+            var t = d3.select(n);
+            if (t.attr('dx')) {
+                d3_transition(t, animationSpeed, 'fixEdgeAxisTicksOverflow')
+                    .attr('dx', 0);
+            }
+        });
+    } else {
+        var fixText = (node, dir) => {
+            var rect = node.getBoundingClientRect();
+            var side = (dir > 0 ? 'right' : 'left');
+
             var d3Node = d3.select(node);
-            d3Node.transition('fixEdgeAxisTicksOverflow');
-            d3Node.attr('dx', 0);
-            d3_transition(d3Node, animationSpeed, 'fixEdgeAxisTicksOverflow')
-                .attr('dx', -dir * diff)
-                .onTransitionEnd(s => {
-                    d3_transition(d3Node, animationSpeed, 'fixEdgeAxisTicksOverflow')
-                        .attr('dx', -dir * diff)
-                });
-        }
-    };
-    texts.forEach(n => {
-        var t = d3.select(n);
-        if (t.attr('dx')) {
-            d3_transition(t, animationSpeed, 'fixEdgeAxisTicksOverflow')
-                .attr('dx', 0);
-        }
-    });
-    fixText(texts[0], -1);
-    fixText(texts[texts.length - 1], 1);
+            var currentDx = d3Node.attr('dx') || 0;
+            var nextDx = (node[store] && node[store].dx ? node[store].dx : currentDx);
+            var diff = dir * (rect[side] - svgRect[side] + currentDx - nextDx);
+            if (diff > 0) {
+                d3Node.transition('fixEdgeAxisTicksOverflow');
+                d3Node.attr('dx', 0);
+                d3_transition(d3Node, animationSpeed, 'fixEdgeAxisTicksOverflow')
+                    .attr('dx', -dir * diff)
+                    .onTransitionEnd(s => {
+                        d3_transition(d3Node, animationSpeed, 'fixEdgeAxisTicksOverflow')
+                            .attr('dx', -dir * diff)
+                    });
+            }
+        };
+        fixText(texts[0], -1);
+        fixText(texts[texts.length - 1], 1);
+    }
 };
 
 /**

@@ -313,6 +313,10 @@ export class Cartesian extends Element {
                     if (isHorizontal && (scale.scaleType === 'time')) {
                         d3_decorator_fixHorizontalAxisTicksOverflow(axis, activeTicks);
                     }
+
+                    if (isHorizontal) {
+                        d3_decorator_fixEdgeAxisTicksOverflow(axis, activeTicks, animationSpeed, true);
+                    }
                 };
                 var fixTickTextOverflow = () => {
                     if (isHorizontal) {
