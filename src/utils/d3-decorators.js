@@ -207,7 +207,9 @@ var d3_decorator_fixEdgeAxisTicksOverflow = function (axisNode, activeTicks, ani
     }
 
     var svg = axisNode.node();
-    while ((svg = svg.parentNode).tagName !== 'svg');
+    while (svg.tagName !== 'svg') {
+        svg = svg.parentNode;
+    }
     var svgRect = svg.getBoundingClientRect();
 
     if (returnPhase) {
@@ -235,9 +237,9 @@ var d3_decorator_fixEdgeAxisTicksOverflow = function (axisNode, activeTicks, ani
                 d3Node.attr('dx', 0);
                 d3_transition(d3Node, animationSpeed, 'fixEdgeAxisTicksOverflow')
                     .attr('dx', -dir * diff)
-                    .onTransitionEnd(s => {
+                    .onTransitionEnd(() => {
                         d3_transition(d3Node, animationSpeed, 'fixEdgeAxisTicksOverflow')
-                            .attr('dx', -dir * diff)
+                            .attr('dx', -dir * diff);
                     });
             }
         };
