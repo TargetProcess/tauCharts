@@ -22,7 +22,7 @@ export class LinearScale extends BaseScale {
         this.vars = (props.nice) ? utils.niceZeroBased(vars) : d3.extent(vars);
         if (this.vars[0] === this.vars[1]) {
             var e = Math.pow(10, Math.floor(Math.log(this.vars[0]) / Math.LN10));
-            this.vars[0] -= (e || 10);
+            this.vars[0] -= (e);
             this.vars[1] += (e || 10);
         }
 

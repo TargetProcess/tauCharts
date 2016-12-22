@@ -425,7 +425,7 @@ define(function (require) {
                 {
                     dim: 'i'
                 }).create([0, 100]);
-            expect(scale2.domain()).to.deep.equal([-10, 10]);
+            expect(scale2.domain()).to.deep.equal([0, 10]);
         });
 
         it('should support [logarithmic] scale', function () {
