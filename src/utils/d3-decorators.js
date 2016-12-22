@@ -155,7 +155,7 @@ var d3_decorator_prettify_categorical_axis_ticks = (nodeAxis, logicalScale, isHo
         });
 };
 
-var d3_decorator_fix_horizontal_axis_ticks_overflow = function (axisNode, activeTicks) {
+var d3_decorator_fixHorizontalAxisTicksOverflow = function (axisNode, activeTicks) {
 
     var isDate = activeTicks.length && activeTicks[0] instanceof Date;
     if (isDate) {
@@ -192,6 +192,30 @@ var d3_decorator_fix_horizontal_axis_ticks_overflow = function (axisNode, active
         hasOverflow = (tickStep - rect.width) < 8; // 2px from each side
     }
     axisNode.classed({'graphical-report__d3-time-overflown': hasOverflow});
+};
+
+var d3_decorator_fixEdgeAxisTicksOverflow = function (axisNode, activeTicks, direction) {
+
+    activeTicks = activeTicks.map(d => Number(d));
+
+    var timeTexts = axisNode.selectAll('.tick text')
+        .filter(d => activeTicks.indexOf(Number(d)) >= 0)
+        .attr('dx', 0)[0];
+
+    // Fix border ticks
+    var svg = axisNode.node();
+    while ((svg = svg.parentNode).tagName !== 'svg');
+    var svgRect = svg.getBoundingClientRect();
+    var fixText = (node, dir) => {
+        var rect = node.getBoundingClientRect();
+        var side = dir > 0 ? 'right' : 'left';
+        var diff = dir * (rect[side] - svgRect[side]);
+        if (diff > 0) {
+            node.setAttribute('dx', -dir * diff);
+        }
+    };
+    fixText(timeTexts[0], -1);
+    fixText(timeTexts[timeTexts.length - 1], 1);
 };
 
 /**
@@ -329,7 +353,7 @@ var d3_decorator_wrap_tick_label = function (
     }
 };
 
-var d3_decorator_avoid_labels_collisions = function (nodeScale, isHorizontal, activeTicks) {
+var d3_decorator_avoidLabelsCollisions = function (nodeScale, isHorizontal, activeTicks) {
     var isDate = activeTicks.length && activeTicks[0] instanceof Date;
     if (isDate) {
         activeTicks = activeTicks.map(d => Number(d));
@@ -629,9 +653,10 @@ export {
     d3_decorator_wrap_tick_label,
     d3_decorator_prettify_axis_label,
     d3_decorator_fix_axis_start_line,
-    d3_decorator_fix_horizontal_axis_ticks_overflow,
+    d3_decorator_fixHorizontalAxisTicksOverflow,
+    d3_decorator_fixEdgeAxisTicksOverflow,
     d3_decorator_prettify_categorical_axis_ticks,
-    d3_decorator_avoid_labels_collisions,
+    d3_decorator_avoidLabelsCollisions,
     d3_transition,
     d3_selectAllImmediate,
     wrapText,

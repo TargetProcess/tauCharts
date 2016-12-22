@@ -5,7 +5,7 @@ define(function (require) {
     var drawUtils = require('src/utils/utils-draw').utilsDraw;
     var domUtils = require('src/utils/utils-dom').utilsDom;
     var d3 = require('d3');
-    var d3_decorator_avoid_labels_collisions = require('src/utils/d3-decorators').d3_decorator_avoid_labels_collisions;
+    var d3_decorator_avoidLabelsCollisions = require('src/utils/d3-decorators').d3_decorator_avoidLabelsCollisions;
 
     var check = function (samples) {
         samples.forEach(function (s) {
@@ -248,7 +248,7 @@ define(function (require) {
             div.parentNode.removeChild(div);
         });
 
-        it('should support d3_decorator_avoid_labels_collisions method', function() {
+        it('should support d3_decorator_avoidLabelsCollisions method', function() {
 
             var domain = [
                 'Too long name for the ordinal axis 0',
@@ -276,7 +276,7 @@ define(function (require) {
             expect(ticks[0].length).to.equal(domain.length, 'Ticks created');
             expect(actBefore).to.deep.equal(['9', '9', '9', '9'], 'text y before decorator');
 
-            d3_decorator_avoid_labels_collisions(d3Axis, true, scale.domain());
+            d3_decorator_avoidLabelsCollisions(d3Axis, true, scale.domain());
 
             var actAfter = [];
             var lineAfter = [];
