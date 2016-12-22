@@ -418,14 +418,14 @@ define(function (require) {
                 {
                     dim: 'i'
                 }).create([0, 100]);
-            expect(scale2.domain()).to.deep.equal([20, 220]);
+            expect(scale3.domain()).to.deep.equal([20, 220]);
 
             var scale4 = new LinearScale(
                 {full: () => [{i: 0}, {i: 0}, {i: 0}]}, ,
                 {
                     dim: 'i'
                 }).create([0, 100]);
-            expect(scale2.domain()).to.deep.equal([0, 10]);
+            expect(scale4.domain()).to.deep.equal([0, 10]);
         });
 
         it('should support [logarithmic] scale', function () {
