@@ -155,7 +155,7 @@ var d3_decorator_prettify_categorical_axis_ticks = (nodeAxis, logicalScale, isHo
         });
 };
 
-var d3_decorator_fix_horizontal_axis_ticks_overflow = function (axisNode, activeTicks) {
+var d3_decorator_fixHorizontalAxisTicksOverflow = function (axisNode, activeTicks) {
 
     var isDate = activeTicks.length && activeTicks[0] instanceof Date;
     if (isDate) {
@@ -192,6 +192,60 @@ var d3_decorator_fix_horizontal_axis_ticks_overflow = function (axisNode, active
         hasOverflow = (tickStep - rect.width) < 8; // 2px from each side
     }
     axisNode.classed({'graphical-report__d3-time-overflown': hasOverflow});
+};
+
+var d3_decorator_fixEdgeAxisTicksOverflow = function (axisNode, activeTicks, animationSpeed, returnPhase) {
+
+    const store = '__transitionAttrs__';
+
+    activeTicks = activeTicks.map(d => Number(d));
+    var texts = axisNode
+        .selectAll('.tick text')
+        .filter(d => activeTicks.indexOf(Number(d)) >= 0)[0];
+    if (texts.length === 0) {
+        return;
+    }
+
+    var svg = axisNode.node();
+    while (svg.tagName !== 'svg') {
+        svg = svg.parentNode;
+    }
+    var svgRect = svg.getBoundingClientRect();
+
+    if (returnPhase) {
+        texts.forEach((n, i) => {
+            if (i === 0 || i === texts.length - 1) {
+                return;
+            }
+            var t = d3.select(n);
+            if (t.attr('dx')) {
+                d3_transition(t, animationSpeed, 'fixEdgeAxisTicksOverflow')
+                    .attr('dx', 0);
+            }
+        });
+    } else {
+        var fixText = (node, dir) => {
+            var rect = node.getBoundingClientRect();
+            var side = (dir > 0 ? 'right' : 'left');
+
+            var d3Node = d3.select(node);
+            var currentDx = d3Node.attr('dx') || 0;
+            var nextDx = (node[store] && node[store].dx ? node[store].dx : currentDx);
+            var diff = dir * (rect[side] - svgRect[side] + currentDx - nextDx);
+            if (diff > 0) {
+                d3Node.transition('fixEdgeAxisTicksOverflow');
+                d3Node.attr('dx', 0);
+                d3_transition(d3Node, animationSpeed, 'fixEdgeAxisTicksOverflow')
+                    .attr('dx', -dir * diff)
+                    .onTransitionEnd(() => {
+                        d3_transition(d3Node, animationSpeed, 'fixEdgeAxisTicksOverflow')
+                            .attr('dx', -dir * diff);
+                    });
+            }
+        };
+        fixText(texts[0], -1);
+        fixText(texts[texts.length - 1], 1);
+    }
 };
 
 /**
@@ -329,7 +383,7 @@ var d3_decorator_wrap_tick_label = function (
     }
 };
 
-var d3_decorator_avoid_labels_collisions = function (nodeScale, isHorizontal, activeTicks) {
+var d3_decorator_avoidLabelsCollisions = function (nodeScale, isHorizontal, activeTicks) {
     var isDate = activeTicks.length && activeTicks[0] instanceof Date;
     if (isDate) {
         activeTicks = activeTicks.map(d => Number(d));
@@ -629,9 +683,10 @@ export {
     d3_decorator_wrap_tick_label,
     d3_decorator_prettify_axis_label,
     d3_decorator_fix_axis_start_line,
-    d3_decorator_fix_horizontal_axis_ticks_overflow,
+    d3_decorator_fixHorizontalAxisTicksOverflow,
+    d3_decorator_fixEdgeAxisTicksOverflow,
     d3_decorator_prettify_categorical_axis_ticks,
-    d3_decorator_avoid_labels_collisions,
+    d3_decorator_avoidLabelsCollisions,
     d3_transition,
     d3_selectAllImmediate,
     wrapText,

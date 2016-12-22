@@ -813,5 +813,53 @@ define(function (require) {
             chart.renderTo(testDiv);
             expect(tauChart.Plot.renderingsInProgress).to.equal(1);
         });
+
+        it('ticks should not overflow chart', function (done) {
+
+            this.timeout(4000);
+            var animationSpeed = 125;
+            var months = 12;
+
+            var testDiv = document.getElementById('test-div');
+            testDiv.style.width = '800px';
+            testDiv.style.height = '600px';
+
+            var chart = new tauChart.Chart({
+                type: 'line',
+                guide: {
+                    y: {
+                        hide: true
+                    }
+                },
+                data: range(months).map((i) => {
+                    var m = i + 1;
+                    return {
+                        date: new Date(`2016-${m > 9 ? m : ('0' + m)}-01`),
+                        value: i * 10
+                    };
+                }),
+                x: ['date'],
+                y: ['value'],
+                settings: {
+                    animationSpeed
+                }
+            });
+
+            chart.on('render', function () {
+                setTimeout(() => {
+                    var svg = chart.getSVG();
+                    var ticks = svg.querySelectorAll('.tick text');
+                    expect(ticks.length).to.equal(months);
+                    var rect = svg.getBoundingClientRect();
+                    var l = ticks[0].getBoundingClientRect();
+                    var r = ticks[ticks.length - 1].getBoundingClientRect();
+                    expect(l.left).to.be.at.least(rect.left);
+                    expect(r.right).to.be.at.most(rect.right);
+                    done();
+                }, animationSpeed * 4);
+            });
+
+            chart.renderTo(testDiv);
+        });
     });
 });

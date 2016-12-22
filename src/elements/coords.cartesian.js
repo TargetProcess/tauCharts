@@ -11,9 +11,10 @@ import {
     d3_decorator_wrap_tick_label,
     d3_decorator_prettify_axis_label,
     d3_decorator_fix_axis_start_line,
-    d3_decorator_fix_horizontal_axis_ticks_overflow,
+    d3_decorator_fixHorizontalAxisTicksOverflow,
+    d3_decorator_fixEdgeAxisTicksOverflow,
     d3_decorator_prettify_categorical_axis_ticks,
-    d3_decorator_avoid_labels_collisions
+    d3_decorator_avoidLabelsCollisions
 } from '../utils/d3-decorators';
 var selectOrAppend = utilsDom.selectOrAppend;
 
@@ -304,14 +305,27 @@ export class Cartesian extends Element {
                 }
 
                 var activeTicks = scale.scaleObj.ticks ? scale.scaleObj.ticks() : scale.scaleObj.domain();
-                var fixAxesCollision = function () {
+                var fixAxesCollision = () => {
                     if (prettifyTick && scale.guide.avoidCollisions) {
-                        d3_decorator_avoid_labels_collisions(axis, isHorizontal, activeTicks);
+                        d3_decorator_avoidLabelsCollisions(axis, isHorizontal, activeTicks);
                     }
 
                     if (isHorizontal && (scale.scaleType === 'time')) {
-                        d3_decorator_fix_horizontal_axis_ticks_overflow(axis, activeTicks);
+                        d3_decorator_fixHorizontalAxisTicksOverflow(axis, activeTicks);
                     }
+
+                    if (isHorizontal) {
+                        d3_decorator_fixEdgeAxisTicksOverflow(axis, activeTicks, animationSpeed, true);
+                    }
+                };
+                var fixTickTextOverflow = () => {
+                    if (isHorizontal) {
+                        d3_decorator_fixEdgeAxisTicksOverflow(axis, activeTicks, animationSpeed);
+                    }
+                };
+                var fixAxesTicks = function () {
+                    fixAxesCollision();
+                    fixTickTextOverflow();
                 };
                 fixAxesCollision();
                 // NOTE: As far as floating axes transition overrides current,
@@ -320,7 +334,9 @@ export class Cartesian extends Element {
                 var timeoutField = '_transitionEndTimeout_' + (isHorizontal ? 'h' : 'v');
                 clearTimeout(this[timeoutField]);
                 if (animationSpeed > 0) {
-                    this[timeoutField] = setTimeout(fixAxesCollision, animationSpeed);
+                    this[timeoutField] = setTimeout(fixAxesTicks, animationSpeed);
+                } else {
+                    fixTickTextOverflow();
                 }
             });
     }
