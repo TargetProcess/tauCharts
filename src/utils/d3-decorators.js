@@ -198,8 +198,12 @@ var d3_decorator_fixEdgeAxisTicksOverflow = function (axisNode, activeTicks, ani
 
     activeTicks = activeTicks.map(d => Number(d));
 
-    var texts = axisNode.selectAll('.tick text')
+    var texts = axisNode
+        .selectAll('.tick text')
         .filter(d => activeTicks.indexOf(Number(d)) >= 0)[0];
+    if (texts.length === 0) {
+        return;
+    }
 
     // Fix border ticks
     var svg = axisNode.node();
