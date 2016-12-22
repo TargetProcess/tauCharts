@@ -414,14 +414,14 @@ define(function (require) {
             expect(scale2.stepSize()).to.equal(0);
 
             var scale3 = new LinearScale(
-                {full: () => [{i: 120}, {i: 120}, {i: 120}]}, ,
+                {full: () => [{i: 120}, {i: 120}, {i: 120}]},
                 {
                     dim: 'i'
                 }).create([0, 100]);
             expect(scale3.domain()).to.deep.equal([20, 220]);
 
             var scale4 = new LinearScale(
-                {full: () => [{i: 0}, {i: 0}, {i: 0}]}, ,
+                {full: () => [{i: 0}, {i: 0}, {i: 0}]},
                 {
                     dim: 'i'
                 }).create([0, 100]);
