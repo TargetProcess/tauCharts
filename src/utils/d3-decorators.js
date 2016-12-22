@@ -194,13 +194,12 @@ var d3_decorator_fixHorizontalAxisTicksOverflow = function (axisNode, activeTick
     axisNode.classed({'graphical-report__d3-time-overflown': hasOverflow});
 };
 
-var d3_decorator_fixEdgeAxisTicksOverflow = function (axisNode, activeTicks, direction) {
+var d3_decorator_fixEdgeAxisTicksOverflow = function (axisNode, activeTicks, animationSpeed) {
 
     activeTicks = activeTicks.map(d => Number(d));
 
-    var timeTexts = axisNode.selectAll('.tick text')
-        .filter(d => activeTicks.indexOf(Number(d)) >= 0)
-        .attr('dx', 0)[0];
+    var texts = axisNode.selectAll('.tick text')
+        .filter(d => activeTicks.indexOf(Number(d)) >= 0)[0];
 
     // Fix border ticks
     var svg = axisNode.node();
@@ -211,11 +210,26 @@ var d3_decorator_fixEdgeAxisTicksOverflow = function (axisNode, activeTicks, dir
         var side = dir > 0 ? 'right' : 'left';
         var diff = dir * (rect[side] - svgRect[side]);
         if (diff > 0) {
-            node.setAttribute('dx', -dir * diff);
+            var d3Node = d3.select(node);
+            d3Node.transition('fixEdgeAxisTicksOverflow');
+            d3Node.attr('dx', 0);
+            d3_transition(d3Node, animationSpeed, 'fixEdgeAxisTicksOverflow')
+                .attr('dx', -dir * diff)
+                .onTransitionEnd(s => {
+                    d3_transition(d3Node, animationSpeed, 'fixEdgeAxisTicksOverflow')
+                        .attr('dx', -dir * diff)
+                });
         }
     };
-    fixText(timeTexts[0], -1);
-    fixText(timeTexts[timeTexts.length - 1], 1);
+    texts.forEach(n => {
+        var t = d3.select(n);
+        if (t.attr('dx')) {
+            d3_transition(t, animationSpeed, 'fixEdgeAxisTicksOverflow')
+                .attr('dx', 0);
+        }
+    });
+    fixText(texts[0], -1);
+    fixText(texts[texts.length - 1], 1);
 };
 
 /**

@@ -316,7 +316,7 @@ export class Cartesian extends Element {
                 };
                 var fixTickTextOverflow = () => {
                     if (isHorizontal) {
-                        d3_decorator_fixEdgeAxisTicksOverflow(axis, activeTicks, 'x');
+                        d3_decorator_fixEdgeAxisTicksOverflow(axis, activeTicks, animationSpeed);
                     }
                 };
                 var fixAxesTicks = function () {
