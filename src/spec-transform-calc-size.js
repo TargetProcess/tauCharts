@@ -130,7 +130,8 @@ export class SpecTransformCalcSize {
 
                 const labelFontSize = (guide.label && guide.label.fontSize ? guide.label.fontSize : 10);
                 var rowsTotal = root.frames.reduce((sum, f) => f.full().length * labelFontSize, 0);
-                return resScaleSize + rowsTotal;
+                var scaleSize = calcScaleSize(chart.getScaleInfo(xCfg, frame), xSize);
+                return resScaleSize + Math.max(rowsTotal, scaleSize);
 
             } else if (root.units[0].type !== 'COORDS.RECT') {
 
