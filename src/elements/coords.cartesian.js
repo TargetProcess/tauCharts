@@ -14,6 +14,7 @@ import {
     d3_decorator_fixHorizontalAxisTicksOverflow,
     d3_decorator_fixEdgeAxisTicksOverflow,
     d3_decorator_prettify_categorical_axis_ticks,
+    d3_decorator_highlightZeroTick,
     d3_decorator_avoidLabelsCollisions
 } from '../utils/d3-decorators';
 var selectOrAppend = utilsDom.selectOrAppend;
@@ -287,6 +288,10 @@ export class Cartesian extends Element {
                     );
                 }
 
+                if (scale.scaleType === 'linear') {
+                    d3_decorator_highlightZeroTick(axis);
+                }
+
                 d3_decorator_wrap_tick_label(axis, animationSpeed, scale.guide, isHorizontal, scale);
 
                 if (!scale.guide.label.hide) {
@@ -399,6 +404,10 @@ export class Cartesian extends Element {
                             );
                         }
 
+                        if (xScale.scaleType === 'linear') {
+                            d3_decorator_highlightZeroTick(xGridLines);
+                        }
+
                         let extraGridLines = selectOrAppend(gridLines, 'g.tau-extraGridLines');
                         d3_decorator_fix_axis_start_line(
                             extraGridLines,
@@ -437,6 +446,10 @@ export class Cartesian extends Element {
                                 isHorizontal,
                                 animationSpeed
                             );
+                        }
+
+                        if (yScale.scaleType === 'linear') {
+                            d3_decorator_highlightZeroTick(yGridLines);
                         }
 
                         let fixLineScales = ['time', 'ordinal', 'period'];
