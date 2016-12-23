@@ -289,7 +289,7 @@ export class Cartesian extends Element {
                 }
 
                 if (scale.scaleType === 'linear') {
-                    d3_decorator_highlightZeroTick(axis);
+                    d3_decorator_highlightZeroTick(axis, scale.scaleObj);
                 }
 
                 d3_decorator_wrap_tick_label(axis, animationSpeed, scale.guide, isHorizontal, scale);
@@ -405,7 +405,7 @@ export class Cartesian extends Element {
                         }
 
                         if (xScale.scaleType === 'linear') {
-                            d3_decorator_highlightZeroTick(xGridLines);
+                            d3_decorator_highlightZeroTick(xGridLines, xScale.scaleObj);
                         }
 
                         let extraGridLines = selectOrAppend(gridLines, 'g.tau-extraGridLines');
@@ -449,7 +449,7 @@ export class Cartesian extends Element {
                         }
 
                         if (yScale.scaleType === 'linear') {
-                            d3_decorator_highlightZeroTick(yGridLines);
+                            d3_decorator_highlightZeroTick(yGridLines, yScale.scaleObj);
                         }
 
                         let fixLineScales = ['time', 'ordinal', 'period'];
