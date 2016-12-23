@@ -1,4 +1,4 @@
-/*! taucharts - v0.10.0-beta.4 - 2016-12-16
+/*! taucharts - v0.10.0-beta.5 - 2016-12-23
 * https://github.com/TargetProcess/tauCharts
 * Copyright (c) 2016 Taucraft Limited; Licensed Apache License 2.0 */
 (function webpackUniversalModuleDefinition(root, factory) {
@@ -337,7 +337,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	}]));
 
 	/* global VERSION:false */
-	var version = ("0.10.0-beta.4");
+	var version = ("0.10.0-beta.5");
 	exports.GPL = _tau.GPL;
 	exports.Plot = _tau2.Plot;
 	exports.Chart = _tau3.Chart;
@@ -672,9 +672,17 @@ return /******/ (function(modules) { // webpackBootstrap
 	});
 	exports.utils = undefined;
 
+	var _slicedToArray = function () { function sliceIterator(arr, i) { var _arr = []; var _n = true; var _d = false; var _e = undefined; try { for (var _i = arr[Symbol.iterator](), _s; !(_n = (_s = _i.next()).done); _n = true) { _arr.push(_s.value); if (i && _arr.length === i) break; } } catch (err) { _d = true; _e = err; } finally { try { if (!_n && _i["return"]) _i["return"](); } finally { if (_d) throw _e; } } return _arr; } return function (arr, i) { if (Array.isArray(arr)) { return arr; } else if (Symbol.iterator in Object(arr)) { return sliceIterator(arr, i); } else { throw new TypeError("Invalid attempt to destructure non-iterable instance"); } }; }();
+
 	var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
 
 	var _elementGeneric = __webpack_require__(4);
+
+	var _d2 = __webpack_require__(2);
+
+	var _d3 = _interopRequireDefault(_d2);
+
+	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 	function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr2 = Array(arr.length); i < arr.length; i++) { arr2[i] = arr[i]; } return arr2; } else { return Array.from(arr); } }
 
@@ -1003,6 +1011,10 @@ return /******/ (function(modules) { // webpackBootstrap
 	            top = top - k * d / m;
 	        }
 
+	        // include 0 by default
+	        low = Math.min(0, low);
+	        top = Math.max(0, top);
+
 	        var extent = [low, top];
 	        var span = extent[1] - extent[0];
 	        var step = Math.pow(10, Math.floor(Math.log(span / m) / Math.LN10));
@@ -1025,23 +1037,53 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	        var limit = step / 2;
 
-	        if (low >= 0) {
-	            // include 0 by default
-	            extent[0] = 0;
-	        } else {
-	            var koeffLow = deltaLow <= limit ? step : 0;
+	        if (low < 0) {
+	            var koeffLow = deltaLow >= limit ? -deltaLow : 0;
 	            extent[0] = extent[0] - koeffLow;
 	        }
 
-	        if (top <= 0) {
-	            // include 0 by default
-	            extent[1] = 0;
-	        } else {
-	            var koeffTop = deltaTop <= limit ? step : 0;
+	        if (top > 0) {
+	            var koeffTop = deltaTop >= limit ? -deltaTop : 0;
 	            extent[1] = extent[1] + koeffTop;
 	        }
 
 	        return [parseFloat(extent[0].toFixed(15)), parseFloat(extent[1].toFixed(15))];
+	    },
+	    niceTimeDomain: function niceTimeDomain(domain, niceIntervalFn) {
+	        var _d3$extent = _d3.default.extent(domain),
+	            _d3$extent2 = _slicedToArray(_d3$extent, 2),
+	            low = _d3$extent2[0],
+	            top = _d3$extent2[1];
+
+	        var span = top - low;
+
+	        if (span === 0) {
+	            var oneDay = 24 * 60 * 60 * 1000;
+	            low = new Date(low.getTime() - oneDay);
+	            top = new Date(top.getTime() + oneDay);
+	            return _d3.default.time.scale().domain([low, top]).nice(niceIntervalFn).domain();
+	        }
+
+	        var niceScale = _d3.default.time.scale().domain([low, top]).nice(niceIntervalFn);
+	        if (niceIntervalFn) {
+	            return niceScale.domain();
+	        }
+
+	        var _d3$time$scale$domain = _d3.default.time.scale().domain([low, top]).nice(niceIntervalFn).domain(),
+	            _d3$time$scale$domain2 = _slicedToArray(_d3$time$scale$domain, 2),
+	            niceLow = _d3$time$scale$domain2[0],
+	            niceTop = _d3$time$scale$domain2[1];
+
+	        var ticks = niceScale.ticks();
+	        var last = ticks.length - 1;
+	        if ((low - niceLow) / (ticks[1] - niceLow) < 0.5) {
+	            low = niceLow;
+	        }
+	        if ((niceTop - top) / (niceTop - ticks[last - 1]) < 0.5) {
+	            top = niceTop;
+	        }
+
+	        return [low, top];
 	    },
 
 
@@ -2527,7 +2569,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	Object.defineProperty(exports, "__esModule", {
 	    value: true
 	});
-	exports.cutText = exports.wrapText = exports.d3_selectAllImmediate = exports.d3_transition = exports.d3_decorator_avoid_labels_collisions = exports.d3_decorator_prettify_categorical_axis_ticks = exports.d3_decorator_fix_horizontal_axis_ticks_overflow = exports.d3_decorator_fix_axis_start_line = exports.d3_decorator_prettify_axis_label = exports.d3_decorator_wrap_tick_label = exports.d3_createPathTween = exports.d3_animationInterceptor = undefined;
+	exports.cutText = exports.wrapText = exports.d3_selectAllImmediate = exports.d3_transition = exports.d3_decorator_avoidLabelsCollisions = exports.d3_decorator_prettify_categorical_axis_ticks = exports.d3_decorator_highlightZeroTick = exports.d3_decorator_fixEdgeAxisTicksOverflow = exports.d3_decorator_fixHorizontalAxisTicksOverflow = exports.d3_decorator_fix_axis_start_line = exports.d3_decorator_prettify_axis_label = exports.d3_decorator_wrap_tick_label = exports.d3_createPathTween = exports.d3_animationInterceptor = undefined;
 
 	var _utils = __webpack_require__(3);
 
@@ -2697,7 +2739,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    });
 	};
 
-	var d3_decorator_fix_horizontal_axis_ticks_overflow = function d3_decorator_fix_horizontal_axis_ticks_overflow(axisNode, activeTicks) {
+	var d3_decorator_fixHorizontalAxisTicksOverflow = function d3_decorator_fixHorizontalAxisTicksOverflow(axisNode, activeTicks) {
 
 	    var isDate = activeTicks.length && activeTicks[0] instanceof Date;
 	    if (isDate) {
@@ -2738,6 +2780,58 @@ return /******/ (function(modules) { // webpackBootstrap
 	        hasOverflow = tickStep - rect.width < 8; // 2px from each side
 	    }
 	    axisNode.classed({ 'graphical-report__d3-time-overflown': hasOverflow });
+	};
+
+	var d3_decorator_fixEdgeAxisTicksOverflow = function d3_decorator_fixEdgeAxisTicksOverflow(axisNode, activeTicks, animationSpeed, returnPhase) {
+
+	    var store = '__transitionAttrs__';
+
+	    activeTicks = activeTicks.map(function (d) {
+	        return Number(d);
+	    });
+	    var texts = axisNode.selectAll('.tick text').filter(function (d) {
+	        return activeTicks.indexOf(Number(d)) >= 0;
+	    })[0];
+	    if (texts.length === 0) {
+	        return;
+	    }
+
+	    var svg = axisNode.node();
+	    while (svg.tagName !== 'svg') {
+	        svg = svg.parentNode;
+	    }
+	    var svgRect = svg.getBoundingClientRect();
+
+	    if (returnPhase) {
+	        texts.forEach(function (n, i) {
+	            if (i === 0 || i === texts.length - 1) {
+	                return;
+	            }
+	            var t = _d2.default.select(n);
+	            if (t.attr('dx')) {
+	                d3_transition(t, animationSpeed, 'fixEdgeAxisTicksOverflow').attr('dx', 0);
+	            }
+	        });
+	    } else {
+	        var fixText = function fixText(node, dir) {
+	            var rect = node.getBoundingClientRect();
+	            var side = dir > 0 ? 'right' : 'left';
+
+	            var d3Node = _d2.default.select(node);
+	            var currentDx = d3Node.attr('dx') || 0;
+	            var nextDx = node[store] && node[store].dx ? node[store].dx : currentDx;
+	            var diff = dir * (rect[side] - svgRect[side] + currentDx - nextDx);
+	            if (diff > 0) {
+	                d3Node.transition('fixEdgeAxisTicksOverflow');
+	                d3Node.attr('dx', 0);
+	                d3_transition(d3Node, animationSpeed, 'fixEdgeAxisTicksOverflow').attr('dx', -dir * diff).onTransitionEnd(function () {
+	                    d3_transition(d3Node, animationSpeed, 'fixEdgeAxisTicksOverflow').attr('dx', -dir * diff);
+	                });
+	            }
+	        };
+	        fixText(texts[0], -1);
+	        fixText(texts[texts.length - 1], 1);
+	    }
 	};
 
 	/**
@@ -2842,7 +2936,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    }
 	};
 
-	var d3_decorator_avoid_labels_collisions = function d3_decorator_avoid_labels_collisions(nodeScale, isHorizontal, activeTicks) {
+	var d3_decorator_avoidLabelsCollisions = function d3_decorator_avoidLabelsCollisions(nodeScale, isHorizontal, activeTicks) {
 	    var isDate = activeTicks.length && activeTicks[0] instanceof Date;
 	    if (isDate) {
 	        activeTicks = activeTicks.map(function (d) {
@@ -2952,6 +3046,16 @@ return /******/ (function(modules) { // webpackBootstrap
 	        }
 
 	        return curr;
+	    });
+	};
+
+	var d3_decorator_highlightZeroTick = function d3_decorator_highlightZeroTick(axisNode, scale) {
+	    var ticks = scale.ticks();
+	    var domain = scale.domain();
+	    var last = ticks.length - 1;
+	    var shouldHighlightZero = ticks.length > 1 && domain[0] * domain[1] < 0 && -domain[0] > (ticks[1] - ticks[0]) / 2 && domain[1] > (ticks[last] - ticks[last - 1]) / 2;
+	    axisNode.selectAll('.tick').classed('zero-tick', function (d) {
+	        return d === 0 && shouldHighlightZero;
 	    });
 	};
 
@@ -3136,9 +3240,11 @@ return /******/ (function(modules) { // webpackBootstrap
 	exports.d3_decorator_wrap_tick_label = d3_decorator_wrap_tick_label;
 	exports.d3_decorator_prettify_axis_label = d3_decorator_prettify_axis_label;
 	exports.d3_decorator_fix_axis_start_line = d3_decorator_fix_axis_start_line;
-	exports.d3_decorator_fix_horizontal_axis_ticks_overflow = d3_decorator_fix_horizontal_axis_ticks_overflow;
+	exports.d3_decorator_fixHorizontalAxisTicksOverflow = d3_decorator_fixHorizontalAxisTicksOverflow;
+	exports.d3_decorator_fixEdgeAxisTicksOverflow = d3_decorator_fixEdgeAxisTicksOverflow;
+	exports.d3_decorator_highlightZeroTick = d3_decorator_highlightZeroTick;
 	exports.d3_decorator_prettify_categorical_axis_ticks = d3_decorator_prettify_categorical_axis_ticks;
-	exports.d3_decorator_avoid_labels_collisions = d3_decorator_avoid_labels_collisions;
+	exports.d3_decorator_avoidLabelsCollisions = d3_decorator_avoidLabelsCollisions;
 	exports.d3_transition = d3_transition;
 	exports.d3_selectAllImmediate = d3_selectAllImmediate;
 	exports.wrapText = wrapText;
@@ -9554,6 +9660,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	                if (root.units[0].type === 'ELEMENT.INTERVAL' && prop === 'y' === Boolean(root.units[0].flip) && root.units[0].label && !chart.getScaleInfo(root.units[0].label, frame).isEmpty()) {
 	                    var rowsTotal;
+	                    var scaleSize;
 
 	                    var _ret = function () {
 
@@ -9561,9 +9668,10 @@ return /******/ (function(modules) { // webpackBootstrap
 	                        rowsTotal = root.frames.reduce(function (sum, f) {
 	                            return f.full().length * labelFontSize;
 	                        }, 0);
+	                        scaleSize = calcScaleSize(chart.getScaleInfo(xCfg, frame), xSize);
 
 	                        return {
-	                            v: resScaleSize + rowsTotal
+	                            v: resScaleSize + Math.max(rowsTotal, scaleSize)
 	                        };
 	                    }();
 
@@ -10411,6 +10519,10 @@ return /******/ (function(modules) { // webpackBootstrap
 	                    (0, _d3Decorators.d3_decorator_prettify_categorical_axis_ticks)(transAxis, scale, isHorizontal, animationSpeed);
 	                }
 
+	                if (scale.scaleType === 'linear') {
+	                    (0, _d3Decorators.d3_decorator_highlightZeroTick)(axis, scale.scaleObj);
+	                }
+
 	                (0, _d3Decorators.d3_decorator_wrap_tick_label)(axis, animationSpeed, scale.guide, isHorizontal, scale);
 
 	                if (!scale.guide.label.hide) {
@@ -10425,12 +10537,25 @@ return /******/ (function(modules) { // webpackBootstrap
 	                var activeTicks = scale.scaleObj.ticks ? scale.scaleObj.ticks() : scale.scaleObj.domain();
 	                var fixAxesCollision = function fixAxesCollision() {
 	                    if (prettifyTick && scale.guide.avoidCollisions) {
-	                        (0, _d3Decorators.d3_decorator_avoid_labels_collisions)(axis, isHorizontal, activeTicks);
+	                        (0, _d3Decorators.d3_decorator_avoidLabelsCollisions)(axis, isHorizontal, activeTicks);
 	                    }
 
 	                    if (isHorizontal && scale.scaleType === 'time') {
-	                        (0, _d3Decorators.d3_decorator_fix_horizontal_axis_ticks_overflow)(axis, activeTicks);
+	                        (0, _d3Decorators.d3_decorator_fixHorizontalAxisTicksOverflow)(axis, activeTicks);
 	                    }
+
+	                    if (isHorizontal) {
+	                        (0, _d3Decorators.d3_decorator_fixEdgeAxisTicksOverflow)(axis, activeTicks, animationSpeed, true);
+	                    }
+	                };
+	                var fixTickTextOverflow = function fixTickTextOverflow() {
+	                    if (isHorizontal) {
+	                        (0, _d3Decorators.d3_decorator_fixEdgeAxisTicksOverflow)(axis, activeTicks, animationSpeed);
+	                    }
+	                };
+	                var fixAxesTicks = function fixAxesTicks() {
+	                    fixAxesCollision();
+	                    fixTickTextOverflow();
 	                };
 	                fixAxesCollision();
 	                // NOTE: As far as floating axes transition overrides current,
@@ -10439,7 +10564,9 @@ return /******/ (function(modules) { // webpackBootstrap
 	                var timeoutField = '_transitionEndTimeout_' + (isHorizontal ? 'h' : 'v');
 	                clearTimeout(_this3[timeoutField]);
 	                if (animationSpeed > 0) {
-	                    _this3[timeoutField] = setTimeout(fixAxesCollision, animationSpeed);
+	                    _this3[timeoutField] = setTimeout(fixAxesTicks, animationSpeed);
+	                } else {
+	                    fixTickTextOverflow();
 	                }
 	            });
 	        }
@@ -10491,6 +10618,10 @@ return /******/ (function(modules) { // webpackBootstrap
 	                            (0, _d3Decorators.d3_decorator_prettify_categorical_axis_ticks)(xGridLinesTrans, xScale, isHorizontal, animationSpeed);
 	                        }
 
+	                        if (xScale.scaleType === 'linear') {
+	                            (0, _d3Decorators.d3_decorator_highlightZeroTick)(xGridLines, xScale.scaleObj);
+	                        }
+
 	                        var extraGridLines = selectOrAppend(gridLines, 'g.tau-extraGridLines');
 	                        (0, _d3Decorators.d3_decorator_fix_axis_start_line)(extraGridLines, isHorizontal, width, height, animationSpeed);
 	                    }
@@ -10513,6 +10644,10 @@ return /******/ (function(modules) { // webpackBootstrap
 	                        var _prettifyTick = yScale.scaleType === 'ordinal' || yScale.scaleType === 'period';
 	                        if (_prettifyTick) {
 	                            (0, _d3Decorators.d3_decorator_prettify_categorical_axis_ticks)(yGridLinesTrans, yScale, _isHorizontal, animationSpeed);
+	                        }
+
+	                        if (yScale.scaleType === 'linear') {
+	                            (0, _d3Decorators.d3_decorator_highlightZeroTick)(yGridLines, yScale.scaleObj);
 	                        }
 
 	                        var fixLineScales = ['time', 'ordinal', 'period'];
@@ -15924,6 +16059,8 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	var _d2 = _interopRequireDefault(_d);
 
+	var _utils = __webpack_require__(3);
+
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
@@ -15931,10 +16068,6 @@ return /******/ (function(modules) { // webpackBootstrap
 	function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
 
 	function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
-	/* jshint ignore:start */
-
-
-	/* jshint ignore:end */
 
 	var TimeScale = exports.TimeScale = function (_BaseScale) {
 	    _inherits(TimeScale, _BaseScale);
@@ -15966,12 +16099,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	                _this.niceIntervalFn = null;
 	            }
 
-	            if (vars[0] - vars[1] === 0) {
-	                var oneDay = 24 * 60 * 60 * 1000;
-	                vars = [new Date(vars[0].getTime() - oneDay), new Date(vars[1].getTime() + oneDay)];
-	            }
-
-	            _this.vars = _d2.default.time.scale().domain(vars).nice(_this.niceIntervalFn).domain();
+	            _this.vars = _utils.utils.niceTimeDomain(vars, _this.niceIntervalFn);
 	        } else {
 	            _this.vars = vars;
 	        }
@@ -15995,10 +16123,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	            var varSet = this.vars;
 
-	            var d3Domain = _d2.default.time.scale().domain(varSet);
-	            if (this.scaleConfig.nice) {
-	                d3Domain = d3Domain.nice(this.niceIntervalFn);
-	            }
+	            var d3Domain = _d2.default.time.scale().domain(this.scaleConfig.nice ? _utils.utils.niceTimeDomain(varSet, this.niceIntervalFn) : varSet);
 
 	            var d3Scale = d3Domain.range(interval);
 
@@ -16079,6 +16204,11 @@ return /******/ (function(modules) { // webpackBootstrap
 	        vars = [Math.min.apply(Math, _toConsumableArray([min, vars[0]].filter(Number.isFinite))), Math.max.apply(Math, _toConsumableArray([max, vars[1]].filter(Number.isFinite)))];
 
 	        _this.vars = props.nice ? _utils.utils.niceZeroBased(vars) : _d2.default.extent(vars);
+	        if (_this.vars[0] === _this.vars[1]) {
+	            var e = Math.pow(10, Math.floor(Math.log(_this.vars[0]) / Math.LN10));
+	            _this.vars[0] -= e;
+	            _this.vars[1] += e || 10;
+	        }
 
 	        _this.addField('scaleType', 'linear').addField('discrete', false);
 	        return _this;
