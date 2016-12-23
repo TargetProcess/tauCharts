@@ -1,3 +1,4 @@
+import {LayerLabelsModel} from './layer-labels-model';
 var rules = {};
 
 export class LayerLabelsRules {
@@ -209,6 +210,58 @@ LayerLabelsRules
                 return prevDy;
             }
         };
+    })
+
+    .regRule('outside-then-inside-horizontal', (prev, args) => {
+
+        var outer = ['r+', 'l-']
+            .map(LayerLabelsRules.getRule)
+            .reduce((p, r) => LayerLabelsModel.compose(p, r(p, args)), prev);
+
+        var inner = ['r-', 'l+', 'hide-by-label-height-horizontal', 'cut-label-horizontal']
+            .map(LayerLabelsRules.getRule)
+            .reduce((p, r) => LayerLabelsModel.compose(p, r(p, args)), prev);
+
+        var overflow = (row) => {
+            var x = (outer.x(row) + outer.dx(row));
+            var half = (outer.w(row) / 2);
+            return ((x - half < 0) || (x + half > args.maxWidth));
+        };
+
+        return Object.assign(
+            {},
+            outer,
+            ['x', 'dx', 'hide', 'label'].reduce((obj, prop) => {
+                obj[prop] = (row) => ((overflow(row) ? inner : outer)[prop](row));
+                return obj;
+            }, {})
+        );
+    })
+
+    .regRule('outside-then-inside-vertical', (prev, args) => {
+
+        var outer = ['t+', 'b-']
+            .map(LayerLabelsRules.getRule)
+            .reduce((p, r) => LayerLabelsModel.compose(p, r(p, args)), prev);
+
+        var inner = ['t-', 'b+', 'hide-by-label-height-vertical', 'cut-label-vertical']
+            .map(LayerLabelsRules.getRule)
+            .reduce((p, r) => LayerLabelsModel.compose(p, r(p, args)), prev);
+
+        var overflow = (row) => {
+            var y = (outer.y(row) + outer.dy(row));
+            var half = (outer.h(row) / 2);
+            return ((y - half < 0) || (y + half > args.maxHeight));
+        };
+
+        return Object.assign(
+            {},
+            outer,
+            ['y', 'dy', 'hide', 'label'].reduce((obj, prop) => {
+                obj[prop] = (row) => ((overflow(row) ? inner : outer)[prop](row));
+                return obj;
+            }, {})
+        );
     })
 
     .regRule('hide-by-label-height-horizontal', (prev) => {

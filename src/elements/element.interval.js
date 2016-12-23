@@ -31,7 +31,10 @@ const Interval = {
             (config.guide.label || {}),
             {
                 position: (config.flip ?
+                    (config.stack ?
                         ['r-', 'l+', 'hide-by-label-height-horizontal', 'cut-label-horizontal'] :
+                        ['outside-then-inside-horizontal']
+                    ) :
                         (config.stack ?
                                 [
                                     'rotate-on-size-overflow',
@@ -43,10 +46,7 @@ const Interval = {
                                 ] :
                                 [
                                     'rotate-on-size-overflow',
-                                    't+',
-                                    'b-',
-                                    'hide-by-label-height-vertical',
-                                    'cut-label-vertical',
+                                    'outside-then-inside-vertical',
                                     'auto:hide-on-label-label-overlap'
                                 ]
                         )
