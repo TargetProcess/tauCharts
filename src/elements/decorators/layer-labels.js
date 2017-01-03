@@ -82,7 +82,7 @@ export class LayerLabels {
                         x: m.x(row) + m.dx(row),
                         y: m.y(row) + m.dy(row),
                         w: m.w(row),
-                        h: m.h(row),
+                        h: m.h(row, args),
                         hide: m.hide(row),
                         extr: null,
                         size: m.model.size(row),
