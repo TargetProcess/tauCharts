@@ -138,6 +138,8 @@ const Interval = {
         const barW = config.flip ? 'height' : 'width';
         const updateBarContainer = function () {
             this.attr('class', 'frame i-role-bar-group');
+            const barClass = d3Attrs.class;
+            var updateAttrs = utils.omit(d3Attrs, 'class');
             const bars = this.selectAll('.bar')
                 .data((fiber) => fiber, screenModel.id);
             bars.exit()
@@ -165,15 +167,15 @@ const Interval = {
             bars.call(createUpdateFunc(
                 config.guide.animationSpeed,
                 null,
-                d3Attrs
-            ));
+                updateAttrs
+            )).attr('class', barClass);
             bars.enter()
                 .append('rect')
                 .call(createUpdateFunc(
                     config.guide.animationSpeed,
                     {[barY]: screenModel[`${barY}0`], [barH]: 0},
-                    d3Attrs
-                ));
+                    updateAttrs
+                )).attr('class', barClass);
 
             node.subscribe(bars);
         };
