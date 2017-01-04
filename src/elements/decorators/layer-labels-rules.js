@@ -1,3 +1,4 @@
+import {LayerLabelsModel} from './layer-labels-model';
 var rules = {};
 
 export class LayerLabelsRules {
@@ -211,6 +212,121 @@ LayerLabelsRules
         };
     })
 
+    .regRule('cut-outer-label-vertical', (prev) => {
+
+        return {
+
+            h: (row, args) => {
+                const reserved = prev.h(row);
+                if (Math.abs(prev.angle(row)) > 0) {
+                    const text = prev.label(row);
+                    const available = (prev.model.y0(row) < prev.model.yi(row) ?
+                        (args.maxHeight - prev.model.yi(row)) :
+                        (prev.model.yi(row)));
+                    const index = findCutIndex(text, reserved, available);
+                    return ((index < text.length) ? available : reserved);
+                }
+
+                return reserved;
+            },
+
+            w: (row) => {
+                const reserved = prev.w(row);
+                if (prev.angle(row) === 0) {
+                    const text = prev.label(row);
+                    const available = prev.model.size(row);
+                    const index = findCutIndex(text, reserved, available);
+                    return ((index < text.length) ? available : reserved);
+                }
+
+                return reserved;
+            },
+
+            label: (row, args) => {
+                let reserved;
+                let available;
+                if (prev.angle(row) === 0) {
+                    reserved = prev.w(row);
+                    available = prev.model.size(row);
+                } else {
+                    reserved = prev.h(row);
+                    available = (prev.model.y0(row) < prev.model.yi(row) ?
+                        (args.maxHeight - prev.model.yi(row)) :
+                        (prev.model.yi(row)));
+                }
+
+                const text = prev.label(row);
+                const index = findCutIndex(text, reserved, available);
+
+                return ((index < text.length) ? cutString(text, index) : text);
+            },
+
+            dy: (row, args) => {
+                const prevDy = prev.dy(row);
+
+                if (prev.angle(row) !== 0) {
+                    const reserved = prev.h(row);
+                    const available = (prev.model.y0(row) < prev.model.yi(row) ?
+                        (args.maxHeight - prev.model.yi(row)) :
+                        (prev.model.yi(row)));
+                    const text = prev.label(row);
+                    const index = findCutIndex(text, reserved, available);
+
+                    return ((index < text.length) ?
+                            (available * prevDy / reserved) :
+                            (prevDy)
+                    );
+                }
+
+                return prevDy;
+            }
+        };
+    })
+
+    .regRule('outside-then-inside-horizontal', (prev, args) => {
+
+        var outer = ['r+', 'l-', 'cut-outer-label-horizontal']
+            .map(LayerLabelsRules.getRule)
+            .reduce((p, r) => LayerLabelsModel.compose(p, r(p, args)), prev);
+
+        var inner = ['r-', 'l+', 'hide-by-label-height-horizontal', 'cut-label-horizontal']
+            .map(LayerLabelsRules.getRule)
+            .reduce((p, r) => LayerLabelsModel.compose(p, r(p, args)), prev);
+
+        var betterInside = (row) => (inner.label(row).length > outer.label(row).length);
+
+        return Object.assign(
+            {},
+            outer,
+            ['x', 'dx', 'hide', 'label'].reduce((obj, prop) => {
+                obj[prop] = (row) => ((betterInside(row) ? inner : outer)[prop](row));
+                return obj;
+            }, {})
+        );
+    })
+
+    .regRule('outside-then-inside-vertical', (prev, args) => {
+
+        var outer = ['t+', 'b-', 'cut-outer-label-vertical']
+            .map(LayerLabelsRules.getRule)
+            .reduce((p, r) => LayerLabelsModel.compose(p, r(p, args)), prev);
+
+        var inner = ['t-', 'b+', 'hide-by-label-height-vertical', 'cut-label-vertical']
+            .map(LayerLabelsRules.getRule)
+            .reduce((p, r) => LayerLabelsModel.compose(p, r(p, args)), prev);
+
+        var betterInside = (row) => (inner.label(row, args).length > outer.label(row, args).length);
+
+        return Object.assign(
+            {},
+            outer,
+            ['y', 'dy', 'hide', 'label'].reduce((obj, prop) => {
+                obj[prop] = (row) => ((betterInside(row) ? inner : outer)[prop](row, args));
+                return obj;
+            }, {})
+        );
+    })
+
     .regRule('hide-by-label-height-horizontal', (prev) => {
 
         return {
@@ -251,6 +367,46 @@ LayerLabelsRules
                 const text = prev.label(row);
                 const required = prev.w(row);
                 const available = Math.abs(prev.model.y0(row) - prev.model.yi(row));
+                const index = findCutIndex(text, required, available);
+                return ((index < text.length) ?
+                        (cutString(text, index)) :
+                        (text)
+                );
+            }
+        };
+    })
+
+    .regRule('cut-outer-label-horizontal', (prev, args) => {
+
+        return {
+
+            dx: (row) => {
+                const text = prev.label(row);
+                const required = prev.w(row);
+                const available = (prev.model.y0(row) < prev.model.yi(row) ?
+                    (args.maxWidth - prev.model.yi(row)) :
+                    (prev.model.yi(row)));
+                const index = findCutIndex(text, required, available);
+                const prevDx = prev.dx(row);
+                return ((index < text.length) ? (available * prevDx / required) : (prevDx));
+            },
+
+            w: (row) => {
+                const text = prev.label(row);
+                const required = prev.w(row);
+                const available = (prev.model.y0(row) < prev.model.yi(row) ?
+                    (args.maxWidth - prev.model.yi(row)) :
+                    (prev.model.yi(row)));
+                const index = findCutIndex(text, required, available);
+                return ((index < text.length) ? available : required);
+            },
+
+            label: (row) => {
+                const text = prev.label(row);
+                const required = prev.w(row);
+                const available = (prev.model.y0(row) < prev.model.yi(row) ?
+                    (args.maxWidth - prev.model.yi(row)) :
+                    (prev.model.yi(row)));
                 const index = findCutIndex(text, required, available);
                 return ((index < text.length) ?
                         (cutString(text, index)) :
