@@ -32,8 +32,16 @@ const Interval = {
             {
                 position: (config.flip ?
                     (config.stack ?
-                        ['r-', 'l+', 'hide-by-label-height-horizontal', 'cut-label-horizontal'] :
-                        ['outside-then-inside-horizontal']
+                        [
+                            'r-',
+                            'l+',
+                            'hide-by-label-height-horizontal',
+                            'cut-label-horizontal'
+                        ] :
+                        [
+                            'outside-then-inside-horizontal',
+                            'auto:hide-on-label-label-overlap'
+                        ]
                     ) :
                         (config.stack ?
                                 [
