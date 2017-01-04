@@ -306,6 +306,7 @@ export class Cartesian extends Element {
 
                 if (scale.guide.hideTicks) {
                     axis.selectAll('.tick').remove();
+                    axis.selectAll('.domain').remove();
                     return;
                 }
 
@@ -404,7 +405,7 @@ export class Cartesian extends Element {
                             );
                         }
 
-                        if (xScale.scaleType === 'linear') {
+                        if (xScale.scaleType === 'linear' && !xScale.guide.hideTicks) {
                             d3_decorator_highlightZeroTick(xGridLines, xScale.scaleObj);
                         }
 
@@ -416,6 +417,12 @@ export class Cartesian extends Element {
                             height,
                             animationSpeed
                         );
+
+                        if (xScale.guide.hideTicks) {
+                            xGridLines.selectAll('.tick')
+                                .filter(d => d != 0)
+                                .remove();
+                        }
                     }
 
                     if ((linesOptions.indexOf('y') > -1)) {
@@ -448,7 +455,7 @@ export class Cartesian extends Element {
                             );
                         }
 
-                        if (yScale.scaleType === 'linear') {
+                        if (yScale.scaleType === 'linear' && !yScale.guide.hideTicks) {
                             d3_decorator_highlightZeroTick(yGridLines, yScale.scaleObj);
                         }
 
@@ -463,6 +470,12 @@ export class Cartesian extends Element {
                                 height,
                                 animationSpeed
                             );
+                        }
+
+                        if (yScale.guide.hideTicks) {
+                            yGridLines.selectAll('.tick')
+                                .filter(d => d != 0)
+                                .remove();
                         }
                     }
 
