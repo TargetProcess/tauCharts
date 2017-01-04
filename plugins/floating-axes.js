@@ -233,6 +233,41 @@
                     });
                 };
 
+                var xAxes = (function extractXAxes() {
+                    var axisHeight = pos.svgHeight - pos.minXAxesY + 1 + pos.scrollbarHeight;
+
+                    var g = d3Svg.append('g')
+                        .attr('class', 'floating-axes floating-axes__x')
+                        .call(addBackground, pos.svgWidth, axisHeight, 0, pos.minXAxesY);
+
+                    transferAxes(g, axesInfo.x);
+
+                    var labels = g.selectAll('.label');
+
+                    scrollManager
+                        .handleVisibilityFor(g, 'y')
+                        .handleVisibilityFor(labels, 'x')
+                        .onScroll(function (scrollLeft, scrollTop) {
+                            var x = 0;
+                            var yLimit = 0;
+                            var y = Math.min(
+                                (pos.visibleHeight + scrollTop - pos.svgHeight - pos.scrollbarHeight),
+                                yLimit
+                            );
+                            g.attr('transform', translate(x, y));
+                            labels.each(function () {
+                                var t = parseTransform(this[transProp]);
+                                var dx = -pos.svgWidth / 2 + pos.visibleWidth / 2 + scrollLeft;
+                                this.setAttribute(
+                                    'transform',
+                                    'translate(' + (t.x + dx) + ',' + t.y + ') rotate(' + t.r + ')'
+                                );
+                            });
+                        });
+
+                    return g;
+                })();
+
                 var yAxes = (function extractYAxes() {
                     var g = d3Svg.append('g')
                         .attr('class', 'floating-axes floating-axes__y')
@@ -285,41 +320,6 @@
                                 yLimit
                             );
                             g.attr('transform', translate(x, y));
-                        });
-
-                    return g;
-                })();
-
-                var xAxes = (function extractXAxes() {
-                    var axisHeight = pos.svgHeight - pos.minXAxesY + 1 + pos.scrollbarHeight;
-
-                    var g = d3Svg.append('g')
-                        .attr('class', 'floating-axes floating-axes__x')
-                        .call(addBackground, pos.svgWidth, axisHeight, 0, pos.minXAxesY);
-
-                    transferAxes(g, axesInfo.x);
-
-                    var labels = g.selectAll('.label');
-
-                    scrollManager
-                        .handleVisibilityFor(g, 'y')
-                        .handleVisibilityFor(labels, 'x')
-                        .onScroll(function (scrollLeft, scrollTop) {
-                            var x = 0;
-                            var yLimit = 0;
-                            var y = Math.min(
-                                (pos.visibleHeight + scrollTop - pos.svgHeight - pos.scrollbarHeight),
-                                yLimit
-                            );
-                            g.attr('transform', translate(x, y));
-                            labels.each(function () {
-                                var t = parseTransform(this[transProp]);
-                                var dx = -pos.svgWidth / 2 + pos.visibleWidth / 2 + scrollLeft;
-                                this.setAttribute(
-                                    'transform',
-                                    'translate(' + (t.x + dx) + ',' + t.y + ') rotate(' + t.r + ')'
-                                );
-                            });
                         });
 
                     return g;
@@ -397,6 +397,18 @@
                             toggle(shadowWE, scrollLeft > 0 && pos.svgWidth > pos.visibleWidth);
                         });
                 })();
+
+                // Place X-axis over Y and corner when not scrolled
+                // to fix left tick overflow
+                var xAxesNode = xAxes.node();
+                var yAxesNode = yAxes.node();
+                var cornerNode = corner.node();
+                scrollManager.onScroll(function (scrollLeft) {
+                    svg.insertBefore(xAxesNode, (scrollLeft === 0 ?
+                        cornerNode.nextElementSibling :
+                        yAxesNode)
+                    );
+                });
 
                 // Setup initial position
                 scrollManager.fireScroll();
