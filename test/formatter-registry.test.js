@@ -75,7 +75,9 @@ define(function (require) {
             expect(registry.get('x-num-auto')(25.10234)).to.equal('25.1');
             expect(registry.get('x-num-auto')(0.1234)).to.equal('0.12');
             expect(registry.get('x-num-auto')(0.0123)).to.equal('0.012');
-            expect(registry.get('x-num-auto')(0.00223)).to.equal('0.0022');
+            expect(registry.get('x-num-auto')(0.00222)).to.equal('0.0022');
+            expect(registry.get('x-num-auto')(0.0000000000222)).to.equal('2.2e-11');
+            expect(registry.get('x-num-auto')(0.0000000000202)).to.equal('2e-11');
 
             expect(registry.get('x-num-auto')(-27.10234)).to.equal('-27.1');
             expect(registry.get('x-num-auto')(-0.10234)).to.equal('-0.1');
