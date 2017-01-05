@@ -196,8 +196,6 @@ var d3_decorator_fixHorizontalAxisTicksOverflow = function (axisNode, activeTick
 
 var d3_decorator_fixEdgeAxisTicksOverflow = function (axisNode, activeTicks, animationSpeed, returnPhase) {
 
-    const store = '__transitionAttrs__';
-
     activeTicks = activeTicks.map(d => Number(d));
     var texts = axisNode
         .selectAll('.tick text')
