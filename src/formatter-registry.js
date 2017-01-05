@@ -18,9 +18,11 @@ var FORMATS_MAP = {
         var abs = Math.abs(x);
         var result = removeRedundantZeros(
             (abs < 1) ?
-                (abs < 1e-6) ?
-                    d3Fromat1E(x) :
-                    d3Fromat2R(x) :
+                (abs === 0) ?
+                    '0' :
+                    (abs < 1e-6) ?
+                        d3Fromat1E(x) :
+                        d3Fromat2R(x) :
                 d3Fromat4S(x)
         );
         return result;
