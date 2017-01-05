@@ -340,7 +340,7 @@ export class Cartesian extends Element {
                 var timeoutField = '_transitionEndTimeout_' + (isHorizontal ? 'h' : 'v');
                 clearTimeout(this[timeoutField]);
                 if (animationSpeed > 0) {
-                    this[timeoutField] = setTimeout(fixAxesTicks, animationSpeed);
+                    this[timeoutField] = setTimeout(fixAxesTicks, animationSpeed * 1.5);
                 } else {
                     fixTickTextOverflow();
                 }

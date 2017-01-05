@@ -122,6 +122,17 @@ describe('d3-decorators', function () {
         var transitionInterrupted = false;
 
         check(function () {
+
+            // Check synchronous transition end for zero animation speed
+            var d3Svg = d3.select(div).select('svg');
+            transition(d3Svg, 0)
+                .attr('width', 400)
+                .onTransitionEnd((sel) => {
+                    sel.attr('height', 300);
+                });
+            expect(Number(d3Svg.attr('width'))).to.equal(400);
+            expect(Number(d3Svg.attr('height'))).to.equal(300);
+
             // Start transition "dy"
             var texts = transition(
                 d3.select(div).selectAll('text').data([{n: 4}, {n: 3}, {n: 2}, {n: 1}]),

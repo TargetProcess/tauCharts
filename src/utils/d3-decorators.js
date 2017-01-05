@@ -196,8 +196,6 @@ var d3_decorator_fixHorizontalAxisTicksOverflow = function (axisNode, activeTick
 
 var d3_decorator_fixEdgeAxisTicksOverflow = function (axisNode, activeTicks, animationSpeed, returnPhase) {
 
-    const store = '__transitionAttrs__';
-
     activeTicks = activeTicks.map(d => Number(d));
     var texts = axisNode
         .selectAll('.tick text')
@@ -213,16 +211,16 @@ var d3_decorator_fixEdgeAxisTicksOverflow = function (axisNode, activeTicks, ani
     var svgRect = svg.getBoundingClientRect();
 
     if (returnPhase) {
-        texts.forEach((n, i) => {
-            if (i === 0 || i === texts.length - 1) {
-                return;
-            }
-            var t = d3.select(n);
-            if (t.attr('dx')) {
-                d3_transition(t, animationSpeed, 'fixEdgeAxisTicksOverflow')
-                    .attr('dx', 0);
-            }
-        });
+        texts
+            .sort((a, b) => d3.select(a).data() - d3.select(b).data())
+            .forEach((n, i) => {
+                if (i === 0 || i === texts.length - 1) {
+                    return;
+                }
+                var t = d3.select(n);
+                d3_transition(t, animationSpeed, 'fixEdgeAxisTicksOverflow');
+                t.attr('dx', 0);
+            });
     } else {
         var fixText = (node, dir) => {
             var rect = node.getBoundingClientRect();
@@ -230,17 +228,10 @@ var d3_decorator_fixEdgeAxisTicksOverflow = function (axisNode, activeTicks, ani
 
             var d3Node = d3.select(node);
             var currentDx = d3Node.attr('dx') || 0;
-            var nextDx = (node[store] && node[store].dx ? node[store].dx : currentDx);
-            var diff = dir * (rect[side] - svgRect[side] + currentDx - nextDx);
+            var diff = dir * (rect[side] - svgRect[side] + currentDx);
             if (diff > 0) {
-                d3Node.transition('fixEdgeAxisTicksOverflow');
-                d3Node.attr('dx', 0);
                 d3_transition(d3Node, animationSpeed, 'fixEdgeAxisTicksOverflow')
-                    .attr('dx', -dir * diff)
-                    .onTransitionEnd(() => {
-                        d3_transition(d3Node, animationSpeed, 'fixEdgeAxisTicksOverflow')
-                            .attr('dx', -dir * diff);
-                    });
+                    .attr('dx', -dir * diff);
             }
         };
         fixText(texts[0], -1);
