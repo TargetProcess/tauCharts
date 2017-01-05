@@ -1,5 +1,6 @@
 import {utils} from './utils/utils';
 import {FormatterRegistry} from './formatter-registry';
+import d3 from 'd3';
 
 var sum = ((arr) => arr.reduce((sum, x) => (sum + x), 0));
 
@@ -144,6 +145,10 @@ var getMaxTickLabelSize = function (domainValues, formatter, fnCalcTickLabelSize
         return size;
     }
 
+    if (domainValues.every(d => (typeof d === 'number'))) {
+        domainValues = d3.scale.linear().domain(domainValues).ticks();
+    }
+
     var maxXTickText = domainValues.reduce((prev, value) => {
         let computed = formatter(value).toString().length;
 
@@ -156,12 +161,7 @@ var getMaxTickLabelSize = function (domainValues, formatter, fnCalcTickLabelSize
         return prev;
     }, {}).value;
 
-    // d3 sometimes produce fractional ticks on wide space
-    // so we intentionally add fractional suffix
-    // to foresee scale density issues
-    var suffix = (Number.isFinite(maxXTickText) || Number.isNaN(maxXTickText)) ? '.00' : '';
-
-    return fnCalcTickLabelSize(formatter(maxXTickText) + suffix);
+    return fnCalcTickLabelSize(formatter(maxXTickText));
 };
 
 var getTickFormat = (dim, defaultFormats) => {
