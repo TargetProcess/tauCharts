@@ -1,12 +1,31 @@
 import {utils} from './utils/utils';
-/* jshint ignore:start */
-import {default as d3} from 'd3';
-/* jshint ignore:end */
+import d3 from 'd3';
+
+const d3Fromat4S = d3.format('.4s');
+const d3Fromat2R = d3.format('.2r');
+const d3Fromat1E = d3.format('.1e');
+const removeRedundantZeros = (() => {
+    const zerosAfterDot = /\.0+([^\d].*)?$/;
+    const zerosAfterNotZero = /(\.\d+?)0+([^\d].*)?$/;
+    return (str) => str
+        .replace(zerosAfterDot, '$1')
+        .replace(zerosAfterNotZero, '$1$2');
+})();
+
 var FORMATS_MAP = {
 
     'x-num-auto': function (x) {
-        var v = parseFloat(x.toFixed(2));
-        return (Math.abs(v) < 1) ? v.toString() : d3.format('s')(v);
+        var abs = Math.abs(x);
+        var result = removeRedundantZeros(
+            (abs < 1) ?
+                (abs === 0) ?
+                    '0' :
+                    (abs < 1e-6) ?
+                        d3Fromat1E(x) :
+                        d3Fromat2R(x) :
+                d3Fromat4S(x)
+        );
+        return result;
     },
 
     percent: function (x) {
