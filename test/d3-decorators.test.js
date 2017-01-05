@@ -125,7 +125,7 @@ describe('d3-decorators', function () {
 
             // Check synchronous transition end for zero animation speed
             var d3Svg = d3.select(div).select('svg');
-            transition(, 0)
+            transition(d3Svg, 0)
                 .attr('width', 400)
                 .onTransitionEnd((sel) => {
                     sel.attr('height', 300);
