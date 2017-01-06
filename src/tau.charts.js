@@ -115,6 +115,7 @@ var api = {
 
         facetLabelDelimiter: ' \u2192 ',
         excludeNull: true,
+        minChartAreaSize: 200,
         specEngine: [
             {
                 name: 'COMPACT',

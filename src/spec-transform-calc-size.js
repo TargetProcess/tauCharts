@@ -4,7 +4,6 @@ import {SpecTransformOptimize} from './spec-transform-optimize';
 var byOptimisticMaxText = ((gx) => gx.$maxTickTextW);
 var byPessimisticMaxText = ((gx) => ((gx.rotate == 0) ? gx.$maxTickTextW : gx.$maxTickTextH));
 var byDensity = ((gx) => gx.density);
-const minChartSize = 200;
 
 var fitModelStrategies = {
 
@@ -32,12 +31,6 @@ var fitModelStrategies = {
         var newW = srcSize.width;
 
         var optimisticWidthByMaxText = calcSize('x', specRef.unit, byOptimisticMaxText);
-        if (srcSize.width - specRef.unit.guide.padding.l < minChartSize) {
-            SpecTransformOptimize.hideAxisTicks(specRef.unit, specRef.settings, 'y');
-        }
-        if (srcSize.height - specRef.unit.guide.padding.b < minChartSize) {
-            SpecTransformOptimize.hideAxisTicks(specRef.unit, specRef.settings, 'x');
-        }
         if (optimisticWidthByMaxText <= srcSize.width) {
             tryOptimizeSpec(specRef.unit, specRef.settings);
         } else {
@@ -166,6 +159,14 @@ export class SpecTransformCalcSize {
 
         var newW = srcSize.width;
         var newH = srcSize.height;
+        var guide = specRef.unit.guide;
+
+        if (srcSize.width - guide.padding.l + guide.padding.lLabelOnly < specRef.settings.minChartAreaSize) {
+            SpecTransformOptimize.hideAxisTicks(specRef.unit, specRef.settings, 'y');
+        }
+        if (srcSize.height - guide.padding.b + guide.padding.bLabelOnly < specRef.settings.minChartAreaSize) {
+            SpecTransformOptimize.hideAxisTicks(specRef.unit, specRef.settings, 'x');
+        }
 
         var strategy = fitModelStrategies[fitModel];
         if (strategy) {
