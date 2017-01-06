@@ -40,7 +40,7 @@ export class SpecTransformExtractAxes {
 
         var pad = (x) => (x ? 10 : 0);
 
-        var ttl = {l:0, r:10, t:10, b:0};
+        var ttl = {l:0, r:10, t:10, b:0, lLabelOnly:0, bLabelOnly:0};
         var seq = [];
 
         var enterIterator = (unitRef, level) => {
@@ -52,19 +52,16 @@ export class SpecTransformExtractAxes {
             unitRef.guide = unitRef.guide || {};
             var guide = unitRef.guide;
 
-            var p = guide.padding || {l:0, r:0, t:0, b:0};
+            var p = guide.padding || {l:0, r:0, t:0, b:0, lLabelOnly:0, bLabelOnly:0};
 
             ttl.l += p.l;
             ttl.r += p.r;
             ttl.t += p.t;
             ttl.b += p.b;
+            ttl.lLabelOnly += (p.lLabelOnly || 0);
+            ttl.bLabelOnly += (p.bLabelOnly || 0);
 
-            seq.push({
-                l: ttl.l,
-                r: ttl.r,
-                t: ttl.t,
-                b: ttl.b
-            });
+            seq.push(Object.assign({}, ttl));
 
             var units = unitRef.units || [];
             var rects = units
@@ -88,20 +85,26 @@ export class SpecTransformExtractAxes {
             var guide = unitRef.guide || {};
             guide.x = guide.x || {};
             guide.x.padding = guide.x.padding || 0;
+            guide.x.paddingLabelOnly = guide.x.paddingLabelOnly || 0;
             guide.y = guide.y || {};
             guide.y.padding = guide.y.padding || 0;
+            guide.y.paddingLabelOnly = guide.y.paddingLabelOnly || 0;
 
             guide.padding = {
                 l: pad(unitRef.y),
                 r: pad(1),
                 t: pad(1),
-                b: pad(unitRef.x)
+                b: pad(unitRef.x),
+                lLabelOnly: 0,
+                bLabelOnly: 0
             };
 
             guide.autoLayout = 'extract-axes';
 
             guide.x.padding += (ttl.b - lvl.b);
             guide.y.padding += (ttl.l - lvl.l);
+            guide.x.paddingLabelOnly += (ttl.bLabelOnly - lvl.bLabelOnly);
+            guide.y.paddingLabelOnly += (ttl.lLabelOnly - lvl.lLabelOnly);
         };
 
         utils.traverseSpec(spec.unit, enterIterator, exitIterator);

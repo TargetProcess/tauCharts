@@ -117,11 +117,6 @@ var api = {
         excludeNull: true,
         specEngine: [
             {
-                name: 'SPARKLINE',
-                width: 300,
-                height: 200
-            },
-            {
                 name: 'COMPACT',
                 width: 600,
                 height: 400
