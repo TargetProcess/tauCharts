@@ -115,7 +115,10 @@ var api = {
 
         facetLabelDelimiter: ' \u2192 ',
         excludeNull: true,
-        minChartAreaSize: 200,
+        minChartWidth: 300,
+        minChartHeight: 200,
+        minFacetWidth: 150,
+        minFacetHeight: 100,
         specEngine: [
             {
                 name: 'COMPACT',
