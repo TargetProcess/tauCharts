@@ -37,15 +37,15 @@ export class SpecTransformOptimize {
         const enterSpec = (rootUnit) => {
             const pad = (axis === 'x' ? 'b' : 'l');
             const axPad = (axis === 'x' ? 'bAxis' : 'lAxis');
-            const loPad = (axis === 'x' ? 'bLabelOnly' : 'lLabelOnly');
+            const loPad = (axis === 'x' ? 'bNoTicks' : 'lNoTicks');
             const g = rootUnit.guide;
 
             if (!g[axis].hide && !g[axis].hideTicks) {
                 g[axis].hideTicks = true;
                 var hasLabel = (g[axis].label.text && !g[axis].label.hide);
                 g.padding[pad] = g.padding[loPad];
-                g[axis].padding = g[axis].paddingLabelOnly;
-                g[axis].label.padding = (hasLabel ? g[axis].label.paddingLabelOnly : 0);
+                g[axis].padding = g[axis].paddingNoTicks;
+                g[axis].label.padding = (hasLabel ? g[axis].label.paddingNoTicks : 0);
             }
 
             (rootUnit.units || [])

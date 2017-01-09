@@ -279,9 +279,9 @@ var calcXYGuide = function (guide, settings, xMeta, yMeta, inlineLabels) {
     if (inlineLabels) {
 
         xLabel.padding = (-settings.xAxisPadding - settings.xFontLabelHeight) / 2 + settings.xFontLabelHeight;
-        xLabel.paddingLabelOnly = xLabel.padding;
+        xLabel.paddingNoTicks = xLabel.padding;
         yLabel.padding = (-settings.yAxisPadding - settings.yFontLabelHeight) / 2;
-        yLabel.paddingLabelOnly = yLabel.padding;
+        yLabel.paddingNoTicks = yLabel.padding;
 
         kxLabelW = 0;
         kyLabelW = 0;
@@ -292,13 +292,13 @@ var calcXYGuide = function (guide, settings, xMeta, yMeta, inlineLabels) {
             (kxAxisW * (settings.xTickWidth + rotXBox.height)),
             (kxLabelW * (settings.distToXAxisLabel + settings.xFontLabelHeight))
         ]);
-        xLabel.paddingLabelOnly = (kxLabelW * (settings.distToXAxisLabel + settings.xFontLabelHeight));
+        xLabel.paddingNoTicks = (kxLabelW * (settings.distToXAxisLabel + settings.xFontLabelHeight));
 
         yLabel.padding = sum([
             (kyAxisW * (settings.yTickWidth + rotYBox.width)),
             (kyLabelW * settings.distToYAxisLabel)
         ]);
-        yLabel.paddingLabelOnly = (kyLabelW * settings.distToYAxisLabel);
+        yLabel.paddingNoTicks = (kyLabelW * settings.distToYAxisLabel);
     }
 
     const bottomBorder = settings.xFontLabelDescenderLineHeight; // for font descender line
@@ -312,7 +312,7 @@ var calcXYGuide = function (guide, settings, xMeta, yMeta, inlineLabels) {
                     (kxAxisW * (settings.xTickWidth + rotXBox.height)),
                     (kxLabelW * (settings.distToXAxisLabel + settings.xFontLabelHeight + bottomBorder))
                 ]),
-            bLabelOnly: sum([
+            bNoTicks: sum([
                 (guide.x.padding),
                 (kxLabelW * (settings.distToXAxisLabel + settings.xFontLabelHeight + bottomBorder))
             ]),
@@ -323,7 +323,7 @@ var calcXYGuide = function (guide, settings, xMeta, yMeta, inlineLabels) {
                     (kyAxisW * (settings.yTickWidth + rotYBox.width)),
                     (kyLabelW * (settings.distToYAxisLabel + settings.yFontLabelHeight))
                 ]),
-            lLabelOnly: sum([
+            lNoTicks: sum([
                 (guide.y.padding),
                 (kyLabelW * (settings.distToYAxisLabel + settings.yFontLabelHeight))
             ])
@@ -371,9 +371,9 @@ var calcUnitGuide = function ({unit, meta, settings, allowXVertical, allowYVerti
     var isYVertical = allowYVertical ? !(dimY.dimType === 'measure') : false;
 
     unit.guide.x.padding = xIsEmptyAxis ? 0 : settings.xAxisPadding;
-    unit.guide.x.paddingLabelOnly = unit.guide.x.padding;
+    unit.guide.x.paddingNoTicks = unit.guide.x.padding;
     unit.guide.y.padding = yIsEmptyAxis ? 0 : settings.yAxisPadding;
-    unit.guide.y.paddingLabelOnly = unit.guide.y.padding;
+    unit.guide.y.paddingNoTicks = unit.guide.y.padding;
 
     unit.guide.x.rotate = isXVertical ? -90 : 0;
     unit.guide.x.textAnchor = getTextAnchorByAngle(unit.guide.x.rotate, 'x');
@@ -529,9 +529,9 @@ var SpecEngineTypeMap = {
                 unit.guide.y.tickFormat = unit.guide.y.tickFormat || getTickFormat(yMeta, settings.defaultFormats);
 
                 unit.guide.x.padding = (isFacetUnit ? 0 : settings.xAxisPadding);
-                unit.guide.x.paddingLabelOnly = unit.guide.x.padding;
+                unit.guide.x.paddingNoTicks = unit.guide.x.padding;
                 unit.guide.y.padding = (isFacetUnit ? 0 : settings.yAxisPadding);
-                unit.guide.y.paddingLabelOnly = unit.guide.y.padding;
+                unit.guide.y.paddingNoTicks = unit.guide.y.padding;
 
                 unit.guide = calcXYGuide(
                     unit.guide,

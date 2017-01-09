@@ -240,10 +240,10 @@ export class SpecTransformCalcSize {
         var newH = srcSize.height;
         var guide = specRef.unit.guide;
 
-        if (srcSize.width - guide.padding.l + guide.padding.lLabelOnly < specRef.settings.minChartWidth) {
+        if (srcSize.width - guide.padding.l + guide.padding.lNoTicks < specRef.settings.minChartWidth) {
             SpecTransformOptimize.hideAxisTicks(specRef.unit, specRef.settings, 'y');
         }
-        if (srcSize.height - guide.padding.b + guide.padding.bLabelOnly < specRef.settings.minChartHeight) {
+        if (srcSize.height - guide.padding.b + guide.padding.bNoTicks < specRef.settings.minChartHeight) {
             SpecTransformOptimize.hideAxisTicks(specRef.unit, specRef.settings, 'x');
         }
 
