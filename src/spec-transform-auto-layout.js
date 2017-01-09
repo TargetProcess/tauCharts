@@ -279,7 +279,9 @@ var calcXYGuide = function (guide, settings, xMeta, yMeta, inlineLabels) {
     if (inlineLabels) {
 
         xLabel.padding = (-settings.xAxisPadding - settings.xFontLabelHeight) / 2 + settings.xFontLabelHeight;
+        xLabel.paddingNoTicks = xLabel.padding;
         yLabel.padding = (-settings.yAxisPadding - settings.yFontLabelHeight) / 2;
+        yLabel.paddingNoTicks = yLabel.padding;
 
         kxLabelW = 0;
         kyLabelW = 0;
@@ -290,11 +292,13 @@ var calcXYGuide = function (guide, settings, xMeta, yMeta, inlineLabels) {
             (kxAxisW * (settings.xTickWidth + rotXBox.height)),
             (kxLabelW * (settings.distToXAxisLabel + settings.xFontLabelHeight))
         ]);
+        xLabel.paddingNoTicks = (kxLabelW * (settings.distToXAxisLabel + settings.xFontLabelHeight));
 
         yLabel.padding = sum([
             (kyAxisW * (settings.yTickWidth + rotYBox.width)),
             (kyLabelW * settings.distToYAxisLabel)
         ]);
+        yLabel.paddingNoTicks = (kyLabelW * settings.distToYAxisLabel);
     }
 
     const bottomBorder = settings.xFontLabelDescenderLineHeight; // for font descender line
@@ -313,6 +317,23 @@ var calcXYGuide = function (guide, settings, xMeta, yMeta, inlineLabels) {
                 sum([
                     (guide.y.padding),
                     (kyAxisW * (settings.yTickWidth + rotYBox.width)),
+                    (kyLabelW * (settings.distToYAxisLabel + settings.yFontLabelHeight))
+                ])
+        });
+    guide.paddingNoTicks = Object.assign(
+        {},
+        (guide.paddingNoTicks),
+        {
+            b: (guide.x.hide) ?
+                (0) :
+                sum([
+                    (guide.x.padding),
+                    (kxLabelW * (settings.distToXAxisLabel + settings.xFontLabelHeight + bottomBorder))
+                ]),
+            l: (guide.y.hide) ?
+                (0) :
+                sum([
+                    (guide.y.padding),
                     (kyLabelW * (settings.distToYAxisLabel + settings.yFontLabelHeight))
                 ])
         });
@@ -359,7 +380,9 @@ var calcUnitGuide = function ({unit, meta, settings, allowXVertical, allowYVerti
     var isYVertical = allowYVertical ? !(dimY.dimType === 'measure') : false;
 
     unit.guide.x.padding = xIsEmptyAxis ? 0 : settings.xAxisPadding;
+    unit.guide.x.paddingNoTicks = unit.guide.x.padding;
     unit.guide.y.padding = yIsEmptyAxis ? 0 : settings.yAxisPadding;
+    unit.guide.y.paddingNoTicks = unit.guide.y.padding;
 
     unit.guide.x.rotate = isXVertical ? -90 : 0;
     unit.guide.x.textAnchor = getTextAnchorByAngle(unit.guide.x.rotate, 'x');
@@ -515,7 +538,9 @@ var SpecEngineTypeMap = {
                 unit.guide.y.tickFormat = unit.guide.y.tickFormat || getTickFormat(yMeta, settings.defaultFormats);
 
                 unit.guide.x.padding = (isFacetUnit ? 0 : settings.xAxisPadding);
+                unit.guide.x.paddingNoTicks = unit.guide.x.padding;
                 unit.guide.y.padding = (isFacetUnit ? 0 : settings.yAxisPadding);
+                unit.guide.y.paddingNoTicks = unit.guide.y.padding;
 
                 unit.guide = calcXYGuide(
                     unit.guide,
@@ -615,71 +640,6 @@ var SpecEngineTypeMap = {
             });
 
         return spec;
-    },
-
-    'BUILD-SPARKLINE': (srcSpec, meta, settings) => {
-
-        var spec = utils.clone(srcSpec);
-        fnTraverseSpec(
-            utils.clone(spec.unit),
-            spec.unit,
-            (selectorPredicates, unit) => {
-
-                if (selectorPredicates.isLeaf) {
-                    return unit;
-                }
-
-                if (!unit.guide.hasOwnProperty('showGridLines')) {
-                    unit.guide.showGridLines = selectorPredicates.isLeafParent ? 'xy' : '';
-                }
-
-                if (selectorPredicates.isLeafParent) {
-                    unit.guide.x.hideTicks = true;
-                    unit.guide.y.hideTicks = true;
-
-                    return calcUnitGuide({
-                        unit,
-                        meta,
-                        settings: utils.defaults(
-                            {
-                                xTickWordWrapLinesLimit: 1,
-                                yTickWordWrapLinesLimit: 1
-                            },
-                            settings),
-                        allowXVertical: false,
-                        allowYVertical: false,
-                        inlineLabels: true
-                    });
-                }
-
-                // facet level
-                unit.guide.x.cssClass += ' facet-axis compact';
-                unit.guide.x.avoidCollisions = true;
-                unit.guide.x.hideTicks = true;
-                unit.guide.y.cssClass += ' facet-axis compact';
-                unit.guide.y.avoidCollisions = true;
-                unit.guide.y.hideTicks = true;
-
-                return calcUnitGuide({
-                    unit,
-                    meta,
-                    settings: utils.defaults(
-                        {
-                            xAxisPadding: 0,
-                            yAxisPadding: 0,
-                            distToXAxisLabel: 0,
-                            distToYAxisLabel: 0,
-                            xTickWordWrapLinesLimit: 1,
-                            yTickWordWrapLinesLimit: 1
-                        },
-                        settings),
-                    allowXVertical: false,
-                    allowYVertical: true,
-                    inlineLabels: false
-                });
-            });
-
-        return spec;
     }
 };
 
@@ -692,13 +652,6 @@ SpecEngineTypeMap.AUTO = (srcSpec, meta, settings) => {
 
 SpecEngineTypeMap.COMPACT = (srcSpec, meta, settings) => {
     return ['BUILD-LABELS', 'BUILD-COMPACT'].reduce(
-        (spec, engineName) => SpecEngineTypeMap[engineName](spec, meta, settings),
-        srcSpec
-    );
-};
-
-SpecEngineTypeMap.SPARKLINE = (srcSpec, meta, settings) => {
-    return ['BUILD-LABELS', 'BUILD-SPARKLINE'].reduce(
         (spec, engineName) => SpecEngineTypeMap[engineName](spec, meta, settings),
         srcSpec
     );

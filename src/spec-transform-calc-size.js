@@ -4,10 +4,94 @@ import {SpecTransformOptimize} from './spec-transform-optimize';
 var byOptimisticMaxText = ((gx) => gx.$maxTickTextW);
 var byPessimisticMaxText = ((gx) => ((gx.rotate == 0) ? gx.$maxTickTextW : gx.$maxTickTextH));
 var byDensity = ((gx) => gx.density);
+var getFacetCount = (specRef) => {
+    var xFacetKeys = [];
+    var yFacetKeys = [];
+    var getFacetKeys = (root) => {
+        // TODO: Maybe there is an API to
+        // determine X and Y facet keys.
+        if (root.type === 'COORDS.RECT' &&
+            root.units &&
+            root.units[0] &&
+            root.units[0].type === 'COORDS.RECT'
+        ) {
+            var x = root.x.replace(/^x_/, '');
+            var y = root.y.replace(/^y_/, '');
+            if (x !== 'null') {
+                xFacetKeys.push(x);
+            }
+            if (y !== 'null') {
+                yFacetKeys.push(y);
+            }
+            root.units.forEach(getFacetKeys);
+        }
+    };
+    getFacetKeys(specRef.unit);
+
+    var xFacetGroups = {};
+    var yFacetGroups = {};
+    var getFacetGroups = (root) => {
+        if (root.type === 'COORDS.RECT') {
+            root.frames.forEach((f) => {
+                if (f.key) {
+                    var keys = Object.keys(f.key);
+                    keys.forEach((key) => {
+                        if (xFacetKeys.indexOf(key) >= 0) {
+                            if (!(key in xFacetGroups)) {
+                                xFacetGroups[key] = [];
+                            }
+                            if (xFacetGroups[key].indexOf(f.key[key]) < 0) {
+                                xFacetGroups[key].push(f.key[key]);
+                            }
+                        }
+                        if (yFacetKeys.indexOf(key) >= 0) {
+                            if (!(key in yFacetGroups)) {
+                                yFacetGroups[key] = [];
+                            }
+                            if (yFacetGroups[key].indexOf(f.key[key]) < 0) {
+                                yFacetGroups[key].push(f.key[key]);
+                            }
+                        }
+                    });
+                    if (f.units) {
+                        f.units.forEach(getFacetGroups);
+                    }
+                }
+            });
+        }
+    };
+    getFacetGroups(specRef.unit);
+
+    return {
+        xFacetCount: Object.keys(xFacetGroups).reduce((sum, key) => sum * xFacetGroups[key].length, 1),
+        yFacetCount: Object.keys(yFacetGroups).reduce((sum, key) => sum * yFacetGroups[key].length, 1)
+    };
+};
 
 var fitModelStrategies = {
 
     'entire-view'(srcSize, calcSize, specRef, tryOptimizeSpec) {
+
+        var g = specRef.unit.guide;
+        var {xFacetCount, yFacetCount} = getFacetCount(specRef);
+        var ticksLPad = (g.padding.l - g.paddingNoTicks.l);
+        var ticksBPad = (g.padding.b - g.paddingNoTicks.b);
+        var shouldHideXAxis = (
+            (g.paddingNoTicks &&
+            (srcSize.height - ticksBPad < specRef.settings.minChartHeight)) ||
+            (yFacetCount * specRef.settings.minFacetHeight + ticksBPad > srcSize.height)
+        );
+        var shouldHideYAxis = (
+            (g.paddingNoTicks &&
+            (srcSize.width - ticksLPad < specRef.settings.minChartWidth)) ||
+            (xFacetCount * specRef.settings.minFacetWidth + ticksLPad > srcSize.width)
+        );
+        if (shouldHideXAxis) {
+            SpecTransformOptimize.hideAxisTicks(specRef.unit, specRef.settings, 'x');
+        }
+        if (shouldHideYAxis) {
+            SpecTransformOptimize.hideAxisTicks(specRef.unit, specRef.settings, 'y');
+        }
 
         var widthByMaxText = calcSize('x', specRef.unit, byOptimisticMaxText);
         if (widthByMaxText <= srcSize.width) {
@@ -28,6 +112,16 @@ var fitModelStrategies = {
 
     normal(srcSize, calcSize, specRef, tryOptimizeSpec) {
 
+        var g = specRef.unit.guide;
+        if (g.paddingNoTicks) {
+            if (srcSize.width - g.padding.l + g.paddingNoTicks.l < specRef.settings.minChartWidth) {
+                SpecTransformOptimize.hideAxisTicks(specRef.unit, specRef.settings, 'y');
+            }
+            if (srcSize.height - g.padding.b + g.paddingNoTicks.b < specRef.settings.minChartHeight) {
+                SpecTransformOptimize.hideAxisTicks(specRef.unit, specRef.settings, 'x');
+            }
+        }
+
         var newW = srcSize.width;
 
         var optimisticWidthByMaxText = calcSize('x', specRef.unit, byOptimisticMaxText);
@@ -47,6 +141,15 @@ var fitModelStrategies = {
     },
 
     'fit-width'(srcSize, calcSize, specRef, tryOptimizeSpec) {
+
+        var g = specRef.unit.guide;
+        var ticksLPad = (g.padding.l - g.paddingNoTicks.l);
+        if ((g.paddingNoTicks &&
+            (srcSize.width - ticksLPad < specRef.settings.minChartWidth)) ||
+            (getFacetCount(specRef).xFacetCount * specRef.settings.minFacetWidth + ticksLPad > srcSize.width)
+        ) {
+            SpecTransformOptimize.hideAxisTicks(specRef.unit, specRef.settings, 'y');
+        }
         var widthByMaxText = calcSize('x', specRef.unit, byOptimisticMaxText);
         if (widthByMaxText <= srcSize.width) {
             tryOptimizeSpec(specRef.unit, specRef.settings);
@@ -58,6 +161,15 @@ var fitModelStrategies = {
     },
 
     'fit-height'(srcSize, calcSize, specRef) {
+
+        var g = specRef.unit.guide;
+        var ticksBPad = (g.padding.b - g.paddingNoTicks.b);
+        if ((g.paddingNoTicks &&
+            (srcSize.height - ticksBPad < specRef.settings.minChartHeight)) ||
+            (getFacetCount(specRef).yFacetCount * specRef.settings.minFacetHeight + ticksBPad > srcSize.height)
+        ) {
+            SpecTransformOptimize.hideAxisTicks(specRef.unit, specRef.settings, 'x');
+        }
         var newW = calcSize('x', specRef.unit, byDensity);
         var newH = srcSize.height;
         return {newW, newH};
@@ -162,7 +274,7 @@ export class SpecTransformCalcSize {
 
         var strategy = fitModelStrategies[fitModel];
         if (strategy) {
-            let newSize = strategy(srcSize, calcSizeRecursively, specRef, SpecTransformOptimize.optimize);
+            let newSize = strategy(srcSize, calcSizeRecursively, specRef, SpecTransformOptimize.optimizeXAxisLabel);
             newW = newSize.newW;
             newH = newSize.newH;
         }

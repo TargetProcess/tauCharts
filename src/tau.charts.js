@@ -115,12 +115,11 @@ var api = {
 
         facetLabelDelimiter: ' \u2192 ',
         excludeNull: true,
+        minChartWidth: 300,
+        minChartHeight: 200,
+        minFacetWidth: 150,
+        minFacetHeight: 100,
         specEngine: [
-            {
-                name: 'SPARKLINE',
-                width: 300,
-                height: 200
-            },
             {
                 name: 'COMPACT',
                 width: 600,

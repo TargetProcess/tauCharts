@@ -332,8 +332,8 @@
                         .attr('class', 'i-role-bg')
                         .attr('x', x - 1)
                         .attr('y', y - 1)
-                        .attr('width', w + 2)
-                        .attr('height', h + 2)
+                        .attr('width', Math.max(0, w + 2))
+                        .attr('height', Math.max(0, h + 2))
                         .attr('fill', settings.bgcolor);
                 }
 
@@ -350,8 +350,8 @@
                             .attr('fill', 'url(#shadow-gradient-' + direction + '-' + id + ')')
                             .attr('x', x)
                             .attr('y', y)
-                            .attr('width', width)
-                            .attr('height', height);
+                            .attr('width', Math.max(0, width))
+                            .attr('height', Math.max(0, height));
                     };
                     var shadowNS = createShadow('ns', 0, 0, yAxesWidth, SHADOW_SIZE);
                     var shadowEW = createShadow('ew',
