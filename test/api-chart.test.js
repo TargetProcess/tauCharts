@@ -206,8 +206,8 @@ define(function (require) {
 
         var createDiv = function () {
             var div = document.createElement('div');
-            div.style.width = 300 + 'px';
-            div.style.height = 200 + 'px';
+            div.style.width = 400 + 'px';
+            div.style.height = 300 + 'px';
             document.body.appendChild(div);
             return div;
         };
@@ -220,12 +220,27 @@ define(function (require) {
                 data: [
                     {w: 'A', x: 'TP2', y: 'Lambda', z: 1},
                     {w: 'A', x: 'TP3', y: 'Alaska', z: 2},
+                    {w: 'A', x: 'TP3', y: 'Denver', z: 2},
+                    {w: 'A', x: 'TP4', y: 'Denver', z: 2},
                     {w: 'B', x: 'TP2', y: 'Lambda', z: 3},
                     {w: 'B', x: 'TP3', y: 'Alaska', z: 2},
+                    {w: 'B', x: 'TP3', y: 'Denver', z: 2},
+                    {w: 'B', x: 'TP4', y: 'Alaska', z: 2},
+                    {w: 'C', x: 'TP2', y: 'Lambda', z: 3},
+                    {w: 'C', x: 'TP3', y: 'Alaska', z: 2},
+                    {w: 'C', x: 'TP3', y: 'Denver', z: 2},
+                    {w: 'C', x: 'TP3', y: 'Denver', z: 2},
                     {w: 'A', x: 'TP2', y: 'Alaska', z: 5},
-                    {w: 'A', x: 'TP3', y: 'Lambda', z: 3},
+                    {w: 'A', x: 'TP4', y: 'Lambda', z: 3},
+                    {w: 'A', x: 'TP3', y: 'Denver', z: 2},
                     {w: 'B', x: 'TP2', y: 'Alaska', z: 5},
-                    {w: 'B', x: 'TP3', y: 'Lambda', z: 3}
+                    {w: 'B', x: 'TP3', y: 'Lambda', z: 3},
+                    {w: 'B', x: 'TP3', y: 'Denver', z: 2},
+                    {w: 'C', x: 'TP2', y: 'Alaska', z: 5},
+                    {w: 'C', x: 'TP3', y: 'Lambda', z: 3},
+                    {w: 'C', x: 'TP3', y: 'Denver', z: 2},
+                    {w: 'C', x: 'TP3', y: 'Grisha', z: 2},
+                    {w: 'C', x: 'TP4', y: 'Grisha', z: 2}
                 ],
                 settings: {
                     fitModel: fitModel
@@ -233,8 +248,8 @@ define(function (require) {
             };
         };
 
-        function getTicks(chart) {
-            return chart.getSVG().querySelectorAll('.tick text');
+        function getTicks(chart, axis) {
+            return chart.getSVG().querySelectorAll(`.${axis}.axis .tick text`);
         }
 
         beforeEach(function () {
@@ -245,31 +260,36 @@ define(function (require) {
         it('should support [normal] model', function () {
             var chart = new tauCharts.Chart(createConfig('normal'));
             chart.renderTo(div);
-            expect(getTicks(chart).length).to.be.equal(0);
+            expect(getTicks(chart, 'x').length).to.be.above(0);
+            expect(getTicks(chart, 'y').length).to.be.above(0);
         });
 
         it('should support [entire-view] model', function () {
             var chart = new tauCharts.Chart(createConfig('entire-view'));
             chart.renderTo(div);
-            expect(getTicks(chart).length).to.be.equal(0);
+            expect(getTicks(chart, 'x').length).to.be.equal(0);
+            expect(getTicks(chart, 'y').length).to.be.equal(0);
         });
 
         it('should support [fit-width] model', function () {
             var chart = new tauCharts.Chart(createConfig('fit-width'));
             chart.renderTo(div);
-            expect(getTicks(chart).length).to.be.equal(0);
+            expect(getTicks(chart, 'x').length).to.be.above(0);
+            expect(getTicks(chart, 'y').length).to.be.equal(0);
         });
 
         it('should support [fit-height] model', function () {
             var chart = new tauCharts.Chart(createConfig('fit-height'));
             chart.renderTo(div);
-            expect(getTicks(chart).length).to.be.equal(0);
+            expect(getTicks(chart, 'x').length).to.be.equal(0);
+            expect(getTicks(chart, 'y').length).to.be.above(0);
         });
 
         it('should support [minimal] model', function () {
             var chart = new tauCharts.Chart(createConfig('minimal'));
             chart.renderTo(div);
-            expect(getTicks(chart).length).to.be.equal(0);
+            expect(getTicks(chart, 'x').length).to.be.above(0);
+            expect(getTicks(chart, 'y').length).to.be.above(0);
         });
 
         afterEach(function () {

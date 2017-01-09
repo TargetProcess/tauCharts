@@ -72,11 +72,24 @@ var fitModelStrategies = {
 
     'entire-view'(srcSize, calcSize, specRef, tryOptimizeSpec) {
 
+        var g = specRef.unit.guide;
         var {xFacetCount, yFacetCount} = getFacetCount(specRef);
-        if ((xFacetCount * specRef.settings.minFacetWidth > srcSize.width) ||
-            (yFacetCount * specRef.settings.minFacetHeight > srcSize.height)
-        ) {
+        var ticksLPad = (g.padding.l - g.paddingNoTicks.l);
+        var ticksBPad = (g.padding.b - g.paddingNoTicks.b);
+        var shouldHideXAxis = (
+            (g.paddingNoTicks &&
+            (srcSize.height - ticksBPad < specRef.settings.minChartHeight)) ||
+            (yFacetCount * specRef.settings.minFacetHeight + ticksBPad > srcSize.height)
+        );
+        var shouldHideYAxis = (
+            (g.paddingNoTicks &&
+            (srcSize.width - ticksLPad < specRef.settings.minChartWidth)) ||
+            (xFacetCount * specRef.settings.minFacetWidth + ticksLPad > srcSize.width)
+        );
+        if (shouldHideXAxis) {
             SpecTransformOptimize.hideAxisTicks(specRef.unit, specRef.settings, 'x');
+        }
+        if (shouldHideYAxis) {
             SpecTransformOptimize.hideAxisTicks(specRef.unit, specRef.settings, 'y');
         }
 
@@ -99,6 +112,16 @@ var fitModelStrategies = {
 
     normal(srcSize, calcSize, specRef, tryOptimizeSpec) {
 
+        var g = specRef.unit.guide;
+        if (g.paddingNoTicks) {
+            if (srcSize.width - g.padding.l + g.paddingNoTicks.l < specRef.settings.minChartWidth) {
+                SpecTransformOptimize.hideAxisTicks(specRef.unit, specRef.settings, 'y');
+            }
+            if (srcSize.height - g.padding.b + g.paddingNoTicks.b < specRef.settings.minChartHeight) {
+                SpecTransformOptimize.hideAxisTicks(specRef.unit, specRef.settings, 'x');
+            }
+        }
+
         var newW = srcSize.width;
 
         var optimisticWidthByMaxText = calcSize('x', specRef.unit, byOptimisticMaxText);
@@ -118,8 +141,13 @@ var fitModelStrategies = {
     },
 
     'fit-width'(srcSize, calcSize, specRef, tryOptimizeSpec) {
-        var {xFacetCount} = getFacetCount(specRef);
-        if (xFacetCount * specRef.settings.minFacetWidth > srcSize.width) {
+
+        var g = specRef.unit.guide;
+        var ticksLPad = (g.padding.l - g.paddingNoTicks.l);
+        if ((g.paddingNoTicks &&
+            (srcSize.width - ticksLPad < specRef.settings.minChartWidth)) ||
+            (getFacetCount(specRef).xFacetCount * specRef.settings.minFacetWidth + ticksLPad > srcSize.width)
+        ) {
             SpecTransformOptimize.hideAxisTicks(specRef.unit, specRef.settings, 'y');
         }
         var widthByMaxText = calcSize('x', specRef.unit, byOptimisticMaxText);
@@ -133,8 +161,13 @@ var fitModelStrategies = {
     },
 
     'fit-height'(srcSize, calcSize, specRef) {
-        var {yFacetCount} = getFacetCount(specRef);
-        if (yFacetCount * specRef.settings.minFacetHeight > srcSize.height) {
+
+        var g = specRef.unit.guide;
+        var ticksBPad = (g.padding.b - g.paddingNoTicks.b);
+        if ((g.paddingNoTicks &&
+            (srcSize.height - ticksBPad < specRef.settings.minChartHeight)) ||
+            (getFacetCount(specRef).yFacetCount * specRef.settings.minFacetHeight + ticksBPad > srcSize.height)
+        ) {
             SpecTransformOptimize.hideAxisTicks(specRef.unit, specRef.settings, 'x');
         }
         var newW = calcSize('x', specRef.unit, byDensity);
@@ -239,15 +272,6 @@ export class SpecTransformCalcSize {
         var newW = srcSize.width;
         var newH = srcSize.height;
         var g = specRef.unit.guide;
-
-        if (g.paddingNoTicks) {
-            if (srcSize.width - g.padding.l + g.paddingNoTicks.l < specRef.settings.minChartWidth) {
-                SpecTransformOptimize.hideAxisTicks(specRef.unit, specRef.settings, 'y');
-            }
-            if (srcSize.height - g.padding.b + g.paddingNoTicks.b < specRef.settings.minChartHeight) {
-                SpecTransformOptimize.hideAxisTicks(specRef.unit, specRef.settings, 'x');
-            }
-        }
 
         var strategy = fitModelStrategies[fitModel];
         if (strategy) {
