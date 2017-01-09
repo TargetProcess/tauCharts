@@ -271,7 +271,6 @@ export class SpecTransformCalcSize {
 
         var newW = srcSize.width;
         var newH = srcSize.height;
-        var g = specRef.unit.guide;
 
         var strategy = fitModelStrategies[fitModel];
         if (strategy) {
