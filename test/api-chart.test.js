@@ -200,6 +200,84 @@ define(function (require) {
         });
     });
 
+    describe('Hide ticks for small facets', function () {
+
+        var div;
+
+        var createDiv = function () {
+            var div = document.createElement('div');
+            div.style.width = 300 + 'px';
+            div.style.height = 200 + 'px';
+            document.body.appendChild(div);
+            return div;
+        };
+
+        var createConfig = function (fitModel) {
+            return {
+                type: 'bar',
+                x: ['x', 'y'],
+                y: ['w', 'z'],
+                data: [
+                    {w: 'A', x: 'TP2', y: 'Lambda', z: 1},
+                    {w: 'A', x: 'TP3', y: 'Alaska', z: 2},
+                    {w: 'B', x: 'TP2', y: 'Lambda', z: 3},
+                    {w: 'B', x: 'TP3', y: 'Alaska', z: 2},
+                    {w: 'A', x: 'TP2', y: 'Alaska', z: 5},
+                    {w: 'A', x: 'TP3', y: 'Lambda', z: 3},
+                    {w: 'B', x: 'TP2', y: 'Alaska', z: 5},
+                    {w: 'B', x: 'TP3', y: 'Lambda', z: 3}
+                ],
+                settings: {
+                    fitModel: fitModel
+                }
+            };
+        };
+
+        function getTicks(chart) {
+            return chart.getSVG().querySelectorAll('.tick text');
+        }
+
+        beforeEach(function () {
+            div = createDiv();
+            utils.noScrollStyle.create();
+        });
+
+        it('should support [normal] model', function () {
+            var chart = new tauCharts.Chart(createConfig('normal'));
+            chart.renderTo(div);
+            expect(getTicks(chart).length).to.be.equal(0);
+        });
+
+        it('should support [entire-view] model', function () {
+            var chart = new tauCharts.Chart(createConfig('entire-view'));
+            chart.renderTo(div);
+            expect(getTicks(chart).length).to.be.equal(0);
+        });
+
+        it('should support [fit-width] model', function () {
+            var chart = new tauCharts.Chart(createConfig('fit-width'));
+            chart.renderTo(div);
+            expect(getTicks(chart).length).to.be.equal(0);
+        });
+
+        it('should support [fit-height] model', function () {
+            var chart = new tauCharts.Chart(createConfig('fit-height'));
+            chart.renderTo(div);
+            expect(getTicks(chart).length).to.be.equal(0);
+        });
+
+        it('should support [minimal] model', function () {
+            var chart = new tauCharts.Chart(createConfig('minimal'));
+            chart.renderTo(div);
+            expect(getTicks(chart).length).to.be.equal(0);
+        });
+
+        afterEach(function () {
+            div.parentNode.removeChild(div);
+            utils.noScrollStyle.remove();
+        });
+    });
+
     describe('Avoid chart scrollbar', function () {
         var testChart = function (avoidScrollAtRatio, expectHeight) {
             var container = document.createElement('div');
