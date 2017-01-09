@@ -238,13 +238,15 @@ export class SpecTransformCalcSize {
 
         var newW = srcSize.width;
         var newH = srcSize.height;
-        var guide = specRef.unit.guide;
+        var g = specRef.unit.guide;
 
-        if (srcSize.width - guide.padding.l + guide.padding.lNoTicks < specRef.settings.minChartWidth) {
-            SpecTransformOptimize.hideAxisTicks(specRef.unit, specRef.settings, 'y');
-        }
-        if (srcSize.height - guide.padding.b + guide.padding.bNoTicks < specRef.settings.minChartHeight) {
-            SpecTransformOptimize.hideAxisTicks(specRef.unit, specRef.settings, 'x');
+        if (g.paddingNoTicks) {
+            if (srcSize.width - g.padding.l + g.paddingNoTicks.l < specRef.settings.minChartWidth) {
+                SpecTransformOptimize.hideAxisTicks(specRef.unit, specRef.settings, 'y');
+            }
+            if (srcSize.height - g.padding.b + g.paddingNoTicks.b < specRef.settings.minChartHeight) {
+                SpecTransformOptimize.hideAxisTicks(specRef.unit, specRef.settings, 'x');
+            }
         }
 
         var strategy = fitModelStrategies[fitModel];

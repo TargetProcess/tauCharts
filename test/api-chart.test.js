@@ -223,7 +223,7 @@ define(function (require) {
             document.body.removeChild(container);
         };
 
-        testChart(1, 160);
+        testChart(1, 140);
         testChart(2, 120);
     });
 

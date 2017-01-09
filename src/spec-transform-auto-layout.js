@@ -312,21 +312,30 @@ var calcXYGuide = function (guide, settings, xMeta, yMeta, inlineLabels) {
                     (kxAxisW * (settings.xTickWidth + rotXBox.height)),
                     (kxLabelW * (settings.distToXAxisLabel + settings.xFontLabelHeight + bottomBorder))
                 ]),
-            bNoTicks: sum([
-                (guide.x.padding),
-                (kxLabelW * (settings.distToXAxisLabel + settings.xFontLabelHeight + bottomBorder))
-            ]),
             l: (guide.y.hide) ?
                 (0) :
                 sum([
                     (guide.y.padding),
                     (kyAxisW * (settings.yTickWidth + rotYBox.width)),
                     (kyLabelW * (settings.distToYAxisLabel + settings.yFontLabelHeight))
+                ])
+        });
+    guide.paddingNoTicks = Object.assign(
+        {},
+        (guide.paddingNoTicks),
+        {
+            b: (guide.x.hide) ?
+                (0) :
+                sum([
+                    (guide.x.padding),
+                    (kxLabelW * (settings.distToXAxisLabel + settings.xFontLabelHeight + bottomBorder))
                 ]),
-            lNoTicks: sum([
-                (guide.y.padding),
-                (kyLabelW * (settings.distToYAxisLabel + settings.yFontLabelHeight))
-            ])
+            l: (guide.y.hide) ?
+                (0) :
+                sum([
+                    (guide.y.padding),
+                    (kyLabelW * (settings.distToYAxisLabel + settings.yFontLabelHeight))
+                ])
         });
 
     guide.x = Object.assign(
