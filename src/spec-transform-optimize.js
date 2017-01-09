@@ -36,7 +36,6 @@ export class SpecTransformOptimize {
     static hideAxisTicks(root, settings, axis) {
         const enterSpec = (rootUnit) => {
             const pad = (axis === 'x' ? 'b' : 'l');
-            const axPad = (axis === 'x' ? 'bAxis' : 'lAxis');
             const loPad = (axis === 'x' ? 'bNoTicks' : 'lNoTicks');
             const g = rootUnit.guide;
 
