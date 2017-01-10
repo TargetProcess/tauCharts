@@ -5,7 +5,10 @@ export class SpecTransformOptimize {
 
         const enterSpec = (rootUnit) => {
 
-            if (rootUnit.guide.x.hide !== true && rootUnit.guide.x.rotate !== 0) {
+            if (!rootUnit.guide.x.hide &&
+                !rootUnit.guide.x.hideTicks &&
+                rootUnit.guide.x.rotate !== 0
+            ) {
                 rootUnit.guide.x.rotate = 0;
                 rootUnit.guide.x.textAnchor = 'middle';
 
