@@ -78,7 +78,7 @@
 
                 this._tooltip = this._chart.addBalloon(
                     {
-                        spacing: 3,
+                        spacing: 16,
                         auto: true,
                         effectClass: 'fade'
                     });
@@ -118,6 +118,11 @@
 
                     }, false);
 
+                this._tooltip
+                    .getElement()
+                    .style
+                    .pointerEvents = 'none';
+
                 var self = this;
                 var timeoutHide;
                 this.showTooltip = function (data, cursor, element) {
@@ -141,18 +146,21 @@
                     }
 
                     self._tooltip
-                        .position(element)
+                        .position(cursor.x, cursor.y)
+                        .place('bottom-right')
                         .show()
                         .updateSize();
                 };
 
                 this.hideTooltip = function (e) {
+                    self._tooltip.hide();
+                    self._removeFocus();
                     timeoutHide = setTimeout(
                         function () {
                             self._tooltip.hide();
                             self._removeFocus();
                         },
-                        300);
+                    300);
                 };
 
                 this._tooltip
