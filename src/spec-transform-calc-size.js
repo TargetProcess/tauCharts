@@ -74,8 +74,8 @@ var fitModelStrategies = {
 
         var g = specRef.unit.guide;
         var {xFacetCount, yFacetCount} = getFacetCount(specRef);
-        var ticksLPad = (g.padding.l - g.paddingNoTicks.l);
-        var ticksBPad = (g.padding.b - g.paddingNoTicks.b);
+        var ticksLPad = (g.paddingNoTicks ? (g.padding.l - g.paddingNoTicks.l) : 0);
+        var ticksBPad = (g.paddingNoTicks ? (g.padding.b - g.paddingNoTicks.b) : 0);
         var shouldHideXAxis = (
             (g.paddingNoTicks &&
             (srcSize.height - ticksBPad < specRef.settings.minChartHeight)) ||
@@ -143,7 +143,7 @@ var fitModelStrategies = {
     'fit-width'(srcSize, calcSize, specRef, tryOptimizeSpec) {
 
         var g = specRef.unit.guide;
-        var ticksLPad = (g.padding.l - g.paddingNoTicks.l);
+        var ticksLPad = (g.paddingNoTicks ? (g.padding.l - g.paddingNoTicks.l) : 0);
         if ((g.paddingNoTicks &&
             (srcSize.width - ticksLPad < specRef.settings.minChartWidth)) ||
             (getFacetCount(specRef).xFacetCount * specRef.settings.minFacetWidth + ticksLPad > srcSize.width)
@@ -163,7 +163,7 @@ var fitModelStrategies = {
     'fit-height'(srcSize, calcSize, specRef) {
 
         var g = specRef.unit.guide;
-        var ticksBPad = (g.padding.b - g.paddingNoTicks.b);
+        var ticksBPad = (g.paddingNoTicks ? (g.padding.b - g.paddingNoTicks.b) : 0);
         if ((g.paddingNoTicks &&
             (srcSize.height - ticksBPad < specRef.settings.minChartHeight)) ||
             (getFacetCount(specRef).yFacetCount * specRef.settings.minFacetHeight + ticksBPad > srcSize.height)
