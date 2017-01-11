@@ -144,13 +144,18 @@
                     clearTimeout(this._timeoutShow);
                     if (state.highlight.data) {
                         this.hideTooltip();
-                        this._timeoutShow = setTimeout(function () {
+                        var showTooltip = function () {
                             this.showTooltip(
                                 state.highlight.data,
                                 state.highlight.cursor,
                                 state.highlight.node
                             );
-                        }.bind(this), settings.showTimeout);
+                        }.bind(this);
+                        if (settings.showTimeout > 0) {
+                            this._timeoutShow = setTimeout(showTooltip, settings.showTimeout);
+                        } else {
+                            showTooltip();
+                        }
                     } else if (!state.isStuck) {
                         this.hideTooltip();
                     }
