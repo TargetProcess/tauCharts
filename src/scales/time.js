@@ -24,14 +24,17 @@ export class TimeScale extends BaseScale {
         this.niceIntervalFn = null;
         if (props.nice) {
             var niceInterval = props.niceInterval;
-            if (d3.time[niceInterval]) {
-                this.niceIntervalFn = d3.time[niceInterval];
+            var d3TimeInterval = (niceInterval && d3.time[niceInterval] ?
+                (props.utcTime ? d3.time[niceInterval].utc : d3.time[niceInterval]) :
+                null);
+            if (d3TimeInterval) {
+                this.niceIntervalFn = d3TimeInterval;
             } else {
                 // TODO: show warning?
                 this.niceIntervalFn = null;
             }
 
-            this.vars = utils.niceTimeDomain(vars, this.niceIntervalFn);
+            this.vars = utils.niceTimeDomain(vars, this.niceIntervalFn, {utc: props.utcTime});
 
         } else {
             this.vars = vars;
@@ -51,10 +54,12 @@ export class TimeScale extends BaseScale {
     create(interval) {
 
         var varSet = this.vars;
+        var utcTime = this.scaleConfig.utcTime;
 
-        var d3Domain = d3.time.scale().domain(
+        var d3TimeScale = (utcTime ? d3.time.scale.utc : d3.time.scale);
+        var d3Domain = d3TimeScale().domain(
             this.scaleConfig.nice ?
-                utils.niceTimeDomain(varSet, this.niceIntervalFn) :
+                utils.niceTimeDomain(varSet, this.niceIntervalFn, {utc: utcTime}) :
                 varSet
         );
 

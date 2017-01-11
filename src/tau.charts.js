@@ -171,6 +171,8 @@ var api = {
         'xDensityPadding:measure': 8,
         'yDensityPadding:measure': 8,
 
+        utcTime: false,
+
         defaultFormats: {
             measure: 'x-num-auto',
             'measure:time': 'x-time-auto'
@@ -222,8 +224,24 @@ Plot.globalSettings = api.globalSettings;
     ['fill', FillScale],
     ['size', SizeScale],
     ['ordinal', OrdinalScale],
-    ['period', PeriodScale],
-    ['time', TimeScale],
+    [
+        'period',
+        PeriodScale,
+        ((config, settings) => utils.defaults(
+            config,
+            {
+                utcTime: settings.utcTime
+            }))
+    ],
+    [
+        'time',
+        TimeScale,
+        ((config, settings) => utils.defaults(
+            config,
+            {
+                utcTime: settings.utcTime
+            }))
+    ],
     ['linear', LinearScale],
     ['logarithmic', LogarithmicScale],
     ['value', ValueScale]
