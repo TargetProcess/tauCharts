@@ -148,6 +148,7 @@ const BasePath = {
 
         node.on('highlight', (sender, e) => this.highlight(e));
         node.on('highlight-data-points', (sender, e) => this.highlightDataPoints(e));
+        node.on('click-data-points', (sender, e) => this.highlightDataPoints(e));
 
         if (config.guide.showAnchors !== 'never') {
             const getHighlightEvtObj = (e, data) => {
@@ -158,9 +159,11 @@ const BasePath = {
             };
             const activate = ((sender, e) => sender.fire('highlight-data-points', getHighlightEvtObj(e.event, e.data)));
             const deactivate = ((sender, e) => sender.fire('highlight-data-points', getHighlightEvtObj(e.event, null)));
+            const click = ((sender, e) => sender.fire('click-data-points', getHighlightEvtObj(e.event, e.data)));
             node.on('mouseover', activate);
             node.on('mousemove', activate);
             node.on('mouseout', deactivate);
+            node.on('click', click);
         }
     },
 
