@@ -474,6 +474,7 @@ describe('tooltip', function () {
             ],
             plugins: [
                 tooltip({
+                    showTimeout: 0,
                     aggregationGroupFields: ['x'],
                     onRevealAggregation: function (filterDescriptor, data) {
                         expect(filterDescriptor).to.deep.equal({x: 2});

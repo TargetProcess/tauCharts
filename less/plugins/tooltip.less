@@ -24,7 +24,7 @@
         }
         &.fade.in {
             opacity: 1;
-            transition-duration: 100ms;
+            transition-duration: 500ms;
         }
 
         &__content {
@@ -32,6 +32,10 @@
             padding: 15px 15px 10px 15px;
             box-sizing: border-box;
             max-width: ~"calc(100% - 26px)";
+        }
+
+        &.stuck &__exclude {
+            opacity: 1;
         }
 
         &__vertical,
@@ -42,7 +46,10 @@
             min-height: 86px;
             width: 26px;
             position: relative;
-            box-shadow: inset 2px 0 2px -2px fade(@shadow-color, 20%);
+            box-shadow: inset 2px 0 2px -2px fade(@shadow-color, 20%);            
+            // TODO: Buttons should slide-in.
+            opacity: 0;
+            transition: opacity 500ms;
 
             &__wrap {
                 line-height: 26px;
