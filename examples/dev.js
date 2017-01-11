@@ -15,6 +15,7 @@
             'horizontal-scroll',
             'logarithmic-scale',
             'smooth-line',
+            'utc',
             'whiskers'
         ],
         'dev-quick-test/': fileRange(
