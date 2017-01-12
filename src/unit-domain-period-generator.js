@@ -80,7 +80,7 @@ var PERIODS_MAP_UTC = {
         },
         next: function (d) {
             var prev = new Date(d);
-            var next = new Date(prev.setUTCDate(prev.getDate() + 1));
+            var next = new Date(prev.setUTCDate(prev.getUTCDate() + 1));
             return this.cast(next);
         }
     },
@@ -89,11 +89,11 @@ var PERIODS_MAP_UTC = {
         cast: function (d) {
             var date = new Date(d);
             date = new Date(date.setUTCHours(0, 0, 0, 0));
-            return new Date(date.setUTCDate(date.getDate() - date.getDay()));
+            return new Date(date.setUTCDate(date.getUTCDate() - date.getUTCDay()));
         },
         next: function (d) {
             var prev = new Date(d);
-            var next = (new Date(prev.setUTCDate(prev.getDate() + 7)));
+            var next = (new Date(prev.setUTCDate(prev.getUTCDate() + 7)));
             return this.cast(next);
         }
     },
@@ -107,7 +107,7 @@ var PERIODS_MAP_UTC = {
         },
         next: function (d) {
             var prev = new Date(d);
-            var next = new Date(prev.setUTCMonth(prev.getMonth() + 1));
+            var next = new Date(prev.setUTCMonth(prev.getUTCMonth() + 1));
             return this.cast(next);
         }
     },
@@ -117,13 +117,13 @@ var PERIODS_MAP_UTC = {
             var date = new Date(d);
             date = new Date(date.setUTCHours(0, 0, 0, 0));
             date = new Date(date.setUTCDate(1));
-            var currentMonth = date.getMonth();
+            var currentMonth = date.getUTCMonth();
             var firstQuarterMonth = currentMonth - (currentMonth % 3);
             return new Date(date.setUTCMonth(firstQuarterMonth));
         },
         next: function (d) {
             var prev = new Date(d);
-            var next = new Date(prev.setUTCMonth(prev.getMonth() + 3));
+            var next = new Date(prev.setUTCMonth(prev.getUTCMonth() + 3));
             return this.cast(next);
         }
     },
@@ -138,7 +138,7 @@ var PERIODS_MAP_UTC = {
         },
         next: function (d) {
             var prev = new Date(d);
-            var next = new Date(prev.setUTCFullYear(prev.getFullYear() + 1));
+            var next = new Date(prev.setUTCFullYear(prev.getUTCFullYear() + 1));
             return this.cast(next);
         }
     }
@@ -156,9 +156,9 @@ var UnitDomainPeriodGenerator = {
         return (utc ? PERIODS_MAP_UTC : PERIODS_MAP)[alias.toLowerCase()] || null;
     },
 
-    generate: (lTick, rTick, periodAlias) => {
+    generate: (lTick, rTick, periodAlias, {utc} = {utc: false}) => {
         var r = [];
-        var period = UnitDomainPeriodGenerator.get(periodAlias);
+        var period = UnitDomainPeriodGenerator.get(periodAlias, {utc});
         if (period) {
             var last = period.cast(new Date(rTick));
             var curr = period.cast(new Date(lTick));

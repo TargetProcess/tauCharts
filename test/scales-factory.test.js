@@ -151,10 +151,10 @@ define(function (require) {
         };
         var xSrcUTC = {
             part: function () {
-                return data;
+                return dataUTC;
             },
             full: function () {
-                return data;
+                return dataUTC;
             }
         };
 
@@ -384,10 +384,10 @@ define(function (require) {
                     utcTime: true
                 }).create([0, 100]);
 
-            expect(scale5.domain().length).to.equal(3);
-            expect(scale5(new Date('2015-04-19T00:00').getTime())).to.equal(20);
-            expect(scale5(new Date('2015-04-17T00:00').getTime())).to.equal(65);
-            expect(scale5(new Date('2015-04-16T00:00').getTime())).to.equal(95);
+            expect(scale5.domain().length).to.equal(4);
+            expect(scale5(new Date('2015-04-19T00:00').getTime())).to.equal(87.5);
+            expect(scale5(new Date('2015-04-17T00:00').getTime())).to.equal(37.5);
+            expect(scale5(new Date('2015-04-16T00:00').getTime())).to.equal(12.5);
         });
 
         it('should support [linear] scale', function () {
