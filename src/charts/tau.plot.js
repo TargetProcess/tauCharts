@@ -131,7 +131,7 @@ export class Plot extends Emitter {
         var workPlan = scales
             .filter(s => (s.type === 'period'))
             .reduce((memo, scaleRef) => {
-                var periodCaster = tickPeriod.get(scaleRef.period);
+                var periodCaster = tickPeriod.get(scaleRef.period, {utc: spec.settings.utcTime});
                 if (periodCaster) {
                     memo.push({source: scaleRef.source, dim: scaleRef.dim, period: periodCaster});
                 } else {

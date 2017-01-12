@@ -180,10 +180,10 @@ var getSettings = (settings, prop, dimType) => {
         settings[`${prop}`];
 };
 
-var shortFormat = (format) => {
+var shortFormat = (format, utc) => {
     var timeFormats = ['day', 'week', 'month'];
     if (timeFormats.indexOf(format) >= 0) {
-        format += '-short';
+        format += `-short${utc ? '-utc' : ''}`;
     }
 
     return format;
@@ -373,8 +373,12 @@ var calcUnitGuide = function ({unit, meta, settings, allowXVertical, allowYVerti
     var xIsEmptyAxis = (xMeta.isEmpty);
     var yIsEmptyAxis = (yMeta.isEmpty);
 
-    unit.guide.x.tickFormat = shortFormat(unit.guide.x.tickFormat || getTickFormat(dimX, settings.defaultFormats));
-    unit.guide.y.tickFormat = shortFormat(unit.guide.y.tickFormat || getTickFormat(dimY, settings.defaultFormats));
+    unit.guide.x.tickFormat = shortFormat(
+        (unit.guide.x.tickFormat || getTickFormat(dimX, settings.defaultFormats)),
+        settings.utcTime);
+    unit.guide.y.tickFormat = shortFormat(
+        (unit.guide.y.tickFormat || getTickFormat(dimY, settings.defaultFormats)),
+        settings.utcTime);
 
     var isXVertical = allowXVertical ? !(dimX.dimType === 'measure') : false;
     var isYVertical = allowYVertical ? !(dimY.dimType === 'measure') : false;

@@ -371,24 +371,25 @@ var utils = {
         ];
     },
 
-    niceTimeDomain(domain, niceIntervalFn) {
+    niceTimeDomain(domain, niceIntervalFn, {utc} = {utc: false}) {
 
         var [low, top] = d3.extent(domain);
         var span = (top - low);
+        var d3TimeScale = (utc ? d3.time.scale.utc : d3.time.scale);
 
         if (span === 0) {
             var oneDay = 24 * 60 * 60 * 1000;
             low = new Date(low.getTime() - oneDay);
             top = new Date(top.getTime() + oneDay);
-            return d3.time.scale().domain([low, top]).nice(niceIntervalFn).domain();
+            return d3TimeScale().domain([low, top]).nice(niceIntervalFn).domain();
         }
 
-        var niceScale = d3.time.scale().domain([low, top]).nice(niceIntervalFn);
+        var niceScale = d3TimeScale().domain([low, top]).nice(niceIntervalFn);
         if (niceIntervalFn) {
             return niceScale.domain();
         }
 
-        var [niceLow, niceTop] = d3.time.scale().domain([low, top]).nice(niceIntervalFn).domain();
+        var [niceLow, niceTop] = d3TimeScale().domain([low, top]).nice(niceIntervalFn).domain();
         var ticks = niceScale.ticks();
         var last = ticks.length - 1;
         if ((low - niceLow) / (ticks[1] - niceLow) < 0.5) {

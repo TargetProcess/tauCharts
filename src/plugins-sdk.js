@@ -120,7 +120,9 @@ class PluginsSDK {
                 memo[k].tickLabel = choiceRule(memo[k].tickLabel, null);
 
                 // very special case for dates
-                var format = (memo[k].format === 'x-time-auto') ? 'day' : memo[k].format;
+                var format = (memo[k].format === 'x-time-auto') ?
+                    (spec.settings.utcTime ? 'day-utc' : 'day') :
+                    memo[k].format;
                 var nonVal = memo[k].nullAlias;
                 var fnForm = format ?
                     (FormatterRegistry.get(format, nonVal)) :
