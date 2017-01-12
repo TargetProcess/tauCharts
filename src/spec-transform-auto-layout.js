@@ -183,10 +183,7 @@ var getSettings = (settings, prop, dimType) => {
 var shortFormat = (format, utc) => {
     var timeFormats = ['day', 'week', 'month'];
     if (timeFormats.indexOf(format) >= 0) {
-        format += '-short';
-        if (utc) {
-            format += '-utc';
-        }
+        format += `-short${utc ? '-utc' : ''}`;
     }
 
     return format;
