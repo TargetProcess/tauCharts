@@ -5,6 +5,7 @@
 /* region variables for plugins */
 /* endregion */
 .graphical-report__tooltip {
+  pointer-events: none;
   position: absolute;
   top: 0;
   left: 0;
@@ -27,27 +28,36 @@
 }
 .graphical-report__tooltip.fade.in {
   opacity: 1;
-  transition-duration: 100ms;
+  transition-duration: 500ms;
 }
 .graphical-report__tooltip__content {
   overflow: hidden;
   padding: 15px 15px 10px 15px;
   box-sizing: border-box;
-  max-width: calc(100% - 26px);
+}
+.graphical-report__tooltip.stuck {
+  pointer-events: initial;
+}
+.graphical-report__tooltip.stuck .graphical-report__tooltip__exclude,
+.graphical-report__tooltip.stuck .graphical-report__tooltip__vertical {
+  width: 26px;
 }
 .graphical-report__tooltip__vertical,
 .graphical-report__tooltip__exclude {
+  box-shadow: inset 2px 0 2px -2px rgba(0, 0, 0, 0.2);
   -ms-flex: 0 0 auto;
       flex: 0 0 auto;
   color: rgba(101, 113, 127, 0.8);
   cursor: pointer;
   min-height: 86px;
-  width: 26px;
+  overflow: hidden;
   position: relative;
-  box-shadow: inset 2px 0 2px -2px rgba(0, 0, 0, 0.2);
+  transition: width 500ms;
+  width: 0;
 }
 .graphical-report__tooltip__vertical__wrap,
 .graphical-report__tooltip__exclude__wrap {
+  left: calc(100% - 26px);
   line-height: 26px;
   padding: 0 15px;
   transform: rotate(-90deg);
@@ -56,7 +66,6 @@
   white-space: nowrap;
   position: absolute;
   top: 100%;
-  left: 0;
   box-sizing: border-box;
 }
 .graphical-report__tooltip__vertical:hover,

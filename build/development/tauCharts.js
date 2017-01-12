@@ -1,6 +1,6 @@
-/*! taucharts - v0.10.0-beta.5 - 2016-12-23
+/*! taucharts - v0.10.0-beta.6 - 2017-01-12
 * https://github.com/TargetProcess/tauCharts
-* Copyright (c) 2016 Taucraft Limited; Licensed Apache License 2.0 */
+* Copyright (c) 2017 Taucraft Limited; Licensed Apache License 2.0 */
 (function webpackUniversalModuleDefinition(root, factory) {
 	if(typeof exports === 'object' && typeof module === 'object')
 		module.exports = factory(require("d3"));
@@ -224,11 +224,11 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	        facetLabelDelimiter: ' \u2192 ',
 	        excludeNull: true,
+	        minChartWidth: 300,
+	        minChartHeight: 200,
+	        minFacetWidth: 150,
+	        minFacetHeight: 100,
 	        specEngine: [{
-	            name: 'SPARKLINE',
-	            width: 300,
-	            height: 200
-	        }, {
 	            name: 'COMPACT',
 	            width: 600,
 	            height: 400
@@ -275,6 +275,8 @@ return /******/ (function(modules) { // webpackBootstrap
 	        'xDensityPadding:measure': 8,
 	        'yDensityPadding:measure': 8,
 
+	        utcTime: false,
+
 	        defaultFormats: {
 	            measure: 'x-num-auto',
 	            'measure:time': 'x-time-auto'
@@ -299,7 +301,15 @@ return /******/ (function(modules) { // webpackBootstrap
 	        nice: settings.defaultNiceColor,
 	        brewer: config.dimType === 'measure' ? settings.defaultColorBrewer : settings.defaultClassBrewer
 	    });
-	}], ['fill', _fill.FillScale], ['size', _size.SizeScale], ['ordinal', _ordinal.OrdinalScale], ['period', _period.PeriodScale], ['time', _time.TimeScale], ['linear', _linear.LinearScale], ['logarithmic', _logarithmic.LogarithmicScale], ['value', _value.ValueScale]].reduce(function (memo, nv) {
+	}], ['fill', _fill.FillScale], ['size', _size.SizeScale], ['ordinal', _ordinal.OrdinalScale], ['period', _period.PeriodScale, function (config, settings) {
+	    return _utils.utils.defaults(config, {
+	        utcTime: settings.utcTime
+	    });
+	}], ['time', _time.TimeScale, function (config, settings) {
+	    return _utils.utils.defaults(config, {
+	        utcTime: settings.utcTime
+	    });
+	}], ['linear', _linear.LinearScale], ['logarithmic', _logarithmic.LogarithmicScale], ['value', _value.ValueScale]].reduce(function (memo, nv) {
 	    return memo.reg.apply(memo, _toConsumableArray(nv));
 	}, api.scalesRegistry);
 
@@ -337,7 +347,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	}]));
 
 	/* global VERSION:false */
-	var version = ("0.10.0-beta.5");
+	var version = ("0.10.0-beta.6");
 	exports.GPL = _tau.GPL;
 	exports.Plot = _tau2.Plot;
 	exports.Chart = _tau3.Chart;
@@ -1050,29 +1060,33 @@ return /******/ (function(modules) { // webpackBootstrap
 	        return [parseFloat(extent[0].toFixed(15)), parseFloat(extent[1].toFixed(15))];
 	    },
 	    niceTimeDomain: function niceTimeDomain(domain, niceIntervalFn) {
+	        var _ref = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : { utc: false },
+	            utc = _ref.utc;
+
 	        var _d3$extent = _d3.default.extent(domain),
 	            _d3$extent2 = _slicedToArray(_d3$extent, 2),
 	            low = _d3$extent2[0],
 	            top = _d3$extent2[1];
 
 	        var span = top - low;
+	        var d3TimeScale = utc ? _d3.default.time.scale.utc : _d3.default.time.scale;
 
 	        if (span === 0) {
 	            var oneDay = 24 * 60 * 60 * 1000;
 	            low = new Date(low.getTime() - oneDay);
 	            top = new Date(top.getTime() + oneDay);
-	            return _d3.default.time.scale().domain([low, top]).nice(niceIntervalFn).domain();
+	            return d3TimeScale().domain([low, top]).nice(niceIntervalFn).domain();
 	        }
 
-	        var niceScale = _d3.default.time.scale().domain([low, top]).nice(niceIntervalFn);
+	        var niceScale = d3TimeScale().domain([low, top]).nice(niceIntervalFn);
 	        if (niceIntervalFn) {
 	            return niceScale.domain();
 	        }
 
-	        var _d3$time$scale$domain = _d3.default.time.scale().domain([low, top]).nice(niceIntervalFn).domain(),
-	            _d3$time$scale$domain2 = _slicedToArray(_d3$time$scale$domain, 2),
-	            niceLow = _d3$time$scale$domain2[0],
-	            niceTop = _d3$time$scale$domain2[1];
+	        var _d3TimeScale$domain$n = d3TimeScale().domain([low, top]).nice(niceIntervalFn).domain(),
+	            _d3TimeScale$domain$n2 = _slicedToArray(_d3TimeScale$domain$n, 2),
+	            niceLow = _d3TimeScale$domain$n2[0],
+	            niceTop = _d3TimeScale$domain$n2[1];
 
 	        var ticks = niceScale.ticks();
 	        var last = ticks.length - 1;
@@ -1253,12 +1267,12 @@ return /******/ (function(modules) { // webpackBootstrap
 	    },
 
 	    flatten: function flatten(array) {
-	        var _ref;
+	        var _ref2;
 
 	        if (!Array.isArray(array)) {
 	            return array;
 	        }
-	        return (_ref = []).concat.apply(_ref, _toConsumableArray(array.map(function (x) {
+	        return (_ref2 = []).concat.apply(_ref2, _toConsumableArray(array.map(function (x) {
 	            return utils.flatten(x);
 	        })));
 	    },
@@ -2784,8 +2798,6 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	var d3_decorator_fixEdgeAxisTicksOverflow = function d3_decorator_fixEdgeAxisTicksOverflow(axisNode, activeTicks, animationSpeed, returnPhase) {
 
-	    var store = '__transitionAttrs__';
-
 	    activeTicks = activeTicks.map(function (d) {
 	        return Number(d);
 	    });
@@ -2803,14 +2815,15 @@ return /******/ (function(modules) { // webpackBootstrap
 	    var svgRect = svg.getBoundingClientRect();
 
 	    if (returnPhase) {
-	        texts.forEach(function (n, i) {
+	        texts.sort(function (a, b) {
+	            return _d2.default.select(a).data() - _d2.default.select(b).data();
+	        }).forEach(function (n, i) {
 	            if (i === 0 || i === texts.length - 1) {
 	                return;
 	            }
 	            var t = _d2.default.select(n);
-	            if (t.attr('dx')) {
-	                d3_transition(t, animationSpeed, 'fixEdgeAxisTicksOverflow').attr('dx', 0);
-	            }
+	            d3_transition(t, animationSpeed, 'fixEdgeAxisTicksOverflow');
+	            t.attr('dx', 0);
 	        });
 	    } else {
 	        var fixText = function fixText(node, dir) {
@@ -2819,14 +2832,9 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	            var d3Node = _d2.default.select(node);
 	            var currentDx = d3Node.attr('dx') || 0;
-	            var nextDx = node[store] && node[store].dx ? node[store].dx : currentDx;
-	            var diff = dir * (rect[side] - svgRect[side] + currentDx - nextDx);
+	            var diff = dir * (rect[side] - svgRect[side] + currentDx);
 	            if (diff > 0) {
-	                d3Node.transition('fixEdgeAxisTicksOverflow');
-	                d3Node.attr('dx', 0);
-	                d3_transition(d3Node, animationSpeed, 'fixEdgeAxisTicksOverflow').attr('dx', -dir * diff).onTransitionEnd(function () {
-	                    d3_transition(d3Node, animationSpeed, 'fixEdgeAxisTicksOverflow').attr('dx', -dir * diff);
-	                });
+	                d3_transition(d3Node, animationSpeed, 'fixEdgeAxisTicksOverflow').attr('dx', -dir * diff);
 	            }
 	        };
 	        fixText(texts[0], -1);
@@ -6168,21 +6176,104 @@ return /******/ (function(modules) { // webpackBootstrap
 	    }
 	};
 
+	var PERIODS_MAP_UTC = {
+
+	    day: {
+	        cast: function cast(d) {
+	            var date = new Date(d);
+	            return new Date(date.setUTCHours(0, 0, 0, 0));
+	        },
+	        next: function next(d) {
+	            var prev = new Date(d);
+	            var next = new Date(prev.setUTCDate(prev.getUTCDate() + 1));
+	            return this.cast(next);
+	        }
+	    },
+
+	    week: {
+	        cast: function cast(d) {
+	            var date = new Date(d);
+	            date = new Date(date.setUTCHours(0, 0, 0, 0));
+	            return new Date(date.setUTCDate(date.getUTCDate() - date.getUTCDay()));
+	        },
+	        next: function next(d) {
+	            var prev = new Date(d);
+	            var next = new Date(prev.setUTCDate(prev.getUTCDate() + 7));
+	            return this.cast(next);
+	        }
+	    },
+
+	    month: {
+	        cast: function cast(d) {
+	            var date = new Date(d);
+	            date = new Date(date.setUTCHours(0, 0, 0, 0));
+	            date = new Date(date.setUTCDate(1));
+	            return date;
+	        },
+	        next: function next(d) {
+	            var prev = new Date(d);
+	            var next = new Date(prev.setUTCMonth(prev.getUTCMonth() + 1));
+	            return this.cast(next);
+	        }
+	    },
+
+	    quarter: {
+	        cast: function cast(d) {
+	            var date = new Date(d);
+	            date = new Date(date.setUTCHours(0, 0, 0, 0));
+	            date = new Date(date.setUTCDate(1));
+	            var currentMonth = date.getUTCMonth();
+	            var firstQuarterMonth = currentMonth - currentMonth % 3;
+	            return new Date(date.setUTCMonth(firstQuarterMonth));
+	        },
+	        next: function next(d) {
+	            var prev = new Date(d);
+	            var next = new Date(prev.setUTCMonth(prev.getUTCMonth() + 3));
+	            return this.cast(next);
+	        }
+	    },
+
+	    year: {
+	        cast: function cast(d) {
+	            var date = new Date(d);
+	            date = new Date(date.setUTCHours(0, 0, 0, 0));
+	            date = new Date(date.setUTCDate(1));
+	            date = new Date(date.setUTCMonth(0));
+	            return date;
+	        },
+
+	        next: function next(d) {
+	            var prev = new Date(d);
+	            var next = new Date(prev.setUTCFullYear(prev.getUTCFullYear() + 1));
+	            return this.cast(next);
+	        }
+	    }
+	};
+
 	var UnitDomainPeriodGenerator = {
 
 	    add: function add(periodAlias, obj) {
-	        PERIODS_MAP[periodAlias.toLowerCase()] = obj;
+	        var _ref = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : { utc: false },
+	            utc = _ref.utc;
+
+	        (utc ? PERIODS_MAP_UTC : PERIODS_MAP)[periodAlias.toLowerCase()] = obj;
 	        return this;
 	    },
 
 	    get: function get(periodAlias) {
+	        var _ref2 = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : { utc: false },
+	            utc = _ref2.utc;
+
 	        var alias = periodAlias || '';
-	        return PERIODS_MAP[alias.toLowerCase()] || null;
+	        return (utc ? PERIODS_MAP_UTC : PERIODS_MAP)[alias.toLowerCase()] || null;
 	    },
 
 	    generate: function generate(lTick, rTick, periodAlias) {
+	        var _ref3 = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : { utc: false },
+	            utc = _ref3.utc;
+
 	        var r = [];
-	        var period = UnitDomainPeriodGenerator.get(periodAlias);
+	        var period = UnitDomainPeriodGenerator.get(periodAlias, { utc: utc });
 	        if (period) {
 	            var last = period.cast(new Date(rTick));
 	            var curr = period.cast(new Date(lTick));
@@ -6975,7 +7066,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	            var workPlan = scales.filter(function (s) {
 	                return s.type === 'period';
 	            }).reduce(function (memo, scaleRef) {
-	                var periodCaster = tickPeriod.get(scaleRef.period);
+	                var periodCaster = tickPeriod.get(scaleRef.period, { utc: spec.settings.utcTime });
 	                if (periodCaster) {
 	                    memo.push({ source: scaleRef.source, dim: scaleRef.dim, period: periodCaster });
 	                } else {
@@ -8703,6 +8794,12 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	var _formatterRegistry = __webpack_require__(98);
 
+	var _d = __webpack_require__(2);
+
+	var _d2 = _interopRequireDefault(_d);
+
+	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
 	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
 	var sum = function sum(arr) {
@@ -8842,6 +8939,12 @@ return /******/ (function(modules) { // webpackBootstrap
 	        return size;
 	    }
 
+	    if (domainValues.every(function (d) {
+	        return typeof d === 'number';
+	    })) {
+	        domainValues = _d2.default.scale.linear().domain(domainValues).ticks();
+	    }
+
 	    var maxXTickText = domainValues.reduce(function (prev, value) {
 	        var computed = formatter(value).toString().length;
 
@@ -8854,12 +8957,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	        return prev;
 	    }, {}).value;
 
-	    // d3 sometimes produce fractional ticks on wide space
-	    // so we intentionally add fractional suffix
-	    // to foresee scale density issues
-	    var suffix = Number.isFinite(maxXTickText) || Number.isNaN(maxXTickText) ? '.00' : '';
-
-	    return fnCalcTickLabelSize(formatter(maxXTickText) + suffix);
+	    return fnCalcTickLabelSize(formatter(maxXTickText));
 	};
 
 	var getTickFormat = function getTickFormat(dim, defaultFormats) {
@@ -8876,10 +8974,10 @@ return /******/ (function(modules) { // webpackBootstrap
 	    return settings.hasOwnProperty(prop + ':' + dimType) ? settings[prop + ':' + dimType] : settings['' + prop];
 	};
 
-	var shortFormat = function shortFormat(format) {
+	var shortFormat = function shortFormat(format, utc) {
 	    var timeFormats = ['day', 'week', 'month'];
 	    if (timeFormats.indexOf(format) >= 0) {
-	        format += '-short';
+	        format += '-short' + (utc ? '-utc' : '');
 	    }
 
 	    return format;
@@ -8960,21 +9058,29 @@ return /******/ (function(modules) { // webpackBootstrap
 	    if (inlineLabels) {
 
 	        xLabel.padding = (-settings.xAxisPadding - settings.xFontLabelHeight) / 2 + settings.xFontLabelHeight;
+	        xLabel.paddingNoTicks = xLabel.padding;
 	        yLabel.padding = (-settings.yAxisPadding - settings.yFontLabelHeight) / 2;
+	        yLabel.paddingNoTicks = yLabel.padding;
 
 	        kxLabelW = 0;
 	        kyLabelW = 0;
 	    } else {
 
 	        xLabel.padding = sum([kxAxisW * (settings.xTickWidth + rotXBox.height), kxLabelW * (settings.distToXAxisLabel + settings.xFontLabelHeight)]);
+	        xLabel.paddingNoTicks = kxLabelW * (settings.distToXAxisLabel + settings.xFontLabelHeight);
 
 	        yLabel.padding = sum([kyAxisW * (settings.yTickWidth + rotYBox.width), kyLabelW * settings.distToYAxisLabel]);
+	        yLabel.paddingNoTicks = kyLabelW * settings.distToYAxisLabel;
 	    }
 
 	    var bottomBorder = settings.xFontLabelDescenderLineHeight; // for font descender line
 	    guide.padding = Object.assign(guide.padding, {
 	        b: guide.x.hide ? 0 : sum([guide.x.padding, kxAxisW * (settings.xTickWidth + rotXBox.height), kxLabelW * (settings.distToXAxisLabel + settings.xFontLabelHeight + bottomBorder)]),
 	        l: guide.y.hide ? 0 : sum([guide.y.padding, kyAxisW * (settings.yTickWidth + rotYBox.width), kyLabelW * (settings.distToYAxisLabel + settings.yFontLabelHeight)])
+	    });
+	    guide.paddingNoTicks = Object.assign({}, guide.paddingNoTicks, {
+	        b: guide.x.hide ? 0 : sum([guide.x.padding, kxLabelW * (settings.distToXAxisLabel + settings.xFontLabelHeight + bottomBorder)]),
+	        l: guide.y.hide ? 0 : sum([guide.y.padding, kyLabelW * (settings.distToYAxisLabel + settings.yFontLabelHeight)])
 	    });
 
 	    guide.x = Object.assign(guide.x, {
@@ -9015,14 +9121,16 @@ return /******/ (function(modules) { // webpackBootstrap
 	    var xIsEmptyAxis = xMeta.isEmpty;
 	    var yIsEmptyAxis = yMeta.isEmpty;
 
-	    unit.guide.x.tickFormat = shortFormat(unit.guide.x.tickFormat || getTickFormat(dimX, settings.defaultFormats));
-	    unit.guide.y.tickFormat = shortFormat(unit.guide.y.tickFormat || getTickFormat(dimY, settings.defaultFormats));
+	    unit.guide.x.tickFormat = shortFormat(unit.guide.x.tickFormat || getTickFormat(dimX, settings.defaultFormats), settings.utcTime);
+	    unit.guide.y.tickFormat = shortFormat(unit.guide.y.tickFormat || getTickFormat(dimY, settings.defaultFormats), settings.utcTime);
 
 	    var isXVertical = allowXVertical ? !(dimX.dimType === 'measure') : false;
 	    var isYVertical = allowYVertical ? !(dimY.dimType === 'measure') : false;
 
 	    unit.guide.x.padding = xIsEmptyAxis ? 0 : settings.xAxisPadding;
+	    unit.guide.x.paddingNoTicks = unit.guide.x.padding;
 	    unit.guide.y.padding = yIsEmptyAxis ? 0 : settings.yAxisPadding;
+	    unit.guide.y.paddingNoTicks = unit.guide.y.padding;
 
 	    unit.guide.x.rotate = isXVertical ? -90 : 0;
 	    unit.guide.x.textAnchor = getTextAnchorByAngle(unit.guide.x.rotate, 'x');
@@ -9160,7 +9268,9 @@ return /******/ (function(modules) { // webpackBootstrap
 	            unit.guide.y.tickFormat = unit.guide.y.tickFormat || getTickFormat(yMeta, settings.defaultFormats);
 
 	            unit.guide.x.padding = isFacetUnit ? 0 : settings.xAxisPadding;
+	            unit.guide.x.paddingNoTicks = unit.guide.x.padding;
 	            unit.guide.y.padding = isFacetUnit ? 0 : settings.yAxisPadding;
+	            unit.guide.y.paddingNoTicks = unit.guide.y.padding;
 
 	            unit.guide = calcXYGuide(unit.guide, _utils.utils.defaults({
 	                distToXAxisLabel: xMeta.isEmpty ? settings.xTickWidth : settings.distToXAxisLabel,
@@ -9239,64 +9349,6 @@ return /******/ (function(modules) { // webpackBootstrap
 	        });
 
 	        return spec;
-	    },
-
-	    'BUILD-SPARKLINE': function BUILDSPARKLINE(srcSpec, meta, settings) {
-
-	        var spec = _utils.utils.clone(srcSpec);
-	        fnTraverseSpec(_utils.utils.clone(spec.unit), spec.unit, function (selectorPredicates, unit) {
-
-	            if (selectorPredicates.isLeaf) {
-	                return unit;
-	            }
-
-	            if (!unit.guide.hasOwnProperty('showGridLines')) {
-	                unit.guide.showGridLines = selectorPredicates.isLeafParent ? 'xy' : '';
-	            }
-
-	            if (selectorPredicates.isLeafParent) {
-	                unit.guide.x.hideTicks = true;
-	                unit.guide.y.hideTicks = true;
-
-	                return calcUnitGuide({
-	                    unit: unit,
-	                    meta: meta,
-	                    settings: _utils.utils.defaults({
-	                        xTickWordWrapLinesLimit: 1,
-	                        yTickWordWrapLinesLimit: 1
-	                    }, settings),
-	                    allowXVertical: false,
-	                    allowYVertical: false,
-	                    inlineLabels: true
-	                });
-	            }
-
-	            // facet level
-	            unit.guide.x.cssClass += ' facet-axis compact';
-	            unit.guide.x.avoidCollisions = true;
-	            unit.guide.x.hideTicks = true;
-	            unit.guide.y.cssClass += ' facet-axis compact';
-	            unit.guide.y.avoidCollisions = true;
-	            unit.guide.y.hideTicks = true;
-
-	            return calcUnitGuide({
-	                unit: unit,
-	                meta: meta,
-	                settings: _utils.utils.defaults({
-	                    xAxisPadding: 0,
-	                    yAxisPadding: 0,
-	                    distToXAxisLabel: 0,
-	                    distToYAxisLabel: 0,
-	                    xTickWordWrapLinesLimit: 1,
-	                    yTickWordWrapLinesLimit: 1
-	                }, settings),
-	                allowXVertical: false,
-	                allowYVertical: true,
-	                inlineLabels: false
-	            });
-	        });
-
-	        return spec;
 	    }
 	};
 
@@ -9308,12 +9360,6 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	SpecEngineTypeMap.COMPACT = function (srcSpec, meta, settings) {
 	    return ['BUILD-LABELS', 'BUILD-COMPACT'].reduce(function (spec, engineName) {
-	        return SpecEngineTypeMap[engineName](spec, meta, settings);
-	    }, srcSpec);
-	};
-
-	SpecEngineTypeMap.SPARKLINE = function (srcSpec, meta, settings) {
-	    return ['BUILD-LABELS', 'BUILD-SPARKLINE'].reduce(function (spec, engineName) {
 	        return SpecEngineTypeMap[engineName](spec, meta, settings);
 	    }, srcSpec);
 	};
@@ -9422,12 +9468,23 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
-	/* jshint ignore:end */
+	var d3Fromat4S = _d2.default.format('.4s');
+	var d3Fromat2R = _d2.default.format('.2r');
+	var d3Fromat1E = _d2.default.format('.1e');
+	var removeRedundantZeros = function () {
+	    var zerosAfterDot = /\.0+([^\d].*)?$/;
+	    var zerosAfterNotZero = /(\.\d+?)0+([^\d].*)?$/;
+	    return function (str) {
+	        return str.replace(zerosAfterDot, '$1').replace(zerosAfterNotZero, '$1$2');
+	    };
+	}();
+
 	var FORMATS_MAP = {
 
 	    'x-num-auto': function xNumAuto(x) {
-	        var v = parseFloat(x.toFixed(2));
-	        return Math.abs(v) < 1 ? v.toString() : _d2.default.format('s')(v);
+	        var abs = Math.abs(x);
+	        var result = removeRedundantZeros(abs < 1 ? abs === 0 ? '0' : abs < 1e-6 ? d3Fromat1E(x) : d3Fromat2R(x) : d3Fromat4S(x));
+	        return result;
 	    },
 
 	    percent: function percent(x) {
@@ -9436,18 +9493,28 @@ return /******/ (function(modules) { // webpackBootstrap
 	    },
 
 	    day: _d2.default.time.format('%d-%b-%Y'),
+	    'day-utc': _d2.default.time.format.utc('%d-%b-%Y'),
 
 	    'day-short': _d2.default.time.format('%d-%b'),
+	    'day-short-utc': _d2.default.time.format.utc('%d-%b'),
 
 	    week: _d2.default.time.format('%d-%b-%Y'),
+	    'week-utc': _d2.default.time.format.utc('%d-%b-%Y'),
 
 	    'week-short': _d2.default.time.format('%d-%b'),
+	    'week-short-utc': _d2.default.time.format.utc('%d-%b'),
 
 	    month: function month(x) {
 	        var d = new Date(x);
 	        var m = d.getMonth();
 	        var formatSpec = m === 0 ? '%B, %Y' : '%B';
 	        return _d2.default.time.format(formatSpec)(x);
+	    },
+	    'month-utc': function monthUtc(x) {
+	        var d = new Date(x);
+	        var m = d.getUTCMonth();
+	        var formatSpec = m === 0 ? '%B, %Y' : '%B';
+	        return _d2.default.time.format.utc(formatSpec)(x);
 	    },
 
 	    'month-short': function monthShort(x) {
@@ -9456,8 +9523,15 @@ return /******/ (function(modules) { // webpackBootstrap
 	        var formatSpec = m === 0 ? '%b \'%y' : '%b';
 	        return _d2.default.time.format(formatSpec)(x);
 	    },
+	    'month-short-utc': function monthShortUtc(x) {
+	        var d = new Date(x);
+	        var m = d.getUTCMonth();
+	        var formatSpec = m === 0 ? '%b \'%y' : '%b';
+	        return _d2.default.time.format.utc(formatSpec)(x);
+	    },
 
 	    'month-year': _d2.default.time.format('%B, %Y'),
+	    'month-year-utc': _d2.default.time.format.utc('%B, %Y'),
 
 	    quarter: function quarter(x) {
 	        var d = new Date(x);
@@ -9465,13 +9539,18 @@ return /******/ (function(modules) { // webpackBootstrap
 	        var q = (m - m % 3) / 3;
 	        return 'Q' + (q + 1) + ' ' + d.getFullYear();
 	    },
+	    'quarter-utc': function quarterUtc(x) {
+	        var d = new Date(x);
+	        var m = d.getUTCMonth();
+	        var q = (m - m % 3) / 3;
+	        return 'Q' + (q + 1) + ' ' + d.getUTCFullYear();
+	    },
 
 	    year: _d2.default.time.format('%Y'),
+	    'year-utc': _d2.default.time.format.utc('%Y'),
 
 	    'x-time-auto': null
 	};
-	/* jshint ignore:start */
-
 
 	var FormatterRegistry = {
 
@@ -9543,9 +9622,89 @@ return /******/ (function(modules) { // webpackBootstrap
 	var byDensity = function byDensity(gx) {
 	    return gx.density;
 	};
+	var getFacetCount = function getFacetCount(specRef) {
+	    var xFacetKeys = [];
+	    var yFacetKeys = [];
+	    var getFacetKeys = function getFacetKeys(root) {
+	        // TODO: Maybe there is an API to
+	        // determine X and Y facet keys.
+	        if (root.type === 'COORDS.RECT' && root.units && root.units[0] && root.units[0].type === 'COORDS.RECT') {
+	            var x = root.x.replace(/^x_/, '');
+	            var y = root.y.replace(/^y_/, '');
+	            if (x !== 'null') {
+	                xFacetKeys.push(x);
+	            }
+	            if (y !== 'null') {
+	                yFacetKeys.push(y);
+	            }
+	            root.units.forEach(getFacetKeys);
+	        }
+	    };
+	    getFacetKeys(specRef.unit);
+
+	    var xFacetGroups = {};
+	    var yFacetGroups = {};
+	    var getFacetGroups = function getFacetGroups(root) {
+	        if (root.type === 'COORDS.RECT') {
+	            root.frames.forEach(function (f) {
+	                if (f.key) {
+	                    var keys = Object.keys(f.key);
+	                    keys.forEach(function (key) {
+	                        if (xFacetKeys.indexOf(key) >= 0) {
+	                            if (!(key in xFacetGroups)) {
+	                                xFacetGroups[key] = [];
+	                            }
+	                            if (xFacetGroups[key].indexOf(f.key[key]) < 0) {
+	                                xFacetGroups[key].push(f.key[key]);
+	                            }
+	                        }
+	                        if (yFacetKeys.indexOf(key) >= 0) {
+	                            if (!(key in yFacetGroups)) {
+	                                yFacetGroups[key] = [];
+	                            }
+	                            if (yFacetGroups[key].indexOf(f.key[key]) < 0) {
+	                                yFacetGroups[key].push(f.key[key]);
+	                            }
+	                        }
+	                    });
+	                    if (f.units) {
+	                        f.units.forEach(getFacetGroups);
+	                    }
+	                }
+	            });
+	        }
+	    };
+	    getFacetGroups(specRef.unit);
+
+	    return {
+	        xFacetCount: Object.keys(xFacetGroups).reduce(function (sum, key) {
+	            return sum * xFacetGroups[key].length;
+	        }, 1),
+	        yFacetCount: Object.keys(yFacetGroups).reduce(function (sum, key) {
+	            return sum * yFacetGroups[key].length;
+	        }, 1)
+	    };
+	};
 
 	var fitModelStrategies = {
 	    'entire-view': function entireView(srcSize, calcSize, specRef, tryOptimizeSpec) {
+
+	        var g = specRef.unit.guide;
+
+	        var _getFacetCount = getFacetCount(specRef),
+	            xFacetCount = _getFacetCount.xFacetCount,
+	            yFacetCount = _getFacetCount.yFacetCount;
+
+	        var ticksLPad = g.paddingNoTicks ? g.padding.l - g.paddingNoTicks.l : 0;
+	        var ticksBPad = g.paddingNoTicks ? g.padding.b - g.paddingNoTicks.b : 0;
+	        var shouldHideXAxis = g.paddingNoTicks && srcSize.height - ticksBPad < specRef.settings.minChartHeight || yFacetCount * specRef.settings.minFacetHeight + ticksBPad > srcSize.height || xFacetCount * specRef.settings.minFacetWidth + ticksLPad > srcSize.width;
+	        var shouldHideYAxis = g.paddingNoTicks && srcSize.width - ticksLPad < specRef.settings.minChartWidth || yFacetCount * specRef.settings.minFacetHeight + ticksBPad > srcSize.height || xFacetCount * specRef.settings.minFacetWidth + ticksLPad > srcSize.width;
+	        if (shouldHideXAxis) {
+	            _specTransformOptimize.SpecTransformOptimize.hideAxisTicks(specRef.unit, specRef.settings, 'x');
+	        }
+	        if (shouldHideYAxis) {
+	            _specTransformOptimize.SpecTransformOptimize.hideAxisTicks(specRef.unit, specRef.settings, 'y');
+	        }
 
 	        var widthByMaxText = calcSize('x', specRef.unit, byOptimisticMaxText);
 	        if (widthByMaxText <= srcSize.width) {
@@ -9563,6 +9722,16 @@ return /******/ (function(modules) { // webpackBootstrap
 	        return { newW: newW, newH: newH };
 	    },
 	    normal: function normal(srcSize, calcSize, specRef, tryOptimizeSpec) {
+
+	        var g = specRef.unit.guide;
+	        if (g.paddingNoTicks) {
+	            if (srcSize.width - g.padding.l + g.paddingNoTicks.l < specRef.settings.minChartWidth) {
+	                _specTransformOptimize.SpecTransformOptimize.hideAxisTicks(specRef.unit, specRef.settings, 'y');
+	            }
+	            if (srcSize.height - g.padding.b + g.paddingNoTicks.b < specRef.settings.minChartHeight) {
+	                _specTransformOptimize.SpecTransformOptimize.hideAxisTicks(specRef.unit, specRef.settings, 'x');
+	            }
+	        }
 
 	        var newW = srcSize.width;
 
@@ -9582,6 +9751,12 @@ return /******/ (function(modules) { // webpackBootstrap
 	        return { newW: newW, newH: newH };
 	    },
 	    'fit-width': function fitWidth(srcSize, calcSize, specRef, tryOptimizeSpec) {
+
+	        var g = specRef.unit.guide;
+	        var ticksLPad = g.paddingNoTicks ? g.padding.l - g.paddingNoTicks.l : 0;
+	        if (g.paddingNoTicks && srcSize.width - ticksLPad < specRef.settings.minChartWidth || getFacetCount(specRef).xFacetCount * specRef.settings.minFacetWidth + ticksLPad > srcSize.width) {
+	            _specTransformOptimize.SpecTransformOptimize.hideAxisTicks(specRef.unit, specRef.settings, 'y');
+	        }
 	        var widthByMaxText = calcSize('x', specRef.unit, byOptimisticMaxText);
 	        if (widthByMaxText <= srcSize.width) {
 	            tryOptimizeSpec(specRef.unit, specRef.settings);
@@ -9592,6 +9767,12 @@ return /******/ (function(modules) { // webpackBootstrap
 	        return { newW: newW, newH: newH };
 	    },
 	    'fit-height': function fitHeight(srcSize, calcSize, specRef) {
+
+	        var g = specRef.unit.guide;
+	        var ticksBPad = g.paddingNoTicks ? g.padding.b - g.paddingNoTicks.b : 0;
+	        if (g.paddingNoTicks && srcSize.height - ticksBPad < specRef.settings.minChartHeight || getFacetCount(specRef).yFacetCount * specRef.settings.minFacetHeight + ticksBPad > srcSize.height) {
+	            _specTransformOptimize.SpecTransformOptimize.hideAxisTicks(specRef.unit, specRef.settings, 'x');
+	        }
 	        var newW = calcSize('x', specRef.unit, byDensity);
 	        var newH = srcSize.height;
 	        return { newW: newW, newH: newH };
@@ -9704,7 +9885,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	            var strategy = fitModelStrategies[fitModel];
 	            if (strategy) {
-	                var newSize = strategy(srcSize, calcSizeRecursively, specRef, _specTransformOptimize.SpecTransformOptimize.optimize);
+	                var newSize = strategy(srcSize, calcSizeRecursively, specRef, _specTransformOptimize.SpecTransformOptimize.optimizeXAxisLabel);
 	                newW = newSize.newW;
 	                newH = newSize.newH;
 	            }
@@ -9757,29 +9938,31 @@ return /******/ (function(modules) { // webpackBootstrap
 	    }
 
 	    _createClass(SpecTransformOptimize, null, [{
-	        key: 'optimize',
-	        value: function optimize(root, localSettings) {
+	        key: 'optimizeXAxisLabel',
+	        value: function optimizeXAxisLabel(root, settings) {
+	            var xAxisTickLabelLimit = settings.xAxisTickLabelLimit;
 
-	            var enterSpec = function enterSpec(rootUnit, xAxisTickLabelLimit, interceptor) {
 
-	                if (rootUnit.guide.x.hide !== true && rootUnit.guide.x.rotate !== 0) {
+	            var enterSpec = function enterSpec(rootUnit) {
+
+	                if (!rootUnit.guide.x.hide && !rootUnit.guide.x.hideTicks && rootUnit.guide.x.rotate !== 0) {
 	                    rootUnit.guide.x.rotate = 0;
 	                    rootUnit.guide.x.textAnchor = 'middle';
 
 	                    var tickTextWidth = Math.min(xAxisTickLabelLimit, rootUnit.guide.x.$maxTickTextW);
 	                    var tickTextDelta = 0 - tickTextWidth + rootUnit.guide.x.$maxTickTextH;
 
-	                    interceptor(rootUnit, tickTextDelta);
+	                    improvePadding(rootUnit, tickTextDelta);
 	                }
 
 	                (rootUnit.units || []).filter(function (u) {
 	                    return u.type === 'COORDS.RECT';
 	                }).forEach(function (u) {
-	                    return enterSpec(u, xAxisTickLabelLimit, interceptor);
+	                    return enterSpec(u);
 	                });
 	            };
 
-	            enterSpec(root, localSettings.xAxisTickLabelLimit, function (unit, tickTextDelta) {
+	            var improvePadding = function improvePadding(unit, tickTextDelta) {
 	                if (root !== unit && unit.guide.autoLayout === 'extract-axes') {
 	                    root.guide.x.padding += tickTextDelta;
 	                    root.guide.padding.b += tickTextDelta;
@@ -9787,7 +9970,33 @@ return /******/ (function(modules) { // webpackBootstrap
 	                    unit.guide.x.label.padding += unit.guide.x.label.padding > 0 ? tickTextDelta : 0;
 	                    unit.guide.padding.b += unit.guide.padding.b > 0 ? tickTextDelta : 0;
 	                }
-	            });
+	            };
+
+	            enterSpec(root);
+	        }
+	    }, {
+	        key: 'hideAxisTicks',
+	        value: function hideAxisTicks(root, settings, axis) {
+	            var enterSpec = function enterSpec(rootUnit) {
+	                var pad = axis === 'x' ? 'b' : 'l';
+	                var g = rootUnit.guide;
+
+	                if (!g[axis].hide && !g[axis].hideTicks) {
+	                    g[axis].hideTicks = true;
+	                    var hasLabel = g[axis].label.text && !g[axis].label.hide;
+	                    g.padding[pad] = g.paddingNoTicks ? g.paddingNoTicks[pad] : 0;
+	                    g[axis].padding = g[axis].paddingNoTicks || 0;
+	                    g[axis].label.padding = hasLabel ? g[axis].label.paddingNoTicks : 0;
+	                }
+
+	                (rootUnit.units || []).filter(function (u) {
+	                    return u.type === 'COORDS.RECT';
+	                }).forEach(function (u) {
+	                    return enterSpec(u);
+	                });
+	            };
+
+	            enterSpec(root);
 	        }
 	    }]);
 
@@ -10000,7 +10209,9 @@ return /******/ (function(modules) { // webpackBootstrap
 	            };
 
 	            var ttl = { l: 0, r: 10, t: 10, b: 0 };
+	            var ttlNoTicks = { l: 0, b: 0 };
 	            var seq = [];
+	            var seqNoTicks = [];
 
 	            var enterIterator = function enterIterator(unitRef, level) {
 
@@ -10012,18 +10223,17 @@ return /******/ (function(modules) { // webpackBootstrap
 	                var guide = unitRef.guide;
 
 	                var p = guide.padding || { l: 0, r: 0, t: 0, b: 0 };
+	                var pNoTicks = guide.paddingNoTicks || { l: 0, b: 0 };
 
 	                ttl.l += p.l;
 	                ttl.r += p.r;
 	                ttl.t += p.t;
 	                ttl.b += p.b;
+	                ttlNoTicks.l += pNoTicks.l;
+	                ttlNoTicks.b += pNoTicks.b;
 
-	                seq.push({
-	                    l: ttl.l,
-	                    r: ttl.r,
-	                    t: ttl.t,
-	                    b: ttl.b
-	                });
+	                seq.push(Object.assign({}, ttl));
+	                seqNoTicks.push(Object.assign({}, ttlNoTicks));
 
 	                var units = unitRef.units || [];
 	                var rects = units.map(function (x) {
@@ -10041,12 +10251,15 @@ return /******/ (function(modules) { // webpackBootstrap
 	            var exitIterator = function exitIterator(unitRef) {
 
 	                var lvl = seq.pop();
+	                var lvlNoTicks = seqNoTicks.pop();
 
 	                var guide = unitRef.guide || {};
 	                guide.x = guide.x || {};
 	                guide.x.padding = guide.x.padding || 0;
+	                guide.x.paddingNoTicks = guide.x.paddingNoTicks || 0;
 	                guide.y = guide.y || {};
 	                guide.y.padding = guide.y.padding || 0;
+	                guide.y.paddingNoTicks = guide.y.paddingNoTicks || 0;
 
 	                guide.padding = {
 	                    l: pad(unitRef.y),
@@ -10054,16 +10267,23 @@ return /******/ (function(modules) { // webpackBootstrap
 	                    t: pad(1),
 	                    b: pad(unitRef.x)
 	                };
+	                guide.paddingNoTicks = {
+	                    l: 0,
+	                    b: 0
+	                };
 
 	                guide.autoLayout = 'extract-axes';
 
 	                guide.x.padding += ttl.b - lvl.b;
 	                guide.y.padding += ttl.l - lvl.l;
+	                guide.x.paddingNoTicks += ttlNoTicks.b - lvlNoTicks.b;
+	                guide.y.paddingNoTicks += ttlNoTicks.l - lvlNoTicks.l;
 	            };
 
 	            _utils.utils.traverseSpec(spec.unit, enterIterator, exitIterator);
 
 	            spec.unit.guide.padding = ttl;
+	            spec.unit.guide.paddingNoTicks = ttlNoTicks;
 	        }
 	    }]);
 
@@ -10531,6 +10751,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	                if (scale.guide.hideTicks) {
 	                    axis.selectAll('.tick').remove();
+	                    axis.selectAll('.domain').remove();
 	                    return;
 	                }
 
@@ -10564,7 +10785,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	                var timeoutField = '_transitionEndTimeout_' + (isHorizontal ? 'h' : 'v');
 	                clearTimeout(_this3[timeoutField]);
 	                if (animationSpeed > 0) {
-	                    _this3[timeoutField] = setTimeout(fixAxesTicks, animationSpeed);
+	                    _this3[timeoutField] = setTimeout(fixAxesTicks, animationSpeed * 1.5);
 	                } else {
 	                    fixTickTextOverflow();
 	                }
@@ -10618,12 +10839,18 @@ return /******/ (function(modules) { // webpackBootstrap
 	                            (0, _d3Decorators.d3_decorator_prettify_categorical_axis_ticks)(xGridLinesTrans, xScale, isHorizontal, animationSpeed);
 	                        }
 
-	                        if (xScale.scaleType === 'linear') {
+	                        if (xScale.scaleType === 'linear' && !xScale.guide.hideTicks) {
 	                            (0, _d3Decorators.d3_decorator_highlightZeroTick)(xGridLines, xScale.scaleObj);
 	                        }
 
 	                        var extraGridLines = selectOrAppend(gridLines, 'g.tau-extraGridLines');
 	                        (0, _d3Decorators.d3_decorator_fix_axis_start_line)(extraGridLines, isHorizontal, width, height, animationSpeed);
+
+	                        if (xScale.guide.hideTicks) {
+	                            xGridLines.selectAll('.tick').filter(function (d) {
+	                                return d != 0;
+	                            }).remove();
+	                        }
 	                    }
 
 	                    if (linesOptions.indexOf('y') > -1) {
@@ -10646,7 +10873,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	                            (0, _d3Decorators.d3_decorator_prettify_categorical_axis_ticks)(yGridLinesTrans, yScale, _isHorizontal, animationSpeed);
 	                        }
 
-	                        if (yScale.scaleType === 'linear') {
+	                        if (yScale.scaleType === 'linear' && !yScale.guide.hideTicks) {
 	                            (0, _d3Decorators.d3_decorator_highlightZeroTick)(yGridLines, yScale.scaleObj);
 	                        }
 
@@ -10655,6 +10882,12 @@ return /******/ (function(modules) { // webpackBootstrap
 	                        if (fixBottomLine) {
 	                            var _extraGridLines = selectOrAppend(gridLines, 'g.tau-extraGridLines');
 	                            (0, _d3Decorators.d3_decorator_fix_axis_start_line)(_extraGridLines, _isHorizontal, width, height, animationSpeed);
+	                        }
+
+	                        if (yScale.guide.hideTicks) {
+	                            yGridLines.selectAll('.tick').filter(function (d) {
+	                                return d != 0;
+	                            }).remove();
 	                        }
 	                    }
 
@@ -12494,6 +12727,9 @@ return /******/ (function(modules) { // webpackBootstrap
 	        node.on('highlight-data-points', function (sender, e) {
 	            return _this.highlightDataPoints(e);
 	        });
+	        node.on('click-data-points', function (sender, e) {
+	            return _this.highlightDataPoints(e);
+	        });
 
 	        var getHighlightEvtObj = function getHighlightEvtObj(e, data) {
 	            var filter = function filter(d) {
@@ -12509,9 +12745,13 @@ return /******/ (function(modules) { // webpackBootstrap
 	        var deactivate = function deactivate(sender, e) {
 	            return sender.fire('highlight-data-points', getHighlightEvtObj(e.event, null));
 	        };
+	        var click = function click(sender, e) {
+	            return sender.fire('click-data-points', getHighlightEvtObj(e.event, e.data));
+	        };
 	        node.on('mouseover', activate);
 	        node.on('mousemove', activate);
 	        node.on('mouseout', deactivate);
+	        node.on('click', click);
 	    },
 	    draw: function draw() {
 
@@ -12724,7 +12964,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	                        x: m.x(row) + m.dx(row),
 	                        y: m.y(row) + m.dy(row),
 	                        w: m.w(row),
-	                        h: m.h(row),
+	                        h: m.h(row, args),
 	                        hide: m.hide(row),
 	                        extr: null,
 	                        size: m.model.size(row),
@@ -13152,15 +13392,18 @@ return /******/ (function(modules) { // webpackBootstrap
 
 /***/ },
 /* 113 */
-/***/ function(module, exports) {
+/***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 
 	Object.defineProperty(exports, "__esModule", {
 	    value: true
 	});
+	exports.LayerLabelsRules = undefined;
 
 	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+	var _layerLabelsModel = __webpack_require__(112);
 
 	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
@@ -13368,6 +13611,106 @@ return /******/ (function(modules) { // webpackBootstrap
 	            return prevDy;
 	        }
 	    };
+	}).regRule('cut-outer-label-vertical', function (prev) {
+
+	    return {
+
+	        h: function h(row, args) {
+	            var reserved = prev.h(row);
+	            if (Math.abs(prev.angle(row)) > 0) {
+	                var text = prev.label(row);
+	                var available = prev.model.y0(row) < prev.model.yi(row) ? args.maxHeight - prev.model.yi(row) : prev.model.yi(row);
+	                var index = findCutIndex(text, reserved, available);
+	                return index < text.length ? available : reserved;
+	            }
+
+	            return reserved;
+	        },
+
+	        w: function w(row) {
+	            var reserved = prev.w(row);
+	            if (prev.angle(row) === 0) {
+	                var text = prev.label(row);
+	                var available = prev.model.size(row);
+	                var index = findCutIndex(text, reserved, available);
+	                return index < text.length ? available : reserved;
+	            }
+
+	            return reserved;
+	        },
+
+	        label: function label(row, args) {
+	            var reserved = void 0;
+	            var available = void 0;
+	            if (prev.angle(row) === 0) {
+	                reserved = prev.w(row);
+	                available = prev.model.size(row);
+	            } else {
+	                reserved = prev.h(row);
+	                available = prev.model.y0(row) < prev.model.yi(row) ? args.maxHeight - prev.model.yi(row) : prev.model.yi(row);
+	            }
+
+	            var text = prev.label(row);
+	            var index = findCutIndex(text, reserved, available);
+
+	            return index < text.length ? cutString(text, index) : text;
+	        },
+
+	        dy: function dy(row, args) {
+	            var prevDy = prev.dy(row);
+
+	            if (prev.angle(row) !== 0) {
+	                var reserved = prev.h(row);
+	                var available = prev.model.y0(row) < prev.model.yi(row) ? args.maxHeight - prev.model.yi(row) : prev.model.yi(row);
+	                var text = prev.label(row);
+	                var index = findCutIndex(text, reserved, available);
+
+	                return index < text.length ? available * prevDy / reserved : prevDy;
+	            }
+
+	            return prevDy;
+	        }
+	    };
+	}).regRule('outside-then-inside-horizontal', function (prev, args) {
+
+	    var outer = ['r+', 'l-', 'cut-outer-label-horizontal'].map(LayerLabelsRules.getRule).reduce(function (p, r) {
+	        return _layerLabelsModel.LayerLabelsModel.compose(p, r(p, args));
+	    }, prev);
+
+	    var inner = ['r-', 'l+', 'hide-by-label-height-horizontal', 'cut-label-horizontal'].map(LayerLabelsRules.getRule).reduce(function (p, r) {
+	        return _layerLabelsModel.LayerLabelsModel.compose(p, r(p, args));
+	    }, prev);
+
+	    var betterInside = function betterInside(row) {
+	        return inner.label(row).length > outer.label(row).length;
+	    };
+
+	    return Object.assign({}, outer, ['x', 'dx', 'hide', 'label'].reduce(function (obj, prop) {
+	        obj[prop] = function (row) {
+	            return (betterInside(row) ? inner : outer)[prop](row);
+	        };
+	        return obj;
+	    }, {}));
+	}).regRule('outside-then-inside-vertical', function (prev, args) {
+
+	    var outer = ['t+', 'b-', 'cut-outer-label-vertical'].map(LayerLabelsRules.getRule).reduce(function (p, r) {
+	        return _layerLabelsModel.LayerLabelsModel.compose(p, r(p, args));
+	    }, prev);
+
+	    var inner = ['t-', 'b+', 'hide-by-label-height-vertical', 'cut-label-vertical'].map(LayerLabelsRules.getRule).reduce(function (p, r) {
+	        return _layerLabelsModel.LayerLabelsModel.compose(p, r(p, args));
+	    }, prev);
+
+	    var betterInside = function betterInside(row) {
+	        return inner.label(row, args).length > outer.label(row, args).length;
+	    };
+
+	    return Object.assign({}, outer, ['y', 'dy', 'hide', 'label'].reduce(function (obj, prop) {
+	        obj[prop] = function (row) {
+	            return (betterInside(row) ? inner : outer)[prop](row, args);
+	        };
+	        return obj;
+	    }, {}));
 	}).regRule('hide-by-label-height-horizontal', function (prev) {
 
 	    return {
@@ -13406,6 +13749,35 @@ return /******/ (function(modules) { // webpackBootstrap
 	            var text = prev.label(row);
 	            var required = prev.w(row);
 	            var available = Math.abs(prev.model.y0(row) - prev.model.yi(row));
+	            var index = findCutIndex(text, required, available);
+	            return index < text.length ? cutString(text, index) : text;
+	        }
+	    };
+	}).regRule('cut-outer-label-horizontal', function (prev, args) {
+
+	    return {
+
+	        dx: function dx(row) {
+	            var text = prev.label(row);
+	            var required = prev.w(row);
+	            var available = prev.model.y0(row) < prev.model.yi(row) ? args.maxWidth - prev.model.yi(row) : prev.model.yi(row);
+	            var index = findCutIndex(text, required, available);
+	            var prevDx = prev.dx(row);
+	            return index < text.length ? available * prevDx / required : prevDx;
+	        },
+
+	        w: function w(row) {
+	            var text = prev.label(row);
+	            var required = prev.w(row);
+	            var available = prev.model.y0(row) < prev.model.yi(row) ? args.maxWidth - prev.model.yi(row) : prev.model.yi(row);
+	            var index = findCutIndex(text, required, available);
+	            return index < text.length ? available : required;
+	        },
+
+	        label: function label(row) {
+	            var text = prev.label(row);
+	            var required = prev.w(row);
+	            var available = prev.model.y0(row) < prev.model.yi(row) ? args.maxWidth - prev.model.yi(row) : prev.model.yi(row);
 	            var index = findCutIndex(text, required, available);
 	            return index < text.length ? cutString(text, index) : text;
 	        }
@@ -13997,6 +14369,9 @@ return /******/ (function(modules) { // webpackBootstrap
 	        node.on('highlight-data-points', function (sender, e) {
 	            return _this.highlightDataPoints(e);
 	        });
+	        node.on('click-data-points', function (sender, e) {
+	            return _this.highlightDataPoints(e);
+	        });
 
 	        if (config.guide.showAnchors !== 'never') {
 	            (function () {
@@ -14014,9 +14389,13 @@ return /******/ (function(modules) { // webpackBootstrap
 	                var deactivate = function deactivate(sender, e) {
 	                    return sender.fire('highlight-data-points', getHighlightEvtObj(e.event, null));
 	                };
+	                var click = function click(sender, e) {
+	                    return sender.fire('click-data-points', getHighlightEvtObj(e.event, e.data));
+	                };
 	                node.on('mouseover', activate);
 	                node.on('mousemove', activate);
 	                node.on('mouseout', deactivate);
+	                node.on('click', click);
 	            })();
 	        }
 	    },
@@ -14862,7 +15241,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	        });
 
 	        config.guide.label = _utils.utils.defaults(config.guide.label || {}, {
-	            position: config.flip ? ['r-', 'l+', 'hide-by-label-height-horizontal', 'cut-label-horizontal'] : config.stack ? ['rotate-on-size-overflow', 't-', 'b+', 'hide-by-label-height-vertical', 'cut-label-vertical', 'auto:hide-on-label-label-overlap'] : ['rotate-on-size-overflow', 't+', 'b-', 'hide-by-label-height-vertical', 'cut-label-vertical', 'auto:hide-on-label-label-overlap']
+	            position: config.flip ? config.stack ? ['r-', 'l+', 'hide-by-label-height-horizontal', 'cut-label-horizontal'] : ['outside-then-inside-horizontal', 'auto:hide-on-label-label-overlap'] : config.stack ? ['rotate-on-size-overflow', 't-', 'b+', 'hide-by-label-height-vertical', 'cut-label-vertical', 'auto:hide-on-label-label-overlap'] : ['rotate-on-size-overflow', 'outside-then-inside-vertical', 'auto:hide-on-label-label-overlap']
 	        });
 
 	        var avoidScalesOverflow = config.guide.avoidScalesOverflow;
@@ -14907,6 +15286,9 @@ return /******/ (function(modules) { // webpackBootstrap
 	        node.on('highlight-data-points', function (sender, e) {
 	            return _this.highlightDataPoints(e);
 	        });
+	        node.on('click-data-points', function (sender, e) {
+	            return _this.highlightDataPoints(e);
+	        });
 
 	        var getHighlightEvtObj = function getHighlightEvtObj(e, data) {
 	            var filter = function filter(d) {
@@ -14922,9 +15304,13 @@ return /******/ (function(modules) { // webpackBootstrap
 	        var deactivate = function deactivate(sender, e) {
 	            return sender.fire('highlight-data-points', getHighlightEvtObj(e.event, null));
 	        };
+	        var click = function click(sender, e) {
+	            return sender.fire('click-data-points', getHighlightEvtObj(e.event, e.data));
+	        };
 	        node.on('mouseover', activate);
 	        node.on('mousemove', activate);
 	        node.on('mouseout', deactivate);
+	        node.on('click', click);
 	    },
 	    draw: function draw() {
 	        var node = this.node();
@@ -14947,6 +15333,8 @@ return /******/ (function(modules) { // webpackBootstrap
 	            var _createUpdateFunc, _createUpdateFunc2;
 
 	            this.attr('class', 'frame i-role-bar-group');
+	            var barClass = d3Attrs.class;
+	            var updateAttrs = _utils.utils.omit(d3Attrs, 'class');
 	            var bars = this.selectAll('.bar').data(function (fiber) {
 	                return fiber;
 	            }, screenModel.id);
@@ -14963,8 +15351,8 @@ return /******/ (function(modules) { // webpackBootstrap
 	            }), _defineProperty(_createUpdateFunc, barW, 0), _defineProperty(_createUpdateFunc, barH, 0), _createUpdateFunc), function (node) {
 	                return _d2.default.select(node).remove();
 	            }));
-	            bars.call(createUpdateFunc(config.guide.animationSpeed, null, d3Attrs));
-	            bars.enter().append('rect').call(createUpdateFunc(config.guide.animationSpeed, (_createUpdateFunc2 = {}, _defineProperty(_createUpdateFunc2, barY, screenModel[barY + '0']), _defineProperty(_createUpdateFunc2, barH, 0), _createUpdateFunc2), d3Attrs));
+	            bars.call(createUpdateFunc(config.guide.animationSpeed, null, updateAttrs)).attr('class', barClass);
+	            bars.enter().append('rect').call(createUpdateFunc(config.guide.animationSpeed, (_createUpdateFunc2 = {}, _defineProperty(_createUpdateFunc2, barY, screenModel[barY + '0']), _defineProperty(_createUpdateFunc2, barH, 0), _createUpdateFunc2), updateAttrs)).attr('class', barClass);
 
 	            node.subscribe(bars);
 	        };
@@ -15948,7 +16336,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	        var range = [new Date(Math.min(min, domain[0])), new Date(Math.max(max, domain[1]))];
 
-	        var periodGenerator = _unitDomainPeriodGenerator.UnitDomainPeriodGenerator.get(props.period);
+	        var periodGenerator = _unitDomainPeriodGenerator.UnitDomainPeriodGenerator.get(props.period, { utc: props.utcTime });
 	        if (props.fitToFrameByDims || periodGenerator === null) {
 	            _this.vars = _utils.utils.unique(vars.map(function (x) {
 	                return new Date(x);
@@ -15958,7 +16346,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	                return date2 - date1;
 	            });
 	        } else {
-	            _this.vars = _unitDomainPeriodGenerator.UnitDomainPeriodGenerator.generate(range[0], range[1], props.period);
+	            _this.vars = _unitDomainPeriodGenerator.UnitDomainPeriodGenerator.generate(range[0], range[1], props.period, { utc: props.utcTime });
 	        }
 
 	        _this.addField('scaleType', 'period').addField('period', _this.scaleConfig.period).addField('discrete', true);
@@ -15968,7 +16356,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    _createClass(PeriodScale, [{
 	        key: 'isInDomain',
 	        value: function isInDomain(aTime) {
-	            var gen = _unitDomainPeriodGenerator.UnitDomainPeriodGenerator.get(this.scaleConfig.period);
+	            var gen = _unitDomainPeriodGenerator.UnitDomainPeriodGenerator.get(this.scaleConfig.period, { utc: this.scaleConfig.utcTime });
 	            var val = gen.cast(new Date(aTime)).getTime();
 	            return this.domain().map(function (x) {
 	                return x.getTime();
@@ -16092,14 +16480,15 @@ return /******/ (function(modules) { // webpackBootstrap
 	        _this.niceIntervalFn = null;
 	        if (props.nice) {
 	            var niceInterval = props.niceInterval;
-	            if (_d2.default.time[niceInterval]) {
-	                _this.niceIntervalFn = _d2.default.time[niceInterval];
+	            var d3TimeInterval = niceInterval && _d2.default.time[niceInterval] ? props.utcTime ? _d2.default.time[niceInterval].utc : _d2.default.time[niceInterval] : null;
+	            if (d3TimeInterval) {
+	                _this.niceIntervalFn = d3TimeInterval;
 	            } else {
 	                // TODO: show warning?
 	                _this.niceIntervalFn = null;
 	            }
 
-	            _this.vars = _utils.utils.niceTimeDomain(vars, _this.niceIntervalFn);
+	            _this.vars = _utils.utils.niceTimeDomain(vars, _this.niceIntervalFn, { utc: props.utcTime });
 	        } else {
 	            _this.vars = vars;
 	        }
@@ -16122,8 +16511,10 @@ return /******/ (function(modules) { // webpackBootstrap
 	        value: function create(interval) {
 
 	            var varSet = this.vars;
+	            var utcTime = this.scaleConfig.utcTime;
 
-	            var d3Domain = _d2.default.time.scale().domain(this.scaleConfig.nice ? _utils.utils.niceTimeDomain(varSet, this.niceIntervalFn) : varSet);
+	            var d3TimeScale = utcTime ? _d2.default.time.scale.utc : _d2.default.time.scale;
+	            var d3Domain = d3TimeScale().domain(this.scaleConfig.nice ? _utils.utils.niceTimeDomain(varSet, this.niceIntervalFn, { utc: utcTime }) : varSet);
 
 	            var d3Scale = d3Domain.range(interval);
 
@@ -17300,7 +17691,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	                memo[k].tickLabel = choiceRule(memo[k].tickLabel, null);
 
 	                // very special case for dates
-	                var format = memo[k].format === 'x-time-auto' ? 'day' : memo[k].format;
+	                var format = memo[k].format === 'x-time-auto' ? spec.settings.utcTime ? 'day-utc' : 'day' : memo[k].format;
 	                var nonVal = memo[k].nullAlias;
 	                var fnForm = format ? _formatterRegistry.FormatterRegistry.get(format, nonVal) : function (raw) {
 	                    return raw === null ? nonVal : raw;
