@@ -23,12 +23,12 @@ export class PeriodScale extends BaseScale {
             new Date(Math.max(max, domain[1]))
         ];
 
-        var periodGenerator = UnitDomainPeriodGenerator.get(props.period);
+        var periodGenerator = UnitDomainPeriodGenerator.get(props.period, {utc: props.utcTime});
         if (props.fitToFrameByDims || (periodGenerator === null)) {
             this.vars = utils.unique(vars.map((x) => new Date(x)), (x) => x.getTime())
                 .sort((date1, date2) => date2 - date1);
         } else {
-            this.vars = UnitDomainPeriodGenerator.generate(range[0], range[1], props.period);
+            this.vars = UnitDomainPeriodGenerator.generate(range[0], range[1], props.period, {utc: props.utcTime});
         }
 
         this.addField('scaleType', 'period')
@@ -37,7 +37,7 @@ export class PeriodScale extends BaseScale {
     }
 
     isInDomain(aTime) {
-        var gen = UnitDomainPeriodGenerator.get(this.scaleConfig.period);
+        var gen = UnitDomainPeriodGenerator.get(this.scaleConfig.period, {utc: this.scaleConfig.utcTime});
         var val = gen.cast(new Date(aTime)).getTime();
         return (this.domain().map(x => x.getTime()).indexOf(val) >= 0);
     }

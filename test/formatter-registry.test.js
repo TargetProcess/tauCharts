@@ -9,6 +9,9 @@ define(function (require) {
             var offsetISO = '0' + Math.abs(offsetHrs) + ':00';
             return (str + '+' + offsetISO);
         };
+        var utc = function (str) {
+            return new Date(str).toUTCString();
+        };
 
         var registry;
         beforeEach(function () {
@@ -51,21 +54,35 @@ define(function (require) {
             var jan01 = new Date(iso('2013-01-01T00:00:00'));
             var oct30 = new Date(iso('2014-10-30T23:59:59'));
             var nov02 = new Date(iso('2014-11-02T23:59:59'));
+            var jan01utc = new Date(utc('2013-01-01T00:00:00'));
+            var oct30utc = new Date(utc('2014-10-30T23:59:59'));
+            var nov02utc = new Date(utc('2014-11-02T23:59:59'));
 
             expect(registry.get('day')(oct30)).to.equal('30-Oct-2014');
             expect(registry.get('week')(nov02)).to.equal('02-Nov-2014');
+            expect(registry.get('day-utc')(oct30utc)).to.equal('30-Oct-2014');
+            expect(registry.get('week-utc')(nov02utc)).to.equal('02-Nov-2014');
 
             expect(registry.get('month')(jan01)).to.equal('January, 2013');
             expect(registry.get('month')(oct30)).to.equal('October');
+            expect(registry.get('month-utc')(jan01utc)).to.equal('January, 2013');
+            expect(registry.get('month-utc')(oct30utc)).to.equal('October');
 
             expect(registry.get('month-year')(oct30)).to.equal('October, 2014');
             expect(registry.get('year')(oct30)).to.equal('2014');
             expect(registry.get('quarter')(oct30)).to.equal('Q4 2014');
+            expect(registry.get('month-year-utc')(oct30utc)).to.equal('October, 2014');
+            expect(registry.get('year-utc')(oct30utc)).to.equal('2014');
+            expect(registry.get('quarter-utc')(oct30utc)).to.equal('Q4 2014');
 
             expect(registry.get('day-short')(oct30)).to.equal('30-Oct');
             expect(registry.get('week-short')(nov02)).to.equal('02-Nov');
             expect(registry.get('month-short')(jan01)).to.equal('Jan \'13');
             expect(registry.get('month-short')(oct30)).to.equal('Oct');
+            expect(registry.get('day-short-utc')(oct30utc)).to.equal('30-Oct');
+            expect(registry.get('week-short-utc')(nov02utc)).to.equal('02-Nov');
+            expect(registry.get('month-short-utc')(jan01utc)).to.equal('Jan \'13');
+            expect(registry.get('month-short-utc')(oct30utc)).to.equal('Oct');
 
             expect(registry.get('x-num-auto')(2000)).to.equal('2k');
             expect(registry.get('x-num-auto')(22000.22)).to.equal('22k');
