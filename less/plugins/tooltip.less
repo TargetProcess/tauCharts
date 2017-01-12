@@ -2,6 +2,7 @@
 
 .graphical-report {
     &__tooltip {
+        pointer-events: none;
         position: absolute;
         top: 0;
         left: 0;
@@ -31,27 +32,33 @@
             overflow: hidden;
             padding: 15px 15px 10px 15px;
             box-sizing: border-box;
-            max-width: ~"calc(100% - 26px)";
         }
 
-        &.stuck &__exclude {
-            opacity: 1;
+        &.stuck {
+            pointer-events: initial;
+        }
+
+        &.stuck &__exclude,
+        &.stuck &__vertical {
+            width: 26px;
         }
 
         &__vertical,
         &__exclude {
+            box-shadow: inset 2px 0 2px -2px fade(@shadow-color, 20%);
             flex: 0 0 auto;
             color: fade(@exclude-font-color, 80%);
             cursor: pointer;
             min-height: 86px;
-            width: 26px;
+            overflow: hidden;
             position: relative;
-            box-shadow: inset 2px 0 2px -2px fade(@shadow-color, 20%);            
-            // TODO: Buttons should slide-in.
-            opacity: 0;
-            transition: opacity 500ms;
+            transition: width 500ms;
+            width: 0;
 
             &__wrap {
+                // NOTE: While buttons are sliding out,
+                // stick right border to tooltip right.
+                left: ~"calc(100% - 26px)";
                 line-height: 26px;
                 padding: 0 15px;
                 transform: rotate(-90deg);
@@ -61,7 +68,6 @@
                 white-space: nowrap;
                 position: absolute;
                 top: 100%;
-                left: 0;
                 box-sizing: border-box;
             }
 

@@ -75,23 +75,28 @@
 
                         var target = e.target;
 
+                        var hide = function () {
+                            this._removeFocus();
+                            window.removeEventListener('click', this._outerClickHandler, true);
+                            this.setState({
+                                highlight: null,
+                                isStuck: false
+                            });
+                        }.bind(this);
+
                         while (target !== e.currentTarget && target !== null) {
                             if (target.classList.contains('i-role-exclude')) {
                                 this._exclude();
+                                hide();
                             }
 
                             if (target.classList.contains('i-role-reveal')) {
                                 this._reveal();
+                                hide();
                             }
 
                             target = target.parentNode;
                         }
-
-                        this._removeFocus();
-                        this.setState({
-                            highlight: null,
-                            isStuck: false
-                        });
 
                     }.bind(this), false);
 
@@ -118,6 +123,20 @@
                     });
                 }.bind(this);
                 window.addEventListener('scroll', this._scrollHandler, true);
+
+                this._outerClickHandler = function (e) {
+                    var tooltipRect = this._tooltip.getElement().getBoundingClientRect();
+                    if ((e.clientX < tooltipRect.left) ||
+                        (e.clientX > tooltipRect.right) ||
+                        (e.clientY < tooltipRect.top) ||
+                        (e.clientY > tooltipRect.bottom)
+                    ) {
+                        this.setState({
+                            highlight: null,
+                            isStuck: false
+                        });
+                    }
+                }.bind(this);
 
                 // Handle initial state
                 this._timeoutShow = null;
@@ -163,11 +182,12 @@
 
                 var tooltipNode = this._tooltip.getElement();
                 if (state.isStuck) {
+                    if (!prev.isStuck) {
+                        window.addEventListener('click', this._outerClickHandler, true);
+                    }
                     tooltipNode.classList.add('stuck');
-                    tooltipNode.style.pointerEvents = null;
                 } else {
                     tooltipNode.classList.remove('stuck');
-                    tooltipNode.style.pointerEvents = 'none';
                 }
             },
 
@@ -192,15 +212,17 @@
             },
 
             hideTooltip: function (e) {
+                window.removeEventListener('click', this._outerClickHandler, true);
                 clearTimeout(this._timeoutShow);
                 this._tooltip.hide();
             },
 
             destroy: function () {
+                window.removeEventListener('scroll', this._scrollHandler, true);
+                window.removeEventListener('click', this._outerClickHandler, true);
                 this._removeFocus();
                 this._tooltip.destroy();
                 clearTimeout(this._timeoutShow);
-                window.removeEventListener('scroll', this._scrollHandler, true);
             },
 
             _subscribeToHover: function () {
