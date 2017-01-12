@@ -49,6 +49,9 @@
                 this._metaInfo = {};
                 this._skipInfo = {};
 
+                // NOTE: for compatibility with old Tooltip implementation.
+                Object.assign(this, utils.omit(settings, 'fields', 'getFields'));
+
                 this._tooltip = this._chart.addBalloon(
                     {
                         spacing: 3,
@@ -109,10 +112,6 @@
                 this._tooltip
                     .getElement()
                     .addEventListener('mouseleave', function (e) {
-                        this.setState({
-                            highlight: null,
-                            isStuck: false
-                        });
                         this._removeFocus();
                     }.bind(this), false);
 
@@ -123,6 +122,7 @@
                     });
                 }.bind(this);
                 window.addEventListener('scroll', this._scrollHandler, true);
+                window.addEventListener('resize', this._scrollHandler, true);
 
                 this._outerClickHandler = function (e) {
                     var tooltipRect = this._tooltip.getElement().getBoundingClientRect();
@@ -175,7 +175,7 @@
                         } else {
                             showTooltip();
                         }
-                    } else if (!state.isStuck) {
+                    } else if (!state.isStuck && prev.highlight.data && !state.highlight.data) {
                         this.hideTooltip();
                     }
                 }
@@ -219,6 +219,7 @@
 
             destroy: function () {
                 window.removeEventListener('scroll', this._scrollHandler, true);
+                window.removeEventListener('resize', this._scrollHandler, true);
                 window.removeEventListener('click', this._outerClickHandler, true);
                 this._removeFocus();
                 this._tooltip.destroy();
