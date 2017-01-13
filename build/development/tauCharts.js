@@ -1,4 +1,4 @@
-/*! taucharts - v0.10.0-beta.7 - 2017-01-12
+/*! taucharts - v0.10.0-beta.8 - 2017-01-13
 * https://github.com/TargetProcess/tauCharts
 * Copyright (c) 2017 Taucraft Limited; Licensed Apache License 2.0 */
 (function webpackUniversalModuleDefinition(root, factory) {
@@ -347,7 +347,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	}]));
 
 	/* global VERSION:false */
-	var version = ("0.10.0-beta.7");
+	var version = ("0.10.0-beta.8");
 	exports.GPL = _tau.GPL;
 	exports.Plot = _tau2.Plot;
 	exports.Chart = _tau3.Chart;
@@ -5873,7 +5873,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	                });
 	            } else {
 
-	                var expr = this._parseExpression(root.expression, parentPipe);
+	                var expr = this._parseExpression(root.expression, parentPipe, root.guide);
 
 	                root.transformation = root.transformation || [];
 
@@ -5920,7 +5920,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	        }
 	    }, {
 	        key: '_parseExpression',
-	        value: function _parseExpression(expr, parentPipe) {
+	        value: function _parseExpression(expr, parentPipe, guide) {
 	            var _this5 = this;
 
 	            var funcName = expr.operator || 'none';
@@ -5949,7 +5949,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	                func: func,
 	                args: funcArgs,
 	                exec: function exec() {
-	                    return func.apply(undefined, [dataFn].concat(_toConsumableArray(funcArgs || [])));
+	                    return func.apply(undefined, [dataFn].concat(_toConsumableArray(funcArgs || []), [guide]));
 	                }
 	            };
 	        }
@@ -6038,8 +6038,9 @@ return /******/ (function(modules) { // webpackBootstrap
 	            }));
 	        }, []);
 	    },
-	    cross_period: function cross_period(dataFn, dimX, dimY, xPeriod, yPeriod) {
+	    cross_period: function cross_period(dataFn, dimX, dimY, xPeriod, yPeriod, guide) {
 	        var data = dataFn();
+	        var utc = guide ? guide.utcTime : false;
 
 	        var domainX = _utils.utils.unique(data.map(function (x) {
 	            return x[dimX];
@@ -6052,11 +6053,11 @@ return /******/ (function(modules) { // webpackBootstrap
 	        var domY = domainY.length === 0 ? [null] : domainY;
 
 	        if (xPeriod) {
-	            domX = _unitDomainPeriodGenerator.UnitDomainPeriodGenerator.generate(Math.min.apply(Math, _toConsumableArray(domainX)), Math.max.apply(Math, _toConsumableArray(domainX)), xPeriod);
+	            domX = _unitDomainPeriodGenerator.UnitDomainPeriodGenerator.generate(Math.min.apply(Math, _toConsumableArray(domainX)), Math.max.apply(Math, _toConsumableArray(domainX)), xPeriod, { utc: utc });
 	        }
 
 	        if (yPeriod) {
-	            domY = _unitDomainPeriodGenerator.UnitDomainPeriodGenerator.generate(Math.min.apply(Math, _toConsumableArray(domainY)), Math.max.apply(Math, _toConsumableArray(domainY)), yPeriod);
+	            domY = _unitDomainPeriodGenerator.UnitDomainPeriodGenerator.generate(Math.min.apply(Math, _toConsumableArray(domainY)), Math.max.apply(Math, _toConsumableArray(domainY)), yPeriod, { utc: utc });
 	        }
 
 	        return domY.reduce(function (memo, rowVal) {
@@ -8450,7 +8451,8 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	                childUnit.namespace = 'chart';
 	                childUnit.guide = _utils.utils.defaults(childUnit.guide || {}, {
-	                    animationSpeed: settings.animationSpeed || 0
+	                    animationSpeed: settings.animationSpeed || 0,
+	                    utcTime: settings.utcTime || false
 	                });
 
 	                // leaf elements should inherit coordinates properties
