@@ -202,7 +202,7 @@ export class GPL extends Emitter {
 
         } else {
 
-            var expr = this._parseExpression(root.expression, parentPipe);
+            var expr = this._parseExpression(root.expression, parentPipe, root.guide);
 
             root.transformation = root.transformation || [];
 
@@ -253,7 +253,7 @@ export class GPL extends Emitter {
         return new DataFrame(frame, this.sources[frame.source].data, this.transformations);
     }
 
-    _parseExpression(expr, parentPipe) {
+    _parseExpression(expr, parentPipe, guide) {
 
         var funcName = expr.operator || 'none';
         var srcAlias = expr.source;
@@ -278,7 +278,7 @@ export class GPL extends Emitter {
             inherit: bInherit,
             func: func,
             args: funcArgs,
-            exec: () => func(dataFn, ...(funcArgs || []))
+            exec: () => func(dataFn, ...(funcArgs || []), guide)
         };
     }
 }

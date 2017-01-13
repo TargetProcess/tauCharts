@@ -61,7 +61,8 @@ export class SpecConverter {
             childUnit.guide = utils.defaults(
                 (childUnit.guide || {}),
                 {
-                    animationSpeed: settings.animationSpeed || 0
+                    animationSpeed: settings.animationSpeed || 0,
+                    utcTime: settings.utcTime || false
                 }
             );
 
