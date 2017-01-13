@@ -1,10 +1,10 @@
 (function (definition) {
     if (typeof define === "function" && define.amd) {
-        define(['tauCharts'], function (tauCharts) {
+        define(['taucharts'], function (tauCharts) {
             return definition(tauCharts);
         });
     } else if (typeof module === "object" && module.exports) {
-        var tauCharts = require('tauCharts');
+        var tauCharts = require('taucharts');
         module.exports = definition(tauCharts);
     } else {
         definition(this.tauCharts);
