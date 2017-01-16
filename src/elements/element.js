@@ -44,7 +44,7 @@ export class Element extends Emitter {
             },
             {
                 event: 'mousemove',
-                limit: 25
+                limit: 'requestAnimationFrame'
             }
         ].forEach((item) => {
             var eventName = item.event;

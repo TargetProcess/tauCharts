@@ -3,7 +3,7 @@ import {CSS_PREFIX} from '../const';
 import {d3_animationInterceptor, d3_transition as transition} from '../utils/d3-decorators';
 import {utils} from '../utils/utils';
 import {utilsDom} from '../utils/utils-dom';
-import {default as d3} from 'd3';
+import d3 from 'd3';
 
 const synthetic = 'taucharts_synthetic_record';
 const isNonSyntheticRecord = ((row) => row[synthetic] !== true);
@@ -358,7 +358,7 @@ const BasePath = {
         const cssClass = 'i-data-anchor';
         const screenModel = this.node().screenModel;
         const showOnHover = this.node().config.guide.showAnchors === 'hover';
-        const rmin = 3; // Min highlight radius
+        const rmin = 4; // Min highlight radius
         const rx = 1.25; // Highlight multiplier
         var anchors = this.node()
             .config
@@ -380,7 +380,8 @@ const BasePath = {
                 opacity: (showOnHover ? ((d) => filter(d) ? 1 : 0) : 1),
                 fill: (d) => screenModel.color(d),
                 class: (d) => utilsDom.classes(cssClass, screenModel.class(d))
-            });
+            })
+            .classed(`${CSS_PREFIX}highlighted`, filter);
 
         // Add highlighted elements to event
         filter.targetElements = [];
