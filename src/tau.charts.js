@@ -141,7 +141,7 @@ var api = {
             'world-countries.json'
         ].join('/'),
 
-        getAxisTickLabelSize: utils.memoize(utilsDom.getAxisTickLabelSize, (text) => (text || '').length),
+        getAxisTickLabelSize: utils.memoize(utilsDom.getAxisTickLabelSize, (text) => String(text).length),
 
         getScrollbarSize: utilsDom.getScrollbarSize,
 
