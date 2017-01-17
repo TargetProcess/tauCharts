@@ -3,7 +3,7 @@ import {GrammarRegistry} from '../grammar-registry';
 import {LayerLabels} from './decorators/layer-labels';
 import {d3_animationInterceptor} from '../utils/d3-decorators';
 import {utils} from '../utils/utils';
-import {default as d3} from 'd3';
+import d3 from 'd3';
 
 const Interval = {
 

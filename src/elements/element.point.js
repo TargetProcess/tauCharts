@@ -3,6 +3,7 @@ import {GrammarRegistry} from '../grammar-registry';
 import {LayerLabels} from './decorators/layer-labels';
 import {d3_transition} from '../utils/d3-decorators';
 import {utils} from '../utils/utils';
+import d3 from 'd3';
 
 const Point = {
 
