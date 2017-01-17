@@ -11,8 +11,11 @@
     }
 })(function (tauCharts) {
 
+    var d3 = tauCharts.api.d3;
     var utils = tauCharts.api.utils;
     var pluginsSDK = tauCharts.api.pluginsSDK;
+    var TARGET_SVG_CLASS = 'graphical-report__svg__tooltip-target';
+    var TARGET_SVG_STUCK_CLASS = 'graphical-report__svg__tooltip-target-stuck';
 
     function Tooltip(xSettings) {
 
@@ -21,7 +24,6 @@
             {
                 // add default settings here
                 fields: null,
-                showTimeout: 250,
                 formatters: {},
                 dockToData: false,
                 aggregationGroupFields: [],
@@ -54,7 +56,7 @@
 
                 this._tooltip = this._chart.addBalloon(
                     {
-                        spacing: 3,
+                        spacing: 24,
                         auto: true,
                         effectClass: 'fade'
                     });
@@ -65,6 +67,7 @@
                 );
 
                 var template = utils.template(this.template);
+                var tooltipNode = this.getTooltipNode();
 
                 this._tooltip
                     .content(template({
@@ -72,47 +75,31 @@
                         excludeTemplate: this.templateExclude
                     }));
 
-                this._tooltip
-                    .getElement()
+                tooltipNode
                     .addEventListener('click', function (e) {
 
                         var target = e.target;
 
-                        var hide = function () {
-                            this._removeFocus();
-                            window.removeEventListener('click', this._outerClickHandler, true);
-                            this.setState({
-                                highlight: null,
-                                isStuck: false
-                            });
-                        }.bind(this);
-
                         while (target !== e.currentTarget && target !== null) {
                             if (target.classList.contains('i-role-exclude')) {
                                 this._exclude();
-                                hide();
+                                this.setState({
+                                    highlight: null,
+                                    isStuck: false
+                                });
                             }
 
                             if (target.classList.contains('i-role-reveal')) {
                                 this._reveal();
-                                hide();
+                                this.setState({
+                                    highlight: null,
+                                    isStuck: false
+                                });
                             }
 
                             target = target.parentNode;
                         }
 
-                    }.bind(this), false);
-
-                this._tooltip
-                    .getElement()
-                    .addEventListener('mouseover', function (e) {
-                        this._accentFocus(e);
-                    }.bind(this), false);
-
-                this._tooltip
-                    .getElement()
-                    .addEventListener('mouseleave', function (e) {
-                        this._removeFocus();
                     }.bind(this), false);
 
                 this._scrollHandler = function () {
@@ -125,7 +112,7 @@
                 window.addEventListener('resize', this._scrollHandler, true);
 
                 this._outerClickHandler = function (e) {
-                    var tooltipRect = this._tooltip.getElement().getBoundingClientRect();
+                    var tooltipRect = this.getTooltipNode().getBoundingClientRect();
                     if ((e.clientX < tooltipRect.left) ||
                         (e.clientX > tooltipRect.right) ||
                         (e.clientY < tooltipRect.top) ||
@@ -139,10 +126,13 @@
                 }.bind(this);
 
                 // Handle initial state
-                this._timeoutShow = null;
                 this.setState(this.state);
 
-                this.afterInit(this._tooltip.getElement());
+                this.afterInit(tooltipNode);
+            },
+
+            getTooltipNode: function () {
+                return this._tooltip.getElement();
             },
 
             state: {
@@ -153,14 +143,16 @@
             setState: function (newState) {
                 var prev = this.state;
                 var state = this.state = Object.assign({}, prev, newState);
-                prev.highlight = prev.highlight || {data: null, node: null, cursor: null, unit: null};
-                state.highlight = state.highlight || {data: null, node: null, cursor: null, unit: null};
+                prev.highlight = prev.highlight || {data: null, node: null, cursor: null, unit: null, event: null};
+                state.highlight = state.highlight || {data: null, node: null, cursor: null, unit: null, event: null};
+
+                // If stuck, treat that data has not changed
                 if (state.isStuck && prev.highlight.data) {
                     state.highlight = prev.highlight;
                 }
 
+                // Show/hide tooltip
                 if (state.highlight.data !== prev.highlight.data) {
-                    clearTimeout(this._timeoutShow);
                     if (state.highlight.data) {
                         this.hideTooltip();
                         var showTooltip = function () {
@@ -170,30 +162,54 @@
                                 state.highlight.node
                             );
                         }.bind(this);
-                        if (settings.showTimeout > 0) {
-                            this._timeoutShow = setTimeout(showTooltip, settings.showTimeout);
-                        } else {
-                            showTooltip();
-                        }
+                        showTooltip();
                     } else if (!state.isStuck && prev.highlight.data && !state.highlight.data) {
+                        this._removeFocus(prev.highlight.event, prev.highlight.unit);
                         this.hideTooltip();
                     }
                 }
 
-                var tooltipNode = this._tooltip.getElement();
-                if (state.isStuck) {
-                    if (!prev.isStuck) {
+                // Update tooltip position
+                if (state.highlight.data && (
+                    !prev.highlight.cursor ||
+                    state.highlight.cursor.x !== prev.highlight.cursor.x ||
+                    state.highlight.cursor.y !== prev.highlight.cursor.y
+                )) {
+                    this._tooltip.position(state.highlight.cursor.x, state.highlight.cursor.y);
+                }
+
+                // Stick/unstick tooltip
+                var tooltipNode = this.getTooltipNode();
+                if (state.isStuck !== prev.isStuck) {
+                    if (state.isStuck) {
                         window.addEventListener('click', this._outerClickHandler, true);
+                        (function fixFocusOut() {
+                            // NOTE: `mouseout` still can fire after setting `pointer-events:none`
+                            // so have to restore highlight on element.
+                            var node = state.highlight.node;
+                            var event = state.highlight.event;
+                            var unit = state.highlight.unit;
+                            var data = state.highlight.data;
+                            var onNodeMouseOut = function () {
+                                node.removeEventListener('mouseout', onNodeMouseOut);
+                                this._accentFocus(event, unit, data);
+                            }.bind(this);
+                            node.addEventListener('mouseout', onNodeMouseOut);
+                        }.bind(this))();
+                        this._setTargetSvgStuckClass(true);
+                        tooltipNode.classList.add('stuck');
+                        this._tooltip.updateSize();
+                    } else {
+                        window.removeEventListener('click', this._outerClickHandler, true);
+                        this._setTargetSvgStuckClass(false);
+                        tooltipNode.classList.remove('stuck');
                     }
-                    tooltipNode.classList.add('stuck');
-                } else {
-                    tooltipNode.classList.remove('stuck');
                 }
             },
 
             showTooltip: function (data, cursor, node) {
 
-                var content = this._tooltip.getElement().querySelectorAll('.i-role-content')[0];
+                var content = this.getTooltipNode().querySelectorAll('.i-role-content')[0];
                 if (content) {
                     var fields = (
                         settings.fields
@@ -206,24 +222,29 @@
                 }
 
                 this._tooltip
-                    .position(node)
+                    .position(cursor.x, cursor.y)
+                    .place('bottom-right')
                     .show()
                     .updateSize();
             },
 
             hideTooltip: function (e) {
                 window.removeEventListener('click', this._outerClickHandler, true);
-                clearTimeout(this._timeoutShow);
                 this._tooltip.hide();
             },
 
             destroy: function () {
                 window.removeEventListener('scroll', this._scrollHandler, true);
                 window.removeEventListener('resize', this._scrollHandler, true);
-                window.removeEventListener('click', this._outerClickHandler, true);
-                this._removeFocus();
+                this._setTargetSvgClass(false);
+                if (this.state.highlight.unit) {
+                    this._removeFocus(this.state.highlight.event, this.state.highlight.unit);
+                }
+                this.setState({
+                    highlight: null,
+                    isStuck: false
+                });
                 this._tooltip.destroy();
-                clearTimeout(this._timeoutShow);
             },
 
             _subscribeToHover: function () {
@@ -248,6 +269,7 @@
                                 highlight: (e.data ? {
                                     data: e.data,
                                     cursor: {x: e.domEvent.clientX, y: e.domEvent.clientY},
+                                    event: e,
                                     node: e.targetElements[0],
                                     unit: sender
                                 } : null)
@@ -259,6 +281,7 @@
                                 highlight: {
                                     data: e.data,
                                     cursor: {x: e.domEvent.clientX, y: e.domEvent.clientY},
+                                    event: e,
                                     node: e.targetElements[0],
                                     unit: sender
                                 },
@@ -310,22 +333,12 @@
                 return meta.label;
             },
 
-            _removeFocus: function (e) {
-                if (this.state.highlight.unit) {
-                    this.state.highlight.unit.fire(
-                        'highlight-data-points',
-                        getHighlightEvtObj(e, null)
-                    );
-                }
+            _removeFocus: function (e, unit) {
+                unit.fire('highlight-data-points', getHighlightEvtObj(e, null));
             },
 
-            _accentFocus: function (e) {
-                if (this.state.highlight.unit) {
-                    this.state.highlight.unit.fire(
-                        'highlight-data-points',
-                        getHighlightEvtObj(e, this.state.highlight.data)
-                    );
-                }
+            _accentFocus: function (e, unit, data) {
+                unit.fire('highlight-data-points', getHighlightEvtObj(e, data));
             },
 
             _reveal: function () {
@@ -361,6 +374,15 @@
                 this._skipInfo = info.skip;
 
                 this._subscribeToHover();
+                this._setTargetSvgClass(true);
+            },
+
+            _setTargetSvgClass: function (isSet) {
+                d3.select(this._chart.getSVG()).classed(TARGET_SVG_CLASS, isSet);
+            },
+
+            _setTargetSvgStuckClass: function (isSet) {
+                d3.select(this._chart.getSVG()).classed(TARGET_SVG_STUCK_CLASS, isSet);
             },
 
             templateRevealAggregation: [

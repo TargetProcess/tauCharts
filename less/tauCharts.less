@@ -291,12 +291,19 @@
 
     /*  Highlighter  */
     &__dot&__highlighted {
-        stroke-width: 2;
+        stroke-width: 1;
+        stroke: @font-color;
         opacity: 1;
     }
 
     &__dot&__dimmed {
         opacity: 0.2;
+    }
+
+    &__bar&__highlighted {
+        shape-rendering: crispEdges;
+        stroke-width: 1;
+        stroke: @font-color;
     }
 
     &__line&__highlighted {
@@ -307,8 +314,14 @@
     &__line&__dimmed {
         stroke-opacity: 0.2;
     }
+    
+    .i-data-anchor&__highlighted {
+        stroke: @font-color;
+        stroke-width: 1;
+    }
 
     .i-role-label&__highlighted,
+    .i-data-anchor&__highlighted,
     &__area&__highlighted,
     &__bar&__highlighted {
         stroke-opacity: 1;

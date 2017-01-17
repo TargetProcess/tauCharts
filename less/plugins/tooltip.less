@@ -113,4 +113,16 @@
             color: @font-gray-dark;
         }
     }
+
+    &__svg {
+        &__tooltip-target {
+            .i-role-element,
+            .i-data-anchor {
+                cursor: pointer;
+            }
+        }
+        &__tooltip-target-stuck {
+            pointer-events: none;
+        }
+    }
 }

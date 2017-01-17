@@ -3,6 +3,7 @@ import {GrammarRegistry} from '../grammar-registry';
 import {LayerLabels} from './decorators/layer-labels';
 import {d3_transition} from '../utils/d3-decorators';
 import {utils} from '../utils/utils';
+import d3 from 'd3';
 
 const Point = {
 
@@ -216,6 +217,31 @@ const Point = {
         container
             .selectAll('.i-role-label')
             .classed(classed);
+
+        // Place highlighted element over others
+        var highlighted = container
+            .selectAll('.dot')
+            .filter(filter);
+        if (highlighted.empty()) {
+            return;
+        }
+        var notHighlighted = d3.select(highlighted.node().parentNode)
+            .selectAll('.dot')
+            .filter((d) => !filter(d))[0];
+        var lastNotHighlighted = notHighlighted[notHighlighted.length - 1];
+        if (lastNotHighlighted) {
+            var notHighlightedIndex = Array.prototype.indexOf.call(
+                lastNotHighlighted.parentNode.childNodes,
+                lastNotHighlighted);
+            var nextSibling = lastNotHighlighted.nextSibling;
+            highlighted.each(function () {
+                var index = Array.prototype.indexOf.call(this.parentNode.childNodes, this);
+                if (index > notHighlightedIndex) {
+                    return;
+                }
+                this.parentNode.insertBefore(this, nextSibling);
+            });
+        }
     },
 
     highlightDataPoints(filter) {

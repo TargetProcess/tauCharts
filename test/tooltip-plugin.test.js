@@ -15,18 +15,36 @@ var iso = function (str) {
     return (str + '+' + offsetISO);
 };
 
-var showTooltip = function (expect, chart, index, selectorClass) {
+var showTooltip = function (expect, chart, index, selectorClass, data) {
     var d = testUtils.Deferred();
-    var selectorCssClass = selectorClass || '.i-role-datum';
-    var datum = chart.getSVG().querySelectorAll(selectorCssClass)[index || 0];
+    selectorClass = selectorClass || '.i-role-datum';
+    index = index || 0;
+    var datum;
+    var elements = Array.prototype.slice.call(chart.getSVG().querySelectorAll(selectorClass), 0);
+    if (data) {
+        // NOTE: Elements order changes after hover.
+        data = data.filter(d => elements.filter(el => el.__data__ === d).length);
+        datum = elements.filter(el => el.__data__ === data[index])[0];
+    } else {
+        datum = elements[index];
+    }
     testUtils.simulateEvent('mouseover', datum);
     return d.resolve(document.querySelectorAll('.graphical-report__tooltip'));
 };
 
-var hideTooltip = function (expect, chart, index, selectorClass) {
+var hideTooltip = function (expect, chart, index, selectorClass, data) {
     var d = testUtils.Deferred();
-    var selectorCssClass = selectorClass || '.i-role-datum';
-    var datum = chart.getSVG().querySelectorAll(selectorCssClass)[index || 0];
+    selectorClass = selectorClass || '.i-role-datum';
+    index = index || 0;
+    var datum;
+    var elements = Array.prototype.slice.call(chart.getSVG().querySelectorAll(selectorClass), 0);
+    if (data) {
+        // NOTE: Elements order changes after hover.
+        data = data.filter(d => elements.filter(el => el.__data__ === d).length);
+        datum = elements.filter(el => el.__data__ === data[index])[0];
+    } else {
+        datum = elements[index];
+    }
     testUtils.simulateEvent('mouseout', datum);
     return d.resolve(document.querySelectorAll('.graphical-report__tooltip__content'));
 };
@@ -39,6 +57,33 @@ var chartType = ['area', 'line', 'scatterplot', 'bar', 'horizontal-bar', 'stacke
 
 chartType.forEach(function (item) {
     var tooltipEl = null;
+    var data = [
+        {
+            x: 2,
+            y: 2,
+            color: 'yellow'
+        },
+        {
+            x: 4,
+            y: 2,
+            color: 'yellow'
+        },
+        {
+            x: 5,
+            y: 2,
+            color: 'yellow'
+        },
+        {
+            x: 2,
+            y: 10,
+            color: 'green'
+        },
+        {
+            x: 6,
+            y: 10,
+            color: 'green'
+        }
+    ];
     describeChart(
         "tooltip for " + item,
         {
@@ -52,38 +97,12 @@ chartType.forEach(function (item) {
                 })
             ]
         },
-        [
-            {
-                x: 2,
-                y: 2,
-                color: 'yellow'
-            },
-            {
-                x: 4,
-                y: 2,
-                color: 'yellow'
-            },
-            {
-                x: 5,
-                y: 2,
-                color: 'yellow'
-            },
-            {
-                x: 2,
-                y: 10,
-                color: 'green'
-            },
-            {
-                x: 6,
-                y: 10,
-                color: 'green'
-            }
-        ],
+        data,
         function (context) {
             it("should work", function (done) {
                 var originTimeout = stubTimeout();
                 this.timeout(5000);
-                showTooltip(expect, context.chart, 0, getSelectorByChartType(item))
+                showTooltip(expect, context.chart, 0, getSelectorByChartType(item), data)
                     .then(function (content) {
                         var items = content[0].querySelectorAll('.graphical-report__tooltip__list__item');
                         expect(items[0].textContent).to.be.equal('x2');
@@ -91,12 +110,12 @@ chartType.forEach(function (item) {
                         expect(items[2].textContent).to.be.equal('coloryellow');
                     })
                     .then(function () {
-                        return hideTooltip(expect, context.chart, 0, getSelectorByChartType(item));
+                        return hideTooltip(expect, context.chart, 0, getSelectorByChartType(item), data);
                     })
                     .then(function () {
                         var content = document.querySelectorAll('.graphical-report__tooltip__content');
                         expect(content.length).to.equal(0);
-                        return showTooltip(expect, context.chart, 0, getSelectorByChartType(item));
+                        return showTooltip(expect, context.chart, 0, getSelectorByChartType(item), data);
                     })
                     .then(function () {
                         var content = document.querySelectorAll('.graphical-report__tooltip__content');
@@ -134,7 +153,7 @@ chartType.forEach(function (item) {
                         return d.resolve();
                     })
                     .then(function () {
-                        return showTooltip(expect, context.chart, 0, getSelectorByChartType(item));
+                        return showTooltip(expect, context.chart, 0, getSelectorByChartType(item), data);
                     })
                     .then(function () {
                         var content = document.querySelectorAll('.graphical-report__tooltip__content');
@@ -143,7 +162,7 @@ chartType.forEach(function (item) {
                         content = document.querySelectorAll('.graphical-report__tooltip__content');
                         expect(content.length).to.equal(0);
                         window.setTimeout = originTimeout;
-                        return hideTooltip(expect, context.chart, 0, getSelectorByChartType(item));
+                        return hideTooltip(expect, context.chart, 0, getSelectorByChartType(item), data);
                     })
                     .always(function () {
                         window.setTimeout = originTimeout;
