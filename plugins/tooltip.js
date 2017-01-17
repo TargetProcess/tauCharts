@@ -11,8 +11,11 @@
     }
 })(function (tauCharts) {
 
+    var d3 = tauCharts.api.d3;
     var utils = tauCharts.api.utils;
     var pluginsSDK = tauCharts.api.pluginsSDK;
+    var TARGET_SVG_CLASS = 'graphical-report__svg__tooltip-target';
+    var TARGET_SVG_STUCK_CLASS = 'graphical-report__svg__tooltip-target-stuck';
 
     function Tooltip(xSettings) {
 
@@ -99,16 +102,6 @@
 
                     }.bind(this), false);
 
-                tooltipNode
-                    .addEventListener('mouseover', function (e) {
-                        this._accentFocus(e);
-                    }.bind(this), false);
-
-                tooltipNode
-                    .addEventListener('mouseleave', function (e) {
-                        this._removeFocus();
-                    }.bind(this), false);
-
                 this._scrollHandler = function () {
                     this.setState({
                         highlight: null,
@@ -150,16 +143,8 @@
             setState: function (newState) {
                 var prev = this.state;
                 var state = this.state = Object.assign({}, prev, newState);
-                prev.highlight = prev.highlight || {data: null, node: null, cursor: null, unit: null};
-                state.highlight = state.highlight || {data: null, node: null, cursor: null, unit: null};
-
-                // Set cursor for highlighted node
-                if (!state.highlight.data && prev.highlight.data) {
-                    this._chart.getSVG().removeAttribute('cursor', 'pointer');
-                }
-                if (state.highlight.data && !prev.highlight.data) {
-                    this._chart.getSVG().setAttribute('cursor', 'pointer');
-                }
+                prev.highlight = prev.highlight || {data: null, node: null, cursor: null, unit: null, event: null};
+                state.highlight = state.highlight || {data: null, node: null, cursor: null, unit: null, event: null};
 
                 // If stuck, treat that data has not changed
                 if (state.isStuck && prev.highlight.data) {
@@ -179,7 +164,7 @@
                         }.bind(this);
                         showTooltip();
                     } else if (!state.isStuck && prev.highlight.data && !state.highlight.data) {
-                        this._removeFocus();
+                        this._removeFocus(prev.highlight.event, prev.highlight.unit);
                         this.hideTooltip();
                     }
                 }
@@ -198,10 +183,17 @@
                 if (state.isStuck !== prev.isStuck) {
                     if (state.isStuck) {
                         window.addEventListener('click', this._outerClickHandler, true);
+                        this._setTargetSvgStuckClass(true);
+                        // NOTE: Setting `pointer-events: none` causes highlighted
+                        // element to lose focus asynchronously, so have to restore it.
+                        requestAnimationFrame(function () {
+                            this._accentFocus(state.highlight.event, state.highlight.unit, state.highlight.data);
+                        }.bind(this));
                         tooltipNode.classList.add('stuck');
                         this._tooltip.updateSize();
                     } else {
                         window.removeEventListener('click', this._outerClickHandler, true);
+                        this._setTargetSvgStuckClass(false);
                         tooltipNode.classList.remove('stuck');
                     }
                 }
@@ -236,11 +228,14 @@
             destroy: function () {
                 window.removeEventListener('scroll', this._scrollHandler, true);
                 window.removeEventListener('resize', this._scrollHandler, true);
+                this._setTargetSvgClass(false);
+                if (this.state.highlight.unit) {
+                    this._removeFocus(this.state.highlight.event, this.state.highlight.unit);
+                }
                 this.setState({
                     highlight: null,
                     isStuck: false
                 });
-                this._removeFocus();
                 this._tooltip.destroy();
             },
 
@@ -266,6 +261,7 @@
                                 highlight: (e.data ? {
                                     data: e.data,
                                     cursor: {x: e.domEvent.clientX, y: e.domEvent.clientY},
+                                    event: e,
                                     node: e.targetElements[0],
                                     unit: sender
                                 } : null)
@@ -277,6 +273,7 @@
                                 highlight: {
                                     data: e.data,
                                     cursor: {x: e.domEvent.clientX, y: e.domEvent.clientY},
+                                    event: e,
                                     node: e.targetElements[0],
                                     unit: sender
                                 },
@@ -328,22 +325,12 @@
                 return meta.label;
             },
 
-            _removeFocus: function (e) {
-                if (this.state.highlight.unit) {
-                    this.state.highlight.unit.fire(
-                        'highlight-data-points',
-                        getHighlightEvtObj(e, null)
-                    );
-                }
+            _removeFocus: function (e, unit) {
+                unit.fire('highlight-data-points', getHighlightEvtObj(e, null));
             },
 
-            _accentFocus: function (e) {
-                if (this.state.highlight.unit) {
-                    this.state.highlight.unit.fire(
-                        'highlight-data-points',
-                        getHighlightEvtObj(e, this.state.highlight.data)
-                    );
-                }
+            _accentFocus: function (e, unit, data) {
+                unit.fire('highlight-data-points', getHighlightEvtObj(e, data));
             },
 
             _reveal: function () {
@@ -379,6 +366,15 @@
                 this._skipInfo = info.skip;
 
                 this._subscribeToHover();
+                this._setTargetSvgClass(true);
+            },
+
+            _setTargetSvgClass: function (isSet) {
+                d3.select(this._chart.getSVG()).classed(TARGET_SVG_CLASS, isSet);
+            },
+
+            _setTargetSvgStuckClass: function (isSet) {
+                d3.select(this._chart.getSVG()).classed(TARGET_SVG_STUCK_CLASS, isSet);
             },
 
             templateRevealAggregation: [
