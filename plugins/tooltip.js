@@ -183,12 +183,20 @@
                 if (state.isStuck !== prev.isStuck) {
                     if (state.isStuck) {
                         window.addEventListener('click', this._outerClickHandler, true);
+                        (function fixFocusOut() {
+                            // NOTE: `mouseout` still can fire after setting `pointer-events:none`
+                            // so have to restore highlight on element.
+                            var node = state.highlight.node;
+                            var event = state.highlight.event;
+                            var unit = state.highlight.unit;
+                            var data = state.highlight.data;
+                            var onNodeMouseOut = function () {
+                                node.removeEventListener('mouseout', onNodeMouseOut);
+                                this._accentFocus(event, unit, data);
+                            }.bind(this);
+                            node.addEventListener('mouseout', onNodeMouseOut);
+                        }.bind(this))();
                         this._setTargetSvgStuckClass(true);
-                        // NOTE: Setting `pointer-events: none` causes highlighted
-                        // element to lose focus asynchronously, so have to restore it.
-                        requestAnimationFrame(function () {
-                            this._accentFocus(state.highlight.event, state.highlight.unit, state.highlight.data);
-                        }.bind(this));
                         tooltipNode.classList.add('stuck');
                         this._tooltip.updateSize();
                     } else {
