@@ -135,6 +135,7 @@ define(function (require) {
                                     "namespace": "chart",
                                     "guide": {
                                         "animationSpeed": 0,
+                                        "utcTime": false,
                                         "x": {},
                                         "y": {}
                                     },
@@ -144,13 +145,15 @@ define(function (require) {
                             ],
                             "namespace": "chart",
                             "guide": {
-                                "animationSpeed": 0
+                                "animationSpeed": 0,
+                                "utcTime": false
                             }
                         }
                     ],
                     "namespace": "chart",
                     "guide": {
-                        "animationSpeed": 0
+                        "animationSpeed": 0,
+                        "utcTime": false
                     }
                 }
             };
@@ -288,7 +291,8 @@ define(function (require) {
                     "guide": {
                         "x": {"tickPeriod": "week"},
                         "y": {"tickLabel": "name"},
-                        "animationSpeed": 0
+                        "animationSpeed": 0,
+                        "utcTime": false
                     },
                     "expression": {
                         "inherit": false,
@@ -319,6 +323,7 @@ define(function (require) {
                                     "namespace": "chart",
                                     "guide": {
                                         "animationSpeed": 0,
+                                        "utcTime": false,
                                         "x": {},
                                         "y": {}
                                     },
@@ -328,7 +333,8 @@ define(function (require) {
                             ],
                             "namespace": "chart",
                             "guide": {
-                                "animationSpeed": 0
+                                "animationSpeed": 0,
+                                "utcTime": false
                             }
                         }
                     ],

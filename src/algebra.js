@@ -36,8 +36,9 @@ var FramesAlgebra = {
             []);
     },
 
-    cross_period(dataFn, dimX, dimY, xPeriod, yPeriod) {
+    cross_period(dataFn, dimX, dimY, xPeriod, yPeriod, guide) {
         var data = dataFn();
+        var utc = (guide ? guide.utcTime : false);
 
         var domainX = utils.unique(data.map(x => x[dimX]), unify);
         var domainY = utils.unique(data.map(x => x[dimY]), unify);
@@ -46,11 +47,11 @@ var FramesAlgebra = {
         var domY = domainY.length === 0 ? [null] : domainY;
 
         if (xPeriod) {
-            domX = UnitDomainPeriodGenerator.generate(Math.min(...domainX), Math.max(...domainX), xPeriod);
+            domX = UnitDomainPeriodGenerator.generate(Math.min(...domainX), Math.max(...domainX), xPeriod, {utc});
         }
 
         if (yPeriod) {
-            domY = UnitDomainPeriodGenerator.generate(Math.min(...domainY), Math.max(...domainY), yPeriod);
+            domY = UnitDomainPeriodGenerator.generate(Math.min(...domainY), Math.max(...domainY), yPeriod, {utc});
         }
 
         return domY.reduce(
