@@ -164,7 +164,7 @@ export class LayerLabels {
                     (i < visibleLabels.length - 1) &&
                     (d.label === visibleLabels[i + 1].label)
                 ))
-                .forEach((d, i) => d.hide = true);
+                .forEach((d) => d.hide = true);
         }
 
         var text = this
