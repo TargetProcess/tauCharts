@@ -511,11 +511,17 @@
   stroke: #fff;
 }
 .graphical-report__dot.graphical-report__highlighted {
-  stroke-width: 2;
+  stroke-width: 1;
+  stroke: #fff;
   opacity: 1;
 }
 .graphical-report__dot.graphical-report__dimmed {
   opacity: 0.2;
+}
+.graphical-report__bar.graphical-report__highlighted {
+  shape-rendering: crispEdges;
+  stroke-width: 1;
+  stroke: #fff;
 }
 .graphical-report__line.graphical-report__highlighted {
   stroke-opacity: 1;
@@ -524,7 +530,12 @@
 .graphical-report__line.graphical-report__dimmed {
   stroke-opacity: 0.2;
 }
+.i-data-anchor.graphical-report__highlighted {
+  stroke: #fff;
+  stroke-width: 1;
+}
 .i-role-label.graphical-report__highlighted,
+.i-data-anchor.graphical-report__highlighted,
 .graphical-report__area.graphical-report__highlighted,
 .graphical-report__bar.graphical-report__highlighted {
   stroke-opacity: 1;

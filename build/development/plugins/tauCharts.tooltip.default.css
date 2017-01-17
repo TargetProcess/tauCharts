@@ -104,3 +104,10 @@
 .graphical-report__tooltip__gray-text {
   color: #8e8e8e;
 }
+.graphical-report__svg__tooltip-target .i-role-element,
+.graphical-report__svg__tooltip-target .i-data-anchor {
+  cursor: pointer;
+}
+.graphical-report__svg__tooltip-target-stuck {
+  pointer-events: none;
+}

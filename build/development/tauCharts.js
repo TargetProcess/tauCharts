@@ -1,4 +1,4 @@
-/*! taucharts - v0.10.0-beta.8 - 2017-01-13
+/*! taucharts - v0.10.0-beta.9 - 2017-01-17
 * https://github.com/TargetProcess/tauCharts
 * Copyright (c) 2017 Taucraft Limited; Licensed Apache License 2.0 */
 (function webpackUniversalModuleDefinition(root, factory) {
@@ -244,7 +244,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	        defaultSourceMap: ['https://raw.githubusercontent.com', 'TargetProcess/tauCharts/master/src/addons', 'world-countries.json'].join('/'),
 
 	        getAxisTickLabelSize: _utils.utils.memoize(_utilsDom.utilsDom.getAxisTickLabelSize, function (text) {
-	            return (text || '').length;
+	            return String(text).length;
 	        }),
 
 	        getScrollbarSize: _utilsDom.utilsDom.getScrollbarSize,
@@ -347,7 +347,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	}]));
 
 	/* global VERSION:false */
-	var version = ("0.10.0-beta.8");
+	var version = ("0.10.0-beta.9");
 	exports.GPL = _tau.GPL;
 	exports.Plot = _tau2.Plot;
 	exports.Chart = _tau3.Chart;
@@ -1203,13 +1203,35 @@ return /******/ (function(modules) { // webpackBootstrap
 	        var limitFromPrev = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : 0;
 
 
+	        if (limitFromPrev === 'requestAnimationFrame') {
+	            var frameRequested = false;
+	            return function () {
+	                if (!frameRequested) {
+	                    requestAnimationFrame(function () {
+	                        frameRequested = false;
+	                    });
+	                    // NOTE: Have to call sync cause
+	                    // D3 event info disappears later.
+
+	                    for (var _len = arguments.length, args = Array(_len), _key = 0; _key < _len; _key++) {
+	                        args[_key] = arguments[_key];
+	                    }
+
+	                    handler.apply(this, args);
+	                    frameRequested = true;
+	                }
+	                last.e = eventType;
+	                last.ts = new Date();
+	            };
+	        }
+
 	        return function () {
 	            var curr = { e: eventType, ts: new Date() };
 	            var diff = last.e && last.e === curr.e ? curr.ts - last.ts : limitFromPrev;
 
 	            if (diff >= limitFromPrev) {
-	                for (var _len = arguments.length, args = Array(_len), _key = 0; _key < _len; _key++) {
-	                    args[_key] = arguments[_key];
+	                for (var _len2 = arguments.length, args = Array(_len2), _key2 = 0; _key2 < _len2; _key2++) {
+	                    args[_key2] = arguments[_key2];
 	                }
 
 	                handler.apply(this, args);
@@ -1315,8 +1337,8 @@ return /******/ (function(modules) { // webpackBootstrap
 	    },
 
 	    defaults: function defaults(obj) {
-	        for (var _len2 = arguments.length, defaultObjs = Array(_len2 > 1 ? _len2 - 1 : 0), _key2 = 1; _key2 < _len2; _key2++) {
-	            defaultObjs[_key2 - 1] = arguments[_key2];
+	        for (var _len3 = arguments.length, defaultObjs = Array(_len3 > 1 ? _len3 - 1 : 0), _key3 = 1; _key3 < _len3; _key3++) {
+	            defaultObjs[_key3 - 1] = arguments[_key3];
 	        }
 
 	        var length = defaultObjs.length;
@@ -1338,8 +1360,8 @@ return /******/ (function(modules) { // webpackBootstrap
 	    },
 
 	    omit: function omit(obj) {
-	        for (var _len3 = arguments.length, props = Array(_len3 > 1 ? _len3 - 1 : 0), _key3 = 1; _key3 < _len3; _key3++) {
-	            props[_key3 - 1] = arguments[_key3];
+	        for (var _len4 = arguments.length, props = Array(_len4 > 1 ? _len4 - 1 : 0), _key4 = 1; _key4 < _len4; _key4++) {
+	            props[_key4 - 1] = arguments[_key4];
 	        }
 
 	        var newObj = Object.assign({}, obj);
@@ -1365,8 +1387,8 @@ return /******/ (function(modules) { // webpackBootstrap
 	    // TODO Remove this methods and its associated configs
 	    // which are just for templating in some plugins
 	    pick: function pick(object) {
-	        for (var _len4 = arguments.length, props = Array(_len4 > 1 ? _len4 - 1 : 0), _key4 = 1; _key4 < _len4; _key4++) {
-	            props[_key4 - 1] = arguments[_key4];
+	        for (var _len5 = arguments.length, props = Array(_len5 > 1 ? _len5 - 1 : 0), _key5 = 1; _key5 < _len5; _key5++) {
+	            props[_key5 - 1] = arguments[_key5];
 	        }
 
 	        var result = {};
@@ -1812,7 +1834,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	                limit: 0
 	            }, {
 	                event: 'mousemove',
-	                limit: 25
+	                limit: 'requestAnimationFrame'
 	            }].forEach(function (item) {
 	                var eventName = item.event;
 	                var limit = item.limit;
@@ -12657,6 +12679,12 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	var _utils = __webpack_require__(3);
 
+	var _d = __webpack_require__(2);
+
+	var _d2 = _interopRequireDefault(_d);
+
+	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
 	function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
 
 	var Point = {
@@ -12841,6 +12869,27 @@ return /******/ (function(modules) { // webpackBootstrap
 	        container.selectAll('.dot').classed(classed);
 
 	        container.selectAll('.i-role-label').classed(classed);
+
+	        // Place highlighted element over others
+	        var highlighted = container.selectAll('.dot').filter(filter);
+	        if (highlighted.empty()) {
+	            return;
+	        }
+	        var notHighlighted = _d2.default.select(highlighted.node().parentNode).selectAll('.dot').filter(function (d) {
+	            return !filter(d);
+	        })[0];
+	        var lastNotHighlighted = notHighlighted[notHighlighted.length - 1];
+	        if (lastNotHighlighted) {
+	            var notHighlightedIndex = Array.prototype.indexOf.call(lastNotHighlighted.parentNode.childNodes, lastNotHighlighted);
+	            var nextSibling = lastNotHighlighted.nextSibling;
+	            highlighted.each(function () {
+	                var index = Array.prototype.indexOf.call(this.parentNode.childNodes, this);
+	                if (index > notHighlightedIndex) {
+	                    return;
+	                }
+	                this.parentNode.insertBefore(this, nextSibling);
+	            });
+	        }
 	    },
 	    highlightDataPoints: function highlightDataPoints(filter) {
 	        this.highlight(filter);
@@ -14560,7 +14609,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	        var cssClass = 'i-data-anchor';
 	        var screenModel = this.node().screenModel;
 	        var showOnHover = this.node().config.guide.showAnchors === 'hover';
-	        var rmin = 3; // Min highlight radius
+	        var rmin = 4; // Min highlight radius
 	        var rx = 1.25; // Highlight multiplier
 	        var anchors = this.node().config.options.container.selectAll('.' + cssClass).attr({
 	            r: showOnHover ? function (d) {
@@ -14582,7 +14631,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	            class: function _class(d) {
 	                return _utilsDom.utilsDom.classes(cssClass, screenModel.class(d));
 	            }
-	        });
+	        }).classed(_const.CSS_PREFIX + 'highlighted', filter);
 
 	        // Add highlighted elements to event
 	        filter.targetElements = [];
@@ -15506,6 +15555,27 @@ return /******/ (function(modules) { // webpackBootstrap
 	        container.selectAll('.bar').classed(classed);
 
 	        container.selectAll('.i-role-label').classed(classed);
+
+	        // Place highlighted element over others
+	        var highlighted = container.selectAll('.bar').filter(filter);
+	        if (highlighted.empty()) {
+	            return;
+	        }
+	        var notHighlighted = _d2.default.select(highlighted.node().parentNode).selectAll('.bar').filter(function (d) {
+	            return !filter(d);
+	        })[0];
+	        var lastNotHighlighted = notHighlighted[notHighlighted.length - 1];
+	        if (lastNotHighlighted) {
+	            var notHighlightedIndex = Array.prototype.indexOf.call(lastNotHighlighted.parentNode.childNodes, lastNotHighlighted);
+	            var nextSibling = lastNotHighlighted.nextSibling;
+	            highlighted.each(function () {
+	                var index = Array.prototype.indexOf.call(this.parentNode.childNodes, this);
+	                if (index > notHighlightedIndex) {
+	                    return;
+	                }
+	                this.parentNode.insertBefore(this, nextSibling);
+	            });
+	        }
 	    },
 	    highlightDataPoints: function highlightDataPoints(filter) {
 	        this.highlight(filter);
