@@ -316,6 +316,18 @@ const Interval = {
         container
             .selectAll('.i-role-label')
             .classed(classed);
+
+        // Place highlighted element over others
+        var highlighted = container
+            .selectAll('.bar')
+            .filter(filter);
+        var notHighlighted = container
+            .selectAll('.bar')
+            .filter((d) => !filter(d));
+        var lastNotHighlighted = notHighlighted[0][notHighlighted[0].length - 1];
+        highlighted.each(function () {
+            this.parentNode.insertBefore(this, lastNotHighlighted.nextSibling);
+        });
     },
 
     highlightDataPoints(filter) {

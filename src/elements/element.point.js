@@ -216,6 +216,18 @@ const Point = {
         container
             .selectAll('.i-role-label')
             .classed(classed);
+
+        // Place highlighted element over others
+        var highlighted = container
+            .selectAll('.dot')
+            .filter(filter);
+        var notHighlighted = container
+            .selectAll('.dot')
+            .filter((d) => !filter(d));
+        var lastNotHighlighted = notHighlighted[0][notHighlighted[0].length - 1];
+        highlighted.each(function () {
+            this.parentNode.insertBefore(this, lastNotHighlighted.nextSibling);
+        });
     },
 
     highlightDataPoints(filter) {
