@@ -221,13 +221,24 @@ const Point = {
         var highlighted = container
             .selectAll('.dot')
             .filter(filter);
-        var notHighlighted = container
+        if (highlighted.empty()) {
+            return;
+        }
+        var notHighlighted = d3.select(highlighted.node().parentNode)
             .selectAll('.dot')
-            .filter((d) => !filter(d));
-        var lastNotHighlighted = notHighlighted[0][notHighlighted[0].length - 1];
+            .filter((d) => !filter(d))[0];
+        var lastNotHighlighted = notHighlighted[notHighlighted.length - 1];
         if (lastNotHighlighted) {
+            var notHighlightedIndex = Array.prototype.indexOf.call(
+                lastNotHighlighted.parentNode.childNodes,
+                lastNotHighlighted);
+            var nextSibling = lastNotHighlighted.nextSibling;
             highlighted.each(function () {
-                this.parentNode.insertBefore(this, lastNotHighlighted.nextSibling);
+                var index = Array.prototype.indexOf.call(this.parentNode.childNodes, this);
+                if (index > notHighlightedIndex) {
+                    return;
+                }
+                this.parentNode.insertBefore(this, nextSibling);
             });
         }
     },
