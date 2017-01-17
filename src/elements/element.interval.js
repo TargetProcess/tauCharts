@@ -325,9 +325,11 @@ const Interval = {
             .selectAll('.bar')
             .filter((d) => !filter(d));
         var lastNotHighlighted = notHighlighted[0][notHighlighted[0].length - 1];
-        highlighted.each(function () {
-            this.parentNode.insertBefore(this, lastNotHighlighted.nextSibling);
-        });
+        if (lastNotHighlighted) {
+            highlighted.each(function () {
+                this.parentNode.insertBefore(this, lastNotHighlighted.nextSibling);
+            });
+        }
     },
 
     highlightDataPoints(filter) {
