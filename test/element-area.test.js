@@ -6,6 +6,7 @@ define(function (require) {
     var getArea = testUtils.getArea;
     var attrib = testUtils.attrib;
     var tauChart = require('src/tau.charts');
+    var MIN_ANCHOR_RADIUS = 4;
 
     var createSpec = function (testData, flip = false) {
         return {
@@ -92,7 +93,7 @@ define(function (require) {
 
             var highlightedDots0 = d3.selectAll('.i-data-anchor').filter(function () {
                 var r = parseFloat(d3.select(this).attr('r'));
-                return r === 3;
+                return r === MIN_ANCHOR_RADIUS;
             });
 
             expect(highlightedDots0[0].length).to.equal(2, 'should highlight 2 data points');
@@ -101,7 +102,7 @@ define(function (require) {
 
             var highlightedDots1 = d3.selectAll('.i-data-anchor').filter(function () {
                 var r = parseFloat(d3.select(this).attr('r'));
-                return r === 3;
+                return r === MIN_ANCHOR_RADIUS;
             });
 
             expect(highlightedDots1[0].length).to.equal(0, 'should remove highlight from all points');
