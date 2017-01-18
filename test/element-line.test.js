@@ -136,7 +136,10 @@ define(function (require) {
         var element;
         var chart;
 
-        beforeEach(function () {
+        var str = ((obj) => JSON.stringify(obj));
+
+        it("should render line with text on each dot", function () {
+
             element = document.createElement('div');
             document.body.appendChild(element);
             chart = new tauChart.Plot({
@@ -171,14 +174,7 @@ define(function (require) {
                 data: testData
             });
             chart.renderTo(element, {width: 800, height: 800});
-        });
-        afterEach(function () {
-            element.parentNode.removeChild(element);
-        });
 
-        var str = ((obj) => JSON.stringify(obj));
-
-        it("should render line with text on each dot", function () {
             var lines = d3.selectAll('.line');
             expect(lines[0].length).to.be.equal(1);
             var path = lines.select('path');
@@ -192,7 +188,44 @@ define(function (require) {
                 .to
                 .be
                 .equal(str(d3.rgb('#fedcba')));
+
+            element.parentNode.removeChild(element);
         });
+
+        it("should hide equal labels on line", function () {
+
+            element = document.createElement('div');
+            document.body.appendChild(element);
+            chart = new tauChart.Chart({
+                type: 'line',
+                x: 'x',
+                y: 'y',
+                color: 't',
+                label: 't',
+                data: [
+                    {x: 1, y: 5, t: 'Manchester'},
+                    {x: 3, y: 5, t: 'Manchester'},
+                    {x: 5, y: 10, t: 'Manchester'},
+                    {x: 1, y: 15, t: 'Chelsea'},
+                    {x: 3, y: 15, t: 'Chelsea'},
+                    {x: 5, y: 10, t: 'Chelsea'}
+                ]
+            });
+            chart.renderTo(element, {width: 800, height: 800});
+
+            var labels = d3.selectAll('.i-role-label');
+            expect(labels.size()).to.be.equal(6);
+            var visible = labels.filter(function () {
+                return this.getComputedTextLength() > 0;
+            });
+            expect(visible.size()).to.be.equal(2);
+            var texts = visible[0].map(t => t.textContent);
+            expect(texts.indexOf('Manchester') >= 0).to.be.true;
+            expect(texts.indexOf('Chelsea') >= 0).to.be.true;
+
+            element.parentNode.removeChild(element);
+        });
+
     });
 
     describe('line chart with size parameter', function () {
