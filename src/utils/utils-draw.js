@@ -15,6 +15,39 @@ var utilsDraw = {
         t = ( s2_x * (ay0 - by0) - s2_y * (ax0 - bx0)) / (-s2_x * s1_y + s1_x * s2_y);
 
         return (s >= 0 && s <= 1 && t >= 0 && t <= 1);
+    },
+
+    getDeepTransformTranslate(node) {
+        const parseTransformTranslate = (transform) => {
+            var result = {x: 0, y: 0};
+            if (!transform) {
+                return result;
+            }
+            var ts = transform.indexOf('translate(');
+            if (ts >= 0) {
+                var te = transform.indexOf(')', ts + 10);
+                var translateStr = transform.substring(ts + 10, te);
+                var translateParts = translateStr.trim().replace(',', ' ').replace(/\s+/, ' ').split(' ');
+                result.x = parseFloat(translateParts[0]);
+                if (translateParts.length > 1) {
+                    result.y = parseFloat(translateParts[1]);
+                }
+            }
+            return result;
+        };
+        var translate = {x: 0, y: 0};
+        var parent = node;
+        var tr, attr;
+        while (parent.nodeName.toUpperCase() !== 'SVG') {
+            attr = parent.getAttribute('transform');
+            if (attr) {
+                tr = parseTransformTranslate(attr);
+                translate.x += tr.x;
+                translate.y += tr.y;
+            }
+            parent = parent.parentNode;
+        }
+        return translate;
     }
 };
 /* jshint ignore:end */

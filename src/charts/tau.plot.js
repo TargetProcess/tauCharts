@@ -214,6 +214,7 @@ export class Plot extends Emitter {
     destroyNodes() {
         this._nodes.forEach((node) => node.destroy());
         this._nodes = [];
+        this._renderedItems = [];
     }
 
     onUnitDraw(unitNode) {
@@ -238,6 +239,24 @@ export class Plot extends Emitter {
         this.onUnitsStructureExpandedTransformers
             .forEach((TClass) => (new TClass(specRef)).transform(this));
         this.fire(['units', 'structure', 'expanded'].join(''), specRef);
+    }
+
+    getClosestElement(coordinates) {
+        console.log(JSON.stringify(coordinates));
+        const distance = (({x, y}) => Math.sqrt(x * x + y * y));
+        const closest = this._renderedItems
+            .filter((d) => d.getClosestElement)
+            .map((d) => ({
+                item: d,
+                closest: d.getClosestElement(coordinates)
+            }))
+            .filter((d) => d.closest)
+            .sort((a, b) => distance(a.closest) - distance(b.closest))[0];
+        if (closest) {
+            console.log('closest', closest.closest.x, closest.closest.y);
+            closest.closest.node.style.stroke = 'orange';
+            closest.closest.node.style.strokeWidth = '5';
+        }
     }
 
     renderTo(target, xSize) {
@@ -321,6 +340,13 @@ export class Plot extends Emitter {
             width: Math.floor(newSize.width),
             height: Math.floor(newSize.height)
         });
+        svg.on('mousemove', () => {
+            var svgRect = svg.node().getBoundingClientRect();
+            var x = d3.event.clientX - svgRect.left;
+            var y = d3.event.clientY - svgRect.top;
+            var coordinates = {x, y};
+            var el = this.getClosestElement(coordinates);
+        });
         this._svg = svg.node();
         this.fire('beforerender', this._svg);
         var roots = svg.selectAll('g.frame-root')
@@ -380,6 +406,7 @@ export class Plot extends Emitter {
             var start = Date.now();
             item.draw();
             this.onUnitDraw(item.node());
+            this._renderedItems.push(item);
             var end = Date.now();
             duration += end - start;
             syncDuration += end - start;

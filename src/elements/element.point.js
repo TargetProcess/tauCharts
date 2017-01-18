@@ -3,6 +3,7 @@ import {GrammarRegistry} from '../grammar-registry';
 import {LayerLabels} from './decorators/layer-labels';
 import {d3_transition} from '../utils/d3-decorators';
 import {utils} from '../utils/utils';
+import {utilsDraw} from '../utils/utils-draw';
 import d3 from 'd3';
 
 const Point = {
@@ -197,6 +198,31 @@ const Point = {
                 options
             ).draw(fibers)
         );
+    },
+
+    getClosestElement({x, y}) {
+        const container = this.node().config.options.container;
+        const screenModel = this.node().screenModel;
+        const distance = (({x, y}) => Math.sqrt(x * x + y * y));
+        const dots = container.selectAll('.dot');
+        if (dots.empty()) {
+            return null;
+        }
+        var items = dots[0].map((node) => {
+            const data = d3.select(node).data()[0];
+            const translate = utilsDraw.getDeepTransformTranslate(node);
+            const x = (screenModel.x(data) + translate.x);
+            const y = (screenModel.y(data) + translate.y);
+            const r = (screenModel.size(data) / 2);
+            var dist = distance({x, y});
+            if (dist < r) {
+                dist = (r - dist);
+            }
+            return {node, data, dist, x, y};
+        });
+        items = items.sort((a, b) => a.dist - b.dist);
+        const result = utils.omit(items[0], 'dist');
+        return result;
     },
 
     highlight(filter) {
