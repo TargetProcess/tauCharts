@@ -79,6 +79,7 @@ const BasePath = {
             config.guide.label,
             {
                 fontSize: 11,
+                hideEqualLabels: true,
                 position: [
                     'auto:avoid-label-label-overlap',
                     'auto:avoid-label-anchor-overlap',
