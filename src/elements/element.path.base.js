@@ -3,6 +3,7 @@ import {CSS_PREFIX} from '../const';
 import {d3_animationInterceptor, d3_transition as transition} from '../utils/d3-decorators';
 import {utils} from '../utils/utils';
 import {utilsDom} from '../utils/utils-dom';
+import {utilsDraw} from '../utils/utils-draw';
 import d3 from 'd3';
 
 const synthetic = 'taucharts_synthetic_record';
@@ -325,6 +326,42 @@ const BasePath = {
             config.flip,
             config.guide.label,
             options).draw(pureFibers));
+    },
+
+    getClosestElement(x0, y0) {
+        const container = this.node().config.options.container;
+        const screenModel = this.node().screenModel;
+        const {flip} = this.node().config;
+        const dots = container.selectAll('.i-data-anchor');
+        if (dots.empty()) {
+            return null;
+        }
+        var items = dots[0].map((node) => {
+            const data = d3.select(node).data()[0];
+            const translate = utilsDraw.getDeepTransformTranslate(node);
+            const x = (screenModel.x(data) + translate.x);
+            const y = (screenModel.y(data) + translate.y);
+            var distance = Math.abs(flip ? (y - y0) : (x - x0));
+            var secondaryDistance = Math.abs(flip ? (x - x0) : (y - y0));
+            return {node, data, distance, secondaryDistance, x, y};
+        });
+        items = items
+            .sort((a, b) => (a.distance === b.distance ?
+                (a.secondaryDistance - b.secondaryDistance) :
+                (a.distance - b.distance)));
+
+        const sameDistItems = items.slice(0, Math.max(1, items.findIndex((d) => (
+            (d.distance !== items[0].distance) ||
+            (d.secondaryDistance !== items[0].secondaryDistance)
+        ))));
+        if (sameDistItems.length === 1) {
+            return sameDistItems[0];
+        }
+        const mx = (sameDistItems.reduce((sum, item) => sum + item.x, 0) / sameDistItems.length);
+        const my = (sameDistItems.reduce((sum, item) => sum + item.y, 0) / sameDistItems.length);
+        const angle = (Math.atan2(my - y0, mx - x0) + Math.PI);
+        const closest = sameDistItems[Math.round((sameDistItems.length - 1) * angle / 2 / Math.PI)];
+        return closest;
     },
 
     highlight(filter) {

@@ -89,7 +89,7 @@ export class Element extends Emitter {
         // return nothing
     }
 
-    getClosestElement({x, y}) {
+    getClosestElement(x, y) {
         return null;
     }
     /* eslint-enable */

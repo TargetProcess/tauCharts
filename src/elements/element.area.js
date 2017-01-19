@@ -10,6 +10,7 @@ import getAreaPath from '../utils/path/svg/area-path';
 const Area = {
 
     draw: BasePath.draw,
+    getClosestElement: BasePath.getClosestElement,
     highlight: BasePath.highlight,
     highlightDataPoints: BasePath.highlightDataPoints,
     addInteraction: BasePath.addInteraction,

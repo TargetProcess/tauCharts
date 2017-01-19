@@ -200,10 +200,10 @@ const Point = {
         );
     },
 
-    getClosestElement({x, y}) {
+    getClosestElement(x0, y0) {
         const container = this.node().config.options.container;
         const screenModel = this.node().screenModel;
-        const distance = (({x, y}) => Math.sqrt(x * x + y * y));
+        const getDistance = ((x, y) => Math.sqrt(Math.pow(x - x0, 2) + Math.pow(y - y0, 2)));
         const dots = container.selectAll('.dot');
         if (dots.empty()) {
             return null;
@@ -214,15 +214,24 @@ const Point = {
             const x = (screenModel.x(data) + translate.x);
             const y = (screenModel.y(data) + translate.y);
             const r = (screenModel.size(data) / 2);
-            var dist = distance({x, y});
-            if (dist < r) {
-                dist = (r - dist);
+            var distance = getDistance(x, y);
+            if (distance < r) {
+                distance = (r - distance);
             }
-            return {node, data, dist, x, y};
+            return {node, data, distance, secondaryDistance: distance, x, y};
         });
-        items = items.sort((a, b) => a.dist - b.dist);
-        const result = utils.omit(items[0], 'dist');
-        return result;
+        items = items.sort((a, b) => a.distance - b.distance);
+        const sameDistItems = items.slice(0, Math.max(1, items.findIndex((d) => (
+            (d.distance !== items[0].distance)
+        ))));
+        if (sameDistItems.length === 1) {
+            return sameDistItems[0];
+        }
+        const mx = (sameDistItems.reduce((sum, item) => sum + item.x, 0) / sameDistItems.length);
+        const my = (sameDistItems.reduce((sum, item) => sum + item.y, 0) / sameDistItems.length);
+        const angle = (Math.atan2(my - y0, mx - x0) + Math.PI);
+        const closest = sameDistItems[Math.round((sameDistItems.length - 1) * angle / 2 / Math.PI)];
+        return closest;
     },
 
     highlight(filter) {

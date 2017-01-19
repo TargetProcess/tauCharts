@@ -241,22 +241,45 @@ export class Plot extends Emitter {
         this.fire(['units', 'structure', 'expanded'].join(''), specRef);
     }
 
-    getClosestElement(coordinates) {
-        console.log(JSON.stringify(coordinates));
-        const distance = (({x, y}) => Math.sqrt(x * x + y * y));
-        const closest = this._renderedItems
+    getClosestElement(x0, y0) {
+        const items = this._renderedItems
             .filter((d) => d.getClosestElement)
-            .map((d) => ({
-                item: d,
-                closest: d.getClosestElement(coordinates)
-            }))
-            .filter((d) => d.closest)
-            .sort((a, b) => distance(a.closest) - distance(b.closest))[0];
-        if (closest) {
-            console.log('closest', closest.closest.x, closest.closest.y);
-            closest.closest.node.style.stroke = 'orange';
-            closest.closest.node.style.strokeWidth = '5';
+            .map((item) => {
+                var el = item.getClosestElement(x0, y0);
+                if (!el) {
+                    return null;
+                }
+                return {
+                    item,
+                    el
+                };
+            })
+            .filter((d) => d)
+            .sort((a, b) => (a.el.distance === b.el.distance ?
+                (a.el.secondaryDistance - b.el.secondaryDistance) :
+                (a.el.distance - b.el.distance)));
+        if (items.length === 0) {
+            return null;
         }
+
+        const sameDistItems = items.slice(0, Math.max(1, items.findIndex((d) => (
+            (d.item.distance !== items[0].item.distance) ||
+            (d.item.secondaryDistance !== items[0].item.secondaryDistance)
+        ))));
+        var closest;
+        if (sameDistItems.length === 1) {
+            closest = sameDistItems[0];
+        } else {
+            const mx = (sameDistItems.reduce((sum, item) => sum + item.item.x, 0) / sameDistItems.length);
+            const my = (sameDistItems.reduce((sum, item) => sum + item.item.y, 0) / sameDistItems.length);
+            const angle = (Math.atan2(my - y0, mx - x0) + Math.PI);
+            closest = sameDistItems[Math.round((sameDistItems.length - 1) * angle / 2 / Math.PI)];
+        }
+
+        closest.el.node.style.stroke = 'orange';
+        closest.el.node.style.strokeWidth = '5';
+
+        return closest;
     }
 
     renderTo(target, xSize) {
@@ -344,8 +367,7 @@ export class Plot extends Emitter {
             var svgRect = svg.node().getBoundingClientRect();
             var x = d3.event.clientX - svgRect.left;
             var y = d3.event.clientY - svgRect.top;
-            var coordinates = {x, y};
-            var el = this.getClosestElement(coordinates);
+            var el = this.getClosestElement(x, y);
         });
         this._svg = svg.node();
         this.fire('beforerender', this._svg);

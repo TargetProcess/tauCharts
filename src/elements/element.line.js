@@ -11,6 +11,7 @@ import {getPolyline, getCurve} from '../utils/path/svg/line';
 const Line = {
 
     draw: BasePath.draw,
+    getClosestElement: BasePath.getClosestElement,
     highlight: BasePath.highlight,
     highlightDataPoints: BasePath.highlightDataPoints,
     addInteraction: BasePath.addInteraction,

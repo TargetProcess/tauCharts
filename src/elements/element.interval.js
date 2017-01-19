@@ -3,6 +3,7 @@ import {GrammarRegistry} from '../grammar-registry';
 import {LayerLabels} from './decorators/layer-labels';
 import {d3_animationInterceptor} from '../utils/d3-decorators';
 import {utils} from '../utils/utils';
+import {utilsDraw} from '../utils/utils-draw';
 import d3 from 'd3';
 
 const Interval = {
@@ -296,6 +297,30 @@ const Interval = {
                 class: ((d) => `${baseCssClass} ${screenModel.class(d)}`),
                 fill: ((d) => screenModel.color(d))
             });
+    },
+
+    getClosestElement(x0, y0) {
+        const container = this.node().config.options.container;
+        const screenModel = this.node().screenModel;
+        const {flip} = this.node().config;
+        const bars = container.selectAll('.bar');
+        if (bars.empty()) {
+            return null;
+        }
+        var items = bars[0].map((node) => {
+            const data = d3.select(node).data()[0];
+            const translate = utilsDraw.getDeepTransformTranslate(node);
+            const x = ((screenModel.x(data) + screenModel.x0(data)) / 2 + translate.x);
+            const y = ((screenModel.y(data) + screenModel.y0(data)) / 2 + translate.y);
+            var distance = Math.abs(flip ? (y - y0) : (x - x0));
+            var secondaryDistance = Math.abs(flip ? (x - x0) : (y - y0));
+            return {node, data, distance, secondaryDistance, x, y};
+        });
+        items = items
+            .sort((a, b) => (a.distance === b.distance ?
+                (a.secondaryDistance - b.secondaryDistance) :
+                (a.distance - b.distance)));
+        return items[0];
     },
 
     highlight(filter) {

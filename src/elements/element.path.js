@@ -8,6 +8,7 @@ import {d3_createPathTween} from '../utils/d3-decorators';
 const Path = {
 
     draw: BasePath.draw,
+    getClosestElement: BasePath.getClosestElement,
     highlight: BasePath.highlight,
     highlightDataPoints: BasePath.highlightDataPoints,
     addInteraction: BasePath.addInteraction,
