@@ -145,7 +145,7 @@ export class Plot extends Emitter {
                 return memo;
             }, []);
 
-        var isNullOrUndefined = ((x) => ((x === null) || (typeof(x) === 'undefined')));
+        var isNullOrUndefined = ((x) => ((x === null) || (typeof (x) === 'undefined')));
 
         var reducer = (refSources, metaDim) => {
             refSources[metaDim.source].data = refSources[metaDim.source]
@@ -241,45 +241,80 @@ export class Plot extends Emitter {
         this.fire(['units', 'structure', 'expanded'].join(''), specRef);
     }
 
-    getClosestElement(x0, y0) {
-        const items = this._renderedItems
+    _getClosestElementPerUnit(x0, y0) {
+        return this._renderedItems
             .filter((d) => d.getClosestElement)
             .map((item) => {
-                var el = item.getClosestElement(x0, y0);
-                if (!el) {
-                    return null;
-                }
-                return {
-                    item,
-                    el
-                };
-            })
-            .filter((d) => d)
-            .sort((a, b) => (a.el.distance === b.el.distance ?
-                (a.el.secondaryDistance - b.el.secondaryDistance) :
-                (a.el.distance - b.el.distance)));
-        if (items.length === 0) {
-            return null;
+                var closest = item.getClosestElement(x0, y0);
+                var unit = item.node();
+                return {unit, closest};
+            });
+    }
+
+    _handlePointerEvent(event) {
+        // TODO: Do not fire mouse events, fire highlight events directly.
+        // TODO: Highlight API seems not consistent.
+        const svgRect = this._svg.getBoundingClientRect();
+        const x = (event.clientX - svgRect.left);
+        const y = (event.clientY - svgRect.top);
+        const eventType = event.type;
+        var closestItem = null;
+        const items = this._getClosestElementPerUnit(x, y);
+        const nonEmpty = items
+            .filter((d) => d.closest)
+            .sort((a, b) => (a.closest.distance === b.closest.distance ?
+                (a.closest.secondaryDistance - b.closest.secondaryDistance) :
+                (a.closest.distance - b.closest.distance)));
+        if (nonEmpty.length > 0) {
+            const sameDistItems = nonEmpty.slice(0, Math.max(1, nonEmpty.findIndex((d) => (
+                (d.closest.distance !== nonEmpty[0].closest.distance) ||
+                (d.closest.secondaryDistance !== nonEmpty[0].closest.secondaryDistance)
+            ))));
+            if (sameDistItems.length === 1) {
+                closestItem = sameDistItems[0];
+            } else {
+                const mx = (sameDistItems.reduce((sum, item) => sum + item.closest.x, 0) / sameDistItems.length);
+                const my = (sameDistItems.reduce((sum, item) => sum + item.closest.y, 0) / sameDistItems.length);
+                const angle = (Math.atan2(my - y0, mx - x0) + Math.PI);
+                closestItem = sameDistItems[Math.round((sameDistItems.length - 1) * angle / 2 / Math.PI)];
+            }
         }
 
-        const sameDistItems = items.slice(0, Math.max(1, items.findIndex((d) => (
-            (d.item.distance !== items[0].item.distance) ||
-            (d.item.secondaryDistance !== items[0].item.secondaryDistance)
-        ))));
-        var closest;
-        if (sameDistItems.length === 1) {
-            closest = sameDistItems[0];
-        } else {
-            const mx = (sameDistItems.reduce((sum, item) => sum + item.item.x, 0) / sameDistItems.length);
-            const my = (sameDistItems.reduce((sum, item) => sum + item.item.y, 0) / sameDistItems.length);
-            const angle = (Math.atan2(my - y0, mx - x0) + Math.PI);
-            closest = sameDistItems[Math.round((sameDistItems.length - 1) * angle / 2 / Math.PI)];
+        items
+            .filter((item) => item !== closestItem)
+            .forEach((item) => item.unit.fire('mouseout', {event, data: null}));
+        if (closestItem) {
+            closestItem.unit.fire(eventType, {event, data: closestItem.closest.data});
         }
 
-        closest.el.node.style.stroke = 'orange';
-        closest.el.node.style.strokeWidth = '5';
+        return closestItem;
+    }
 
-        return closest;
+    _initPointerEvents() {
+        this._pointerAnimationFrameRequested = false;
+        var svg = d3.select(this._svg);
+        var closestItem = null;
+        var handler = () => {
+            if (!this._pointerAnimationFrameRequested) {
+                var eventObj = d3.event;
+                var svgRect = svg.node().getBoundingClientRect();
+                requestAnimationFrame(() => {
+                    this._pointerAnimationFrameRequested = false;
+                    closestItem = this._handlePointerEvent(eventObj);
+                });
+                this._pointerAnimationFrameRequested = true;
+            }
+        };
+        svg.on('mousemove', handler);
+        svg.on('click', handler);
+        svg.on('mouseleave', () => {
+            if (closestItem) {
+                var d3Event = d3.event;
+                requestAnimationFrame(() => {
+                    closestItem.unit.fire('mouseout', {event: d3Event, data: null});
+                });
+            }
+        });
     }
 
     renderTo(target, xSize) {
@@ -363,13 +398,8 @@ export class Plot extends Emitter {
             width: Math.floor(newSize.width),
             height: Math.floor(newSize.height)
         });
-        svg.on('mousemove', () => {
-            var svgRect = svg.node().getBoundingClientRect();
-            var x = d3.event.clientX - svgRect.left;
-            var y = d3.event.clientY - svgRect.top;
-            var el = this.getClosestElement(x, y);
-        });
         this._svg = svg.node();
+        this._initPointerEvents();
         this.fire('beforerender', this._svg);
         var roots = svg.selectAll('g.frame-root')
             .data([frameRootId], x => x);
@@ -451,7 +481,7 @@ export class Plot extends Emitter {
                     timeout = Infinity;
                     next();
                 },
-                cancel:() => {
+                cancel: () => {
                     this._cancelRendering();
                 }
             });

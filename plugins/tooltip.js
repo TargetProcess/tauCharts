@@ -186,15 +186,17 @@
                         (function fixFocusOut() {
                             // NOTE: `mouseout` still can fire after setting `pointer-events:none`
                             // so have to restore highlight on element.
-                            var node = state.highlight.node;
+                            var node = this._chart.getSVG();
                             var event = state.highlight.event;
                             var unit = state.highlight.unit;
                             var data = state.highlight.data;
                             var onNodeMouseOut = function () {
-                                node.removeEventListener('mouseout', onNodeMouseOut);
-                                this._accentFocus(event, unit, data);
+                                node.removeEventListener('mouseleave', onNodeMouseOut);
+                                requestAnimationFrame(function () {
+                                    this._accentFocus(event, unit, data);
+                                }.bind(this));
                             }.bind(this);
-                            node.addEventListener('mouseout', onNodeMouseOut);
+                            node.addEventListener('mouseleave', onNodeMouseOut);
                         }.bind(this))();
                         this._setTargetSvgStuckClass(true);
                         tooltipNode.classList.add('stuck');
