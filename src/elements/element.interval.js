@@ -125,7 +125,7 @@ const Interval = {
         };
         const activate = ((sender, e) => sender.fire('highlight-data-points', getHighlightEvtObj(e.event, e.data)));
         const click = ((sender, e) => sender.fire('click-data-points', getHighlightEvtObj(e.event, e.data, false)));
-        node.on('data-element-move', activate);
+        node.on('data-element-hover', activate);
         node.on('data-element-click', click);
     },
 

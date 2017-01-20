@@ -260,7 +260,7 @@ export class Plot extends Emitter {
         const y = (event.clientY - svgRect.top);
         const eventType = event.type;
         const isClick = (eventType === 'click');
-        const dataEvent = (isClick ? 'data-element-click' : 'data-element-move');
+        const dataEvent = (isClick ? 'data-element-click' : 'data-element-hover');
         var data = null;
         const items = this._getClosestElementPerUnit(x, y);
         const nonEmpty = items
@@ -308,7 +308,7 @@ export class Plot extends Emitter {
             var d3Event = d3.event;
             requestAnimationFrame(() => {
                 this.select(() => true)
-                    .forEach((unit) => unit.fire('data-element-move', {event: d3Event, data: null}));
+                    .forEach((unit) => unit.fire('data-element-hover', {event: d3Event, data: null}));
             });
         });
     }
