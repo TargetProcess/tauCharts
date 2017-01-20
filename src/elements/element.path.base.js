@@ -426,7 +426,7 @@ const BasePath = {
         const showOnHover = this.node().config.guide.showAnchors === 'hover';
         const rmin = 4; // Min highlight radius
         const rx = 1.25; // Highlight multiplier
-        var anchors = this.node()
+        this.node()
             .config
             .options
             .container

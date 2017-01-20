@@ -278,7 +278,7 @@ export class Plot extends Emitter {
             } else {
                 const mx = (sameDistItems.reduce((sum, item) => sum + item.closest.x, 0) / sameDistItems.length);
                 const my = (sameDistItems.reduce((sum, item) => sum + item.closest.y, 0) / sameDistItems.length);
-                const angle = (Math.atan2(my - y0, mx - x0) + Math.PI);
+                const angle = (Math.atan2(my - y, mx - x) + Math.PI);
                 data = sameDistItems[Math.round((sameDistItems.length - 1) * angle / 2 / Math.PI)].closest.data;
             }
         }
@@ -292,7 +292,6 @@ export class Plot extends Emitter {
         var handler = () => {
             if (!this._pointerAnimationFrameRequested) {
                 var eventObj = d3.event;
-                var svgRect = svg.node().getBoundingClientRect();
                 requestAnimationFrame(() => {
                     this._pointerAnimationFrameRequested = false;
                     this._handlePointerEvent(eventObj);
