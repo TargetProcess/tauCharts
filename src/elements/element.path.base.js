@@ -149,17 +149,14 @@ const BasePath = {
         const node = this.node();
         const config = this.node().config;
 
-        node.on('highlight', (sender, e) => this.highlight(e));
-        node.on('highlight-data-points', (sender, e) => {
-            this.highlightDataPoints(e);
-            if (!e.data) {
-                this.highlight(e);
+        node.on('highlight', (sender, e) => {
+            this.highlight(e);
+            if (e.data === null) {
+                this.highlightDataPoints(e);
             }
         });
-        node.on('click-data-points', (sender, e) => {
-            this.highlight(e);
-            this.highlightDataPoints(e);
-        });
+        node.on('highlight-data-points', (sender, e) => this.highlightDataPoints(e));
+        node.on('click-data-points', (sender, e) => this.highlight(e));
 
         if (config.guide.showAnchors !== 'never') {
             const getHighlightEvtObj = (e, data) => {

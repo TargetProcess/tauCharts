@@ -14,8 +14,8 @@
     var d3 = tauCharts.api.d3;
     var utils = tauCharts.api.utils;
     var pluginsSDK = tauCharts.api.pluginsSDK;
-    var TARGET_SVG_CLASS = 'graphical-report__svg__tooltip-target';
-    var TARGET_SVG_STUCK_CLASS = 'graphical-report__svg__tooltip-target-stuck';
+    var TARGET_SVG_CLASS = 'graphical-report__tooltip-target';
+    var TARGET_SVG_STUCK_CLASS = 'graphical-report__tooltip-target-stuck';
 
     function Tooltip(xSettings) {
 

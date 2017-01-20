@@ -145,7 +145,7 @@ export class Plot extends Emitter {
                 return memo;
             }, []);
 
-        var isNullOrUndefined = ((x) => ((x === null) || (typeof (x) === 'undefined')));
+        var isNullOrUndefined = ((x) => ((x === null) || (x === undefined)));
 
         var reducer = (refSources, metaDim) => {
             refSources[metaDim.source].data = refSources[metaDim.source]
@@ -292,7 +292,6 @@ export class Plot extends Emitter {
         var handler = () => {
             if (!this._pointerAnimationFrameRequested) {
                 var eventObj = d3.event;
-                console.log(event.type)
                 var svgRect = svg.node().getBoundingClientRect();
                 requestAnimationFrame(() => {
                     this._pointerAnimationFrameRequested = false;
