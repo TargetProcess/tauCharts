@@ -155,17 +155,20 @@
                 if (state.highlight.data !== prev.highlight.data) {
                     if (state.highlight.data) {
                         this.hideTooltip();
-                        var showTooltip = function () {
-                            this.showTooltip(
-                                state.highlight.data,
-                                state.highlight.cursor,
-                                state.highlight.node
-                            );
-                        }.bind(this);
-                        showTooltip();
+                        this.showTooltip(
+                            state.highlight.data,
+                            state.highlight.cursor,
+                            state.highlight.node
+                        );
+                        this._setTargetSvgClass(true);
+                        requestAnimationFrame(function(){
+                            this._setTargetSvgClass(true);
+                        }.bind(this));
+                        this._setTargetSvgClass(true);
                     } else if (!state.isStuck && prev.highlight.data && !state.highlight.data) {
                         this._removeFocus(prev.highlight.event, prev.highlight.unit);
                         this.hideTooltip();
+                        this._setTargetSvgClass(false);
                     }
                 }
 
@@ -376,7 +379,6 @@
                 this._skipInfo = info.skip;
 
                 this._subscribeToHover();
-                this._setTargetSvgClass(true);
             },
 
             _setTargetSvgClass: function (isSet) {

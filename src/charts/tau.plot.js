@@ -311,12 +311,12 @@ export class Plot extends Emitter {
         svg.on('mousemove', handler);
         svg.on('click', handler);
         svg.on('mouseleave', () => {
-            if (closestItem) {
-                var d3Event = d3.event;
-                requestAnimationFrame(() => {
+            var d3Event = d3.event;
+            requestAnimationFrame(() => {
+                if (closestItem) {
                     closestItem.unit.fire('data-element-out', {event: d3Event, data: null});
-                });
-            }
+                }
+            });
         });
     }
 

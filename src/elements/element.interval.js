@@ -18,6 +18,7 @@ const Interval = {
             {
                 animationSpeed: 0,
                 avoidScalesOverflow: true,
+                maxHighlightDistance: 32,
                 prettify: true,
                 enableColorToBarPosition: !config.stack
             });
@@ -298,27 +299,51 @@ const Interval = {
             });
     },
 
-    getClosestElement(x0, y0) {
+    getClosestElement(cursorX, cursorY) {
         const container = this.node().config.options.container;
         const screenModel = this.node().screenModel;
         const {flip} = this.node().config;
+        const {maxHighlightDistance} = this.node().config.guide;
+
         const bars = container.selectAll('.bar');
-        if (bars.empty()) {
-            return null;
-        }
-        var items = bars[0].map((node) => {
-            const data = d3.select(node).data()[0];
-            const translate = utilsDraw.getDeepTransformTranslate(node);
-            const x = ((screenModel.x(data) + screenModel.x0(data)) / 2 + translate.x);
-            const y = ((screenModel.y(data) + screenModel.y0(data)) / 2 + translate.y);
-            var distance = Math.abs(flip ? (y - y0) : (x - x0));
-            var secondaryDistance = Math.abs(flip ? (x - x0) : (y - y0));
-            return {node, data, distance, secondaryDistance, x, y};
-        });
-        items = items
+        var minX = Number.MAX_VALUE;
+        var maxX = Number.MIN_VALUE;
+        var minY = Number.MAX_VALUE;
+        var maxY = Number.MIN_VALUE;
+        const items = bars[0]
+            .map((node) => {
+                const data = d3.select(node).data()[0];
+                const translate = utilsDraw.getDeepTransformTranslate(node);
+                const x = screenModel.x(data);
+                const x0 = screenModel.x0(data);
+                const y = screenModel.y(data);
+                const y0 = screenModel.y0(data);
+                const w = Math.abs(x - x0);
+                const h = Math.abs(y - y0);
+                const cx = ((x + x0) / 2 + translate.x);
+                const cy = ((y + y0) / 2 + translate.y);
+                const distance = Math.abs(flip ? (cy - cursorY) : (cx - cursorX));
+                const secondaryDistance = Math.abs(flip ? (cx - cursorX) : (cy - cursorY));
+                minX = Math.min(cx - w / 2, minX);
+                maxX = Math.max(cx + w / 2, maxX);
+                minY = Math.min(cy - h / 2, minY);
+                maxY = Math.max(cy + h / 2, maxY);
+                return {node, data, distance, secondaryDistance, x: cx, y: cy};
+            })
             .sort((a, b) => (a.distance === b.distance ?
                 (a.secondaryDistance - b.secondaryDistance) :
-                (a.distance - b.distance)));
+                (a.distance - b.distance)
+            ));
+
+        if ((items.length === 0) ||
+            (cursorX < minX - maxHighlightDistance) ||
+            (cursorX > maxX + maxHighlightDistance) ||
+            (cursorY < minY - maxHighlightDistance) ||
+            (cursorY > maxY + maxHighlightDistance)
+        ) {
+            return null;
+        }
+
         return items[0];
     },
 

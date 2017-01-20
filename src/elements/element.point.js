@@ -17,7 +17,8 @@ const Point = {
             {
                 animationSpeed: 0,
                 avoidScalesOverflow: true,
-                enableColorToBarPosition: false
+                enableColorToBarPosition: false,
+                maxHighlightDistance: 32
             });
 
         config.guide.size = (config.guide.size || {});
@@ -203,23 +204,32 @@ const Point = {
         const container = this.node().config.options.container;
         const screenModel = this.node().screenModel;
         const getDistance = ((x, y) => Math.sqrt(Math.pow(x - x0, 2) + Math.pow(y - y0, 2)));
+        const {maxHighlightDistance} = this.node().config.guide;
+
         const dots = container.selectAll('.dot');
-        if (dots.empty()) {
+        const items = dots[0]
+            .map((node) => {
+                const data = d3.select(node).data()[0];
+                const translate = utilsDraw.getDeepTransformTranslate(node);
+                const x = (screenModel.x(data) + translate.x);
+                const y = (screenModel.y(data) + translate.y);
+                const r = (screenModel.size(data) / 2);
+                var distance = getDistance(x, y);
+                if (distance < r) {
+                    distance = (r - distance);
+                }
+                if (distance > r && distance > maxHighlightDistance) {
+                    return null;
+                }
+                return {node, data, distance, secondaryDistance: distance, x, y};
+            })
+            .filter((d) => d)
+            .sort((a, b) => a.distance - b.distance);
+
+        if (items.length === 0) {
             return null;
         }
-        var items = dots[0].map((node) => {
-            const data = d3.select(node).data()[0];
-            const translate = utilsDraw.getDeepTransformTranslate(node);
-            const x = (screenModel.x(data) + translate.x);
-            const y = (screenModel.y(data) + translate.y);
-            const r = (screenModel.size(data) / 2);
-            var distance = getDistance(x, y);
-            if (distance < r) {
-                distance = (r - distance);
-            }
-            return {node, data, distance, secondaryDistance: distance, x, y};
-        });
-        items = items.sort((a, b) => a.distance - b.distance);
+
         const sameDistItems = items.slice(0, Math.max(1, items.findIndex((d) => (
             (d.distance !== items[0].distance)
         ))));

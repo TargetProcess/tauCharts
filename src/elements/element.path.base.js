@@ -70,6 +70,7 @@ const BasePath = {
             {
                 animationSpeed: 0,
                 cssClass: '',
+                maxHighlightDistance: 32,
                 widthCssClass: '',
                 color: {},
                 label: {}
@@ -327,27 +328,44 @@ const BasePath = {
             options).draw(pureFibers));
     },
 
-    getClosestElement(x0, y0) {
+    getClosestElement(cursorX, cursorY) {
         const container = this.node().config.options.container;
         const screenModel = this.node().screenModel;
         const {flip} = this.node().config;
+        const {maxHighlightDistance} = this.node().config.guide;
+
         const dots = container.selectAll('.i-data-anchor');
-        if (dots.empty()) {
-            return null;
-        }
-        var items = dots[0].map((node) => {
-            const data = d3.select(node).data()[0];
-            const translate = utilsDraw.getDeepTransformTranslate(node);
-            const x = (screenModel.x(data) + translate.x);
-            const y = (screenModel.y(data) + translate.y);
-            var distance = Math.abs(flip ? (y - y0) : (x - x0));
-            var secondaryDistance = Math.abs(flip ? (x - x0) : (y - y0));
-            return {node, data, distance, secondaryDistance, x, y};
-        });
-        items = items
+        var minX = Number.MAX_VALUE;
+        var maxX = Number.MIN_VALUE;
+        var minY = Number.MAX_VALUE;
+        var maxY = Number.MIN_VALUE;
+        const items = dots[0]
+            .map((node) => {
+                const data = d3.select(node).data()[0];
+                const translate = utilsDraw.getDeepTransformTranslate(node);
+                const x = (screenModel.x(data) + translate.x);
+                const y = (screenModel.y(data) + translate.y);
+                var distance = Math.abs(flip ? (y - cursorY) : (x - cursorX));
+                var secondaryDistance = Math.abs(flip ? (x - cursorX) : (y - cursorY));
+                minX = Math.min(x, minX);
+                maxX = Math.max(x, maxX);
+                minY = Math.min(y, minY);
+                maxY = Math.max(y, maxY);
+                return {node, data, distance, secondaryDistance, x, y};
+            })
             .sort((a, b) => (a.distance === b.distance ?
                 (a.secondaryDistance - b.secondaryDistance) :
-                (a.distance - b.distance)));
+                (a.distance - b.distance)
+            ));
+
+        if ((items.length === 0) ||
+            (cursorX < minX - maxHighlightDistance) ||
+            (cursorX > maxX + maxHighlightDistance) ||
+            (cursorY < minY - maxHighlightDistance) ||
+            (cursorY > maxY + maxHighlightDistance)
+        ) {
+            return null;
+        }
 
         const sameDistItems = items.slice(0, Math.max(1, items.findIndex((d) => (
             (d.distance !== items[0].distance) ||
@@ -358,7 +376,7 @@ const BasePath = {
         }
         const mx = (sameDistItems.reduce((sum, item) => sum + item.x, 0) / sameDistItems.length);
         const my = (sameDistItems.reduce((sum, item) => sum + item.y, 0) / sameDistItems.length);
-        const angle = (Math.atan2(my - y0, mx - x0) + Math.PI);
+        const angle = (Math.atan2(my - cursorY, mx - cursorX) + Math.PI);
         const closest = sameDistItems[Math.round((sameDistItems.length - 1) * angle / 2 / Math.PI)];
         return closest;
     },
