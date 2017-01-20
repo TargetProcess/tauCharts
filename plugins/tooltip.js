@@ -161,7 +161,7 @@
                             state.highlight.node
                         );
                         this._setTargetSvgClass(true);
-                        requestAnimationFrame(function(){
+                        requestAnimationFrame(function () {
                             this._setTargetSvgClass(true);
                         }.bind(this));
                         this._setTargetSvgClass(true);
@@ -206,7 +206,9 @@
                         this._tooltip.updateSize();
                     } else {
                         window.removeEventListener('click', this._outerClickHandler, true);
-                        this._setTargetSvgStuckClass(false);
+                        requestAnimationFrame(function () {
+                            this._setTargetSvgStuckClass(false);
+                        }.bind(this));
                         tooltipNode.classList.remove('stuck');
                     }
                 }
