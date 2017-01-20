@@ -282,9 +282,12 @@ export class Plot extends Emitter {
 
         items
             .filter((item) => item !== closestItem)
-            .forEach((item) => item.unit.fire('mouseout', {event, data: null}));
+            .forEach((item) => item.unit.fire('data-element-out', {event, data: null}));
         if (closestItem) {
-            closestItem.unit.fire(eventType, {event, data: closestItem.closest.data});
+            closestItem.unit.fire(
+                (eventType === 'click' ? 'data-element-click' : 'data-element-move'),
+                {event, data: closestItem.closest.data}
+            );
         }
 
         return closestItem;

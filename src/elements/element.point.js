@@ -110,10 +110,9 @@ const Point = {
         const activate = ((sender, e) => sender.fire('highlight-data-points', getHighlightEvtObj(e.event, e.data)));
         const deactivate = ((sender, e) => sender.fire('highlight-data-points', getHighlightEvtObj(e.event, null)));
         const click = ((sender, e) => sender.fire('click-data-points', getHighlightEvtObj(e.event, e.data)));
-        node.on('mouseover', activate);
-        node.on('mousemove', activate);
-        node.on('mouseout', deactivate);
-        node.on('click', click);
+        node.on('data-element-move', activate);
+        node.on('data-element-out', deactivate);
+        node.on('data-element-click', click);
     },
 
     draw() {

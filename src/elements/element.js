@@ -27,7 +27,6 @@ export class Element extends Emitter {
     }
 
     subscribe(sel, dataInterceptor = (x => x), eventInterceptor = (x => x)) {
-        return; // NOTE: Temporary disable pointer events on elements themself.
         var self = this;
         var last = {};
         [
