@@ -314,7 +314,7 @@ export class Plot extends Emitter {
             if (closestItem) {
                 var d3Event = d3.event;
                 requestAnimationFrame(() => {
-                    closestItem.unit.fire('mouseout', {event: d3Event, data: null});
+                    closestItem.unit.fire('data-element-out', {event: d3Event, data: null});
                 });
             }
         });
