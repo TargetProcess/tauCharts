@@ -99,20 +99,18 @@ const Point = {
     addInteraction() {
         const node = this.node();
         node.on('highlight', (sender, e) => this.highlight(e));
-        node.on('highlight-data-points', (sender, e) => this.highlightDataPoints(e));
-        node.on('click-data-points', (sender, e) => this.highlightDataPoints(e));
+        node.on('highlight-data-points', (sender, e) => this.highlight(e));
+        node.on('click-data-points', (sender, e) => this.highlight(e));
 
-        const getHighlightEvtObj = (e, data) => {
-            const filter = ((d) => d === data ? true : null);
+        const getHighlightEvtObj = (e, data, falsy = null) => {
+            const filter = ((d) => d === data ? true : falsy);
             filter.data = data;
             filter.domEvent = e;
             return filter;
         };
         const activate = ((sender, e) => sender.fire('highlight-data-points', getHighlightEvtObj(e.event, e.data)));
-        const deactivate = ((sender, e) => sender.fire('highlight-data-points', getHighlightEvtObj(e.event, null)));
-        const click = ((sender, e) => sender.fire('click-data-points', getHighlightEvtObj(e.event, e.data)));
+        const click = ((sender, e) => sender.fire('click-data-points', getHighlightEvtObj(e.event, e.data, false)));
         node.on('data-element-move', activate);
-        node.on('data-element-out', deactivate);
         node.on('data-element-click', click);
     },
 
@@ -286,19 +284,6 @@ const Point = {
                 this.parentNode.insertBefore(this, nextSibling);
             });
         }
-    },
-
-    highlightDataPoints(filter) {
-        this.highlight(filter);
-
-        // Add highlighted elements to event.
-        filter.targetElements = [];
-        this.node().config.options.container
-            .selectAll('.dot')
-            .filter(filter)
-            .each(function () {
-                filter.targetElements.push(this);
-            });
     }
 };
 

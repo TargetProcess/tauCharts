@@ -34,9 +34,12 @@
                 }
             });
 
-        function getHighlightEvtObj(e, data) {
+        function getHighlightEvtObj(e, data, falsy) {
+            if (falsy === undefined) {
+                falsy = null;
+            }
             var filter = function (row) {
-                return (row === data ? true : null);
+                return (row === data ? true : falsy);
             };
             filter.domEvent = e;
             filter.data = data;
@@ -143,8 +146,8 @@
             setState: function (newState) {
                 var prev = this.state;
                 var state = this.state = Object.assign({}, prev, newState);
-                prev.highlight = prev.highlight || {data: null, node: null, cursor: null, unit: null, event: null};
-                state.highlight = state.highlight || {data: null, node: null, cursor: null, unit: null, event: null};
+                prev.highlight = prev.highlight || {data: null, cursor: null, unit: null, event: null};
+                state.highlight = state.highlight || {data: null, cursor: null, unit: null, event: null};
 
                 // If stuck, treat that data has not changed
                 if (state.isStuck && prev.highlight.data) {
@@ -157,8 +160,7 @@
                         this.hideTooltip();
                         this.showTooltip(
                             state.highlight.data,
-                            state.highlight.cursor,
-                            state.highlight.node
+                            state.highlight.cursor
                         );
                         this._setTargetSvgClass(true);
                         requestAnimationFrame(function () {
@@ -166,7 +168,7 @@
                         }.bind(this));
                         this._setTargetSvgClass(true);
                     } else if (!state.isStuck && prev.highlight.data && !state.highlight.data) {
-                        this._removeFocus(prev.highlight.event, prev.highlight.unit);
+                        this._removeFocus(prev.highlight.event, null);
                         this.hideTooltip();
                         this._setTargetSvgClass(false);
                     }
@@ -186,35 +188,22 @@
                 if (state.isStuck !== prev.isStuck) {
                     if (state.isStuck) {
                         window.addEventListener('click', this._outerClickHandler, true);
-                        (function fixFocusOut() {
-                            // NOTE: `mouseout` still can fire after setting `pointer-events:none`
-                            // so have to restore highlight on element.
-                            var node = this._chart.getSVG();
-                            var event = state.highlight.event;
-                            var unit = state.highlight.unit;
-                            var data = state.highlight.data;
-                            var onNodeMouseOut = function () {
-                                node.removeEventListener('mouseleave', onNodeMouseOut);
-                                requestAnimationFrame(function () {
-                                    this._accentFocus(event, unit, data);
-                                }.bind(this));
-                            }.bind(this);
-                            node.addEventListener('mouseleave', onNodeMouseOut);
-                        }.bind(this))();
-                        this._setTargetSvgStuckClass(true);
                         tooltipNode.classList.add('stuck');
+                        this._setTargetSvgStuckClass(true);
                         this._tooltip.updateSize();
                     } else {
                         window.removeEventListener('click', this._outerClickHandler, true);
+                        tooltipNode.classList.remove('stuck');
+                        // NOTE: Prevent showing tooltip immediately
+                        // after pointer events appear.
                         requestAnimationFrame(function () {
                             this._setTargetSvgStuckClass(false);
                         }.bind(this));
-                        tooltipNode.classList.remove('stuck');
                     }
                 }
             },
 
-            showTooltip: function (data, cursor, node) {
+            showTooltip: function (data, cursor) {
 
                 var content = this.getTooltipNode().querySelectorAll('.i-role-content')[0];
                 if (content) {
@@ -245,7 +234,7 @@
                 window.removeEventListener('resize', this._scrollHandler, true);
                 this._setTargetSvgClass(false);
                 if (this.state.highlight.unit) {
-                    this._removeFocus(this.state.highlight.event, this.state.highlight.unit);
+                    this._removeFocus(this.state.highlight.event, null);
                 }
                 this.setState({
                     highlight: null,
@@ -277,7 +266,6 @@
                                     data: e.data,
                                     cursor: {x: e.domEvent.clientX, y: e.domEvent.clientY},
                                     event: e,
-                                    node: e.targetElements[0],
                                     unit: sender
                                 } : null)
                             });
@@ -289,7 +277,6 @@
                                     data: e.data,
                                     cursor: {x: e.domEvent.clientX, y: e.domEvent.clientY},
                                     event: e,
-                                    node: e.targetElements[0],
                                     unit: sender
                                 },
                                 isStuck: true
@@ -340,12 +327,26 @@
                 return meta.label;
             },
 
-            _removeFocus: function (e, unit) {
-                unit.fire('highlight-data-points', getHighlightEvtObj(e, null));
+            _removeFocus: function (e, falsy) {
+                var eventObj = getHighlightEvtObj(e, null, falsy);
+                this._chart
+                    .select(function () {
+                        return true;
+                    }).forEach(function (unit) {
+                        unit.fire('highlight', eventObj);
+                    });
             },
 
-            _accentFocus: function (e, unit, data) {
-                unit.fire('highlight-data-points', getHighlightEvtObj(e, data));
+            _accentFocus: function (e, unit, data, falsy) {
+                var hlObj = getHighlightEvtObj(e, data, falsy);
+                var dimObj = getHighlightEvtObj(e, null, falsy);
+                this._chart
+                    .select(function (item) {
+                        return (item !== unit);
+                    }).forEach(function (unit) {
+                        unit.fire('highlight', dimObj);
+                    });
+                unit.fire('highlight', hlObj);
             },
 
             _reveal: function () {

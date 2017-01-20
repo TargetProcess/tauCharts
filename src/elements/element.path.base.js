@@ -150,8 +150,16 @@ const BasePath = {
         const config = this.node().config;
 
         node.on('highlight', (sender, e) => this.highlight(e));
-        node.on('highlight-data-points', (sender, e) => this.highlightDataPoints(e));
-        node.on('click-data-points', (sender, e) => this.highlightDataPoints(e));
+        node.on('highlight-data-points', (sender, e) => {
+            this.highlightDataPoints(e);
+            if (!e.data) {
+                this.highlight(e);
+            }
+        });
+        node.on('click-data-points', (sender, e) => {
+            this.highlight(e);
+            this.highlightDataPoints(e);
+        });
 
         if (config.guide.showAnchors !== 'never') {
             const getHighlightEvtObj = (e, data) => {
@@ -161,10 +169,8 @@ const BasePath = {
                 return filter;
             };
             const activate = ((sender, e) => sender.fire('highlight-data-points', getHighlightEvtObj(e.event, e.data)));
-            const deactivate = ((sender, e) => sender.fire('highlight-data-points', getHighlightEvtObj(e.event, null)));
             const click = ((sender, e) => sender.fire('click-data-points', getHighlightEvtObj(e.event, e.data)));
             node.on('data-element-move', activate);
-            node.on('data-element-out', deactivate);
             node.on('data-element-click', click);
         }
     },
@@ -388,11 +394,19 @@ const BasePath = {
         const x = 'graphical-report__highlighted';
         const _ = 'graphical-report__dimmed';
 
-        container
-            .selectAll('.i-role-path')
+        const paths = container.selectAll('.i-role-path');
+        const targetFibers = paths.data()
+            .filter((fiber) => {
+                return fiber
+                    .filter(isNonSyntheticRecord)
+                    .some(filter);
+            });
+        const hasTarget = (targetFibers.length > 0);
+
+        paths
             .classed({
-                [x]: ((fiber) => filter(fiber.filter(isNonSyntheticRecord)[0]) === true),
-                [_]: ((fiber) => filter(fiber.filter(isNonSyntheticRecord)[0]) === false)
+                [x]: ((fiber) => hasTarget && targetFibers.indexOf(fiber) >= 0),
+                [_]: ((fiber) => hasTarget && targetFibers.indexOf(fiber) < 0)
             });
 
         const classed = {
@@ -437,12 +451,6 @@ const BasePath = {
                 class: (d) => utilsDom.classes(cssClass, screenModel.class(d))
             })
             .classed(`${CSS_PREFIX}highlighted`, filter);
-
-        // Add highlighted elements to event
-        filter.targetElements = [];
-        anchors.filter(filter).each(function () {
-            filter.targetElements.push(this);
-        });
     }
 };
 

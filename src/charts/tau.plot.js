@@ -252,13 +252,16 @@ export class Plot extends Emitter {
     }
 
     _handlePointerEvent(event) {
-        // TODO: Do not fire mouse events, fire highlight events directly.
         // TODO: Highlight API seems not consistent.
+        // Just predicate is not enough, also
+        // need coordinates or event object.
         const svgRect = this._svg.getBoundingClientRect();
         const x = (event.clientX - svgRect.left);
         const y = (event.clientY - svgRect.top);
         const eventType = event.type;
-        var closestItem = null;
+        const isClick = (eventType === 'click');
+        const dataEvent = (isClick ? 'data-element-click' : 'data-element-move');
+        var data = null;
         const items = this._getClosestElementPerUnit(x, y);
         const nonEmpty = items
             .filter((d) => d.closest)
@@ -271,39 +274,29 @@ export class Plot extends Emitter {
                 (d.closest.secondaryDistance !== nonEmpty[0].closest.secondaryDistance)
             ))));
             if (sameDistItems.length === 1) {
-                closestItem = sameDistItems[0];
+                data = sameDistItems[0].closest.data;
             } else {
                 const mx = (sameDistItems.reduce((sum, item) => sum + item.closest.x, 0) / sameDistItems.length);
                 const my = (sameDistItems.reduce((sum, item) => sum + item.closest.y, 0) / sameDistItems.length);
                 const angle = (Math.atan2(my - y0, mx - x0) + Math.PI);
-                closestItem = sameDistItems[Math.round((sameDistItems.length - 1) * angle / 2 / Math.PI)];
+                data = sameDistItems[Math.round((sameDistItems.length - 1) * angle / 2 / Math.PI)].closest.data;
             }
         }
 
-        items
-            .filter((item) => item !== closestItem)
-            .forEach((item) => item.unit.fire('data-element-out', {event, data: null}));
-        if (closestItem) {
-            closestItem.unit.fire(
-                (eventType === 'click' ? 'data-element-click' : 'data-element-move'),
-                {event, data: closestItem.closest.data}
-            );
-        }
-
-        return closestItem;
+        items.forEach((item) => item.unit.fire(dataEvent, {event, data}));
     }
 
     _initPointerEvents() {
         this._pointerAnimationFrameRequested = false;
         var svg = d3.select(this._svg);
-        var closestItem = null;
         var handler = () => {
             if (!this._pointerAnimationFrameRequested) {
                 var eventObj = d3.event;
+                console.log(event.type)
                 var svgRect = svg.node().getBoundingClientRect();
                 requestAnimationFrame(() => {
                     this._pointerAnimationFrameRequested = false;
-                    closestItem = this._handlePointerEvent(eventObj);
+                    this._handlePointerEvent(eventObj);
                 });
                 this._pointerAnimationFrameRequested = true;
             }
@@ -311,11 +304,13 @@ export class Plot extends Emitter {
         svg.on('mousemove', handler);
         svg.on('click', handler);
         svg.on('mouseleave', () => {
+            if (window.getComputedStyle(this._svg).pointerEvents === 'none') {
+                return;
+            }
             var d3Event = d3.event;
             requestAnimationFrame(() => {
-                if (closestItem) {
-                    closestItem.unit.fire('data-element-out', {event: d3Event, data: null});
-                }
+                this.select(() => true)
+                    .forEach((unit) => unit.fire('data-element-move', {event: d3Event, data: null}));
             });
         });
     }
