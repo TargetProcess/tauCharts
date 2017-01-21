@@ -15,37 +15,35 @@ var iso = function (str) {
     return (str + '+' + offsetISO);
 };
 
+var getElementPosition = (element) => {
+    var rect = element.getBoundingClientRect();
+    return {
+        x: ((rect.left + rect.right) / 2),
+        y: ((rect.top + rect.bottom) / 2)
+    };
+};
+
 var showTooltip = function (expect, chart, index, selectorClass, data) {
     var d = testUtils.Deferred();
     selectorClass = selectorClass || '.i-role-datum';
     index = index || 0;
-    var datum;
+    var element;
     var elements = Array.prototype.slice.call(chart.getSVG().querySelectorAll(selectorClass), 0);
     if (data) {
         // NOTE: Elements order changes after hover.
         data = data.filter(d => elements.filter(el => el.__data__ === d).length);
-        datum = elements.filter(el => el.__data__ === data[index])[0];
+        element = elements.filter(el => el.__data__ === data[index])[0];
     } else {
-        datum = elements[index];
+        element = elements[index];
     }
-    testUtils.simulateEvent('mouseover', datum);
+    var {x, y} = getElementPosition(element);
+    testUtils.simulateEvent('mousemove', element, x, y);
     return d.resolve(document.querySelectorAll('.graphical-report__tooltip'));
 };
 
-var hideTooltip = function (expect, chart, index, selectorClass, data) {
+var hideTooltip = function (expect, chart) {
     var d = testUtils.Deferred();
-    selectorClass = selectorClass || '.i-role-datum';
-    index = index || 0;
-    var datum;
-    var elements = Array.prototype.slice.call(chart.getSVG().querySelectorAll(selectorClass), 0);
-    if (data) {
-        // NOTE: Elements order changes after hover.
-        data = data.filter(d => elements.filter(el => el.__data__ === d).length);
-        datum = elements.filter(el => el.__data__ === data[index])[0];
-    } else {
-        datum = elements[index];
-    }
-    testUtils.simulateEvent('mouseout', datum);
+    testUtils.simulateEvent('mousemove', chart.getSVG(), 0, 0);
     return d.resolve(document.querySelectorAll('.graphical-report__tooltip__content'));
 };
 
@@ -192,7 +190,7 @@ describeChart(
         it("should work tooltip", function (done) {
             var originTimeout = stubTimeout();
             this.timeout(5000);
-            showTooltip(expect, context.chart)
+            showTooltip(expect, context.chart, 0, getSelectorByChartType('line'))
                 .then(function () {
                     var excluder = document.querySelectorAll('.i-role-exclude')[0];
                     testUtils.simulateEvent('click', excluder);
@@ -444,7 +442,8 @@ describeChart(
 
             var selectorCssClass = getSelectorByChartType('area');
             var datum = context.chart.getSVG().querySelectorAll(selectorCssClass)[0];
-            testUtils.simulateEvent('mousemove', datum);
+            var {x, y} = getElementPosition(datum)
+            testUtils.simulateEvent('mousemove', datum, x, y);
 
             var content = document.querySelectorAll('.graphical-report__tooltip');
 
@@ -452,7 +451,7 @@ describeChart(
             var texts = Array.from(tooltipElements).map((x) => x.textContent);
             expect(texts).to.be.eql(['x', '2', 'y', '2']);
 
-            testUtils.simulateEvent('mouseout', datum);
+            testUtils.simulateEvent('mousemove', context.chart.getSVG(), 0, 0);
 
             window.setTimeout = originTimeout;
             done();

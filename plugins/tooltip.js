@@ -319,6 +319,7 @@
                         return true;
                     }).forEach(function (unit) {
                         unit.fire('highlight', (() => null));
+                        unit.fire('highlight-data-points', (() => null));
                     });
             },
 

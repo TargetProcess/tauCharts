@@ -423,14 +423,15 @@ define(function (require) {
         function (context) {
 
             it('should set larger radius to highlighted points', function () {
+                const rect = ((el) => el.getBoundingClientRect());
                 var svg = context.chart.getSVG();
                 var points = svg.querySelectorAll('.i-data-anchor');
                 expect(points.length).to.equals(3);
 
-                testUtils.simulateEvent('mouseover', points[1]);
+                testUtils.simulateEvent('mousemove', svg, rect(points[1]).left, rect(points[1]).top);
                 expect(Number(points[1].getAttribute('r'))).to.be.above(Number(points[0].getAttribute('r')));
                 expect(Number(points[1].getAttribute('r'))).to.be.above(Number(points[2].getAttribute('r')));
-                testUtils.simulateEvent('mouseout', points[1]);
+                testUtils.simulateEvent('mouseleave', svg);
                 expect(Number(points[1].getAttribute('r'))).to.be.equal(Number(points[0].getAttribute('r')));
             });
         },

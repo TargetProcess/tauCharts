@@ -1017,14 +1017,14 @@ define(function (require) {
                 expect(svg0.querySelectorAll('.graphical-report__dimmed').length).to.equals(0);
 
                 var intervalNode = context.chart.select((n) => n.config.type === 'ELEMENT.INTERVAL')[0];
-                intervalNode.fire('mouseover', {data:context.chart.getData()[0]});
+                intervalNode.fire('data-hover', {data:context.chart.getData()[0]});
 
                 var svg1 = context.chart.getSVG();
                 expect(svg1.querySelectorAll('.bar').length).to.equals(4);
                 expect(svg1.querySelectorAll('.bar.graphical-report__highlighted').length).to.equals(1);
                 expect(svg1.querySelectorAll('.bar.graphical-report__dimmed').length).to.equals(0);
 
-                intervalNode.fire('mouseout', {});
+                intervalNode.fire('data-hover', {});
 
                 var svg2 = context.chart.getSVG();
                 expect(svg2.querySelectorAll('.bar').length).to.equals(4);

@@ -150,6 +150,7 @@ const BasePath = {
         const config = this.node().config;
         const createFilter = ((data, falsy) => ((row) => row === data ? true : falsy));
         node.on('highlight', (sender, filter) => this.highlight(filter));
+        node.on('highlight-data-points', (sender, filter) => this.highlightDataPoints(filter));
         if (config.guide.showAnchors !== 'never') {
             node.on('data-hover', ((sender, e) => this.highlightDataPoints(createFilter(e.data, null))));
             node.on('data-click', ((sender, e) => this.highlight(createFilter(e.data, e.data ? false : null))));
@@ -402,10 +403,6 @@ const BasePath = {
         container
             .selectAll('.i-role-label')
             .classed(classed);
-
-        if (!hasTarget) {
-            this.highlightDataPoints(filter);
-        }
     },
 
     highlightDataPoints(filter) {

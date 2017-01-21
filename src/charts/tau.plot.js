@@ -70,8 +70,8 @@ export class Plot extends Emitter {
         this._plugins = new Plugins(plugins, this);
 
         this._reportProgress = null;
-        this._renderingFrameId = null;
         this._renderingInProgress = false;
+        this._requestedAnimationFrames = new Map();
     }
 
     destroy() {
@@ -290,31 +290,42 @@ export class Plot extends Emitter {
         items.forEach((item) => item.unit.fire(dataEvent, {event, data, node}));
     }
 
+    _requestAnimationFrame(fn) {
+        var id = requestAnimationFrame(() => {
+            this._requestedAnimationFrames.delete(id);
+            fn();
+        });
+        this._requestedAnimationFrames.set(id, fn);
+    }
+
     _initPointerEvents() {
-        this._pointerAnimationFrameRequested = false;
-        var svg = d3.select(this._svg);
-        var handler = () => {
-            if (!this._pointerAnimationFrameRequested) {
-                var eventObj = d3.event;
-                requestAnimationFrame(() => {
-                    this._pointerAnimationFrameRequested = false;
-                    this._handlePointerEvent(eventObj);
-                });
-                this._pointerAnimationFrameRequested = true;
-            }
-        };
-        svg.on('mousemove', handler);
-        svg.on('click', handler);
-        svg.on('mouseleave', () => {
+        if (!this._liveSpec.settings.syncPointerEvents) {
+            this._pointerAnimationFrameRequested = false;
+        }
+        const svg = d3.select(this._svg);
+        const wrapEventHandler = (this._liveSpec.settings.syncPointerEvents ?
+            ((handler) => () => handler(d3.event)) :
+            ((handler) => (() => {
+                var e = d3.event;
+                if (!this._pointerAnimationFrameRequested) {
+                    this._requestAnimationFrame(() => {
+                        this._pointerAnimationFrameRequested = false;
+                        handler(e);
+                    });
+                    this._pointerAnimationFrameRequested = true;
+                }
+            }))
+        );
+        const handler = ((e) => this._handlePointerEvent(e));
+        svg.on('mousemove', wrapEventHandler(handler));
+        svg.on('click', wrapEventHandler(handler));
+        svg.on('mouseleave', wrapEventHandler(() => {
             if (window.getComputedStyle(this._svg).pointerEvents === 'none') {
                 return;
             }
-            var d3Event = d3.event;
-            requestAnimationFrame(() => {
-                this.select(() => true)
-                    .forEach((unit) => unit.fire('data-hover', {event: d3Event, data: null, node: null}));
-            });
-        });
+            this.select(() => true)
+                .forEach((unit) => unit.fire('data-hover', {event, data: null, node: null}));
+        }));
     }
 
     renderTo(target, xSize) {
@@ -506,10 +517,7 @@ export class Plot extends Emitter {
 
         var nextSync = () => drawScenario();
         var nextAsync = () => {
-            this._renderingFrameId = requestAnimationFrame(safe(() => {
-                this._renderingFrameId = null;
-                drawScenario();
-            }));
+            this._requestAnimationFrame(safe(() => drawScenario()));
         };
 
         var next = () => {
@@ -532,8 +540,8 @@ export class Plot extends Emitter {
             this._renderingInProgress = false;
             Plot.renderingsInProgress--;
         }
-        cancelAnimationFrame(this._renderingFrameId);
-        this._renderingFrameId = null;
+        this._requestedAnimationFrames.forEach((fn, id) => cancelAnimationFrame(id));
+        this._requestedAnimationFrames.clear();
     }
 
     _createProgressBar() {
