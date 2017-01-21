@@ -98,20 +98,10 @@ const Point = {
 
     addInteraction() {
         const node = this.node();
-        node.on('highlight', (sender, e) => this.highlight(e));
-        node.on('highlight-data-points', (sender, e) => this.highlight(e));
-        node.on('click-data-points', (sender, e) => this.highlight(e));
-
-        const getHighlightEvtObj = (e, data, falsy = null) => {
-            const filter = ((d) => d === data ? true : falsy);
-            filter.data = data;
-            filter.domEvent = e;
-            return filter;
-        };
-        const activate = ((sender, e) => sender.fire('highlight-data-points', getHighlightEvtObj(e.event, e.data)));
-        const click = ((sender, e) => sender.fire('click-data-points', getHighlightEvtObj(e.event, e.data, false)));
-        node.on('data-element-hover', activate);
-        node.on('data-element-click', click);
+        const createFilter = ((data, falsy) => ((row) => row === data ? true : falsy));
+        node.on('highlight', (sender, filter) => this.highlight(filter));
+        node.on('data-hover', ((sender, e) => this.highlight(createFilter(e.data, null))));
+        node.on('data-click', ((sender, e) => this.highlight(createFilter(e.data, e.data ? false : null))));
     },
 
     draw() {

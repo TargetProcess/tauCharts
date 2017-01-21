@@ -34,18 +34,6 @@
                 }
             });
 
-        function getHighlightEvtObj(e, data, falsy) {
-            if (falsy === undefined) {
-                falsy = null;
-            }
-            var filter = function (row) {
-                return (row === data ? true : falsy);
-            };
-            filter.domEvent = e;
-            filter.data = data;
-            return filter;
-        }
-
         var plugin = {
 
             init: function (chart) {
@@ -146,8 +134,8 @@
             setState: function (newState) {
                 var prev = this.state;
                 var state = this.state = Object.assign({}, prev, newState);
-                prev.highlight = prev.highlight || {data: null, cursor: null, unit: null, event: null};
-                state.highlight = state.highlight || {data: null, cursor: null, unit: null, event: null};
+                prev.highlight = prev.highlight || {data: null, cursor: null, unit: null};
+                state.highlight = state.highlight || {data: null, cursor: null, unit: null};
 
                 // If stuck, treat that data has not changed
                 if (state.isStuck && prev.highlight.data) {
@@ -168,7 +156,7 @@
                         }.bind(this));
                         this._setTargetSvgClass(true);
                     } else if (!state.isStuck && prev.highlight.data && !state.highlight.data) {
-                        this._removeFocus(prev.highlight.event, null);
+                        this._removeFocus();
                         this.hideTooltip();
                         this._setTargetSvgClass(false);
                     }
@@ -234,7 +222,7 @@
                 window.removeEventListener('resize', this._scrollHandler, true);
                 this._setTargetSvgClass(false);
                 if (this.state.highlight.unit) {
-                    this._removeFocus(this.state.highlight.event, null);
+                    this._removeFocus();
                 }
                 this.setState({
                     highlight: null,
@@ -260,23 +248,21 @@
                     })
                     .forEach(function (node) {
 
-                        node.on('highlight-data-points', function (sender, e) {
+                        node.on('data-hover', function (sender, e) {
                             this.setState({
                                 highlight: (e.data ? {
                                     data: e.data,
-                                    cursor: {x: e.domEvent.clientX, y: e.domEvent.clientY},
-                                    event: e,
+                                    cursor: {x: e.event.clientX, y: e.event.clientY},
                                     unit: sender
                                 } : null)
                             });
                         }.bind(this));
 
-                        node.on('click-data-points', function (sender, e) {
+                        node.on('data-click', function (sender, e) {
                             this.setState(e.data ? {
                                 highlight: {
                                     data: e.data,
-                                    cursor: {x: e.domEvent.clientX, y: e.domEvent.clientY},
-                                    event: e,
+                                    cursor: {x: e.event.clientX, y: e.event.clientY},
                                     unit: sender
                                 },
                                 isStuck: true
@@ -327,26 +313,13 @@
                 return meta.label;
             },
 
-            _removeFocus: function (e, falsy) {
-                var eventObj = getHighlightEvtObj(e, null, falsy);
+            _removeFocus: function () {
                 this._chart
                     .select(function () {
                         return true;
                     }).forEach(function (unit) {
-                        unit.fire('highlight', eventObj);
+                        unit.fire('highlight', (() => null));
                     });
-            },
-
-            _accentFocus: function (e, unit, data, falsy) {
-                var hlObj = getHighlightEvtObj(e, data, falsy);
-                var dimObj = getHighlightEvtObj(e, null, falsy);
-                this._chart
-                    .select(function (item) {
-                        return (item !== unit);
-                    }).forEach(function (unit) {
-                        unit.fire('highlight', dimObj);
-                    });
-                unit.fire('highlight', hlObj);
             },
 
             _reveal: function () {

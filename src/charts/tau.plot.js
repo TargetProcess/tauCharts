@@ -260,8 +260,9 @@ export class Plot extends Emitter {
         const y = (event.clientY - svgRect.top);
         const eventType = event.type;
         const isClick = (eventType === 'click');
-        const dataEvent = (isClick ? 'data-element-click' : 'data-element-hover');
+        const dataEvent = (isClick ? 'data-click' : 'data-hover');
         var data = null;
+        var node = null;
         const items = this._getClosestElementPerUnit(x, y);
         const nonEmpty = items
             .filter((d) => d.closest)
@@ -275,15 +276,18 @@ export class Plot extends Emitter {
             ))));
             if (sameDistItems.length === 1) {
                 data = sameDistItems[0].closest.data;
+                node = sameDistItems[0].closest.node;
             } else {
                 const mx = (sameDistItems.reduce((sum, item) => sum + item.closest.x, 0) / sameDistItems.length);
                 const my = (sameDistItems.reduce((sum, item) => sum + item.closest.y, 0) / sameDistItems.length);
                 const angle = (Math.atan2(my - y, mx - x) + Math.PI);
-                data = sameDistItems[Math.round((sameDistItems.length - 1) * angle / 2 / Math.PI)].closest.data;
+                const {closest} = sameDistItems[Math.round((sameDistItems.length - 1) * angle / 2 / Math.PI)];
+                data = closest.data;
+                node = closest.node;
             }
         }
 
-        items.forEach((item) => item.unit.fire(dataEvent, {event, data}));
+        items.forEach((item) => item.unit.fire(dataEvent, {event, data, node}));
     }
 
     _initPointerEvents() {
@@ -308,7 +312,7 @@ export class Plot extends Emitter {
             var d3Event = d3.event;
             requestAnimationFrame(() => {
                 this.select(() => true)
-                    .forEach((unit) => unit.fire('data-element-hover', {event: d3Event, data: null}));
+                    .forEach((unit) => unit.fire('data-hover', {event: d3Event, data: null, node: null}));
             });
         });
     }

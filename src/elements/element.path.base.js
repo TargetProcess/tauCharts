@@ -148,27 +148,11 @@ const BasePath = {
     addInteraction() {
         const node = this.node();
         const config = this.node().config;
-
-        node.on('highlight', (sender, e) => {
-            this.highlight(e);
-            if (e.data === null) {
-                this.highlightDataPoints(e);
-            }
-        });
-        node.on('highlight-data-points', (sender, e) => this.highlightDataPoints(e));
-        node.on('click-data-points', (sender, e) => this.highlight(e));
-
+        const createFilter = ((data, falsy) => ((row) => row === data ? true : falsy));
+        node.on('highlight', (sender, filter) => this.highlight(filter));
         if (config.guide.showAnchors !== 'never') {
-            const getHighlightEvtObj = (e, data) => {
-                const filter = ((d) => d === data);
-                filter.data = data;
-                filter.domEvent = e;
-                return filter;
-            };
-            const activate = ((sender, e) => sender.fire('highlight-data-points', getHighlightEvtObj(e.event, e.data)));
-            const click = ((sender, e) => sender.fire('click-data-points', getHighlightEvtObj(e.event, e.data)));
-            node.on('data-element-hover', activate);
-            node.on('data-element-click', click);
+            node.on('data-hover', ((sender, e) => this.highlightDataPoints(createFilter(e.data, null))));
+            node.on('data-click', ((sender, e) => this.highlight(createFilter(e.data, e.data ? false : null))));
         }
     },
 
@@ -418,6 +402,10 @@ const BasePath = {
         container
             .selectAll('.i-role-label')
             .classed(classed);
+
+        if (!hasTarget) {
+            this.highlightDataPoints(filter);
+        }
     },
 
     highlightDataPoints(filter) {
