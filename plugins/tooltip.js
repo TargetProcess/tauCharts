@@ -314,12 +314,15 @@
             },
 
             _removeFocus: function () {
+                var filter = function () {
+                    return null;
+                };
                 this._chart
                     .select(function () {
                         return true;
                     }).forEach(function (unit) {
-                        unit.fire('highlight', (() => null));
-                        unit.fire('highlight-data-points', (() => null));
+                        unit.fire('highlight', filter);
+                        unit.fire('highlight-data-points', filter);
                     });
             },
 
