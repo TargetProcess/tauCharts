@@ -411,10 +411,8 @@ const BasePath = {
         const showOnHover = this.node().config.guide.showAnchors === 'hover';
         const rmin = 4; // Min highlight radius
         const rx = 1.25; // Highlight multiplier
-        this.node()
-            .config
-            .options
-            .container
+        const container = this.node().config.options.container;
+        container
             .selectAll(`.${cssClass}`)
             .attr({
                 r: (showOnHover ?
@@ -433,6 +431,12 @@ const BasePath = {
                 class: (d) => utilsDom.classes(cssClass, screenModel.class(d))
             })
             .classed(`${CSS_PREFIX}highlighted`, filter);
+
+        utilsDraw.raiseElements(container, '.i-role-path', (fiber) => {
+            return fiber
+                .filter(isNonSyntheticRecord)
+                .some(filter);
+        });
     }
 };
 

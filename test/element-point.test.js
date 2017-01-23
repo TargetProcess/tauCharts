@@ -452,4 +452,49 @@ define(function(require) {
             autoWidth: false
         }
     );
+    describeChart('Scatterplot points overlap',
+        {
+            type: 'scatterplot',
+            x: 'x',
+            y: 'y',
+            color: 'color',
+            guide: {
+                x: {nice: false},
+                y: {nice: false}
+            }
+        },
+        [
+            {
+                x: 1,
+                y: 1,
+                color: 'yellow'
+            },
+            {
+                x: 1,
+                y: 1,
+                color: 'green'
+            }
+        ],
+        function (context) {
+
+            it('should raise highlighted point when overlap', function () {
+
+                var svg = context.chart.getSVG();
+                var rect = svg.getBoundingClientRect();
+                var cx = ((rect.left + rect.right) / 2);
+                var cy = ((rect.bottom + rect.top) / 2);
+                var points = svg.querySelectorAll('.dot');
+
+                testUtils.simulateEvent('mousemove', svg, cx, cy - 10);
+                var highlighted1 = d3.select('.graphical-report__highlighted');
+                expect(highlighted1.data()[0].color).to.equal('yellow');
+                expect(document.elementFromPoint(cx, cy)).to.equal(highlighted1.node());
+
+                testUtils.simulateEvent('mousemove', svg, cx, cy + 10);
+                var highlighted2 = d3.select('.graphical-report__highlighted');
+                expect(highlighted2.data()[0].color).to.equal('green');
+                expect(document.elementFromPoint(cx, cy)).to.equal(highlighted2.node());
+            });
+        }
+    );
 });

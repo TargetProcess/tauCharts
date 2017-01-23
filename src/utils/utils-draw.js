@@ -20,9 +20,6 @@ var utilsDraw = {
     getDeepTransformTranslate(node) {
         const parseTransformTranslate = (transform) => {
             var result = {x: 0, y: 0};
-            if (!transform) {
-                return result;
-            }
             var ts = transform.indexOf('translate(');
             if (ts >= 0) {
                 var te = transform.indexOf(')', ts + 10);
@@ -48,6 +45,32 @@ var utilsDraw = {
             parent = parent.parentNode;
         }
         return translate;
+    },
+
+    raiseElements(container, selector, filter) {
+        const highlighted = container
+            .selectAll(selector)
+            .filter(filter);
+        if (highlighted.empty()) {
+            return;
+        }
+        const untargeted = d3.select(highlighted.node().parentNode)
+            .selectAll(selector)
+            .filter((d) => !filter(d))[0];
+        const lastUntargeted = untargeted[untargeted.length - 1];
+        if (lastUntargeted) {
+            const untargetedIndex = Array.prototype.indexOf.call(
+                lastUntargeted.parentNode.childNodes,
+                lastUntargeted);
+            const nextSibling = lastUntargeted.nextSibling;
+            highlighted.each(function () {
+                const index = Array.prototype.indexOf.call(this.parentNode.childNodes, this);
+                if (index > untargetedIndex) {
+                    return;
+                }
+                this.parentNode.insertBefore(this, nextSibling);
+            });
+        }
     }
 };
 /* jshint ignore:end */

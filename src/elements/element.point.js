@@ -202,24 +202,26 @@ const Point = {
                 const x = (screenModel.x(data) + translate.x);
                 const y = (screenModel.y(data) + translate.y);
                 const r = (screenModel.size(data) / 2);
-                var distance = getDistance(x, y);
-                if (distance < r) {
-                    distance = (r - distance);
-                }
+                const distance = getDistance(x, y);
+                const secondaryDistance = (distance < r ? r - distance : distance);
                 if (distance > r && distance > maxHighlightDistance) {
                     return null;
                 }
-                return {node, data, distance, secondaryDistance: distance, x, y};
+                return {node, data, distance, secondaryDistance, x, y};
             })
             .filter((d) => d)
-            .sort((a, b) => a.distance - b.distance);
+            .sort((a, b) => (a.distance === b.distance ?
+                (a.secondaryDistance - b.secondaryDistance) :
+                (a.distance - b.distance)
+            ));
 
         if (items.length === 0) {
             return null;
         }
 
         const sameDistItems = items.slice(0, Math.max(1, items.findIndex((d) => (
-            (d.distance !== items[0].distance)
+            (d.distance !== items[0].distance) ||
+            (d.secondaryDistance !== items[0].secondaryDistance)
         ))));
         if (sameDistItems.length === 1) {
             return sameDistItems[0];
@@ -250,30 +252,30 @@ const Point = {
             .selectAll('.i-role-label')
             .classed(classed);
 
-        // Place highlighted element over others
-        var highlighted = container
+        utilsDraw.raiseElements(container, '.dot', filter);
+    },
+
+    highlight(filter) {
+
+        const x = 'graphical-report__highlighted';
+        const _ = 'graphical-report__dimmed';
+
+        const container = this.node().config.options.container;
+        const classed = {
+            [x]: ((d) => filter(d) === true),
+            [_]: ((d) => filter(d) === false)
+        };
+
+        container
             .selectAll('.dot')
-            .filter(filter);
-        if (highlighted.empty()) {
-            return;
-        }
-        var notHighlighted = d3.select(highlighted.node().parentNode)
-            .selectAll('.dot')
-            .filter((d) => !filter(d))[0];
-        var lastNotHighlighted = notHighlighted[notHighlighted.length - 1];
-        if (lastNotHighlighted) {
-            var notHighlightedIndex = Array.prototype.indexOf.call(
-                lastNotHighlighted.parentNode.childNodes,
-                lastNotHighlighted);
-            var nextSibling = lastNotHighlighted.nextSibling;
-            highlighted.each(function () {
-                var index = Array.prototype.indexOf.call(this.parentNode.childNodes, this);
-                if (index > notHighlightedIndex) {
-                    return;
-                }
-                this.parentNode.insertBefore(this, nextSibling);
-            });
-        }
+            .classed(classed);
+
+        container
+            .selectAll('.i-role-label')
+            .classed(classed);
+
+        utilsDraw.raiseElements(container, '.dot', filter);
+        utilsDraw.raiseElements(container, '.frame', (fiber) => fiber.some(filter));
     }
 };
 
