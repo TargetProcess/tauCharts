@@ -318,11 +318,60 @@ define(function (require) {
             chart.renderTo(container);
             var svg = chart.getSVG();
             expect(parseInt(svg.getAttribute('height')) + scrollbar.height).to.be.closeTo(expectHeight, 10);
+            chart.destroy();
             document.body.removeChild(container);
         };
 
         testChart(1, 160);
         testChart(2, 120);
+    });
+
+    describe('Sync/async events handling', function (done) {
+        var testChart = function (syncPointerEvents) {
+            var container = document.createElement('div');
+            container.style.width = '800px';
+            container.style.height = '600px';
+            document.body.appendChild(container);
+            var chart = new tauCharts.Chart({
+                type: 'bar',
+                x: 'x',
+                y: 'y',
+                data: [
+                    {x: 0, y: 16},
+                    {x: 1, y: 0},
+                    {x: 2, y: 16}
+                ],
+                settings: {
+                    fitModel: 'normal',
+                    syncPointerEvents
+                }
+            });
+            chart.renderTo(container);
+            var svg = chart.getSVG();
+            var rect = svg.getBoundingClientRect();
+            var cx = ((rect.left + rect.right) / 2);
+            var cy = ((rect.bottom + rect.top) / 2);
+            var getHighlightedData = (() => d3.select('.graphical-report__highlighted').data()[0]);
+
+            utils.simulateEvent('mousemove', svg, cx, cy);
+            if (syncPointerEvents) {
+                expect(getHighlightedData().x).to.equal(1);
+                chart.destroy();
+                document.body.removeChild(container);
+            } else {
+                expect(getHighlightedData()).to.be.undefined;
+                setTimeout(() => {
+                    expect(getHighlightedData().x).to.equal(1);
+                    chart.destroy();
+                    document.body.removeChild(container);
+                    done();
+                }, 100);
+            }
+
+        };
+
+        testChart(true);
+        testChart(false);
     });
 
     describe('API CHART', function () {

@@ -253,6 +253,7 @@ const Point = {
             .classed(classed);
 
         utilsDraw.raiseElements(container, '.dot', filter);
+        utilsDraw.raiseElements(container, '.frame', (fiber) => fiber.some(filter));
     }
 };
 
