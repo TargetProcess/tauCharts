@@ -106,14 +106,6 @@ define(function (require) {
             });
 
             expect(highlightedDots1[0].length).to.equal(0, 'should remove highlight from all points');
-
-            var actualData;
-            var polygons = d3.select('polygon')[0];
-            areaNode.on('click', ((sender, e) => (actualData = e.data)));
-            testUtils.simulateEvent('click', polygons[0]);
-            expect(actualData.x).to.equal(0, 'proper x');
-            expect(actualData.y).to.equal(0, 'proper y');
-            expect(actualData.color).to.equal('up', 'proper color');
         });
 
         it('should render two area elements', function () {

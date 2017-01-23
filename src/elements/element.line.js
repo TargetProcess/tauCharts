@@ -11,6 +11,7 @@ import {getPolyline, getCurve} from '../utils/path/svg/line';
 const Line = {
 
     draw: BasePath.draw,
+    getClosestElement: BasePath.getClosestElement,
     highlight: BasePath.highlight,
     highlightDataPoints: BasePath.highlightDataPoints,
     addInteraction: BasePath.addInteraction,
@@ -97,44 +98,6 @@ const Line = {
             (isEmptySize ? getPolyline : getBrushLine));
 
         const baseModel = BasePath.baseModel(screenModel);
-
-        baseModel.matchRowInCoordinates = (rows, {x, y}) => {
-            var by = ((prop) => ((a, b) => (a[prop] - b[prop])));
-            var dist = ((x0, x1, y0, y1) => Math.sqrt(Math.pow((x0 - x1), 2) + Math.pow((y0 - y1), 2)));
-
-            // d3.invert doesn't work for ordinal axes
-            var vertices = rows
-                .map((row) => {
-                    var rx = baseModel.x(row);
-                    var ry = baseModel.y(row);
-                    return {
-                        x: rx,
-                        y: ry,
-                        dist: dist(x, rx, y, ry),
-                        data: row
-                    };
-                });
-
-            // double for consistency in case of
-            // (vertices.length === 1)
-            vertices.unshift(vertices[0]);
-
-            var pair = utils.range(vertices.length - 1)
-                .map((edge) => {
-                    var v0 = vertices[edge];
-                    var v1 = vertices[edge + 1];
-                    var ab = dist(v1.x, v0.x, v1.y, v0.y);
-                    var ax = v0.dist;
-                    var bx = v1.dist;
-                    var er = Math.abs(ab - (ax + bx));
-                    return [er, v0, v1];
-                })
-                .sort(by('0')) // find minimal distance to edge
-                [0]
-                .slice(1);
-
-            return pair.sort(by('dist'))[0].data;
-        };
 
         baseModel.toPoint = isEmptySize ?
             (d) => ({

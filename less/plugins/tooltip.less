@@ -114,15 +114,21 @@
         }
     }
 
-    &__svg {
-        &__tooltip-target {
-            .i-role-element,
-            .i-data-anchor {
-                cursor: pointer;
-            }
-        }
-        &__tooltip-target-stuck {
-            pointer-events: none;
-        }
+    &__tooltip-target {
+        cursor: pointer;
+    }
+    &__tooltip-target-stuck {
+        pointer-events: none;
+    }
+
+    &__tooltip-target &__dot&__highlighted,
+    &__tooltip-target &__bar&__highlighted,
+    &__tooltip-target .i-data-anchor&__highlighted {
+        stroke: @font-color;
+        stroke-width: 1;
+    }
+
+    &__tooltip-target &__bar&__highlighted {
+        shape-rendering: crispEdges;
     }
 }

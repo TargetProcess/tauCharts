@@ -3,6 +3,7 @@ import {GrammarRegistry} from '../grammar-registry';
 import {LayerLabels} from './decorators/layer-labels';
 import {d3_animationInterceptor} from '../utils/d3-decorators';
 import {utils} from '../utils/utils';
+import {utilsDraw} from '../utils/utils-draw';
 import d3 from 'd3';
 
 const Interval = {
@@ -17,6 +18,7 @@ const Interval = {
             {
                 animationSpeed: 0,
                 avoidScalesOverflow: true,
+                maxHighlightDistance: 32,
                 prettify: true,
                 enableColorToBarPosition: !config.stack
             });
@@ -111,23 +113,10 @@ const Interval = {
 
     addInteraction() {
         const node = this.node();
-        node.on('highlight', (sender, e) => this.highlight(e));
-        node.on('highlight-data-points', (sender, e) => this.highlightDataPoints(e));
-        node.on('click-data-points', (sender, e) => this.highlightDataPoints(e));
-
-        const getHighlightEvtObj = (e, data) => {
-            const filter = ((d) => d === data ? true : null);
-            filter.data = data;
-            filter.domEvent = e;
-            return filter;
-        };
-        const activate = ((sender, e) => sender.fire('highlight-data-points', getHighlightEvtObj(e.event, e.data)));
-        const deactivate = ((sender, e) => sender.fire('highlight-data-points', getHighlightEvtObj(e.event, null)));
-        const click = ((sender, e) => sender.fire('click-data-points', getHighlightEvtObj(e.event, e.data)));
-        node.on('mouseover', activate);
-        node.on('mousemove', activate);
-        node.on('mouseout', deactivate);
-        node.on('click', click);
+        const createFilter = ((data, falsy) => ((row) => row === data ? true : falsy));
+        node.on('highlight', (sender, filter) => this.highlight(filter));
+        node.on('data-hover', ((sender, e) => this.highlight(createFilter(e.data, null))));
+        node.on('data-click', ((sender, e) => this.highlight(createFilter(e.data, e.data ? false : null))));
     },
 
     draw() {
@@ -298,6 +287,54 @@ const Interval = {
             });
     },
 
+    getClosestElement(cursorX, cursorY) {
+        const container = this.node().config.options.container;
+        const screenModel = this.node().screenModel;
+        const {flip} = this.node().config;
+        const {maxHighlightDistance} = this.node().config.guide;
+
+        const bars = container.selectAll('.bar');
+        var minX = Number.MAX_VALUE;
+        var maxX = Number.MIN_VALUE;
+        var minY = Number.MAX_VALUE;
+        var maxY = Number.MIN_VALUE;
+        const items = bars[0]
+            .map((node) => {
+                const data = d3.select(node).data()[0];
+                const translate = utilsDraw.getDeepTransformTranslate(node);
+                const x = screenModel.x(data);
+                const x0 = screenModel.x0(data);
+                const y = screenModel.y(data);
+                const y0 = screenModel.y0(data);
+                const w = Math.abs(x - x0);
+                const h = Math.abs(y - y0);
+                const cx = ((x + x0) / 2 + translate.x);
+                const cy = ((y + y0) / 2 + translate.y);
+                const distance = Math.abs(flip ? (cy - cursorY) : (cx - cursorX));
+                const secondaryDistance = Math.abs(flip ? (cx - cursorX) : (cy - cursorY));
+                minX = Math.min(cx - w / 2, minX);
+                maxX = Math.max(cx + w / 2, maxX);
+                minY = Math.min(cy - h / 2, minY);
+                maxY = Math.max(cy + h / 2, maxY);
+                return {node, data, distance, secondaryDistance, x: cx, y: cy};
+            })
+            .sort((a, b) => (a.distance === b.distance ?
+                (a.secondaryDistance - b.secondaryDistance) :
+                (a.distance - b.distance)
+            ));
+
+        if ((items.length === 0) ||
+            (cursorX < minX - maxHighlightDistance) ||
+            (cursorX > maxX + maxHighlightDistance) ||
+            (cursorY < minY - maxHighlightDistance) ||
+            (cursorY > maxY + maxHighlightDistance)
+        ) {
+            return null;
+        }
+
+        return items[0];
+    },
+
     highlight(filter) {
 
         const x = 'graphical-report__highlighted';
@@ -317,43 +354,8 @@ const Interval = {
             .selectAll('.i-role-label')
             .classed(classed);
 
-        // Place highlighted element over others
-        var highlighted = container
-            .selectAll('.bar')
-            .filter(filter);
-        if (highlighted.empty()) {
-            return;
-        }
-        var notHighlighted = d3.select(highlighted.node().parentNode)
-            .selectAll('.bar')
-            .filter((d) => !filter(d))[0];
-        var lastNotHighlighted = notHighlighted[notHighlighted.length - 1];
-        if (lastNotHighlighted) {
-            var notHighlightedIndex = Array.prototype.indexOf.call(
-                lastNotHighlighted.parentNode.childNodes,
-                lastNotHighlighted);
-            var nextSibling = lastNotHighlighted.nextSibling;
-            highlighted.each(function () {
-                var index = Array.prototype.indexOf.call(this.parentNode.childNodes, this);
-                if (index > notHighlightedIndex) {
-                    return;
-                }
-                this.parentNode.insertBefore(this, nextSibling);
-            });
-        }
-    },
-
-    highlightDataPoints(filter) {
-        this.highlight(filter);
-
-        // Add highlighted elements to event.
-        filter.targetElements = [];
-        this.node().config.options.container
-            .selectAll('.bar')
-            .filter(filter)
-            .each(function () {
-                filter.targetElements.push(this);
-            });
+        utilsDraw.raiseElements(container, '.bar', filter);
+        utilsDraw.raiseElements(container, '.frame', (fiber) => fiber.some(filter));
     }
 };
 

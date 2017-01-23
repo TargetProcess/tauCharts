@@ -10,6 +10,7 @@ import getAreaPath from '../utils/path/svg/area-path';
 const Area = {
 
     draw: BasePath.draw,
+    getClosestElement: BasePath.getClosestElement,
     highlight: BasePath.highlight,
     highlightDataPoints: BasePath.highlightDataPoints,
     addInteraction: BasePath.addInteraction,
@@ -59,32 +60,6 @@ const Area = {
         const guide = this.node().config.guide;
         const countCss = getLineClassesByCount(screenModel.model.scaleColor.domain().length);
         const groupPref = `${CSS_PREFIX}area area i-role-path ${countCss} ${guide.cssClass} `;
-
-        /* eslint-disable */
-        const getDistance = (screenModel.flip ?
-            ((mx, my, rx, ry) => Math.abs(my - ry)) :
-            ((mx, my, rx, ry) => Math.abs(mx - rx)));
-        /* eslint-enable */
-
-        baseModel.matchRowInCoordinates = (rows, {x, y}) => {
-
-            // d3.invert doesn't work for ordinal axes
-            const nearest = rows
-                .map((row) => {
-                    var rx = baseModel.x(row);
-                    var ry = baseModel.y(row);
-                    return {
-                        x: rx,
-                        y: ry,
-                        dist: getDistance(x, y, rx, ry),
-                        data: row
-                    };
-                })
-                .sort((a, b) => (a.dist - b.dist)) // asc
-                [0];
-
-            return nearest.data;
-        };
 
         baseModel.groupAttributes = {
             class: (fiber) => `${groupPref} ${baseModel.class(fiber[0])} frame`

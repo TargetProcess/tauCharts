@@ -390,9 +390,6 @@ define(function (require) {
                 expect(svg2.querySelectorAll('.i-role-label.graphical-report__highlighted').length).to.equals(0);
                 expect(svg2.querySelectorAll('.i-role-label.graphical-report__dimmed').length).to.equals(0);
             });
-        },
-        {
-            autoWidth: false
         }
     );
 
@@ -423,19 +420,54 @@ define(function (require) {
         function (context) {
 
             it('should set larger radius to highlighted points', function () {
+                const rect = ((el) => el.getBoundingClientRect());
                 var svg = context.chart.getSVG();
                 var points = svg.querySelectorAll('.i-data-anchor');
                 expect(points.length).to.equals(3);
 
-                testUtils.simulateEvent('mouseover', points[1]);
+                testUtils.simulateEvent('mousemove', svg, rect(points[1]).left, rect(points[1]).top);
                 expect(Number(points[1].getAttribute('r'))).to.be.above(Number(points[0].getAttribute('r')));
                 expect(Number(points[1].getAttribute('r'))).to.be.above(Number(points[2].getAttribute('r')));
-                testUtils.simulateEvent('mouseout', points[1]);
+                testUtils.simulateEvent('mouseleave', svg);
                 expect(Number(points[1].getAttribute('r'))).to.be.equal(Number(points[0].getAttribute('r')));
             });
-        },
+        }
+    );
+
+    describeChart('Line points with equal coordinates',
         {
-            autoWidth: false
+            type: 'line',
+            x: 'x',
+            y: 'y',
+            color: 't',
+            guide: {
+                x: {nice: false},
+                y: {nice: false},
+                showAnchors: 'always'
+            }
+        },
+        [
+            {x: 1, y: 1, t: 'A'},
+            {x: 1, y: 3, t: 'B'},
+            {x: 2, y: 2, t: 'A'},
+            {x: 2, y: 2, t: 'B'},
+            {x: 3, y: 1, t: 'A'},
+            {x: 3, y: 3, t: 'B'}
+        ],
+        function (context) {
+
+            it('should highlight points with equal coordinates', function () {
+                var svg = context.chart.getSVG();
+                var rect = svg.getBoundingClientRect();
+                var cx = ((rect.left + rect.right) / 2);
+                var cy = ((rect.bottom + rect.top) / 2);
+                var points = svg.querySelectorAll('.i-data-anchor');
+
+                testUtils.simulateEvent('mousemove', svg, cx, cy - 10);
+                expect(d3.select('.graphical-report__highlighted').data()[0]).to.deep.equal({x: 2, y: 2, t: 'A'});
+                testUtils.simulateEvent('mousemove', svg, cx, cy + 10);
+                expect(d3.select('.graphical-report__highlighted').data()[0]).to.deep.equal({x: 2, y: 2, t: 'B'});
+            });
         }
     );
 });

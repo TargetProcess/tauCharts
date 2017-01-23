@@ -121,14 +121,6 @@ define(function (require) {
             });
 
             expect(highlightedDots1[0].length).to.equal(0, 'should remove highlight from all points');
-
-            var actualData;
-            var polygons = d3.select('polygon')[0];
-            pathNode.on('click', ((sender, e) => (actualData = e.data)));
-            testUtils.simulateEvent('click', polygons[0]);
-            expect(actualData.x).to.equal(0);
-            expect(actualData.y).to.equal(0);
-            expect(actualData.color).to.equal('up');
         });
     });
 

@@ -88,6 +88,10 @@ export class Element extends Emitter {
     createScreenModel(grammarModel) {
         // return nothing
     }
+
+    getClosestElement(x, y) {
+        return null;
+    }
     /* eslint-enable */
 
     addInteraction() {

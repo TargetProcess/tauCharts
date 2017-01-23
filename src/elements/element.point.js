@@ -3,6 +3,7 @@ import {GrammarRegistry} from '../grammar-registry';
 import {LayerLabels} from './decorators/layer-labels';
 import {d3_transition} from '../utils/d3-decorators';
 import {utils} from '../utils/utils';
+import {utilsDraw} from '../utils/utils-draw';
 import d3 from 'd3';
 
 const Point = {
@@ -16,7 +17,8 @@ const Point = {
             {
                 animationSpeed: 0,
                 avoidScalesOverflow: true,
-                enableColorToBarPosition: false
+                enableColorToBarPosition: false,
+                maxHighlightDistance: 32
             });
 
         config.guide.size = (config.guide.size || {});
@@ -96,23 +98,10 @@ const Point = {
 
     addInteraction() {
         const node = this.node();
-        node.on('highlight', (sender, e) => this.highlight(e));
-        node.on('highlight-data-points', (sender, e) => this.highlightDataPoints(e));
-        node.on('click-data-points', (sender, e) => this.highlightDataPoints(e));
-
-        const getHighlightEvtObj = (e, data) => {
-            const filter = ((d) => d === data ? true : null);
-            filter.data = data;
-            filter.domEvent = e;
-            return filter;
-        };
-        const activate = ((sender, e) => sender.fire('highlight-data-points', getHighlightEvtObj(e.event, e.data)));
-        const deactivate = ((sender, e) => sender.fire('highlight-data-points', getHighlightEvtObj(e.event, null)));
-        const click = ((sender, e) => sender.fire('click-data-points', getHighlightEvtObj(e.event, e.data)));
-        node.on('mouseover', activate);
-        node.on('mousemove', activate);
-        node.on('mouseout', deactivate);
-        node.on('click', click);
+        const createFilter = ((data, falsy) => ((row) => row === data ? true : falsy));
+        node.on('highlight', (sender, filter) => this.highlight(filter));
+        node.on('data-hover', ((sender, e) => this.highlight(createFilter(e.data, null))));
+        node.on('data-click', ((sender, e) => this.highlight(createFilter(e.data, e.data ? false : null))));
     },
 
     draw() {
@@ -199,6 +188,52 @@ const Point = {
         );
     },
 
+    getClosestElement(x0, y0) {
+        const container = this.node().config.options.container;
+        const screenModel = this.node().screenModel;
+        const getDistance = ((x, y) => Math.sqrt(Math.pow(x - x0, 2) + Math.pow(y - y0, 2)));
+        const {maxHighlightDistance} = this.node().config.guide;
+
+        const dots = container.selectAll('.dot');
+        const items = dots[0]
+            .map((node) => {
+                const data = d3.select(node).data()[0];
+                const translate = utilsDraw.getDeepTransformTranslate(node);
+                const x = (screenModel.x(data) + translate.x);
+                const y = (screenModel.y(data) + translate.y);
+                const r = (screenModel.size(data) / 2);
+                const distance = getDistance(x, y);
+                const secondaryDistance = (distance < r ? r - distance : distance);
+                if (distance > r && distance > maxHighlightDistance) {
+                    return null;
+                }
+                return {node, data, distance, secondaryDistance, x, y};
+            })
+            .filter((d) => d)
+            .sort((a, b) => (a.distance === b.distance ?
+                (a.secondaryDistance - b.secondaryDistance) :
+                (a.distance - b.distance)
+            ));
+
+        if (items.length === 0) {
+            return null;
+        }
+
+        const largerDistIndex = items.findIndex((d) => (
+            (d.distance !== items[0].distance) ||
+            (d.secondaryDistance !== items[0].secondaryDistance)
+        ));
+        const sameDistItems = (largerDistIndex < 0 ? items : items.slice(0, largerDistIndex));
+        if (sameDistItems.length === 1) {
+            return sameDistItems[0];
+        }
+        const mx = (sameDistItems.reduce((sum, item) => sum + item.x, 0) / sameDistItems.length);
+        const my = (sameDistItems.reduce((sum, item) => sum + item.y, 0) / sameDistItems.length);
+        const angle = (Math.atan2(my - y0, mx - x0) + Math.PI);
+        const closest = sameDistItems[Math.round((sameDistItems.length - 1) * angle / 2 / Math.PI)];
+        return closest;
+    },
+
     highlight(filter) {
 
         const x = 'graphical-report__highlighted';
@@ -218,43 +253,8 @@ const Point = {
             .selectAll('.i-role-label')
             .classed(classed);
 
-        // Place highlighted element over others
-        var highlighted = container
-            .selectAll('.dot')
-            .filter(filter);
-        if (highlighted.empty()) {
-            return;
-        }
-        var notHighlighted = d3.select(highlighted.node().parentNode)
-            .selectAll('.dot')
-            .filter((d) => !filter(d))[0];
-        var lastNotHighlighted = notHighlighted[notHighlighted.length - 1];
-        if (lastNotHighlighted) {
-            var notHighlightedIndex = Array.prototype.indexOf.call(
-                lastNotHighlighted.parentNode.childNodes,
-                lastNotHighlighted);
-            var nextSibling = lastNotHighlighted.nextSibling;
-            highlighted.each(function () {
-                var index = Array.prototype.indexOf.call(this.parentNode.childNodes, this);
-                if (index > notHighlightedIndex) {
-                    return;
-                }
-                this.parentNode.insertBefore(this, nextSibling);
-            });
-        }
-    },
-
-    highlightDataPoints(filter) {
-        this.highlight(filter);
-
-        // Add highlighted elements to event.
-        filter.targetElements = [];
-        this.node().config.options.container
-            .selectAll('.dot')
-            .filter(filter)
-            .each(function () {
-                filter.targetElements.push(this);
-            });
+        utilsDraw.raiseElements(container, '.dot', filter);
+        utilsDraw.raiseElements(container, '.frame', (fiber) => fiber.some(filter));
     }
 };
 
