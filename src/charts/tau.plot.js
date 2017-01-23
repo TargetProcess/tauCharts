@@ -321,11 +321,10 @@ export class Plot extends Emitter {
         svg.on('mousemove', wrapEventHandler(handler));
         svg.on('click', wrapEventHandler(handler));
         svg.on('mouseleave', wrapEventHandler(() => {
-            if (window.getComputedStyle(this._svg).pointerEvents === 'none') {
-                return;
+            if (window.getComputedStyle(this._svg).pointerEvents !== 'none') {
+                this.select(() => true)
+                    .forEach((unit) => unit.fire('data-hover', {event, data: null, node: null}));
             }
-            this.select(() => true)
-                .forEach((unit) => unit.fire('data-hover', {event, data: null, node: null}));
         }));
     }
 

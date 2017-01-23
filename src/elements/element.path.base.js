@@ -120,9 +120,6 @@ const BasePath = {
             order: screenModel.order,
             color: screenModel.color,
             class: screenModel.class,
-            matchRowInCoordinates() {
-                throw 'Not implemented';
-            },
             groupAttributes: {},
             pathAttributesUpdateInit: {},
             pathAttributesUpdateDone: {},
@@ -190,7 +187,7 @@ const BasePath = {
                 .append('circle')
                 .call(createUpdateFunc(guide.animationSpeed, model.dotAttributesDefault, model.dotAttributes));
 
-            node.subscribe(points, (d) => d);
+            node.subscribe(points);
 
             const updatePath = (selection) => {
                 if (config.guide.animationSpeed > 0) {
@@ -234,12 +231,7 @@ const BasePath = {
                 ))
                 .call(updatePath);
 
-            node.subscribe(series, function (rows) {
-                const m = d3.mouse(this);
-                return model.matchRowInCoordinates(
-                    rows.filter(isNonSyntheticRecord),
-                    {x: m[0], y: m[1]});
-            });
+            node.subscribe(series);
 
             if (guide.showAnchors !== 'never') {
                 const anchorClass = 'i-data-anchor';
