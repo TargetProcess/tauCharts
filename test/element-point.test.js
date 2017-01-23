@@ -492,12 +492,12 @@ define(function(require) {
 
                 testUtils.simulateEvent('mousemove', svg, cx, cy - 10);
                 var highlighted1 = d3.select('.graphical-report__highlighted');
-                expect(highlighted1.data()[0].color).to.equal('yellow');
+                expect(highlighted1.data()[0].color).to.equal('green');
                 expect(document.elementFromPoint(cx, cy)).to.equal(highlighted1.node());
 
                 testUtils.simulateEvent('mousemove', svg, cx, cy + 10);
                 var highlighted2 = d3.select('.graphical-report__highlighted');
-                expect(highlighted2.data()[0].color).to.equal('green');
+                expect(highlighted2.data()[0].color).to.equal('yellow');
                 expect(document.elementFromPoint(cx, cy)).to.equal(highlighted2.node());
             });
         }

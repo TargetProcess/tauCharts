@@ -355,10 +355,11 @@ const BasePath = {
             return null;
         }
 
-        const sameDistItems = items.slice(0, Math.max(1, items.findIndex((d) => (
+        const largerDistIndex = items.findIndex((d) => (
             (d.distance !== items[0].distance) ||
             (d.secondaryDistance !== items[0].secondaryDistance)
-        ))));
+        ));
+        const sameDistItems = (largerDistIndex < 0 ? items : items.slice(0, largerDistIndex));
         if (sameDistItems.length === 1) {
             return sameDistItems[0];
         }
