@@ -472,6 +472,11 @@ define(function(require) {
             {
                 x: 1,
                 y: 1,
+                color: 'yellow'
+            },
+            {
+                x: 1,
+                y: 1,
                 color: 'green'
             }
         ],

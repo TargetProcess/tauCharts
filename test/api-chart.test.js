@@ -9,6 +9,7 @@ define(function (require) {
     var utils = require('testUtils');
     var $ = require('jquery');
     var tauCharts = require('src/tau.charts');
+    var layers = require('plugins/layers');
     var div, spec;
     var config = {
         layoutEngine: 'DEFAULT',
@@ -372,6 +373,53 @@ define(function (require) {
 
         testChart(true);
         testChart(false);
+    });
+
+    describe('Highlight overflown layer elements', function () {
+        var container = document.createElement('div');
+        container.style.width = '800px';
+        container.style.height = '600px';
+        document.body.appendChild(container);
+        var chart = new tauCharts.Chart({
+            type: 'line',
+            x: 'date',
+            y: 'value',
+            data: [
+                {date: '2017-01-21', value: 20, count: 8},
+                {date: '2017-01-22', value: 90, count: 9},
+                {date: '2017-01-23', value: 80, count: 2}
+            ],
+            plugins: [
+                layers({
+                    mode: 'dock',
+                    showPanel: false,
+                    layers: [
+                        {
+                            type: 'line',
+                            y: 'count',
+                            guide: {
+                                nice: false
+                            }
+                        }
+                    ]
+                })
+            ]
+        });
+        chart.renderTo(container);
+        var svg = chart.getSVG();
+
+        var points = svg.querySelectorAll('.i-data-anchor');
+        var midPoints = Array.prototype.filter.call(points, (el) => d3.select(el).data()[0].date === '2017-01-22');
+        var rect = midPoints[0].getBoundingClientRect();
+        var cx = ((rect.left + rect.right) / 2);
+        var cy = ((rect.bottom + rect.top) / 2);
+        utils.simulateEvent('mousemove', svg, cx, cy - 10);
+        expect(d3.select('.graphical-report__highlighted').data()[0]['Layer Type']).to.equal('count');
+        utils.simulateEvent('mousemove', svg, cx, cy + 10);
+        expect(d3.select('.graphical-report__highlighted').data()[0]['Layer Type']).to.equal('value');
+
+        chart.destroy();
+        document.body.removeChild(container);
     });
 
     describe('API CHART', function () {

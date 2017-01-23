@@ -270,10 +270,11 @@ export class Plot extends Emitter {
                 (a.closest.secondaryDistance - b.closest.secondaryDistance) :
                 (a.closest.distance - b.closest.distance)));
         if (nonEmpty.length > 0) {
-            const sameDistItems = nonEmpty.slice(0, Math.max(1, nonEmpty.findIndex((d) => (
+            const largerDistIndex = nonEmpty.findIndex((d) => (
                 (d.closest.distance !== nonEmpty[0].closest.distance) ||
                 (d.closest.secondaryDistance !== nonEmpty[0].closest.secondaryDistance)
-            ))));
+            ));
+            const sameDistItems = (largerDistIndex < 0 ? nonEmpty : nonEmpty.slice(0, largerDistIndex));
             if (sameDistItems.length === 1) {
                 data = sameDistItems[0].closest.data;
                 node = sameDistItems[0].closest.node;
