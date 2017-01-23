@@ -1,4 +1,5 @@
-/* jshint ignore:start */
+import d3 from 'd3';
+
 var utilsDraw = {
     translate: ((left, top) => `translate(${left},${top})`),
     rotate: ((angle) => `rotate(${angle})`),
@@ -73,6 +74,5 @@ var utilsDraw = {
         }
     }
 };
-/* jshint ignore:end */
 
 export {utilsDraw};

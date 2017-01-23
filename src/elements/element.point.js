@@ -253,29 +253,6 @@ const Point = {
             .classed(classed);
 
         utilsDraw.raiseElements(container, '.dot', filter);
-    },
-
-    highlight(filter) {
-
-        const x = 'graphical-report__highlighted';
-        const _ = 'graphical-report__dimmed';
-
-        const container = this.node().config.options.container;
-        const classed = {
-            [x]: ((d) => filter(d) === true),
-            [_]: ((d) => filter(d) === false)
-        };
-
-        container
-            .selectAll('.dot')
-            .classed(classed);
-
-        container
-            .selectAll('.i-role-label')
-            .classed(classed);
-
-        utilsDraw.raiseElements(container, '.dot', filter);
-        utilsDraw.raiseElements(container, '.frame', (fiber) => fiber.some(filter));
     }
 };
 
