@@ -104,10 +104,18 @@
 .graphical-report__tooltip__gray-text {
   color: #8e8e8e;
 }
-.graphical-report__svg__tooltip-target .i-role-element,
-.graphical-report__svg__tooltip-target .i-data-anchor {
+.graphical-report__tooltip-target {
   cursor: pointer;
 }
-.graphical-report__svg__tooltip-target-stuck {
+.graphical-report__tooltip-target-stuck {
   pointer-events: none;
+}
+.graphical-report__tooltip-target .graphical-report__dot.graphical-report__highlighted,
+.graphical-report__tooltip-target .graphical-report__bar.graphical-report__highlighted,
+.graphical-report__tooltip-target .i-data-anchor.graphical-report__highlighted {
+  stroke: #333;
+  stroke-width: 1;
+}
+.graphical-report__tooltip-target .graphical-report__bar.graphical-report__highlighted {
+  shape-rendering: crispEdges;
 }

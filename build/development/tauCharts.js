@@ -1,4 +1,4 @@
-/*! taucharts - v0.10.0-beta.9 - 2017-01-17
+/*! taucharts - v0.10.0-beta.10 - 2017-01-24
 * https://github.com/TargetProcess/tauCharts
 * Copyright (c) 2017 Taucraft Limited; Licensed Apache License 2.0 */
 (function webpackUniversalModuleDefinition(root, factory) {
@@ -203,6 +203,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	        renderingTimeout: 10000,
 	        asyncRendering: false,
 	        syncRenderingDuration: 50,
+	        syncPointerEvents: true,
 
 	        defaultNiceColor: true,
 
@@ -347,7 +348,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	}]));
 
 	/* global VERSION:false */
-	var version = ("0.10.0-beta.9");
+	var version = ("0.10.0-beta.10");
 	exports.GPL = _tau.GPL;
 	exports.Plot = _tau2.Plot;
 	exports.Chart = _tau3.Chart;
@@ -1881,9 +1882,14 @@ return /******/ (function(modules) { // webpackBootstrap
 	        }
 	    }, {
 	        key: 'createScreenModel',
-	        value: function createScreenModel(grammarModel) {}
-	        // return nothing
-
+	        value: function createScreenModel(grammarModel) {
+	            // return nothing
+	        }
+	    }, {
+	        key: 'getClosestElement',
+	        value: function getClosestElement(x, y) {
+	            return null;
+	        }
 	        /* eslint-enable */
 
 	    }, {
@@ -3282,14 +3288,21 @@ return /******/ (function(modules) { // webpackBootstrap
 
 /***/ },
 /* 10 */
-/***/ function(module, exports) {
+/***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 
 	Object.defineProperty(exports, "__esModule", {
 	    value: true
 	});
-	/* jshint ignore:start */
+	exports.utilsDraw = undefined;
+
+	var _d = __webpack_require__(2);
+
+	var _d2 = _interopRequireDefault(_d);
+
+	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
 	var utilsDraw = {
 	    translate: function translate(left, top) {
 	        return 'translate(' + left + ',' + top + ')';
@@ -3312,9 +3325,60 @@ return /******/ (function(modules) { // webpackBootstrap
 	        t = (s2_x * (ay0 - by0) - s2_y * (ax0 - bx0)) / (-s2_x * s1_y + s1_x * s2_y);
 
 	        return s >= 0 && s <= 1 && t >= 0 && t <= 1;
+	    },
+	    getDeepTransformTranslate: function getDeepTransformTranslate(node) {
+	        var parseTransformTranslate = function parseTransformTranslate(transform) {
+	            var result = { x: 0, y: 0 };
+	            var ts = transform.indexOf('translate(');
+	            if (ts >= 0) {
+	                var te = transform.indexOf(')', ts + 10);
+	                var translateStr = transform.substring(ts + 10, te);
+	                var translateParts = translateStr.trim().replace(',', ' ').replace(/\s+/, ' ').split(' ');
+	                result.x = parseFloat(translateParts[0]);
+	                if (translateParts.length > 1) {
+	                    result.y = parseFloat(translateParts[1]);
+	                }
+	            }
+	            return result;
+	        };
+	        var translate = { x: 0, y: 0 };
+	        var parent = node;
+	        var tr, attr;
+	        while (parent.nodeName.toUpperCase() !== 'SVG') {
+	            attr = parent.getAttribute('transform');
+	            if (attr) {
+	                tr = parseTransformTranslate(attr);
+	                translate.x += tr.x;
+	                translate.y += tr.y;
+	            }
+	            parent = parent.parentNode;
+	        }
+	        return translate;
+	    },
+	    raiseElements: function raiseElements(container, selector, filter) {
+	        var highlighted = container.selectAll(selector).filter(filter);
+	        if (highlighted.empty()) {
+	            return;
+	        }
+	        var untargeted = _d2.default.select(highlighted.node().parentNode).selectAll(selector).filter(function (d) {
+	            return !filter(d);
+	        })[0];
+	        var lastUntargeted = untargeted[untargeted.length - 1];
+	        if (lastUntargeted) {
+	            (function () {
+	                var untargetedIndex = Array.prototype.indexOf.call(lastUntargeted.parentNode.childNodes, lastUntargeted);
+	                var nextSibling = lastUntargeted.nextSibling;
+	                highlighted.each(function () {
+	                    var index = Array.prototype.indexOf.call(this.parentNode.childNodes, this);
+	                    if (index > untargetedIndex) {
+	                        return;
+	                    }
+	                    this.parentNode.insertBefore(this, nextSibling);
+	                });
+	            })();
+	        }
 	    }
 	};
-	/* jshint ignore:end */
 
 	exports.utilsDraw = utilsDraw;
 
@@ -6496,8 +6560,8 @@ return /******/ (function(modules) { // webpackBootstrap
 	        _this._plugins = new _plugins.Plugins(plugins, _this);
 
 	        _this._reportProgress = null;
-	        _this._renderingFrameId = null;
 	        _this._renderingInProgress = false;
+	        _this._requestedAnimationFrames = new Map();
 	        return _this;
 	    }
 
@@ -6579,6 +6643,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	                return node.destroy();
 	            });
 	            this._nodes = [];
+	            this._renderedItems = [];
 	        }
 	    }, {
 	        key: 'onUnitDraw',
@@ -6608,9 +6673,118 @@ return /******/ (function(modules) { // webpackBootstrap
 	            this.fire(['units', 'structure', 'expanded'].join(''), specRef);
 	        }
 	    }, {
+	        key: '_getClosestElementPerUnit',
+	        value: function _getClosestElementPerUnit(x0, y0) {
+	            return this._renderedItems.filter(function (d) {
+	                return d.getClosestElement;
+	            }).map(function (item) {
+	                var closest = item.getClosestElement(x0, y0);
+	                var unit = item.node();
+	                return { unit: unit, closest: closest };
+	            });
+	        }
+	    }, {
+	        key: '_handlePointerEvent',
+	        value: function _handlePointerEvent(event) {
+	            // TODO: Highlight API seems not consistent.
+	            // Just predicate is not enough, also
+	            // need coordinates or event object.
+	            var svgRect = this._svg.getBoundingClientRect();
+	            var x = event.clientX - svgRect.left;
+	            var y = event.clientY - svgRect.top;
+	            var eventType = event.type;
+	            var isClick = eventType === 'click';
+	            var dataEvent = isClick ? 'data-click' : 'data-hover';
+	            var data = null;
+	            var node = null;
+	            var items = this._getClosestElementPerUnit(x, y);
+	            var nonEmpty = items.filter(function (d) {
+	                return d.closest;
+	            }).sort(function (a, b) {
+	                return a.closest.distance === b.closest.distance ? a.closest.secondaryDistance - b.closest.secondaryDistance : a.closest.distance - b.closest.distance;
+	            });
+	            if (nonEmpty.length > 0) {
+	                var largerDistIndex = nonEmpty.findIndex(function (d) {
+	                    return d.closest.distance !== nonEmpty[0].closest.distance || d.closest.secondaryDistance !== nonEmpty[0].closest.secondaryDistance;
+	                });
+	                var sameDistItems = largerDistIndex < 0 ? nonEmpty : nonEmpty.slice(0, largerDistIndex);
+	                if (sameDistItems.length === 1) {
+	                    data = sameDistItems[0].closest.data;
+	                    node = sameDistItems[0].closest.node;
+	                } else {
+	                    var mx = sameDistItems.reduce(function (sum, item) {
+	                        return sum + item.closest.x;
+	                    }, 0) / sameDistItems.length;
+	                    var my = sameDistItems.reduce(function (sum, item) {
+	                        return sum + item.closest.y;
+	                    }, 0) / sameDistItems.length;
+	                    var angle = Math.atan2(my - y, mx - x) + Math.PI;
+	                    var closest = sameDistItems[Math.round((sameDistItems.length - 1) * angle / 2 / Math.PI)].closest;
+
+	                    data = closest.data;
+	                    node = closest.node;
+	                }
+	            }
+
+	            items.forEach(function (item) {
+	                return item.unit.fire(dataEvent, { event: event, data: data, node: node });
+	            });
+	        }
+	    }, {
+	        key: '_requestAnimationFrame',
+	        value: function _requestAnimationFrame(fn) {
+	            var _this4 = this;
+
+	            var id = requestAnimationFrame(function () {
+	                _this4._requestedAnimationFrames.delete(id);
+	                fn();
+	            });
+	            this._requestedAnimationFrames.set(id, fn);
+	        }
+	    }, {
+	        key: '_initPointerEvents',
+	        value: function _initPointerEvents() {
+	            var _this5 = this;
+
+	            if (!this._liveSpec.settings.syncPointerEvents) {
+	                this._pointerAnimationFrameRequested = false;
+	            }
+	            var svg = _d2.default.select(this._svg);
+	            var wrapEventHandler = this._liveSpec.settings.syncPointerEvents ? function (handler) {
+	                return function () {
+	                    return handler(_d2.default.event);
+	                };
+	            } : function (handler) {
+	                return function () {
+	                    var e = _d2.default.event;
+	                    if (!_this5._pointerAnimationFrameRequested) {
+	                        _this5._requestAnimationFrame(function () {
+	                            _this5._pointerAnimationFrameRequested = false;
+	                            handler(e);
+	                        });
+	                        _this5._pointerAnimationFrameRequested = true;
+	                    }
+	                };
+	            };
+	            var handler = function handler(e) {
+	                return _this5._handlePointerEvent(e);
+	            };
+	            svg.on('mousemove', wrapEventHandler(handler));
+	            svg.on('click', wrapEventHandler(handler));
+	            svg.on('mouseleave', wrapEventHandler(function () {
+	                if (window.getComputedStyle(_this5._svg).pointerEvents !== 'none') {
+	                    _this5.select(function () {
+	                        return true;
+	                    }).forEach(function (unit) {
+	                        return unit.fire('data-hover', { event: event, data: null, node: null });
+	                    });
+	                }
+	            }));
+	        }
+	    }, {
 	        key: 'renderTo',
 	        value: function renderTo(target, xSize) {
-	            var _this4 = this;
+	            var _this6 = this;
 
 	            this._svg = null;
 	            this._target = target;
@@ -6661,7 +6835,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	            }
 
 	            this._liveSpec = this.transformers.reduce(function (memo, TransformClass) {
-	                return new TransformClass(memo).transform(_this4);
+	                return new TransformClass(memo).transform(_this6);
 	            }, this._liveSpec);
 
 	            this.destroyNodes();
@@ -6695,11 +6869,14 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	            var frameRootId = scenario[0].config.uid;
 	            var svg = selectOrAppend(d3Target, 'svg').attr({
-	                class: _const.CSS_PREFIX + 'svg',
 	                width: Math.floor(newSize.width),
 	                height: Math.floor(newSize.height)
 	            });
+	            if (!svg.attr('class')) {
+	                svg.attr('class', _const.CSS_PREFIX + 'svg');
+	            }
 	            this._svg = svg.node();
+	            this._initPointerEvents();
 	            this.fire('beforerender', this._svg);
 	            var roots = svg.selectAll('g.frame-root').data([frameRootId], function (x) {
 	                return x;
@@ -6709,11 +6886,11 @@ return /******/ (function(modules) { // webpackBootstrap
 	            roots.enter().append('g').classed(_const.CSS_PREFIX + 'cell cell frame-root uid_' + frameRootId, true);
 	            roots.call(function (selection) {
 	                selection.classed('tau-active', true);
-	                (0, _d3Decorators.d3_transition)(selection, _this4.configGPL.settings.animationSpeed, 'frameRootToggle').attr('opacity', 1);
+	                (0, _d3Decorators.d3_transition)(selection, _this6.configGPL.settings.animationSpeed, 'frameRootToggle').attr('opacity', 1);
 	            });
 	            roots.exit().call(function (selection) {
 	                selection.classed('tau-active', false);
-	                (0, _d3Decorators.d3_transition)(selection, _this4.configGPL.settings.animationSpeed, 'frameRootToggle').attr('opacity', 1e-6).remove();
+	                (0, _d3Decorators.d3_transition)(selection, _this6.configGPL.settings.animationSpeed, 'frameRootToggle').attr('opacity', 1e-6).remove();
 	            });
 
 	            this._cancelRendering();
@@ -6722,7 +6899,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    }, {
 	        key: '_renderScenario',
 	        value: function _renderScenario(scenario) {
-	            var _this5 = this;
+	            var _this7 = this;
 
 	            var duration = 0;
 	            var syncDuration = 0;
@@ -6735,11 +6912,11 @@ return /******/ (function(modules) { // webpackBootstrap
 	                    try {
 	                        fn();
 	                    } catch (err) {
-	                        _this5._cancelRendering();
-	                        _this5._displayRenderingError(err);
-	                        _this5.fire('renderingerror', err);
-	                        if (_this5._liveSpec.settings.asyncRendering) {
-	                            _this5._liveSpec.settings.log('An arror occured while rendering: ' + err.message, 'ERROR');
+	                        _this7._cancelRendering();
+	                        _this7._displayRenderingError(err);
+	                        _this7.fire('renderingerror', err);
+	                        if (_this7._liveSpec.settings.asyncRendering) {
+	                            _this7._liveSpec.settings.log('An arror occured while rendering: ' + err.message, 'ERROR');
 	                        } else {
 	                            throw err;
 	                        }
@@ -6755,13 +6932,14 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	                var start = Date.now();
 	                item.draw();
-	                _this5.onUnitDraw(item.node());
+	                _this7.onUnitDraw(item.node());
+	                _this7._renderedItems.push(item);
 	                var end = Date.now();
 	                duration += end - start;
 	                syncDuration += end - start;
 
 	                i++;
-	                _this5._reportProgress(i / scenario.length);
+	                _this7._reportProgress(i / scenario.length);
 	                if (i === scenario.length) {
 	                    done();
 	                } else if (duration > timeout) {
@@ -6772,45 +6950,44 @@ return /******/ (function(modules) { // webpackBootstrap
 	            };
 
 	            var timeoutReached = function timeoutReached() {
-	                _this5._displayTimeoutWarning({
+	                _this7._displayTimeoutWarning({
 	                    timeout: timeout,
 	                    proceed: function proceed() {
 	                        timeout = Infinity;
 	                        next();
 	                    },
 	                    cancel: function cancel() {
-	                        _this5._cancelRendering();
+	                        _this7._cancelRendering();
 	                    }
 	                });
-	                _this5.fire('renderingtimeout');
+	                _this7.fire('renderingtimeout');
 	            };
 
 	            var done = function done() {
-	                _this5._renderingInProgress = false;
+	                _this7._renderingInProgress = false;
 	                Plot.renderingsInProgress--;
 
 	                // TODO: Render panels before chart, to
 	                // prevent chart size shrink. Use some other event.
-	                _utilsDom.utilsDom.setScrollPadding(_this5._layout.contentContainer);
-	                _this5._layout.rightSidebar.style.maxHeight = _this5._liveSpec.settings.size.height + 'px';
-	                _this5.fire('render', _this5._svg);
+	                _utilsDom.utilsDom.setScrollPadding(_this7._layout.contentContainer);
+	                _this7._layout.rightSidebar.style.maxHeight = _this7._liveSpec.settings.size.height + 'px';
+	                _this7.fire('render', _this7._svg);
 
 	                // NOTE: After plugins have rendered, the panel scrollbar may appear, so need to handle it again.
-	                _utilsDom.utilsDom.setScrollPadding(_this5._layout.rightSidebarContainer, 'vertical');
+	                _utilsDom.utilsDom.setScrollPadding(_this7._layout.rightSidebarContainer, 'vertical');
 	            };
 
 	            var nextSync = function nextSync() {
 	                return drawScenario();
 	            };
 	            var nextAsync = function nextAsync() {
-	                _this5._renderingFrameId = requestAnimationFrame(safe(function () {
-	                    _this5._renderingFrameId = null;
-	                    drawScenario();
+	                _this7._requestAnimationFrame(safe(function () {
+	                    return drawScenario();
 	                }));
 	            };
 
 	            var next = function next() {
-	                if (_this5._liveSpec.settings.asyncRendering && syncDuration >= _this5._liveSpec.settings.syncRenderingDuration / Plot.renderingsInProgress) {
+	                if (_this7._liveSpec.settings.asyncRendering && syncDuration >= _this7._liveSpec.settings.syncRenderingDuration / Plot.renderingsInProgress) {
 	                    syncDuration = 0;
 	                    nextAsync();
 	                } else {
@@ -6827,8 +7004,10 @@ return /******/ (function(modules) { // webpackBootstrap
 	                this._renderingInProgress = false;
 	                Plot.renderingsInProgress--;
 	            }
-	            cancelAnimationFrame(this._renderingFrameId);
-	            this._renderingFrameId = null;
+	            this._requestedAnimationFrames.forEach(function (fn, id) {
+	                return cancelAnimationFrame(id);
+	            });
+	            this._requestedAnimationFrames.clear();
 	        }
 	    }, {
 	        key: '_createProgressBar',
@@ -6869,10 +7048,10 @@ return /******/ (function(modules) { // webpackBootstrap
 	    }, {
 	        key: 'getSourceFiltersIterator',
 	        value: function getSourceFiltersIterator(rejectFiltersPredicate) {
-	            var _this6 = this;
+	            var _this8 = this;
 
 	            var filters = _utils.utils.flatten(Object.keys(this._filtersStore.filters).map(function (key) {
-	                return _this6._filtersStore.filters[key];
+	                return _this8._filtersStore.filters[key];
 	            })).filter(function (f) {
 	                return !rejectFiltersPredicate(f);
 	            }).map(function (x) {
@@ -6888,7 +7067,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    }, {
 	        key: 'getDataSources',
 	        value: function getDataSources() {
-	            var _this7 = this;
+	            var _this9 = this;
 
 	            var param = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
 
@@ -6904,7 +7083,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	                return k !== '?';
 	            }).reduce(function (memo, k) {
 	                var item = chartDataModel[k];
-	                var filterIterator = _this7.getSourceFiltersIterator(excludeFiltersByTagAndSource(k));
+	                var filterIterator = _this9.getSourceFiltersIterator(excludeFiltersByTagAndSource(k));
 	                memo[k] = {
 	                    dims: item.dims,
 	                    data: item.data.filter(filterIterator)
@@ -6974,10 +7153,10 @@ return /******/ (function(modules) { // webpackBootstrap
 	    }, {
 	        key: 'removeFilter',
 	        value: function removeFilter(id) {
-	            var _this8 = this;
+	            var _this10 = this;
 
 	            Object.keys(this._filtersStore.filters).map(function (key) {
-	                _this8._filtersStore.filters[key] = _this8._filtersStore.filters[key].filter(function (item) {
+	                _this10._filtersStore.filters[key] = _this10._filtersStore.filters[key].filter(function (item) {
 	                    return item.id !== id;
 	                });
 	            });
@@ -7041,7 +7220,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    }, {
 	        key: '_displayTimeoutWarning',
 	        value: function _displayTimeoutWarning(_ref) {
-	            var _this9 = this;
+	            var _this11 = this;
 
 	            var proceed = _ref.proceed,
 	                cancel = _ref.cancel,
@@ -7059,12 +7238,12 @@ return /******/ (function(modules) { // webpackBootstrap
 	            this._layout.content.style.height = '100%';
 	            this._layout.content.insertAdjacentHTML('beforeend', '\n            <div class="' + _const.CSS_PREFIX + 'rendering-timeout-warning">\n            <svg\n                viewBox="0 0 ' + width + ' ' + height + '">\n                <text\n                    text-anchor="middle"\n                    font-size="' + fontSize + '">\n                    <tspan x="' + midX + '" y="' + getY(1) + '">Rendering took more than ' + Math.round(timeout) / 1000 + 's</tspan>\n                    <tspan x="' + midX + '" y="' + getY(2) + '">Would you like to continue?</tspan>\n                </text>\n                <text\n                    class="' + _const.CSS_PREFIX + 'rendering-timeout-continue-btn"\n                    text-anchor="end"\n                    font-size="' + fontSize + '"\n                    cursor="pointer"\n                    text-decoration="underline"\n                    x="' + (midX - fontSize / 3) + '"\n                    y="' + getY(3) + '">\n                    Continue\n                </text>\n                <text\n                    class="' + _const.CSS_PREFIX + 'rendering-timeout-cancel-btn"\n                    text-anchor="start"\n                    font-size="' + fontSize + '"\n                    cursor="pointer"\n                    text-decoration="underline"\n                    x="' + (midX + fontSize / 3) + '"\n                    y="' + getY(3) + '">\n                    Cancel\n                </text>\n            </svg>\n            </div>\n        ');
 	            this._layout.content.querySelector('.' + _const.CSS_PREFIX + 'rendering-timeout-continue-btn').addEventListener('click', function () {
-	                _this9._clearTimeoutWarning();
-	                proceed.call(_this9);
+	                _this11._clearTimeoutWarning();
+	                proceed.call(_this11);
 	            });
 	            this._layout.content.querySelector('.' + _const.CSS_PREFIX + 'rendering-timeout-cancel-btn').addEventListener('click', function () {
-	                _this9._clearTimeoutWarning();
-	                cancel.call(_this9);
+	                _this11._clearTimeoutWarning();
+	                cancel.call(_this11);
 	            });
 	        }
 	    }, {
@@ -7101,7 +7280,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	            }, []);
 
 	            var isNullOrUndefined = function isNullOrUndefined(x) {
-	                return x === null || typeof x === 'undefined';
+	                return x === null || x === undefined;
 	            };
 
 	            var reducer = function reducer(refSources, metaDim) {
@@ -12679,6 +12858,8 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	var _utils = __webpack_require__(3);
 
+	var _utilsDraw = __webpack_require__(10);
+
 	var _d = __webpack_require__(2);
 
 	var _d2 = _interopRequireDefault(_d);
@@ -12695,7 +12876,8 @@ return /******/ (function(modules) { // webpackBootstrap
 	        config.guide = _utils.utils.defaults(config.guide || {}, {
 	            animationSpeed: 0,
 	            avoidScalesOverflow: true,
-	            enableColorToBarPosition: false
+	            enableColorToBarPosition: false,
+	            maxHighlightDistance: 32
 	        });
 
 	        config.guide.size = config.guide.size || {};
@@ -12751,37 +12933,20 @@ return /******/ (function(modules) { // webpackBootstrap
 	        var _this = this;
 
 	        var node = this.node();
-	        node.on('highlight', function (sender, e) {
-	            return _this.highlight(e);
-	        });
-	        node.on('highlight-data-points', function (sender, e) {
-	            return _this.highlightDataPoints(e);
-	        });
-	        node.on('click-data-points', function (sender, e) {
-	            return _this.highlightDataPoints(e);
-	        });
-
-	        var getHighlightEvtObj = function getHighlightEvtObj(e, data) {
-	            var filter = function filter(d) {
-	                return d === data ? true : null;
+	        var createFilter = function createFilter(data, falsy) {
+	            return function (row) {
+	                return row === data ? true : falsy;
 	            };
-	            filter.data = data;
-	            filter.domEvent = e;
-	            return filter;
 	        };
-	        var activate = function activate(sender, e) {
-	            return sender.fire('highlight-data-points', getHighlightEvtObj(e.event, e.data));
-	        };
-	        var deactivate = function deactivate(sender, e) {
-	            return sender.fire('highlight-data-points', getHighlightEvtObj(e.event, null));
-	        };
-	        var click = function click(sender, e) {
-	            return sender.fire('click-data-points', getHighlightEvtObj(e.event, e.data));
-	        };
-	        node.on('mouseover', activate);
-	        node.on('mousemove', activate);
-	        node.on('mouseout', deactivate);
-	        node.on('click', click);
+	        node.on('highlight', function (sender, filter) {
+	            return _this.highlight(filter);
+	        });
+	        node.on('data-hover', function (sender, e) {
+	            return _this.highlight(createFilter(e.data, null));
+	        });
+	        node.on('data-click', function (sender, e) {
+	            return _this.highlight(createFilter(e.data, e.data ? false : null));
+	        });
 	    },
 	    draw: function draw() {
 
@@ -12853,6 +13018,55 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	        node.subscribe(new _layerLabels.LayerLabels(screenModel.model, screenModel.flip, config.guide.label, options).draw(fibers));
 	    },
+	    getClosestElement: function getClosestElement(x0, y0) {
+	        var container = this.node().config.options.container;
+	        var screenModel = this.node().screenModel;
+	        var getDistance = function getDistance(x, y) {
+	            return Math.sqrt(Math.pow(x - x0, 2) + Math.pow(y - y0, 2));
+	        };
+	        var maxHighlightDistance = this.node().config.guide.maxHighlightDistance;
+
+
+	        var dots = container.selectAll('.dot');
+	        var items = dots[0].map(function (node) {
+	            var data = _d2.default.select(node).data()[0];
+	            var translate = _utilsDraw.utilsDraw.getDeepTransformTranslate(node);
+	            var x = screenModel.x(data) + translate.x;
+	            var y = screenModel.y(data) + translate.y;
+	            var r = screenModel.size(data) / 2;
+	            var distance = getDistance(x, y);
+	            var secondaryDistance = distance < r ? r - distance : distance;
+	            if (distance > r && distance > maxHighlightDistance) {
+	                return null;
+	            }
+	            return { node: node, data: data, distance: distance, secondaryDistance: secondaryDistance, x: x, y: y };
+	        }).filter(function (d) {
+	            return d;
+	        }).sort(function (a, b) {
+	            return a.distance === b.distance ? a.secondaryDistance - b.secondaryDistance : a.distance - b.distance;
+	        });
+
+	        if (items.length === 0) {
+	            return null;
+	        }
+
+	        var largerDistIndex = items.findIndex(function (d) {
+	            return d.distance !== items[0].distance || d.secondaryDistance !== items[0].secondaryDistance;
+	        });
+	        var sameDistItems = largerDistIndex < 0 ? items : items.slice(0, largerDistIndex);
+	        if (sameDistItems.length === 1) {
+	            return sameDistItems[0];
+	        }
+	        var mx = sameDistItems.reduce(function (sum, item) {
+	            return sum + item.x;
+	        }, 0) / sameDistItems.length;
+	        var my = sameDistItems.reduce(function (sum, item) {
+	            return sum + item.y;
+	        }, 0) / sameDistItems.length;
+	        var angle = Math.atan2(my - y0, mx - x0) + Math.PI;
+	        var closest = sameDistItems[Math.round((sameDistItems.length - 1) * angle / 2 / Math.PI)];
+	        return closest;
+	    },
 	    highlight: function highlight(filter) {
 	        var _classed;
 
@@ -12870,34 +13084,9 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	        container.selectAll('.i-role-label').classed(classed);
 
-	        // Place highlighted element over others
-	        var highlighted = container.selectAll('.dot').filter(filter);
-	        if (highlighted.empty()) {
-	            return;
-	        }
-	        var notHighlighted = _d2.default.select(highlighted.node().parentNode).selectAll('.dot').filter(function (d) {
-	            return !filter(d);
-	        })[0];
-	        var lastNotHighlighted = notHighlighted[notHighlighted.length - 1];
-	        if (lastNotHighlighted) {
-	            var notHighlightedIndex = Array.prototype.indexOf.call(lastNotHighlighted.parentNode.childNodes, lastNotHighlighted);
-	            var nextSibling = lastNotHighlighted.nextSibling;
-	            highlighted.each(function () {
-	                var index = Array.prototype.indexOf.call(this.parentNode.childNodes, this);
-	                if (index > notHighlightedIndex) {
-	                    return;
-	                }
-	                this.parentNode.insertBefore(this, nextSibling);
-	            });
-	        }
-	    },
-	    highlightDataPoints: function highlightDataPoints(filter) {
-	        this.highlight(filter);
-
-	        // Add highlighted elements to event.
-	        filter.targetElements = [];
-	        this.node().config.options.container.selectAll('.dot').filter(filter).each(function () {
-	            filter.targetElements.push(this);
+	        _utilsDraw.utilsDraw.raiseElements(container, '.dot', filter);
+	        _utilsDraw.utilsDraw.raiseElements(container, '.frame', function (fiber) {
+	            return fiber.some(filter);
 	        });
 	    }
 	};
@@ -12959,6 +13148,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	            fontWeight: 'normal',
 	            fontSize: 10,
 	            fontColor: '#000',
+	            hideEqualLabels: false,
 	            position: [],
 	            tickFormat: null,
 	            tickFormatNullAlias: ''
@@ -13025,11 +13215,6 @@ return /******/ (function(modules) { // webpackBootstrap
 	                    };
 	                });
 
-	                // Prevent displaying a sequence of equal labels
-	                absFiber = absFiber.filter(function (d, i, fib) {
-	                    return i === fib.length - 1 || d.label !== fib[i + 1].label;
-	                });
-
 	                memo.text = memo.text.concat(absFiber);
 	                memo.edges = memo.edges.concat(readBy3(absFiber, function (prev, curr, next) {
 
@@ -13090,6 +13275,16 @@ return /******/ (function(modules) { // webpackBootstrap
 	                    return 'translate(' + xi(d, i) + ',' + yi(d, i) + ') rotate(' + angle(d, i) + ')';
 	                }).text(label);
 	            };
+
+	            if (guide.hideEqualLabels) {
+	                labels.filter(function (d) {
+	                    return !d.hide;
+	                }).filter(function (d, i, visibleLabels) {
+	                    return i < visibleLabels.length - 1 && d.label === visibleLabels[i + 1].label;
+	                }).forEach(function (d) {
+	                    return d.hide = true;
+	                });
+	            }
 
 	            var text = this.container.selectAll('.i-role-label').data(labels.map(function (r) {
 	                return r.data;
@@ -14114,6 +14309,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	var Area = {
 
 	    draw: _elementPath.BasePath.draw,
+	    getClosestElement: _elementPath.BasePath.getClosestElement,
 	    highlight: _elementPath.BasePath.highlight,
 	    highlightDataPoints: _elementPath.BasePath.highlightDataPoints,
 	    addInteraction: _elementPath.BasePath.addInteraction,
@@ -14150,37 +14346,6 @@ return /******/ (function(modules) { // webpackBootstrap
 	        var guide = this.node().config.guide;
 	        var countCss = (0, _cssClassMap.getLineClassesByCount)(screenModel.model.scaleColor.domain().length);
 	        var groupPref = _const.CSS_PREFIX + 'area area i-role-path ' + countCss + ' ' + guide.cssClass + ' ';
-
-	        /* eslint-disable */
-	        var getDistance = screenModel.flip ? function (mx, my, rx, ry) {
-	            return Math.abs(my - ry);
-	        } : function (mx, my, rx, ry) {
-	            return Math.abs(mx - rx);
-	        };
-	        /* eslint-enable */
-
-	        baseModel.matchRowInCoordinates = function (rows, _ref) {
-	            var x = _ref.x,
-	                y = _ref.y;
-
-
-	            // d3.invert doesn't work for ordinal axes
-	            var nearest = rows.map(function (row) {
-	                var rx = baseModel.x(row);
-	                var ry = baseModel.y(row);
-	                return {
-	                    x: rx,
-	                    y: ry,
-	                    dist: getDistance(x, y, rx, ry),
-	                    data: row
-	                };
-	            }).sort(function (a, b) {
-	                return a.dist - b.dist;
-	            }) // asc
-	            [0];
-
-	            return nearest.data;
-	        };
 
 	        baseModel.groupAttributes = {
 	            class: function _class(fiber) {
@@ -14247,6 +14412,8 @@ return /******/ (function(modules) { // webpackBootstrap
 	var _utils = __webpack_require__(3);
 
 	var _utilsDom = __webpack_require__(1);
+
+	var _utilsDraw = __webpack_require__(10);
 
 	var _d = __webpack_require__(2);
 
@@ -14334,6 +14501,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	        config.guide = _utils.utils.defaults(config.guide || {}, {
 	            animationSpeed: 0,
 	            cssClass: '',
+	            maxHighlightDistance: 32,
 	            widthCssClass: '',
 	            color: {},
 	            label: {}
@@ -14341,6 +14509,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	        config.guide.label = _utils.utils.defaults(config.guide.label, {
 	            fontSize: 11,
+	            hideEqualLabels: true,
 	            position: ['auto:avoid-label-label-overlap', 'auto:avoid-label-anchor-overlap', 'auto:avoid-label-edges-overlap', 'auto:adjust-on-label-overflow', 'auto:hide-on-label-label-overlap', 'auto:hide-on-label-edges-overlap']
 	        });
 
@@ -14371,10 +14540,6 @@ return /******/ (function(modules) { // webpackBootstrap
 	            order: screenModel.order,
 	            color: screenModel.color,
 	            class: screenModel.class,
-	            matchRowInCoordinates: function matchRowInCoordinates() {
-	                throw 'Not implemented';
-	            },
-
 	            groupAttributes: {},
 	            pathAttributesUpdateInit: {},
 	            pathAttributesUpdateDone: {},
@@ -14413,41 +14578,24 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	        var node = this.node();
 	        var config = this.node().config;
-
-	        node.on('highlight', function (sender, e) {
-	            return _this.highlight(e);
+	        var createFilter = function createFilter(data, falsy) {
+	            return function (row) {
+	                return row === data ? true : falsy;
+	            };
+	        };
+	        node.on('highlight', function (sender, filter) {
+	            return _this.highlight(filter);
 	        });
-	        node.on('highlight-data-points', function (sender, e) {
-	            return _this.highlightDataPoints(e);
+	        node.on('highlight-data-points', function (sender, filter) {
+	            return _this.highlightDataPoints(filter);
 	        });
-	        node.on('click-data-points', function (sender, e) {
-	            return _this.highlightDataPoints(e);
-	        });
-
 	        if (config.guide.showAnchors !== 'never') {
-	            (function () {
-	                var getHighlightEvtObj = function getHighlightEvtObj(e, data) {
-	                    var filter = function filter(d) {
-	                        return d === data;
-	                    };
-	                    filter.data = data;
-	                    filter.domEvent = e;
-	                    return filter;
-	                };
-	                var activate = function activate(sender, e) {
-	                    return sender.fire('highlight-data-points', getHighlightEvtObj(e.event, e.data));
-	                };
-	                var deactivate = function deactivate(sender, e) {
-	                    return sender.fire('highlight-data-points', getHighlightEvtObj(e.event, null));
-	                };
-	                var click = function click(sender, e) {
-	                    return sender.fire('click-data-points', getHighlightEvtObj(e.event, e.data));
-	                };
-	                node.on('mouseover', activate);
-	                node.on('mousemove', activate);
-	                node.on('mouseout', deactivate);
-	                node.on('click', click);
-	            })();
+	            node.on('data-hover', function (sender, e) {
+	                return _this.highlightDataPoints(createFilter(e.data, null));
+	            });
+	            node.on('data-click', function (sender, e) {
+	                return _this.highlight(createFilter(e.data, e.data ? false : null));
+	            });
 	        }
 	    },
 	    draw: function draw() {
@@ -14475,9 +14623,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	            points.call(createUpdateFunc(guide.animationSpeed, null, model.dotAttributes));
 	            points.enter().append('circle').call(createUpdateFunc(guide.animationSpeed, model.dotAttributesDefault, model.dotAttributes));
 
-	            node.subscribe(points, function (d) {
-	                return d;
-	            });
+	            node.subscribe(points);
 
 	            var updatePath = function updatePath(selection) {
 	                if (config.guide.animationSpeed > 0) {
@@ -14502,10 +14648,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	            series.call(createUpdateFunc(guide.animationSpeed, model.pathAttributesUpdateInit, model.pathAttributesUpdateDone, model.afterPathUpdate)).call(updatePath);
 	            series.enter().append(model.pathElement).call(createUpdateFunc(guide.animationSpeed, model.pathAttributesEnterInit, model.pathAttributesEnterDone, model.afterPathUpdate)).call(updatePath);
 
-	            node.subscribe(series, function (rows) {
-	                var m = _d2.default.mouse(this);
-	                return model.matchRowInCoordinates(rows.filter(isNonSyntheticRecord), { x: m[0], y: m[1] });
-	            });
+	            node.subscribe(series);
 
 	            if (guide.showAnchors !== 'never') {
 	                var anchorClass = 'i-data-anchor';
@@ -14581,19 +14724,74 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	        node.subscribe(new _layerLabels.LayerLabels(screenModel.model, config.flip, config.guide.label, options).draw(pureFibers));
 	    },
+	    getClosestElement: function getClosestElement(cursorX, cursorY) {
+	        var container = this.node().config.options.container;
+	        var screenModel = this.node().screenModel;
+	        var flip = this.node().config.flip;
+	        var maxHighlightDistance = this.node().config.guide.maxHighlightDistance;
+
+
+	        var dots = container.selectAll('.i-data-anchor');
+	        var minX = Number.MAX_VALUE;
+	        var maxX = Number.MIN_VALUE;
+	        var minY = Number.MAX_VALUE;
+	        var maxY = Number.MIN_VALUE;
+	        var items = dots[0].map(function (node) {
+	            var data = _d2.default.select(node).data()[0];
+	            var translate = _utilsDraw.utilsDraw.getDeepTransformTranslate(node);
+	            var x = screenModel.x(data) + translate.x;
+	            var y = screenModel.y(data) + translate.y;
+	            var distance = Math.abs(flip ? y - cursorY : x - cursorX);
+	            var secondaryDistance = Math.abs(flip ? x - cursorX : y - cursorY);
+	            minX = Math.min(x, minX);
+	            maxX = Math.max(x, maxX);
+	            minY = Math.min(y, minY);
+	            maxY = Math.max(y, maxY);
+	            return { node: node, data: data, distance: distance, secondaryDistance: secondaryDistance, x: x, y: y };
+	        }).sort(function (a, b) {
+	            return a.distance === b.distance ? a.secondaryDistance - b.secondaryDistance : a.distance - b.distance;
+	        });
+
+	        if (items.length === 0 || cursorX < minX - maxHighlightDistance || cursorX > maxX + maxHighlightDistance || cursorY < minY - maxHighlightDistance || cursorY > maxY + maxHighlightDistance) {
+	            return null;
+	        }
+
+	        var largerDistIndex = items.findIndex(function (d) {
+	            return d.distance !== items[0].distance || d.secondaryDistance !== items[0].secondaryDistance;
+	        });
+	        var sameDistItems = largerDistIndex < 0 ? items : items.slice(0, largerDistIndex);
+	        if (sameDistItems.length === 1) {
+	            return sameDistItems[0];
+	        }
+	        var mx = sameDistItems.reduce(function (sum, item) {
+	            return sum + item.x;
+	        }, 0) / sameDistItems.length;
+	        var my = sameDistItems.reduce(function (sum, item) {
+	            return sum + item.y;
+	        }, 0) / sameDistItems.length;
+	        var angle = Math.atan2(my - cursorY, mx - cursorX) + Math.PI;
+	        var closest = sameDistItems[Math.round((sameDistItems.length - 1) * angle / 2 / Math.PI)];
+	        return closest;
+	    },
 	    highlight: function highlight(filter) {
-	        var _container$selectAll$, _classed;
+	        var _paths$classed, _classed;
 
 	        var container = this.node().config.options.container;
 
 	        var x = 'graphical-report__highlighted';
 	        var _ = 'graphical-report__dimmed';
 
-	        container.selectAll('.i-role-path').classed((_container$selectAll$ = {}, _defineProperty(_container$selectAll$, x, function (fiber) {
-	            return filter(fiber.filter(isNonSyntheticRecord)[0]) === true;
-	        }), _defineProperty(_container$selectAll$, _, function (fiber) {
-	            return filter(fiber.filter(isNonSyntheticRecord)[0]) === false;
-	        }), _container$selectAll$));
+	        var paths = container.selectAll('.i-role-path');
+	        var targetFibers = paths.data().filter(function (fiber) {
+	            return fiber.filter(isNonSyntheticRecord).some(filter);
+	        });
+	        var hasTarget = targetFibers.length > 0;
+
+	        paths.classed((_paths$classed = {}, _defineProperty(_paths$classed, x, function (fiber) {
+	            return hasTarget && targetFibers.indexOf(fiber) >= 0;
+	        }), _defineProperty(_paths$classed, _, function (fiber) {
+	            return hasTarget && targetFibers.indexOf(fiber) < 0;
+	        }), _paths$classed));
 
 	        var classed = (_classed = {}, _defineProperty(_classed, x, function (d) {
 	            return filter(d) === true;
@@ -14611,7 +14809,8 @@ return /******/ (function(modules) { // webpackBootstrap
 	        var showOnHover = this.node().config.guide.showAnchors === 'hover';
 	        var rmin = 4; // Min highlight radius
 	        var rx = 1.25; // Highlight multiplier
-	        var anchors = this.node().config.options.container.selectAll('.' + cssClass).attr({
+	        var container = this.node().config.options.container;
+	        container.selectAll('.' + cssClass).attr({
 	            r: showOnHover ? function (d) {
 	                return filter(d) ? Math.max(rmin, screenModel.size(d) / 2) : 0;
 	            } : function (d) {
@@ -14633,10 +14832,8 @@ return /******/ (function(modules) { // webpackBootstrap
 	            }
 	        }).classed(_const.CSS_PREFIX + 'highlighted', filter);
 
-	        // Add highlighted elements to event
-	        filter.targetElements = [];
-	        anchors.filter(filter).each(function () {
-	            filter.targetElements.push(this);
+	        _utilsDraw.utilsDraw.raiseElements(container, '.i-role-path', function (fiber) {
+	            return fiber.filter(isNonSyntheticRecord).some(filter);
 	        });
 	    }
 	};
@@ -14736,6 +14933,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	var Path = {
 
 	    draw: _elementPath.BasePath.draw,
+	    getClosestElement: _elementPath.BasePath.getClosestElement,
 	    highlight: _elementPath.BasePath.highlight,
 	    highlightDataPoints: _elementPath.BasePath.highlightDataPoints,
 	    addInteraction: _elementPath.BasePath.addInteraction,
@@ -14770,32 +14968,6 @@ return /******/ (function(modules) { // webpackBootstrap
 	        var guide = this.node().config.guide;
 	        var countCss = (0, _cssClassMap.getLineClassesByCount)(screenModel.model.scaleColor.domain().length);
 	        var groupPref = _const.CSS_PREFIX + 'area area i-role-path ' + countCss + ' ' + guide.cssClass + ' ';
-	        var getDistance = function getDistance(mx, my, rx, ry) {
-	            return Math.sqrt(Math.pow(mx - rx, 2) + Math.pow(my - ry, 2));
-	        };
-
-	        baseModel.matchRowInCoordinates = function (rows, _ref) {
-	            var x = _ref.x,
-	                y = _ref.y;
-
-
-	            // d3.invert doesn't work for ordinal axes
-	            var nearest = rows.map(function (row) {
-	                var rx = baseModel.x(row);
-	                var ry = baseModel.y(row);
-	                return {
-	                    x: rx,
-	                    y: ry,
-	                    dist: getDistance(x, y, rx, ry),
-	                    data: row
-	                };
-	            }).sort(function (a, b) {
-	                return a.dist - b.dist;
-	            }) // asc
-	            [0];
-
-	            return nearest.data;
-	        };
 
 	        baseModel.groupAttributes = {
 	            class: function _class(fiber) {
@@ -14880,6 +15052,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	var Line = {
 
 	    draw: _elementPath.BasePath.draw,
+	    getClosestElement: _elementPath.BasePath.getClosestElement,
 	    highlight: _elementPath.BasePath.highlight,
 	    highlightDataPoints: _elementPath.BasePath.highlightDataPoints,
 	    addInteraction: _elementPath.BasePath.addInteraction,
@@ -14954,49 +15127,6 @@ return /******/ (function(modules) { // webpackBootstrap
 	        var d3LineBuilder = (0, _interpolatorsRegistry.getInterpolatorSplineType)(guide.interpolate) === 'cubic' ? isEmptySize ? _line.getCurve : _brushLine.getBrushCurve : isEmptySize ? _line.getPolyline : _brushLine.getBrushLine;
 
 	        var baseModel = _elementPath.BasePath.baseModel(screenModel);
-
-	        baseModel.matchRowInCoordinates = function (rows, _ref) {
-	            var x = _ref.x,
-	                y = _ref.y;
-
-	            var by = function by(prop) {
-	                return function (a, b) {
-	                    return a[prop] - b[prop];
-	                };
-	            };
-	            var dist = function dist(x0, x1, y0, y1) {
-	                return Math.sqrt(Math.pow(x0 - x1, 2) + Math.pow(y0 - y1, 2));
-	            };
-
-	            // d3.invert doesn't work for ordinal axes
-	            var vertices = rows.map(function (row) {
-	                var rx = baseModel.x(row);
-	                var ry = baseModel.y(row);
-	                return {
-	                    x: rx,
-	                    y: ry,
-	                    dist: dist(x, rx, y, ry),
-	                    data: row
-	                };
-	            });
-
-	            // double for consistency in case of
-	            // (vertices.length === 1)
-	            vertices.unshift(vertices[0]);
-
-	            var pair = _utils.utils.range(vertices.length - 1).map(function (edge) {
-	                var v0 = vertices[edge];
-	                var v1 = vertices[edge + 1];
-	                var ab = dist(v1.x, v0.x, v1.y, v0.y);
-	                var ax = v0.dist;
-	                var bx = v1.dist;
-	                var er = Math.abs(ab - (ax + bx));
-	                return [er, v0, v1];
-	            }).sort(by('0')) // find minimal distance to edge
-	            [0].slice(1);
-
-	            return pair.sort(by('dist'))[0].data;
-	        };
 
 	        baseModel.toPoint = isEmptySize ? function (d) {
 	            return {
@@ -15266,6 +15396,8 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	var _utils = __webpack_require__(3);
 
+	var _utilsDraw = __webpack_require__(10);
+
 	var _d = __webpack_require__(2);
 
 	var _d2 = _interopRequireDefault(_d);
@@ -15283,6 +15415,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	        config.guide = _utils.utils.defaults(config.guide, {
 	            animationSpeed: 0,
 	            avoidScalesOverflow: true,
+	            maxHighlightDistance: 32,
 	            prettify: true,
 	            enableColorToBarPosition: !config.stack
 	        });
@@ -15331,37 +15464,20 @@ return /******/ (function(modules) { // webpackBootstrap
 	        var _this = this;
 
 	        var node = this.node();
-	        node.on('highlight', function (sender, e) {
-	            return _this.highlight(e);
-	        });
-	        node.on('highlight-data-points', function (sender, e) {
-	            return _this.highlightDataPoints(e);
-	        });
-	        node.on('click-data-points', function (sender, e) {
-	            return _this.highlightDataPoints(e);
-	        });
-
-	        var getHighlightEvtObj = function getHighlightEvtObj(e, data) {
-	            var filter = function filter(d) {
-	                return d === data ? true : null;
+	        var createFilter = function createFilter(data, falsy) {
+	            return function (row) {
+	                return row === data ? true : falsy;
 	            };
-	            filter.data = data;
-	            filter.domEvent = e;
-	            return filter;
 	        };
-	        var activate = function activate(sender, e) {
-	            return sender.fire('highlight-data-points', getHighlightEvtObj(e.event, e.data));
-	        };
-	        var deactivate = function deactivate(sender, e) {
-	            return sender.fire('highlight-data-points', getHighlightEvtObj(e.event, null));
-	        };
-	        var click = function click(sender, e) {
-	            return sender.fire('click-data-points', getHighlightEvtObj(e.event, e.data));
-	        };
-	        node.on('mouseover', activate);
-	        node.on('mousemove', activate);
-	        node.on('mouseout', deactivate);
-	        node.on('click', click);
+	        node.on('highlight', function (sender, filter) {
+	            return _this.highlight(filter);
+	        });
+	        node.on('data-hover', function (sender, e) {
+	            return _this.highlight(createFilter(e.data, null));
+	        });
+	        node.on('data-click', function (sender, e) {
+	            return _this.highlight(createFilter(e.data, e.data ? false : null));
+	        });
 	    },
 	    draw: function draw() {
 	        var node = this.node();
@@ -15539,6 +15655,46 @@ return /******/ (function(modules) { // webpackBootstrap
 	            }
 	        });
 	    },
+	    getClosestElement: function getClosestElement(cursorX, cursorY) {
+	        var container = this.node().config.options.container;
+	        var screenModel = this.node().screenModel;
+	        var flip = this.node().config.flip;
+	        var maxHighlightDistance = this.node().config.guide.maxHighlightDistance;
+
+
+	        var bars = container.selectAll('.bar');
+	        var minX = Number.MAX_VALUE;
+	        var maxX = Number.MIN_VALUE;
+	        var minY = Number.MAX_VALUE;
+	        var maxY = Number.MIN_VALUE;
+	        var items = bars[0].map(function (node) {
+	            var data = _d2.default.select(node).data()[0];
+	            var translate = _utilsDraw.utilsDraw.getDeepTransformTranslate(node);
+	            var x = screenModel.x(data);
+	            var x0 = screenModel.x0(data);
+	            var y = screenModel.y(data);
+	            var y0 = screenModel.y0(data);
+	            var w = Math.abs(x - x0);
+	            var h = Math.abs(y - y0);
+	            var cx = (x + x0) / 2 + translate.x;
+	            var cy = (y + y0) / 2 + translate.y;
+	            var distance = Math.abs(flip ? cy - cursorY : cx - cursorX);
+	            var secondaryDistance = Math.abs(flip ? cx - cursorX : cy - cursorY);
+	            minX = Math.min(cx - w / 2, minX);
+	            maxX = Math.max(cx + w / 2, maxX);
+	            minY = Math.min(cy - h / 2, minY);
+	            maxY = Math.max(cy + h / 2, maxY);
+	            return { node: node, data: data, distance: distance, secondaryDistance: secondaryDistance, x: cx, y: cy };
+	        }).sort(function (a, b) {
+	            return a.distance === b.distance ? a.secondaryDistance - b.secondaryDistance : a.distance - b.distance;
+	        });
+
+	        if (items.length === 0 || cursorX < minX - maxHighlightDistance || cursorX > maxX + maxHighlightDistance || cursorY < minY - maxHighlightDistance || cursorY > maxY + maxHighlightDistance) {
+	            return null;
+	        }
+
+	        return items[0];
+	    },
 	    highlight: function highlight(filter) {
 	        var _classed;
 
@@ -15556,34 +15712,9 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	        container.selectAll('.i-role-label').classed(classed);
 
-	        // Place highlighted element over others
-	        var highlighted = container.selectAll('.bar').filter(filter);
-	        if (highlighted.empty()) {
-	            return;
-	        }
-	        var notHighlighted = _d2.default.select(highlighted.node().parentNode).selectAll('.bar').filter(function (d) {
-	            return !filter(d);
-	        })[0];
-	        var lastNotHighlighted = notHighlighted[notHighlighted.length - 1];
-	        if (lastNotHighlighted) {
-	            var notHighlightedIndex = Array.prototype.indexOf.call(lastNotHighlighted.parentNode.childNodes, lastNotHighlighted);
-	            var nextSibling = lastNotHighlighted.nextSibling;
-	            highlighted.each(function () {
-	                var index = Array.prototype.indexOf.call(this.parentNode.childNodes, this);
-	                if (index > notHighlightedIndex) {
-	                    return;
-	                }
-	                this.parentNode.insertBefore(this, nextSibling);
-	            });
-	        }
-	    },
-	    highlightDataPoints: function highlightDataPoints(filter) {
-	        this.highlight(filter);
-
-	        // Add highlighted elements to event.
-	        filter.targetElements = [];
-	        this.node().config.options.container.selectAll('.bar').filter(filter).each(function () {
-	            filter.targetElements.push(this);
+	        _utilsDraw.utilsDraw.raiseElements(container, '.bar', filter);
+	        _utilsDraw.utilsDraw.raiseElements(container, '.frame', function (fiber) {
+	            return fiber.some(filter);
 	        });
 	    }
 	};
