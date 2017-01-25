@@ -318,6 +318,7 @@ const Interval = {
                 maxY = Math.max(cy + h / 2, maxY);
                 return {node, data, distance, secondaryDistance, x: cx, y: cy};
             })
+            .filter((d) => !isNaN(d.x) && !isNaN(d.y))
             .sort((a, b) => (a.distance === b.distance ?
                 (a.secondaryDistance - b.secondaryDistance) :
                 (a.distance - b.distance)
