@@ -96,7 +96,7 @@ var api = {
         renderingTimeout: 10000,
         asyncRendering: false,
         syncRenderingDuration: 50,
-        syncPointerEvents: true,
+        syncPointerEvents: false,
 
         defaultNiceColor: true,
 

@@ -297,7 +297,7 @@ export class Plot extends Emitter {
             this._requestedAnimationFrames.delete(id);
             fn();
         });
-        this._requestedAnimationFrames.set(id, fn);
+        this._requestedAnimationFrames.add(id, fn);
     }
 
     _initPointerEvents() {
