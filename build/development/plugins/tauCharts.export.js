@@ -1,12 +1,12 @@
 (function webpackUniversalModuleDefinition(root, factory) {
 	if(typeof exports === 'object' && typeof module === 'object')
-		module.exports = factory(require("tauCharts"));
+		module.exports = factory(require("taucharts"));
 	else if(typeof define === 'function' && define.amd)
-		define(["tauCharts"], factory);
+		define(["taucharts"], factory);
 	else if(typeof exports === 'object')
-		exports["exportTo"] = factory(require("tauCharts"));
+		exports["exportTo"] = factory(require("taucharts"));
 	else
-		root["exportTo"] = factory(root["tauCharts"]);
+		root["exportTo"] = factory(root["taucharts"]);
 })(this, function(__WEBPACK_EXTERNAL_MODULE_1__) {
 return /******/ (function(modules) { // webpackBootstrap
 /******/ 	// The module cache
