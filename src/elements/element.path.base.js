@@ -333,6 +333,7 @@ const BasePath = {
                 maxY = Math.max(y, maxY);
                 return {node, data, distance, secondaryDistance, x, y};
             })
+            .filter((d) => d && !isNaN(d.x) && !isNaN(d.y))
             .sort((a, b) => (a.distance === b.distance ?
                 (a.secondaryDistance - b.secondaryDistance) :
                 (a.distance - b.distance)

@@ -10,6 +10,7 @@ import {scalesRegistry} from '../scales-registry';
 import {ScalesFactory} from '../scales-factory';
 import {DataProcessor} from '../data-processor';
 import WeakMap from 'core-js/library/fn/weak-map';
+import Set from 'core-js/library/fn/set';
 import {getLayout} from '../utils/layuot-template';
 import {SpecConverter} from '../spec-converter';
 import {SpecTransformAutoLayout} from '../spec-transform-auto-layout';
@@ -71,7 +72,7 @@ export class Plot extends Emitter {
 
         this._reportProgress = null;
         this._renderingInProgress = false;
-        this._requestedAnimationFrames = new Map();
+        this._requestedAnimationFrames = new Set();
     }
 
     destroy() {
@@ -296,7 +297,7 @@ export class Plot extends Emitter {
             this._requestedAnimationFrames.delete(id);
             fn();
         });
-        this._requestedAnimationFrames.set(id, fn);
+        this._requestedAnimationFrames.add(id, fn);
     }
 
     _initPointerEvents() {
