@@ -15,6 +15,7 @@ define(function (require) {
         fitModel: null, // 'entire-view',
         layoutEngine: '', // 'EXTRACT'
         autoRatio: true,
+        syncPointerEvents: true,
 
         getScrollbarSize: function () {
             return {width: 10, height: 10};
@@ -236,10 +237,10 @@ define(function (require) {
         Deferred: $.Deferred,
         stubTimeout:stubTimeout,
         chartSettings: testChartSettings,
-        simulateEvent: function (name, element) {
+        simulateEvent: function (name, element, clientX = 0, clientY = 0) {
             var evt = document.createEvent("MouseEvents");
             evt.initMouseEvent(name, true, true, window,
-                0, 0, 0, 0, 0, false, false, false, false, 0, null);
+                0, 0, 0, clientX, clientY, false, false, false, false, 0, null);
             element.dispatchEvent(evt);
         },
         noScrollStyle,

@@ -497,6 +497,23 @@ var utils = {
 
     throttleLastEvent: function (last, eventType, handler, limitFromPrev = 0) {
 
+        if (limitFromPrev === 'requestAnimationFrame') {
+            var frameRequested = false;
+            return function (...args) {
+                if (!frameRequested) {
+                    requestAnimationFrame(() => {
+                        frameRequested = false;
+                    });
+                    // NOTE: Have to call sync cause
+                    // D3 event info disappears later.
+                    handler.apply(this, args);
+                    frameRequested = true;
+                }
+                last.e = eventType;
+                last.ts = new Date();
+            };
+        }
+
         return function (...args) {
             var curr = {e: eventType, ts: (new Date())};
             var diff = ((last.e && (last.e === curr.e)) ? (curr.ts - last.ts) : (limitFromPrev));

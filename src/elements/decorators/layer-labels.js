@@ -29,6 +29,7 @@ export class LayerLabels {
                 fontWeight: 'normal',
                 fontSize: 10,
                 fontColor: '#000',
+                hideEqualLabels: false,
                 position: [],
                 tickFormat: null,
                 tickFormatNullAlias: ''
@@ -90,14 +91,6 @@ export class LayerLabels {
                         label: m.label(row),
                         color: m.color(row)
                     };
-                });
-
-                // Prevent displaying a sequence of equal labels
-                absFiber = absFiber.filter((d, i, fib) => {
-                    return (
-                        (i === fib.length - 1) ||
-                        (d.label !== fib[i + 1].label)
-                    );
                 });
 
                 memo.text = memo.text.concat(absFiber);
@@ -163,6 +156,16 @@ export class LayerLabels {
                 .attr('transform', (d, i) => `translate(${xi(d, i)},${yi(d, i)}) rotate(${angle(d, i)})`)
                 .text(label);
         };
+
+        if (guide.hideEqualLabels) {
+            labels
+                .filter((d) => !d.hide)
+                .filter((d, i, visibleLabels) => (
+                    (i < visibleLabels.length - 1) &&
+                    (d.label === visibleLabels[i + 1].label)
+                ))
+                .forEach((d) => d.hide = true);
+        }
 
         var text = this
             .container

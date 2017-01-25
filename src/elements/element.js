@@ -44,7 +44,7 @@ export class Element extends Emitter {
             },
             {
                 event: 'mousemove',
-                limit: 25
+                limit: 'requestAnimationFrame'
             }
         ].forEach((item) => {
             var eventName = item.event;
@@ -87,6 +87,10 @@ export class Element extends Emitter {
 
     createScreenModel(grammarModel) {
         // return nothing
+    }
+
+    getClosestElement(x, y) {
+        return null;
     }
     /* eslint-enable */
 

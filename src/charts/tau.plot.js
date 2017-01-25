@@ -70,8 +70,8 @@ export class Plot extends Emitter {
         this._plugins = new Plugins(plugins, this);
 
         this._reportProgress = null;
-        this._renderingFrameId = null;
         this._renderingInProgress = false;
+        this._requestedAnimationFrames = new Map();
     }
 
     destroy() {
@@ -145,7 +145,7 @@ export class Plot extends Emitter {
                 return memo;
             }, []);
 
-        var isNullOrUndefined = ((x) => ((x === null) || (typeof(x) === 'undefined')));
+        var isNullOrUndefined = ((x) => ((x === null) || (x === undefined)));
 
         var reducer = (refSources, metaDim) => {
             refSources[metaDim.source].data = refSources[metaDim.source]
@@ -214,6 +214,7 @@ export class Plot extends Emitter {
     destroyNodes() {
         this._nodes.forEach((node) => node.destroy());
         this._nodes = [];
+        this._renderedItems = [];
     }
 
     onUnitDraw(unitNode) {
@@ -238,6 +239,93 @@ export class Plot extends Emitter {
         this.onUnitsStructureExpandedTransformers
             .forEach((TClass) => (new TClass(specRef)).transform(this));
         this.fire(['units', 'structure', 'expanded'].join(''), specRef);
+    }
+
+    _getClosestElementPerUnit(x0, y0) {
+        return this._renderedItems
+            .filter((d) => d.getClosestElement)
+            .map((item) => {
+                var closest = item.getClosestElement(x0, y0);
+                var unit = item.node();
+                return {unit, closest};
+            });
+    }
+
+    _handlePointerEvent(event) {
+        // TODO: Highlight API seems not consistent.
+        // Just predicate is not enough, also
+        // need coordinates or event object.
+        const svgRect = this._svg.getBoundingClientRect();
+        const x = (event.clientX - svgRect.left);
+        const y = (event.clientY - svgRect.top);
+        const eventType = event.type;
+        const isClick = (eventType === 'click');
+        const dataEvent = (isClick ? 'data-click' : 'data-hover');
+        var data = null;
+        var node = null;
+        const items = this._getClosestElementPerUnit(x, y);
+        const nonEmpty = items
+            .filter((d) => d.closest)
+            .sort((a, b) => (a.closest.distance === b.closest.distance ?
+                (a.closest.secondaryDistance - b.closest.secondaryDistance) :
+                (a.closest.distance - b.closest.distance)));
+        if (nonEmpty.length > 0) {
+            const largerDistIndex = nonEmpty.findIndex((d) => (
+                (d.closest.distance !== nonEmpty[0].closest.distance) ||
+                (d.closest.secondaryDistance !== nonEmpty[0].closest.secondaryDistance)
+            ));
+            const sameDistItems = (largerDistIndex < 0 ? nonEmpty : nonEmpty.slice(0, largerDistIndex));
+            if (sameDistItems.length === 1) {
+                data = sameDistItems[0].closest.data;
+                node = sameDistItems[0].closest.node;
+            } else {
+                const mx = (sameDistItems.reduce((sum, item) => sum + item.closest.x, 0) / sameDistItems.length);
+                const my = (sameDistItems.reduce((sum, item) => sum + item.closest.y, 0) / sameDistItems.length);
+                const angle = (Math.atan2(my - y, mx - x) + Math.PI);
+                const {closest} = sameDistItems[Math.round((sameDistItems.length - 1) * angle / 2 / Math.PI)];
+                data = closest.data;
+                node = closest.node;
+            }
+        }
+
+        items.forEach((item) => item.unit.fire(dataEvent, {event, data, node}));
+    }
+
+    _requestAnimationFrame(fn) {
+        var id = requestAnimationFrame(() => {
+            this._requestedAnimationFrames.delete(id);
+            fn();
+        });
+        this._requestedAnimationFrames.set(id, fn);
+    }
+
+    _initPointerEvents() {
+        if (!this._liveSpec.settings.syncPointerEvents) {
+            this._pointerAnimationFrameRequested = false;
+        }
+        const svg = d3.select(this._svg);
+        const wrapEventHandler = (this._liveSpec.settings.syncPointerEvents ?
+            ((handler) => () => handler(d3.event)) :
+            ((handler) => (() => {
+                var e = d3.event;
+                if (!this._pointerAnimationFrameRequested) {
+                    this._requestAnimationFrame(() => {
+                        this._pointerAnimationFrameRequested = false;
+                        handler(e);
+                    });
+                    this._pointerAnimationFrameRequested = true;
+                }
+            }))
+        );
+        const handler = ((e) => this._handlePointerEvent(e));
+        svg.on('mousemove', wrapEventHandler(handler));
+        svg.on('click', wrapEventHandler(handler));
+        svg.on('mouseleave', wrapEventHandler(() => {
+            if (window.getComputedStyle(this._svg).pointerEvents !== 'none') {
+                this.select(() => true)
+                    .forEach((unit) => unit.fire('data-hover', {event, data: null, node: null}));
+            }
+        }));
     }
 
     renderTo(target, xSize) {
@@ -317,11 +405,14 @@ export class Plot extends Emitter {
 
         var frameRootId = scenario[0].config.uid;
         var svg = selectOrAppend(d3Target, `svg`).attr({
-            class: `${CSS_PREFIX}svg`,
             width: Math.floor(newSize.width),
             height: Math.floor(newSize.height)
         });
+        if (!svg.attr('class')) {
+            svg.attr('class', `${CSS_PREFIX}svg`);
+        }
         this._svg = svg.node();
+        this._initPointerEvents();
         this.fire('beforerender', this._svg);
         var roots = svg.selectAll('g.frame-root')
             .data([frameRootId], x => x);
@@ -380,6 +471,7 @@ export class Plot extends Emitter {
             var start = Date.now();
             item.draw();
             this.onUnitDraw(item.node());
+            this._renderedItems.push(item);
             var end = Date.now();
             duration += end - start;
             syncDuration += end - start;
@@ -402,7 +494,7 @@ export class Plot extends Emitter {
                     timeout = Infinity;
                     next();
                 },
-                cancel:() => {
+                cancel: () => {
                     this._cancelRendering();
                 }
             });
@@ -425,10 +517,7 @@ export class Plot extends Emitter {
 
         var nextSync = () => drawScenario();
         var nextAsync = () => {
-            this._renderingFrameId = requestAnimationFrame(safe(() => {
-                this._renderingFrameId = null;
-                drawScenario();
-            }));
+            this._requestAnimationFrame(safe(() => drawScenario()));
         };
 
         var next = () => {
@@ -451,8 +540,8 @@ export class Plot extends Emitter {
             this._renderingInProgress = false;
             Plot.renderingsInProgress--;
         }
-        cancelAnimationFrame(this._renderingFrameId);
-        this._renderingFrameId = null;
+        this._requestedAnimationFrames.forEach((fn, id) => cancelAnimationFrame(id));
+        this._requestedAnimationFrames.clear();
     }
 
     _createProgressBar() {

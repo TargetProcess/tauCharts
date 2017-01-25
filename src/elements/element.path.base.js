@@ -3,7 +3,8 @@ import {CSS_PREFIX} from '../const';
 import {d3_animationInterceptor, d3_transition as transition} from '../utils/d3-decorators';
 import {utils} from '../utils/utils';
 import {utilsDom} from '../utils/utils-dom';
-import {default as d3} from 'd3';
+import {utilsDraw} from '../utils/utils-draw';
+import d3 from 'd3';
 
 const synthetic = 'taucharts_synthetic_record';
 const isNonSyntheticRecord = ((row) => row[synthetic] !== true);
@@ -69,6 +70,7 @@ const BasePath = {
             {
                 animationSpeed: 0,
                 cssClass: '',
+                maxHighlightDistance: 32,
                 widthCssClass: '',
                 color: {},
                 label: {}
@@ -79,6 +81,7 @@ const BasePath = {
             config.guide.label,
             {
                 fontSize: 11,
+                hideEqualLabels: true,
                 position: [
                     'auto:avoid-label-label-overlap',
                     'auto:avoid-label-anchor-overlap',
@@ -117,9 +120,6 @@ const BasePath = {
             order: screenModel.order,
             color: screenModel.color,
             class: screenModel.class,
-            matchRowInCoordinates() {
-                throw 'Not implemented';
-            },
             groupAttributes: {},
             pathAttributesUpdateInit: {},
             pathAttributesUpdateDone: {},
@@ -145,25 +145,12 @@ const BasePath = {
     addInteraction() {
         const node = this.node();
         const config = this.node().config;
-
-        node.on('highlight', (sender, e) => this.highlight(e));
-        node.on('highlight-data-points', (sender, e) => this.highlightDataPoints(e));
-        node.on('click-data-points', (sender, e) => this.highlightDataPoints(e));
-
+        const createFilter = ((data, falsy) => ((row) => row === data ? true : falsy));
+        node.on('highlight', (sender, filter) => this.highlight(filter));
+        node.on('highlight-data-points', (sender, filter) => this.highlightDataPoints(filter));
         if (config.guide.showAnchors !== 'never') {
-            const getHighlightEvtObj = (e, data) => {
-                const filter = ((d) => d === data);
-                filter.data = data;
-                filter.domEvent = e;
-                return filter;
-            };
-            const activate = ((sender, e) => sender.fire('highlight-data-points', getHighlightEvtObj(e.event, e.data)));
-            const deactivate = ((sender, e) => sender.fire('highlight-data-points', getHighlightEvtObj(e.event, null)));
-            const click = ((sender, e) => sender.fire('click-data-points', getHighlightEvtObj(e.event, e.data)));
-            node.on('mouseover', activate);
-            node.on('mousemove', activate);
-            node.on('mouseout', deactivate);
-            node.on('click', click);
+            node.on('data-hover', ((sender, e) => this.highlightDataPoints(createFilter(e.data, null))));
+            node.on('data-click', ((sender, e) => this.highlight(createFilter(e.data, e.data ? false : null))));
         }
     },
 
@@ -200,7 +187,7 @@ const BasePath = {
                 .append('circle')
                 .call(createUpdateFunc(guide.animationSpeed, model.dotAttributesDefault, model.dotAttributes));
 
-            node.subscribe(points, (d) => d);
+            node.subscribe(points);
 
             const updatePath = (selection) => {
                 if (config.guide.animationSpeed > 0) {
@@ -244,12 +231,7 @@ const BasePath = {
                 ))
                 .call(updatePath);
 
-            node.subscribe(series, function (rows) {
-                const m = d3.mouse(this);
-                return model.matchRowInCoordinates(
-                    rows.filter(isNonSyntheticRecord),
-                    {x: m[0], y: m[1]});
-            });
+            node.subscribe(series);
 
             if (guide.showAnchors !== 'never') {
                 const anchorClass = 'i-data-anchor';
@@ -326,6 +308,60 @@ const BasePath = {
             options).draw(pureFibers));
     },
 
+    getClosestElement(cursorX, cursorY) {
+        const container = this.node().config.options.container;
+        const screenModel = this.node().screenModel;
+        const {flip} = this.node().config;
+        const {maxHighlightDistance} = this.node().config.guide;
+
+        const dots = container.selectAll('.i-data-anchor');
+        var minX = Number.MAX_VALUE;
+        var maxX = Number.MIN_VALUE;
+        var minY = Number.MAX_VALUE;
+        var maxY = Number.MIN_VALUE;
+        const items = dots[0]
+            .map((node) => {
+                const data = d3.select(node).data()[0];
+                const translate = utilsDraw.getDeepTransformTranslate(node);
+                const x = (screenModel.x(data) + translate.x);
+                const y = (screenModel.y(data) + translate.y);
+                var distance = Math.abs(flip ? (y - cursorY) : (x - cursorX));
+                var secondaryDistance = Math.abs(flip ? (x - cursorX) : (y - cursorY));
+                minX = Math.min(x, minX);
+                maxX = Math.max(x, maxX);
+                minY = Math.min(y, minY);
+                maxY = Math.max(y, maxY);
+                return {node, data, distance, secondaryDistance, x, y};
+            })
+            .sort((a, b) => (a.distance === b.distance ?
+                (a.secondaryDistance - b.secondaryDistance) :
+                (a.distance - b.distance)
+            ));
+
+        if ((items.length === 0) ||
+            (cursorX < minX - maxHighlightDistance) ||
+            (cursorX > maxX + maxHighlightDistance) ||
+            (cursorY < minY - maxHighlightDistance) ||
+            (cursorY > maxY + maxHighlightDistance)
+        ) {
+            return null;
+        }
+
+        const largerDistIndex = items.findIndex((d) => (
+            (d.distance !== items[0].distance) ||
+            (d.secondaryDistance !== items[0].secondaryDistance)
+        ));
+        const sameDistItems = (largerDistIndex < 0 ? items : items.slice(0, largerDistIndex));
+        if (sameDistItems.length === 1) {
+            return sameDistItems[0];
+        }
+        const mx = (sameDistItems.reduce((sum, item) => sum + item.x, 0) / sameDistItems.length);
+        const my = (sameDistItems.reduce((sum, item) => sum + item.y, 0) / sameDistItems.length);
+        const angle = (Math.atan2(my - cursorY, mx - cursorX) + Math.PI);
+        const closest = sameDistItems[Math.round((sameDistItems.length - 1) * angle / 2 / Math.PI)];
+        return closest;
+    },
+
     highlight(filter) {
 
         const container = this.node().config.options.container;
@@ -333,11 +369,19 @@ const BasePath = {
         const x = 'graphical-report__highlighted';
         const _ = 'graphical-report__dimmed';
 
-        container
-            .selectAll('.i-role-path')
+        const paths = container.selectAll('.i-role-path');
+        const targetFibers = paths.data()
+            .filter((fiber) => {
+                return fiber
+                    .filter(isNonSyntheticRecord)
+                    .some(filter);
+            });
+        const hasTarget = (targetFibers.length > 0);
+
+        paths
             .classed({
-                [x]: ((fiber) => filter(fiber.filter(isNonSyntheticRecord)[0]) === true),
-                [_]: ((fiber) => filter(fiber.filter(isNonSyntheticRecord)[0]) === false)
+                [x]: ((fiber) => hasTarget && targetFibers.indexOf(fiber) >= 0),
+                [_]: ((fiber) => hasTarget && targetFibers.indexOf(fiber) < 0)
             });
 
         const classed = {
@@ -358,12 +402,10 @@ const BasePath = {
         const cssClass = 'i-data-anchor';
         const screenModel = this.node().screenModel;
         const showOnHover = this.node().config.guide.showAnchors === 'hover';
-        const rmin = 3; // Min highlight radius
+        const rmin = 4; // Min highlight radius
         const rx = 1.25; // Highlight multiplier
-        var anchors = this.node()
-            .config
-            .options
-            .container
+        const container = this.node().config.options.container;
+        container
             .selectAll(`.${cssClass}`)
             .attr({
                 r: (showOnHover ?
@@ -380,12 +422,13 @@ const BasePath = {
                 opacity: (showOnHover ? ((d) => filter(d) ? 1 : 0) : 1),
                 fill: (d) => screenModel.color(d),
                 class: (d) => utilsDom.classes(cssClass, screenModel.class(d))
-            });
+            })
+            .classed(`${CSS_PREFIX}highlighted`, filter);
 
-        // Add highlighted elements to event
-        filter.targetElements = [];
-        anchors.filter(filter).each(function () {
-            filter.targetElements.push(this);
+        utilsDraw.raiseElements(container, '.i-role-path', (fiber) => {
+            return fiber
+                .filter(isNonSyntheticRecord)
+                .some(filter);
         });
     }
 };

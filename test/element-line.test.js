@@ -136,7 +136,10 @@ define(function (require) {
         var element;
         var chart;
 
-        beforeEach(function () {
+        var str = ((obj) => JSON.stringify(obj));
+
+        it("should render line with text on each dot", function () {
+
             element = document.createElement('div');
             document.body.appendChild(element);
             chart = new tauChart.Plot({
@@ -171,14 +174,7 @@ define(function (require) {
                 data: testData
             });
             chart.renderTo(element, {width: 800, height: 800});
-        });
-        afterEach(function () {
-            element.parentNode.removeChild(element);
-        });
 
-        var str = ((obj) => JSON.stringify(obj));
-
-        it("should render line with text on each dot", function () {
             var lines = d3.selectAll('.line');
             expect(lines[0].length).to.be.equal(1);
             var path = lines.select('path');
@@ -192,7 +188,44 @@ define(function (require) {
                 .to
                 .be
                 .equal(str(d3.rgb('#fedcba')));
+
+            element.parentNode.removeChild(element);
         });
+
+        it("should hide equal labels on line", function () {
+
+            element = document.createElement('div');
+            document.body.appendChild(element);
+            chart = new tauChart.Chart({
+                type: 'line',
+                x: 'x',
+                y: 'y',
+                color: 't',
+                label: 't',
+                data: [
+                    {x: 1, y: 5, t: 'Manchester'},
+                    {x: 3, y: 5, t: 'Manchester'},
+                    {x: 5, y: 10, t: 'Manchester'},
+                    {x: 1, y: 15, t: 'Chelsea'},
+                    {x: 3, y: 15, t: 'Chelsea'},
+                    {x: 5, y: 10, t: 'Chelsea'}
+                ]
+            });
+            chart.renderTo(element, {width: 800, height: 800});
+
+            var labels = d3.selectAll('.i-role-label');
+            expect(labels.size()).to.be.equal(6);
+            var visible = labels.filter(function () {
+                return this.getComputedTextLength() > 0;
+            });
+            expect(visible.size()).to.be.equal(2);
+            var texts = visible[0].map(t => t.textContent);
+            expect(texts.indexOf('Manchester') >= 0).to.be.true;
+            expect(texts.indexOf('Chelsea') >= 0).to.be.true;
+
+            element.parentNode.removeChild(element);
+        });
+
     });
 
     describe('line chart with size parameter', function () {
@@ -357,9 +390,6 @@ define(function (require) {
                 expect(svg2.querySelectorAll('.i-role-label.graphical-report__highlighted').length).to.equals(0);
                 expect(svg2.querySelectorAll('.i-role-label.graphical-report__dimmed').length).to.equals(0);
             });
-        },
-        {
-            autoWidth: false
         }
     );
 
@@ -390,19 +420,54 @@ define(function (require) {
         function (context) {
 
             it('should set larger radius to highlighted points', function () {
+                const rect = ((el) => el.getBoundingClientRect());
                 var svg = context.chart.getSVG();
                 var points = svg.querySelectorAll('.i-data-anchor');
                 expect(points.length).to.equals(3);
 
-                testUtils.simulateEvent('mouseover', points[1]);
+                testUtils.simulateEvent('mousemove', svg, rect(points[1]).left, rect(points[1]).top);
                 expect(Number(points[1].getAttribute('r'))).to.be.above(Number(points[0].getAttribute('r')));
                 expect(Number(points[1].getAttribute('r'))).to.be.above(Number(points[2].getAttribute('r')));
-                testUtils.simulateEvent('mouseout', points[1]);
+                testUtils.simulateEvent('mouseleave', svg);
                 expect(Number(points[1].getAttribute('r'))).to.be.equal(Number(points[0].getAttribute('r')));
             });
-        },
+        }
+    );
+
+    describeChart('Line points with equal coordinates',
         {
-            autoWidth: false
+            type: 'line',
+            x: 'x',
+            y: 'y',
+            color: 't',
+            guide: {
+                x: {nice: false},
+                y: {nice: false},
+                showAnchors: 'always'
+            }
+        },
+        [
+            {x: 1, y: 1, t: 'A'},
+            {x: 1, y: 3, t: 'B'},
+            {x: 2, y: 2, t: 'A'},
+            {x: 2, y: 2, t: 'B'},
+            {x: 3, y: 1, t: 'A'},
+            {x: 3, y: 3, t: 'B'}
+        ],
+        function (context) {
+
+            it('should highlight points with equal coordinates', function () {
+                var svg = context.chart.getSVG();
+                var rect = svg.getBoundingClientRect();
+                var cx = ((rect.left + rect.right) / 2);
+                var cy = ((rect.bottom + rect.top) / 2);
+                var points = svg.querySelectorAll('.i-data-anchor');
+
+                testUtils.simulateEvent('mousemove', svg, cx, cy - 10);
+                expect(d3.select('.graphical-report__highlighted').data()[0]).to.deep.equal({x: 2, y: 2, t: 'A'});
+                testUtils.simulateEvent('mousemove', svg, cx, cy + 10);
+                expect(d3.select('.graphical-report__highlighted').data()[0]).to.deep.equal({x: 2, y: 2, t: 'B'});
+            });
         }
     );
 });
