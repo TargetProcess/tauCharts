@@ -137,7 +137,7 @@ var exportBuild = {
 var webpackConf = {
     entry: './src/tau.charts.js',
     output: {
-        library: 'taucharts',
+        library: 'tauCharts',
         libraryTarget: 'umd',
         path: 'build/development',
         filename: 'tauCharts.js'
