@@ -5,7 +5,7 @@ var $ = require('jquery');
 var expect = require('chai').expect;
 var testUtils = require('testUtils');
 var stubTimeout = testUtils.stubTimeout;
-var tauCharts = require('tauCharts');
+var tauCharts = require('taucharts');
 var tooltip = require('plugins/tooltip');
 var describeChart = testUtils.describeChart;
 

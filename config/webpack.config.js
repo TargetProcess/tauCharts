@@ -42,6 +42,7 @@ var generateTestConf = function (addLoaders) {
                 testUtils: 'test/utils/utils.js',
                 brewer: 'src/addons/color-brewer.js',
                 tauCharts: 'src/tau.charts.js',
+                taucharts: 'src/tau.charts.js',
                 'print.style.css': 'plugins/print.style.css',
                 rgbcolor: 'bower_components/canvg/rgbcolor.js',
                 stackblur: 'bower_components/canvg/StackBlur.js',
@@ -102,6 +103,7 @@ var exportBuild = {
     resolve: {
         alias: {
             tauCharts: toAbsolute('../src/tau.charts.js'),
+            taucharts: toAbsolute('../src/tau.charts.js'),
             'print.style.css': toAbsolute('../plugins/print.style.css'),
             rgbcolor: toAbsolute('../bower_components/canvg/rgbcolor.js'),
             stackblur: toAbsolute('../bower_components/canvg/StackBlur.js'),
@@ -112,7 +114,7 @@ var exportBuild = {
         }
     },
     externals: {
-        tauCharts: 'tauCharts'
+        taucharts: 'taucharts'
     },
     module: {
         loaders: [

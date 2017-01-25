@@ -1,10 +1,10 @@
 (function (factory) {
     if (typeof define === 'function' && define.amd) {
-        define(['tauCharts'], function (tauPlugins) {
+        define(['taucharts'], function (tauPlugins) {
             return factory(tauPlugins);
         });
     } else if (typeof module === 'object' && module.exports) {
-        var tauPlugins = require('tauCharts');
+        var tauPlugins = require('taucharts');
         module.exports = factory(tauPlugins);
     } else {
         factory(this.tauCharts);
