@@ -249,20 +249,28 @@
                     .forEach(function (node) {
 
                         node.on('data-hover', function (sender, e) {
+                            var bodyRect = document.body.getBoundingClientRect();
                             this.setState({
                                 highlight: (e.data ? {
                                     data: e.data,
-                                    cursor: {x: e.event.clientX, y: e.event.clientY},
+                                    cursor: {
+                                        x: (e.event.clientX - bodyRect.left),
+                                        y: (e.event.clientY - bodyRect.top)
+                                    },
                                     unit: sender
                                 } : null)
                             });
                         }.bind(this));
 
                         node.on('data-click', function (sender, e) {
+                            var bodyRect = document.body.getBoundingClientRect();
                             this.setState(e.data ? {
                                 highlight: {
                                     data: e.data,
-                                    cursor: {x: e.event.clientX, y: e.event.clientY},
+                                    cursor: {
+                                        x: (e.event.clientX - bodyRect.left),
+                                        y: (e.event.clientY - bodyRect.top)
+                                    },
                                     unit: sender
                                 },
                                 isStuck: true
