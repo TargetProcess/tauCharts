@@ -114,7 +114,12 @@ var exportBuild = {
         }
     },
     externals: {
-        taucharts: 'taucharts'
+        taucharts: {
+            commonjs: 'taucharts',
+            commonjs2: 'taucharts',
+            amd: 'taucharts',
+            root: 'tauCharts'
+        }
     },
     module: {
         loaders: [
