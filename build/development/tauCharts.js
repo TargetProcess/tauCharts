@@ -1,4 +1,4 @@
-/*! taucharts - v0.10.0-beta.11 - 2017-01-25
+/*! taucharts - v0.10.0-beta.12 - 2017-01-26
 * https://github.com/TargetProcess/tauCharts
 * Copyright (c) 2017 Taucraft Limited; Licensed Apache License 2.0 */
 (function webpackUniversalModuleDefinition(root, factory) {
@@ -348,7 +348,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	}]));
 
 	/* global VERSION:false */
-	var version = ("0.10.0-beta.11");
+	var version = ("0.10.0-beta.12");
 	exports.GPL = _tau.GPL;
 	exports.Plot = _tau2.Plot;
 	exports.Chart = _tau3.Chart;

@@ -6,7 +6,7 @@
 	else if(typeof exports === 'object')
 		exports["exportTo"] = factory(require("taucharts"));
 	else
-		root["exportTo"] = factory(root["taucharts"]);
+		root["exportTo"] = factory(root["tauCharts"]);
 })(this, function(__WEBPACK_EXTERNAL_MODULE_1__) {
 return /******/ (function(modules) { // webpackBootstrap
 /******/ 	// The module cache

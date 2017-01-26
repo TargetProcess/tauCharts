@@ -5,7 +5,6 @@
 /* region variables for plugins */
 /* endregion */
 .graphical-report__tooltip {
-  pointer-events: none;
   position: absolute;
   top: 0;
   left: 0;
@@ -34,9 +33,6 @@
   overflow: hidden;
   padding: 15px 15px 10px 15px;
   box-sizing: border-box;
-}
-.graphical-report__tooltip.stuck {
-  pointer-events: initial;
 }
 .graphical-report__tooltip.stuck .graphical-report__tooltip__exclude,
 .graphical-report__tooltip.stuck .graphical-report__tooltip__vertical {
