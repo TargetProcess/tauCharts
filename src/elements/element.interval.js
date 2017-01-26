@@ -196,6 +196,9 @@ const Interval = {
             .append('g')
             .call(updateBarContainer);
 
+        // TODO: Render bars into single container, exclude removed elements from calculation.
+        this._boundsInfo = this._getBoundsInfo(options.container.selectAll('.bar')[0]);
+
         node.subscribe(new LayerLabels(screenModel.model, screenModel.model.flip, config.guide.label, options)
             .draw(fibers));
 
@@ -287,7 +290,101 @@ const Interval = {
             });
     },
 
+    _getBoundsInfo(bars) {
+        if (bars.length === 0) {
+            return null;
+        }
+
+        const container = this.node().config.options.container;
+        const screenModel = this.node().screenModel;
+        const {flip} = this.node().config;
+        const {maxHighlightDistance} = this.node().config.guide;
+
+        const translate = utilsDraw.getDeepTransformTranslate(container.node());
+        const elementsInfoMap = new Map();
+        const bounds = {
+            top: Number.MAX_VALUE,
+            right: Number.MIN_VALUE,
+            bottom: Number.MIN_VALUE,
+            left: Number.MAX_VALUE
+        };
+        bars.forEach((node) => {
+            const data = d3.select(node).data()[0];
+            const x = screenModel.x(data);
+            const x0 = screenModel.x0(data);
+            const y = screenModel.y(data);
+            const y0 = screenModel.y0(data);
+            const w = Math.abs(x - x0);
+            const h = Math.abs(y - y0);
+            const cx = ((x + x0) / 2 + translate.x);
+            const cy = ((y + y0) / 2 + translate.y);
+
+            const box = {
+                top: (cy - h / 2 - maxHighlightDistance),
+                right: (cx + w / 2 + maxHighlightDistance),
+                bottom: (cy + h / 2 + maxHighlightDistance),
+                left: (cx - w / 2 - maxHighlightDistance)
+            };
+            bounds.left = Math.min(box.left, bounds.left);
+            bounds.right = Math.max(box.right, bounds.right);
+            bounds.top = Math.min(box.top, bounds.top);
+            bounds.bottom = Math.max(box.bottom, bounds.bottom);
+
+            elementsInfoMap.set(node, {node, data, cx, cy, box});
+        });
+
+        const items = Array.from(elementsInfoMap.values());
+        const ticks = utils.unique(items.map(flip ?
+            ((item) => item.box.bottom) :
+            ((item) => item.box.right)));
+        const groups = ticks.reduce(((obj, value) => (obj[value] = [], obj)), {});
+        items.forEach((item, i) => {
+            var tick = ticks.find(flip ? ((value) => item.box.bottom <= value) : ((value) => item.box.right <= value));
+            groups[tick].push(item);
+        });
+        const split = (values) => {
+            if (values.length === 1) {
+                return groups[values];
+            }
+            var midIndex = Math.ceil(values.length / 2);
+            var middle = values[midIndex - 1];
+            return {
+                middle,
+                lower: split(values.slice(0, midIndex)),
+                greater: split(values.slice(midIndex))
+            };
+        };
+        var tree = split(ticks);
+
+        return {bounds, tree};
+    },
+
     getClosestElement(cursorX, cursorY) {
+        const info = this._boundsInfo;
+        if ((cursorX < info.bounds.left) ||
+            (cursorX > info.bounds.right) ||
+            (cursorY < info.bounds.top) ||
+            (cursorY > info.bounds.bottom)
+        ) {
+            return null;
+        }
+
+        const cursor = (this.node().config.flip ? cursorY : cursorX);
+        const getClosestElements = ((el) => (Array.isArray(el) ? el :
+            getClosestElements(cursor > el.middle ? el.greater : el.lower)
+        ));
+        const closestElements = getClosestElements(info.tree);
+        const result = closestElements[0];
+        return {
+            node: result.node,
+            data: result.data,
+            // TODO: Calculate secondary distance.
+            distance: 0,
+            secondaryDistance: 0,
+            x: result.cx,
+            y: result.cy
+        };
+
         const container = this.node().config.options.container;
         const screenModel = this.node().screenModel;
         const {flip} = this.node().config;
@@ -306,6 +403,7 @@ const Interval = {
                 const x0 = screenModel.x0(data);
                 const y = screenModel.y(data);
                 const y0 = screenModel.y0(data);
+                console.log(x > x0, y > y0, x, x0, y, y0);
                 const w = Math.abs(x - x0);
                 const h = Math.abs(y - y0);
                 const cx = ((x + x0) / 2 + translate.x);
