@@ -321,7 +321,7 @@ export class Plot extends Emitter {
         const handler = ((e) => this._handlePointerEvent(e));
         svg.on('mousemove', wrapEventHandler(handler));
         svg.on('click', wrapEventHandler(handler));
-        svg.on('mouseleave', wrapEventHandler(() => {
+        svg.on('mouseleave', wrapEventHandler((event) => {
             if (window.getComputedStyle(this._svg).pointerEvents !== 'none') {
                 this.select(() => true)
                     .forEach((unit) => unit.fire('data-hover', {event, data: null, node: null}));
