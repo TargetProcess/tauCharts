@@ -295,143 +295,122 @@ const Interval = {
             return null;
         }
 
-        const container = this.node().config.options.container;
         const screenModel = this.node().screenModel;
         const {flip} = this.node().config;
-        const {maxHighlightDistance} = this.node().config.guide;
 
-        const translate = utilsDraw.getDeepTransformTranslate(container.node());
-        const elementsInfoMap = new Map();
-        const bounds = {
-            top: Number.MAX_VALUE,
-            right: Number.MIN_VALUE,
-            bottom: Number.MIN_VALUE,
-            left: Number.MAX_VALUE
-        };
-        bars.forEach((node) => {
-            const data = d3.select(node).data()[0];
-            const x = screenModel.x(data);
-            const x0 = screenModel.x0(data);
-            const y = screenModel.y(data);
-            const y0 = screenModel.y0(data);
-            const w = Math.abs(x - x0);
-            const h = Math.abs(y - y0);
-            const cx = ((x + x0) / 2 + translate.x);
-            const cy = ((y + y0) / 2 + translate.y);
+        const items = bars
+            .map((node) => {
+                const data = d3.select(node).data()[0];
+                const x = screenModel.x(data);
+                const x0 = screenModel.x0(data);
+                const y = screenModel.y(data);
+                const y0 = screenModel.y0(data);
+                const w = Math.abs(x - x0);
+                const h = Math.abs(y - y0);
+                const cx = ((x + x0) / 2);
+                const cy = ((y + y0) / 2);
+                const invert = (y > y0);
 
-            const box = {
-                top: (cy - h / 2 - maxHighlightDistance),
-                right: (cx + w / 2 + maxHighlightDistance),
-                bottom: (cy + h / 2 + maxHighlightDistance),
-                left: (cx - w / 2 - maxHighlightDistance)
-            };
-            bounds.left = Math.min(box.left, bounds.left);
-            bounds.right = Math.max(box.right, bounds.right);
-            bounds.top = Math.min(box.top, bounds.top);
-            bounds.bottom = Math.max(box.bottom, bounds.bottom);
+                const box = {
+                    top: (cy - h / 2),
+                    right: (cx + w / 2),
+                    bottom: (cy + h / 2),
+                    left: (cx - w / 2)
+                };
 
-            elementsInfoMap.set(node, {node, data, cx, cy, box});
-        });
+                return {node, data, cx, cy, box, invert};
+            })
+            // TODO: Removed elements should not be passed to this function.
+            .filter((item) => !isNaN(item.cx) && !isNaN(item.cy));
 
-        const items = Array.from(elementsInfoMap.values());
+        const bounds = items.reduce(
+            (bounds, {box}) => {
+                bounds.left = Math.min(box.left, bounds.left);
+                bounds.right = Math.max(box.right, bounds.right);
+                bounds.top = Math.min(box.top, bounds.top);
+                bounds.bottom = Math.max(box.bottom, bounds.bottom);
+                return bounds;
+            }, {
+                left: Number.MAX_VALUE,
+                right: Number.MIN_VALUE,
+                top: Number.MAX_VALUE,
+                bottom: Number.MIN_VALUE
+            });
+
         const ticks = utils.unique(items.map(flip ?
-            ((item) => item.box.bottom) :
-            ((item) => item.box.right)));
+            ((item) => item.cy) :
+            ((item) => item.cx))).sort((a, b) => a - b);
         const groups = ticks.reduce(((obj, value) => (obj[value] = [], obj)), {});
         items.forEach((item, i) => {
-            var tick = ticks.find(flip ? ((value) => item.box.bottom <= value) : ((value) => item.box.right <= value));
+            const tick = ticks.find(flip ? ((value) => item.cy === value) : ((value) => item.cx === value));
             groups[tick].push(item);
         });
         const split = (values) => {
             if (values.length === 1) {
                 return groups[values];
             }
-            var midIndex = Math.ceil(values.length / 2);
-            var middle = values[midIndex - 1];
+            const midIndex = Math.ceil(values.length / 2);
+            const middle = (values[midIndex - 1] + values[midIndex]) / 2;
             return {
                 middle,
                 lower: split(values.slice(0, midIndex)),
                 greater: split(values.slice(midIndex))
             };
         };
-        var tree = split(ticks);
+        const tree = split(ticks);
 
         return {bounds, tree};
     },
 
     getClosestElement(cursorX, cursorY) {
-        const info = this._boundsInfo;
-        if ((cursorX < info.bounds.left) ||
-            (cursorX > info.bounds.right) ||
-            (cursorY < info.bounds.top) ||
-            (cursorY > info.bounds.bottom)
-        ) {
-            return null;
-        }
-
-        const cursor = (this.node().config.flip ? cursorY : cursorX);
-        const getClosestElements = ((el) => (Array.isArray(el) ? el :
-            getClosestElements(cursor > el.middle ? el.greater : el.lower)
-        ));
-        const closestElements = getClosestElements(info.tree);
-        const result = closestElements[0];
-        return {
-            node: result.node,
-            data: result.data,
-            // TODO: Calculate secondary distance.
-            distance: 0,
-            secondaryDistance: 0,
-            x: result.cx,
-            y: result.cy
-        };
-
         const container = this.node().config.options.container;
-        const screenModel = this.node().screenModel;
         const {flip} = this.node().config;
+        const translate = utilsDraw.getDeepTransformTranslate(container.node());
         const {maxHighlightDistance} = this.node().config.guide;
-
-        const bars = container.selectAll('.bar');
-        var minX = Number.MAX_VALUE;
-        var maxX = Number.MIN_VALUE;
-        var minY = Number.MAX_VALUE;
-        var maxY = Number.MIN_VALUE;
-        const items = bars[0]
-            .map((node) => {
-                const data = d3.select(node).data()[0];
-                const translate = utilsDraw.getDeepTransformTranslate(node);
-                const x = screenModel.x(data);
-                const x0 = screenModel.x0(data);
-                const y = screenModel.y(data);
-                const y0 = screenModel.y0(data);
-                console.log(x > x0, y > y0, x, x0, y, y0);
-                const w = Math.abs(x - x0);
-                const h = Math.abs(y - y0);
-                const cx = ((x + x0) / 2 + translate.x);
-                const cy = ((y + y0) / 2 + translate.y);
-                const distance = Math.abs(flip ? (cy - cursorY) : (cx - cursorX));
-                const secondaryDistance = Math.abs(flip ? (cx - cursorX) : (cy - cursorY));
-                minX = Math.min(cx - w / 2, minX);
-                maxX = Math.max(cx + w / 2, maxX);
-                minY = Math.min(cy - h / 2, minY);
-                maxY = Math.max(cy + h / 2, maxY);
-                return {node, data, distance, secondaryDistance, x: cx, y: cy};
-            })
-            .filter((d) => !isNaN(d.x) && !isNaN(d.y))
-            .sort((a, b) => (a.distance === b.distance ?
-                (a.secondaryDistance - b.secondaryDistance) :
-                (a.distance - b.distance)
-            ));
-
-        if ((items.length === 0) ||
-            (cursorX < minX - maxHighlightDistance) ||
-            (cursorX > maxX + maxHighlightDistance) ||
-            (cursorY < minY - maxHighlightDistance) ||
-            (cursorY > maxY + maxHighlightDistance)
+        const {bounds, tree} = this._boundsInfo;
+        if ((cursorX < bounds.left + translate.x - maxHighlightDistance) ||
+            (cursorX > bounds.right + translate.x + maxHighlightDistance) ||
+            (cursorY < bounds.top + translate.y - maxHighlightDistance) ||
+            (cursorY > bounds.bottom + translate.y + maxHighlightDistance)
         ) {
             return null;
         }
 
-        return items[0];
+        const cursor = (flip ? (cursorY - translate.y) : (cursorX - translate.x));
+        const closestElements = (function getClosestElements(el) {
+            if (Array.isArray(el)) {
+                return el;
+            }
+            return getClosestElements(cursor > el.middle ? el.greater : el.lower);
+        })(tree);
+        var results = closestElements
+            .map((el) => {
+                const distToValue = (flip ?
+                    (cursorX - (el.invert ? el.box.left : el.box.right) - translate.x) :
+                    (cursorY - (el.invert ? el.box.bottom : el.box.top) - translate.y)
+                );
+                return Object.assign(el, {distToValue});
+            })
+            .sort((a, b) => {
+                if (a.distToValue < 0 && b.distToValue < 0) {
+                    return (b.distToValue - a.distToValue);
+                } else if (a.distToValue < 0) {
+                    return (1);
+                } else if (b.distToValue < 0) {
+                    return (-1);
+                }
+                return (a.distToValue - b.distToValue);
+            })
+            .map((el) => {
+                const x = (el.cx + translate.x);
+                const y = (el.cy + translate.y);
+                const distance = Math.abs(flip ? (cursorY - y) : (cursorX - x));
+                const secondaryDistance = Math.abs(flip ? (cursorX - x) : (cursorY - y));
+                return {node: el.node, data: el.data, distance, secondaryDistance, x, y};
+            })
+            .sort((a, b) => a.secondaryDistance - b.secondaryDistance);
+
+        return (results[0] || null);
     },
 
     highlight(filter) {
