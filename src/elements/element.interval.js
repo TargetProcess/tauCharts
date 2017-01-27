@@ -363,11 +363,14 @@ const Interval = {
     },
 
     getClosestElement(cursorX, cursorY) {
+        if (!this._boundsInfo) {
+            return null;
+        }
+        const {bounds, tree} = this._boundsInfo;
         const container = this.node().config.options.container;
         const {flip} = this.node().config;
         const translate = utilsDraw.getDeepTransformTranslate(container.node());
         const {maxHighlightDistance} = this.node().config.guide;
-        const {bounds, tree} = this._boundsInfo;
         if ((cursorX < bounds.left + translate.x - maxHighlightDistance) ||
             (cursorX > bounds.right + translate.x + maxHighlightDistance) ||
             (cursorY < bounds.top + translate.y - maxHighlightDistance) ||
@@ -382,8 +385,7 @@ const Interval = {
                 return el;
             }
             return getClosestElements(cursor > el.middle ? el.greater : el.lower);
-        })(tree);
-        var results = closestElements
+        })(tree)
             .map((el) => {
                 const distToValue = (flip ?
                     (cursorX - (el.invert ? el.box.left : el.box.right) - translate.x) :
@@ -410,7 +412,7 @@ const Interval = {
             })
             .sort((a, b) => a.secondaryDistance - b.secondaryDistance);
 
-        return (results[0] || null);
+        return (closestElements[0] || null);
     },
 
     highlight(filter) {
