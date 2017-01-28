@@ -1,4 +1,4 @@
-/*! taucharts - v0.10.0-beta.12 - 2017-01-26
+/*! taucharts - v0.10.0-beta.13 - 2017-01-28
 * https://github.com/TargetProcess/tauCharts
 * Copyright (c) 2017 Taucraft Limited; Licensed Apache License 2.0 */
 (function webpackUniversalModuleDefinition(root, factory) {
@@ -348,7 +348,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	}]));
 
 	/* global VERSION:false */
-	var version = ("0.10.0-beta.12");
+	var version = ("0.10.0-beta.13");
 	exports.GPL = _tau.GPL;
 	exports.Plot = _tau2.Plot;
 	exports.Chart = _tau3.Chart;
@@ -6775,7 +6775,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	            };
 	            svg.on('mousemove', wrapEventHandler(handler));
 	            svg.on('click', wrapEventHandler(handler));
-	            svg.on('mouseleave', wrapEventHandler(function () {
+	            svg.on('mouseleave', wrapEventHandler(function (event) {
 	                if (window.getComputedStyle(_this5._svg).pointerEvents !== 'none') {
 	                    _this5.select(function () {
 	                        return true;
