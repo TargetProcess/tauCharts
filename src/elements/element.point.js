@@ -224,10 +224,21 @@ const Point = {
                 bottom: Number.MIN_VALUE
             });
 
+        // NOTE: There can be multiple items at the same point, but
+        // D3 quad tree seems to ignore them.
+        const coordinates = items.reduce((coordinates, item) => {
+            const c = `${item.x},${item.y}`;
+            if (!coordinates[c]) {
+                coordinates[c] = [];
+            }
+            coordinates[c].push(item);
+            return coordinates;
+        }, {});
+
         const tree = d3.geom.quadtree()
-            .x((d) => d.x)
-            .y((d) => d.y)
-            (items);
+            .x((d) => d[0].x)
+            .y((d) => d[0].y)
+            (Object.keys(coordinates).map((c) => coordinates[c]));
 
         return {bounds, tree};
     },
@@ -250,40 +261,26 @@ const Point = {
             return null;
         }
 
-        var items = [];
-        tree.visit((node, left, top, right, bottom) => {
-            if (node.leaf) {
-                const item = node.point;
+        const items = (tree.find([cursorX, cursorY]) || [])
+            .map((item) => {
                 const distance = Math.sqrt(
-                    Math.pow(cursorX - node.x, 2) +
-                    Math.pow(cursorY - node.y, 2));
-                if (distance <= maxHighlightDistance) {
-                    const secondaryDistance = (distance < item.r ?
-                        item.r - distance :
-                        distance);
-                    items.push({
-                        node: item.node,
-                        data: item.data,
-                        x: item.x,
-                        y: item.y,
-                        distance,
-                        secondaryDistance
-                    });
+                    Math.pow(cursorX - item.x, 2) +
+                    Math.pow(cursorY - item.y, 2));
+                if (distance > maxHighlightDistance) {
+                    return null;
                 }
-                return true;
-            } else {
-                return (
-                    (cursorX < left - maxHighlightDistance) ||
-                    (cursorX > right + maxHighlightDistance) ||
-                    (cursorY < top - maxHighlightDistance) ||
-                    (cursorY > bottom + maxHighlightDistance)
-                );
-            }
-        });
-        items.sort((a, b) => (a.distance === b.distance ?
-            (a.secondaryDistance - b.secondaryDistance) :
-            (a.distance - b.distance)
-        ));
+                const secondaryDistance = (distance < item.r ? item.r - distance : distance);
+                return {
+                    node: item.node,
+                    data: item.data,
+                    x: item.x,
+                    y: item.y,
+                    distance,
+                    secondaryDistance
+                };
+            })
+            .filter((d) => d)
+            .sort((a, b) => (a.secondaryDistance - b.secondaryDistance));
 
         const largerDistIndex = items.findIndex((d) => (
             (d.distance !== items[0].distance) ||
