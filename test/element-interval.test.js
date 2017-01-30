@@ -1037,6 +1037,45 @@ define(function (require) {
         }
     );
 
+    describeChart('Bar highlight',
+        {
+            type: 'bar',
+            x: 'date',
+            y: 'effort',
+            guide: {
+                x: {hide: true},
+                y: {hide: true}
+            }
+        },
+        [
+            {date: '2017-01-30', effort: 40},
+            {date: '2017-01-30', effort: 20},
+            {date: '2017-01-30', effort: -20},
+            {date: '2017-01-30', effort: -40},
+        ],
+        function (context) {
+
+            it('should highlight bar under cursor', function () {
+                var svg = context.chart.getSVG();
+                var rect = svg.getBoundingClientRect();
+                var cx = ((rect.left + rect.right) / 2);
+                var interpolate = (a, b, t) => ((1 - t) * a + t * b);
+                var testCursorAt = (part, value) => {
+                    var y = (1 - part) * rect.top + part * rect.bottom;
+                    testUtils.simulateEvent('mousemove', svg, cx, y);
+                    var highlighted = d3.select('.graphical-report__highlighted');
+                    expect(highlighted.data()[0].effort).to.equal(value);
+                    expect(document.elementFromPoint(cx, y)).to.equal(highlighted.node());
+                };
+
+                testCursorAt(1 / 8, 40);
+                testCursorAt(3 / 8, 20);
+                testCursorAt(5 / 8, -20);
+                testCursorAt(7 / 8, -40);
+            });
+        }
+    );
+
     describeChart('Bar chart',
         {
             type : 'bar',
