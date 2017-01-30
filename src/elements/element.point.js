@@ -172,6 +172,9 @@ const Point = {
         frameGroups
             .call(updateGroups);
 
+        // TODO: Render bars into single container, exclude removed elements from calculation.
+        this._boundsInfo = this._getBoundsInfo(options.container.selectAll('.dot')[0]);
+
         transition(frameGroups.exit())
             .attr('opacity', 0)
             .remove()
@@ -188,36 +191,102 @@ const Point = {
         );
     },
 
-    getClosestElement(x0, y0) {
-        const container = this.node().config.options.container;
-        const screenModel = this.node().screenModel;
-        const getDistance = ((x, y) => Math.sqrt(Math.pow(x - x0, 2) + Math.pow(y - y0, 2)));
-        const {maxHighlightDistance} = this.node().config.guide;
+    _getBoundsInfo(dots) {
+        if (dots.length === 0) {
+            return null;
+        }
 
-        const dots = container.selectAll('.dot');
-        const items = dots[0]
+        const screenModel = this.node().screenModel;
+
+        const items = dots
             .map((node) => {
                 const data = d3.select(node).data()[0];
-                const translate = utilsDraw.getDeepTransformTranslate(node);
-                const x = (screenModel.x(data) + translate.x);
-                const y = (screenModel.y(data) + translate.y);
-                const r = (screenModel.size(data) / 2);
-                const distance = getDistance(x, y);
-                const secondaryDistance = (distance < r ? r - distance : distance);
-                if (distance > r && distance > maxHighlightDistance) {
-                    return null;
-                }
-                return {node, data, distance, secondaryDistance, x, y};
+                const x = screenModel.x(data);
+                const y = screenModel.y(data);
+                const r = screenModel.size(data) / 2;
+
+                return {node, data, x, y, r};
             })
-            .filter((d) => d && !isNaN(d.x) && !isNaN(d.y))
+            // TODO: Removed elements should not be passed to this function.
+            .filter((item) => !isNaN(item.x) && !isNaN(item.y));
+
+        const bounds = items.reduce(
+            (bounds, {x, y}) => {
+                bounds.left = Math.min(x, bounds.left);
+                bounds.right = Math.max(x, bounds.right);
+                bounds.top = Math.min(y, bounds.top);
+                bounds.bottom = Math.max(y, bounds.bottom);
+                return bounds;
+            }, {
+                left: Number.MAX_VALUE,
+                right: Number.MIN_VALUE,
+                top: Number.MAX_VALUE,
+                bottom: Number.MIN_VALUE
+            });
+
+        const tree = d3.geom.quadtree()
+            .x((d) => d.x)
+            .y((d) => d.y)
+            (items);
+
+        return {bounds, tree};
+    },
+
+    getClosestElement(_cursorX, _cursorY) {
+        if (!this._boundsInfo) {
+            return null;
+        }
+        const {bounds, tree} = this._boundsInfo;
+        const container = this.node().config.options.container;
+        const translate = utilsDraw.getDeepTransformTranslate(container.node());
+        const cursorX = (_cursorX - translate.x);
+        const cursorY = (_cursorY - translate.y);
+        const {maxHighlightDistance} = this.node().config.guide;
+        if ((cursorX < bounds.left - maxHighlightDistance) ||
+            (cursorX > bounds.right + maxHighlightDistance) ||
+            (cursorY < bounds.top - maxHighlightDistance) ||
+            (cursorY > bounds.bottom + maxHighlightDistance)
+        ) {
+            return null;
+        }
+
+        const items = (function getClosestElements(el) {
+            var items = [];
+            tree.visit((node, left, top, right, bottom) => {
+                if (node.leaf) {
+                    const item = node.point;
+                    const distance = Math.sqrt(
+                        Math.pow(cursorX - node.x, 2) +
+                        Math.pow(cursorY - node.y, 2));
+                    if (distance <= maxHighlightDistance) {
+                        const secondaryDistance = (distance < item.r ?
+                            item.r - distance :
+                            distance);
+                        items.push({
+                            node: item.node,
+                            data: item.data,
+                            x: item.x,
+                            y: item.y,
+                            distance,
+                            secondaryDistance
+                        });
+                    }
+                    return true;
+                } else {
+                    return (
+                        (cursorX < left - maxHighlightDistance) ||
+                        (cursorX > right + maxHighlightDistance) ||
+                        (cursorY < top - maxHighlightDistance) ||
+                        (cursorY > bottom + maxHighlightDistance)
+                    );
+                }
+            });
+            return items;
+        })()
             .sort((a, b) => (a.distance === b.distance ?
                 (a.secondaryDistance - b.secondaryDistance) :
                 (a.distance - b.distance)
             ));
-
-        if (items.length === 0) {
-            return null;
-        }
 
         const largerDistIndex = items.findIndex((d) => (
             (d.distance !== items[0].distance) ||
@@ -229,7 +298,7 @@ const Point = {
         }
         const mx = (sameDistItems.reduce((sum, item) => sum + item.x, 0) / sameDistItems.length);
         const my = (sameDistItems.reduce((sum, item) => sum + item.y, 0) / sameDistItems.length);
-        const angle = (Math.atan2(my - y0, mx - x0) + Math.PI);
+        const angle = (Math.atan2(my - cursorY, mx - cursorX) + Math.PI);
         const closest = sameDistItems[Math.round((sameDistItems.length - 1) * angle / 2 / Math.PI)];
         return closest;
     },

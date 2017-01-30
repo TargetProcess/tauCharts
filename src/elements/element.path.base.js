@@ -313,7 +313,6 @@ const BasePath = {
 
     _getBoundsInfo(dots) {
         if (dots.length === 0) {
-            debugger;
             return null;
         }
 
