@@ -341,7 +341,7 @@ const Interval = {
             ((item) => item.cy) :
             ((item) => item.cx))).sort((a, b) => a - b);
         const groups = ticks.reduce(((obj, value) => (obj[value] = [], obj)), {});
-        items.forEach((item, i) => {
+        items.forEach((item) => {
             const tick = ticks.find(flip ? ((value) => item.cy === value) : ((value) => item.cx === value));
             groups[tick].push(item);
         });

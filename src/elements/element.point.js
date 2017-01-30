@@ -250,43 +250,40 @@ const Point = {
             return null;
         }
 
-        const items = (function getClosestElements(el) {
-            var items = [];
-            tree.visit((node, left, top, right, bottom) => {
-                if (node.leaf) {
-                    const item = node.point;
-                    const distance = Math.sqrt(
-                        Math.pow(cursorX - node.x, 2) +
-                        Math.pow(cursorY - node.y, 2));
-                    if (distance <= maxHighlightDistance) {
-                        const secondaryDistance = (distance < item.r ?
-                            item.r - distance :
-                            distance);
-                        items.push({
-                            node: item.node,
-                            data: item.data,
-                            x: item.x,
-                            y: item.y,
-                            distance,
-                            secondaryDistance
-                        });
-                    }
-                    return true;
-                } else {
-                    return (
-                        (cursorX < left - maxHighlightDistance) ||
-                        (cursorX > right + maxHighlightDistance) ||
-                        (cursorY < top - maxHighlightDistance) ||
-                        (cursorY > bottom + maxHighlightDistance)
-                    );
+        var items = [];
+        tree.visit((node, left, top, right, bottom) => {
+            if (node.leaf) {
+                const item = node.point;
+                const distance = Math.sqrt(
+                    Math.pow(cursorX - node.x, 2) +
+                    Math.pow(cursorY - node.y, 2));
+                if (distance <= maxHighlightDistance) {
+                    const secondaryDistance = (distance < item.r ?
+                        item.r - distance :
+                        distance);
+                    items.push({
+                        node: item.node,
+                        data: item.data,
+                        x: item.x,
+                        y: item.y,
+                        distance,
+                        secondaryDistance
+                    });
                 }
-            });
-            return items;
-        })()
-            .sort((a, b) => (a.distance === b.distance ?
-                (a.secondaryDistance - b.secondaryDistance) :
-                (a.distance - b.distance)
-            ));
+                return true;
+            } else {
+                return (
+                    (cursorX < left - maxHighlightDistance) ||
+                    (cursorX > right + maxHighlightDistance) ||
+                    (cursorY < top - maxHighlightDistance) ||
+                    (cursorY > bottom + maxHighlightDistance)
+                );
+            }
+        });
+        items.sort((a, b) => (a.distance === b.distance ?
+            (a.secondaryDistance - b.secondaryDistance) :
+            (a.distance - b.distance)
+        ));
 
         const largerDistIndex = items.findIndex((d) => (
             (d.distance !== items[0].distance) ||

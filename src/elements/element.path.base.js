@@ -348,7 +348,7 @@ const BasePath = {
             ((item) => item.y) :
             ((item) => item.x))).sort((a, b) => a - b);
         const groups = ticks.reduce(((obj, value) => (obj[value] = [], obj)), {});
-        items.forEach((item, i) => {
+        items.forEach((item) => {
             const tick = ticks.find(flip ? ((value) => item.y === value) : ((value) => item.x === value));
             groups[tick].push(item);
         });
