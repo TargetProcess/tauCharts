@@ -257,6 +257,21 @@ var utilsDom = {
         return results;
     },
 
+    sortElements: function (elements, sorter) {
+        if (element.length === 0) {
+            return [];
+        }
+        var parent = elements[0].parentNode;
+        var fragment = document.createDocumentFragment();
+        var items = Array.prototype.sort.call(elements, sorter);
+        var orderChanged = items.some((d, i) => d !== elements[i]);
+        if (orderChanged) {
+            items.forEach((el) => fragment.appendChild(el));
+            parent.appendChild(fragment);
+        }
+        return items;
+    },
+
     /**
      * Generates "class" attribute string.
      */

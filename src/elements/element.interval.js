@@ -136,65 +136,46 @@ const Interval = {
         const barY = config.flip ? 'x' : 'y';
         const barH = config.flip ? 'width' : 'height';
         const barW = config.flip ? 'height' : 'width';
-        const updateBarContainer = function () {
-            this.attr('class', 'frame i-role-bar-group');
-            const barClass = d3Attrs.class;
-            var updateAttrs = utils.omit(d3Attrs, 'class');
-            const bars = this.selectAll('.bar')
-                .data((fiber) => fiber, screenModel.id);
-            bars.exit()
-                .call(createUpdateFunc(
-                    config.guide.animationSpeed,
-                    null,
-                    {
-                        [barX]: function () {
-                            var d3This = d3.select(this);
-                            var x = d3This.attr(barX) - 0;
-                            var w = d3This.attr(barW) - 0;
-                            return x + w / 2;
-                        },
-                        [barY]: function () {
-                            var d3This = d3.select(this);
-                            var y = d3This.attr(barY) - 0;
-                            var h = d3This.attr(barH) - 0;
-                            return y + h / 2;
-                        },
-                        [barW]: 0,
-                        [barH]: 0
-                    },
-                    ((node) => d3.select(node).remove())
-                ));
-            bars.call(createUpdateFunc(
-                config.guide.animationSpeed,
-                null,
-                updateAttrs
-            )).attr('class', barClass);
-            bars.enter()
-                .append('rect')
-                .call(createUpdateFunc(
-                    config.guide.animationSpeed,
-                    {[barY]: screenModel[`${barY}0`], [barH]: 0},
-                    updateAttrs
-                )).attr('class', barClass);
-
-            node.subscribe(bars);
-        };
 
         const fibers = screenModel.toFibers();
+        const data = fibers
+            .reduce((arr, f) => arr.concat(f), [])
+            .sort((a, b) => d3Attrs.height(b) - d3Attrs.height(a));
 
-        const elements = options
-            .container
-            .selectAll('.frame')
-            .data(fibers, (d) => screenModel.model.group(d[0]));
-        elements
-            .exit()
-            .remove();
-        elements
-            .call(updateBarContainer);
-        elements
-            .enter()
-            .append('g')
-            .call(updateBarContainer);
+        const barClass = d3Attrs.class;
+        const updateAttrs = utils.omit(d3Attrs, 'class');
+        const bars = options.container.selectAll('.bar')
+            .data(data, screenModel.id);
+        bars.exit()
+            .call(createUpdateFunc(
+                config.guide.animationSpeed,
+                null,
+                {
+                    [barY]: function () {
+                        return this.getAttribute('data-zero');
+                    },
+                    [barH]: 0
+                },
+                ((node) => d3.select(node).remove())
+            ));
+        bars.call(createUpdateFunc(
+            config.guide.animationSpeed,
+            null,
+            updateAttrs
+        )).attr('class', barClass)
+            .attr('data-zero', screenModel[`${barY}0`]);
+        bars.enter()
+            .append('rect')
+            .call(createUpdateFunc(
+                config.guide.animationSpeed,
+                {[barY]: screenModel[`${barY}0`], [barH]: 0},
+                updateAttrs
+            )).attr('class', barClass)
+            .attr('data-zero', screenModel[`${barY}0`]);
+
+        bars.order();
+
+        node.subscribe(bars);
 
         // TODO: Render bars into single container, exclude removed elements from calculation.
         this._boundsInfo = this._getBoundsInfo(options.container.selectAll('.bar')[0]);
