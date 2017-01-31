@@ -301,6 +301,9 @@ const BasePath = {
 
         frameBinding.order();
 
+        // TODO: Exclude removed elements from calculation.
+        this._boundsInfo = this._getBoundsInfo(options.container.selectAll('.i-data-anchor')[0]);
+
         node.subscribe(new LayerLabels(
             screenModel.model,
             config.flip,
@@ -308,45 +311,99 @@ const BasePath = {
             options).draw(pureFibers));
     },
 
-    getClosestElement(cursorX, cursorY) {
-        const container = this.node().config.options.container;
+    _getBoundsInfo(dots) {
+        if (dots.length === 0) {
+            return null;
+        }
+
         const screenModel = this.node().screenModel;
         const {flip} = this.node().config;
-        const {maxHighlightDistance} = this.node().config.guide;
 
-        const dots = container.selectAll('.i-data-anchor');
-        var minX = Number.MAX_VALUE;
-        var maxX = Number.MIN_VALUE;
-        var minY = Number.MAX_VALUE;
-        var maxY = Number.MIN_VALUE;
-        const items = dots[0]
+        const items = dots
             .map((node) => {
                 const data = d3.select(node).data()[0];
-                const translate = utilsDraw.getDeepTransformTranslate(node);
-                const x = (screenModel.x(data) + translate.x);
-                const y = (screenModel.y(data) + translate.y);
-                var distance = Math.abs(flip ? (y - cursorY) : (x - cursorX));
-                var secondaryDistance = Math.abs(flip ? (x - cursorX) : (y - cursorY));
-                minX = Math.min(x, minX);
-                maxX = Math.max(x, maxX);
-                minY = Math.min(y, minY);
-                maxY = Math.max(y, maxY);
-                return {node, data, distance, secondaryDistance, x, y};
+                const x = screenModel.x(data);
+                const y = screenModel.y(data);
+
+                return {node, data, x, y};
             })
-            .filter((d) => d && !isNaN(d.x) && !isNaN(d.y))
+            // TODO: Removed elements should not be passed to this function.
+            .filter((item) => !isNaN(item.x) && !isNaN(item.y));
+
+        const bounds = items.reduce(
+            (bounds, {x, y}) => {
+                bounds.left = Math.min(x, bounds.left);
+                bounds.right = Math.max(x, bounds.right);
+                bounds.top = Math.min(y, bounds.top);
+                bounds.bottom = Math.max(y, bounds.bottom);
+                return bounds;
+            }, {
+                left: Number.MAX_VALUE,
+                right: Number.MIN_VALUE,
+                top: Number.MAX_VALUE,
+                bottom: Number.MIN_VALUE
+            });
+
+        const ticks = utils.unique(items.map(flip ?
+            ((item) => item.y) :
+            ((item) => item.x))).sort((a, b) => a - b);
+        const groups = ticks.reduce(((obj, value) => (obj[value] = [], obj)), {});
+        items.forEach((item) => {
+            const tick = ticks.find(flip ? ((value) => item.y === value) : ((value) => item.x === value));
+            groups[tick].push(item);
+        });
+        const split = (values) => {
+            if (values.length === 1) {
+                return groups[values];
+            }
+            const midIndex = Math.ceil(values.length / 2);
+            const middle = (values[midIndex - 1] + values[midIndex]) / 2;
+            return {
+                middle,
+                lower: split(values.slice(0, midIndex)),
+                greater: split(values.slice(midIndex))
+            };
+        };
+        const tree = split(ticks);
+
+        return {bounds, tree};
+    },
+
+    getClosestElement(cursorX, cursorY) {
+        if (!this._boundsInfo) {
+            return null;
+        }
+        const {bounds, tree} = this._boundsInfo;
+        const container = this.node().config.options.container;
+        const {flip} = this.node().config;
+        const translate = utilsDraw.getDeepTransformTranslate(container.node());
+        const {maxHighlightDistance} = this.node().config.guide;
+        if ((cursorX < bounds.left + translate.x - maxHighlightDistance) ||
+            (cursorX > bounds.right + translate.x + maxHighlightDistance) ||
+            (cursorY < bounds.top + translate.y - maxHighlightDistance) ||
+            (cursorY > bounds.bottom + translate.y + maxHighlightDistance)
+        ) {
+            return null;
+        }
+
+        const cursor = (flip ? (cursorY - translate.y) : (cursorX - translate.x));
+        const items = (function getClosestElements(el) {
+            if (Array.isArray(el)) {
+                return el;
+            }
+            return getClosestElements(cursor > el.middle ? el.greater : el.lower);
+        })(tree)
+            .map((el) => {
+                const x = (el.x + translate.x);
+                const y = (el.y + translate.y);
+                const distance = Math.abs(flip ? (cursorY - y) : (cursorX - x));
+                const secondaryDistance = Math.abs(flip ? (cursorX - x) : (cursorY - y));
+                return {node: el.node, data: el.data, distance, secondaryDistance, x, y};
+            })
             .sort((a, b) => (a.distance === b.distance ?
                 (a.secondaryDistance - b.secondaryDistance) :
                 (a.distance - b.distance)
             ));
-
-        if ((items.length === 0) ||
-            (cursorX < minX - maxHighlightDistance) ||
-            (cursorX > maxX + maxHighlightDistance) ||
-            (cursorY < minY - maxHighlightDistance) ||
-            (cursorY > maxY + maxHighlightDistance)
-        ) {
-            return null;
-        }
 
         const largerDistIndex = items.findIndex((d) => (
             (d.distance !== items[0].distance) ||

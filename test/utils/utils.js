@@ -222,6 +222,15 @@ define(function (require) {
         });
     }
 
+    function elementFromPoint(x, y) {
+        var scrollX = window.pageXOffset;
+        var scrollY = window.pageYOffset;
+        window.scrollTo(x, y);
+        var el = document.elementFromPoint(x - window.pageXOffset, y - window.pageYOffset);
+        window.scrollTo(scrollX, scrollY);
+        return el;
+    }
+
     return {
         toLocalDate: toLocalDate,
         roundNumbersInString: roundNumbersInString,
@@ -243,6 +252,7 @@ define(function (require) {
                 0, 0, 0, clientX, clientY, false, false, false, false, 0, null);
             element.dispatchEvent(evt);
         },
+        elementFromPoint,
         noScrollStyle,
         destroyCharts
     };
