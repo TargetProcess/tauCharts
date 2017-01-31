@@ -1,4 +1,4 @@
-/*! taucharts - v0.10.0-beta.13 - 2017-01-28
+/*! taucharts - v0.10.0-beta.14 - 2017-01-31
 * https://github.com/TargetProcess/tauCharts
 * Copyright (c) 2017 Taucraft Limited; Licensed Apache License 2.0 */
 (function webpackUniversalModuleDefinition(root, factory) {
@@ -348,7 +348,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	}]));
 
 	/* global VERSION:false */
-	var version = ("0.10.0-beta.13");
+	var version = ("0.10.0-beta.14");
 	exports.GPL = _tau.GPL;
 	exports.Plot = _tau2.Plot;
 	exports.Chart = _tau3.Chart;
@@ -13292,41 +13292,107 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	        frameGroups.call(updateGroups);
 
+	        // TODO: Render bars into single container, exclude removed elements from calculation.
+	        this._boundsInfo = this._getBoundsInfo(options.container.selectAll('.dot')[0]);
+
 	        transition(frameGroups.exit()).attr('opacity', 0).remove().selectAll('circle').attr('r', 0);
 
 	        node.subscribe(new _layerLabels.LayerLabels(screenModel.model, screenModel.flip, config.guide.label, options).draw(fibers));
 	    },
-	    getClosestElement: function getClosestElement(x0, y0) {
-	        var container = this.node().config.options.container;
-	        var screenModel = this.node().screenModel;
-	        var getDistance = function getDistance(x, y) {
-	            return Math.sqrt(Math.pow(x - x0, 2) + Math.pow(y - y0, 2));
-	        };
-	        var maxHighlightDistance = this.node().config.guide.maxHighlightDistance;
-
-
-	        var dots = container.selectAll('.dot');
-	        var items = dots[0].map(function (node) {
-	            var data = _d2.default.select(node).data()[0];
-	            var translate = _utilsDraw.utilsDraw.getDeepTransformTranslate(node);
-	            var x = screenModel.x(data) + translate.x;
-	            var y = screenModel.y(data) + translate.y;
-	            var r = screenModel.size(data) / 2;
-	            var distance = getDistance(x, y);
-	            var secondaryDistance = distance < r ? r - distance : distance;
-	            if (distance > r && distance > maxHighlightDistance) {
-	                return null;
-	            }
-	            return { node: node, data: data, distance: distance, secondaryDistance: secondaryDistance, x: x, y: y };
-	        }).filter(function (d) {
-	            return d && !isNaN(d.x) && !isNaN(d.y);
-	        }).sort(function (a, b) {
-	            return a.distance === b.distance ? a.secondaryDistance - b.secondaryDistance : a.distance - b.distance;
-	        });
-
-	        if (items.length === 0) {
+	    _getBoundsInfo: function _getBoundsInfo(dots) {
+	        if (dots.length === 0) {
 	            return null;
 	        }
+
+	        var screenModel = this.node().screenModel;
+
+	        var items = dots.map(function (node) {
+	            var data = _d2.default.select(node).data()[0];
+	            var x = screenModel.x(data);
+	            var y = screenModel.y(data);
+	            var r = screenModel.size(data) / 2;
+
+	            return { node: node, data: data, x: x, y: y, r: r };
+	        })
+	        // TODO: Removed elements should not be passed to this function.
+	        .filter(function (item) {
+	            return !isNaN(item.x) && !isNaN(item.y);
+	        });
+
+	        var bounds = items.reduce(function (bounds, _ref) {
+	            var x = _ref.x,
+	                y = _ref.y;
+
+	            bounds.left = Math.min(x, bounds.left);
+	            bounds.right = Math.max(x, bounds.right);
+	            bounds.top = Math.min(y, bounds.top);
+	            bounds.bottom = Math.max(y, bounds.bottom);
+	            return bounds;
+	        }, {
+	            left: Number.MAX_VALUE,
+	            right: Number.MIN_VALUE,
+	            top: Number.MAX_VALUE,
+	            bottom: Number.MIN_VALUE
+	        });
+
+	        // NOTE: There can be multiple items at the same point, but
+	        // D3 quad tree seems to ignore them.
+	        var coordinates = items.reduce(function (coordinates, item) {
+	            var c = item.x + ',' + item.y;
+	            if (!coordinates[c]) {
+	                coordinates[c] = [];
+	            }
+	            coordinates[c].push(item);
+	            return coordinates;
+	        }, {});
+
+	        var tree = _d2.default.geom.quadtree().x(function (d) {
+	            return d[0].x;
+	        }).y(function (d) {
+	            return d[0].y;
+	        })(Object.keys(coordinates).map(function (c) {
+	            return coordinates[c];
+	        }));
+
+	        return { bounds: bounds, tree: tree };
+	    },
+	    getClosestElement: function getClosestElement(_cursorX, _cursorY) {
+	        if (!this._boundsInfo) {
+	            return null;
+	        }
+	        var _boundsInfo = this._boundsInfo,
+	            bounds = _boundsInfo.bounds,
+	            tree = _boundsInfo.tree;
+
+	        var container = this.node().config.options.container;
+	        var translate = _utilsDraw.utilsDraw.getDeepTransformTranslate(container.node());
+	        var cursorX = _cursorX - translate.x;
+	        var cursorY = _cursorY - translate.y;
+	        var maxHighlightDistance = this.node().config.guide.maxHighlightDistance;
+
+	        if (cursorX < bounds.left - maxHighlightDistance || cursorX > bounds.right + maxHighlightDistance || cursorY < bounds.top - maxHighlightDistance || cursorY > bounds.bottom + maxHighlightDistance) {
+	            return null;
+	        }
+
+	        var items = (tree.find([cursorX, cursorY]) || []).map(function (item) {
+	            var distance = Math.sqrt(Math.pow(cursorX - item.x, 2) + Math.pow(cursorY - item.y, 2));
+	            if (distance > maxHighlightDistance) {
+	                return null;
+	            }
+	            var secondaryDistance = distance < item.r ? item.r - distance : distance;
+	            return {
+	                node: item.node,
+	                data: item.data,
+	                x: item.x,
+	                y: item.y,
+	                distance: distance,
+	                secondaryDistance: secondaryDistance
+	            };
+	        }).filter(function (d) {
+	            return d;
+	        }).sort(function (a, b) {
+	            return a.secondaryDistance - b.secondaryDistance;
+	        });
 
 	        var largerDistIndex = items.findIndex(function (d) {
 	            return d.distance !== items[0].distance || d.secondaryDistance !== items[0].secondaryDistance;
@@ -13341,7 +13407,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	        var my = sameDistItems.reduce(function (sum, item) {
 	            return sum + item.y;
 	        }, 0) / sameDistItems.length;
-	        var angle = Math.atan2(my - y0, mx - x0) + Math.PI;
+	        var angle = Math.atan2(my - cursorY, mx - cursorX) + Math.PI;
 	        var closest = sameDistItems[Math.round((sameDistItems.length - 1) * angle / 2 / Math.PI)];
 	        return closest;
 	    },
@@ -14591,6 +14657,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    highlight: _elementPath.BasePath.highlight,
 	    highlightDataPoints: _elementPath.BasePath.highlightDataPoints,
 	    addInteraction: _elementPath.BasePath.addInteraction,
+	    _getBoundsInfo: _elementPath.BasePath._getBoundsInfo,
 
 	    init: function init(xConfig) {
 
@@ -15000,41 +15067,115 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	        frameBinding.order();
 
+	        // TODO: Exclude removed elements from calculation.
+	        this._boundsInfo = this._getBoundsInfo(options.container.selectAll('.i-data-anchor')[0]);
+
 	        node.subscribe(new _layerLabels.LayerLabels(screenModel.model, config.flip, config.guide.label, options).draw(pureFibers));
 	    },
-	    getClosestElement: function getClosestElement(cursorX, cursorY) {
-	        var container = this.node().config.options.container;
+	    _getBoundsInfo: function _getBoundsInfo(dots) {
+	        if (dots.length === 0) {
+	            return null;
+	        }
+
 	        var screenModel = this.node().screenModel;
 	        var flip = this.node().config.flip;
+
+
+	        var items = dots.map(function (node) {
+	            var data = _d2.default.select(node).data()[0];
+	            var x = screenModel.x(data);
+	            var y = screenModel.y(data);
+
+	            return { node: node, data: data, x: x, y: y };
+	        })
+	        // TODO: Removed elements should not be passed to this function.
+	        .filter(function (item) {
+	            return !isNaN(item.x) && !isNaN(item.y);
+	        });
+
+	        var bounds = items.reduce(function (bounds, _ref2) {
+	            var x = _ref2.x,
+	                y = _ref2.y;
+
+	            bounds.left = Math.min(x, bounds.left);
+	            bounds.right = Math.max(x, bounds.right);
+	            bounds.top = Math.min(y, bounds.top);
+	            bounds.bottom = Math.max(y, bounds.bottom);
+	            return bounds;
+	        }, {
+	            left: Number.MAX_VALUE,
+	            right: Number.MIN_VALUE,
+	            top: Number.MAX_VALUE,
+	            bottom: Number.MIN_VALUE
+	        });
+
+	        var ticks = _utils.utils.unique(items.map(flip ? function (item) {
+	            return item.y;
+	        } : function (item) {
+	            return item.x;
+	        })).sort(function (a, b) {
+	            return a - b;
+	        });
+	        var groups = ticks.reduce(function (obj, value) {
+	            return obj[value] = [], obj;
+	        }, {});
+	        items.forEach(function (item) {
+	            var tick = ticks.find(flip ? function (value) {
+	                return item.y === value;
+	            } : function (value) {
+	                return item.x === value;
+	            });
+	            groups[tick].push(item);
+	        });
+	        var split = function split(values) {
+	            if (values.length === 1) {
+	                return groups[values];
+	            }
+	            var midIndex = Math.ceil(values.length / 2);
+	            var middle = (values[midIndex - 1] + values[midIndex]) / 2;
+	            return {
+	                middle: middle,
+	                lower: split(values.slice(0, midIndex)),
+	                greater: split(values.slice(midIndex))
+	            };
+	        };
+	        var tree = split(ticks);
+
+	        return { bounds: bounds, tree: tree };
+	    },
+	    getClosestElement: function getClosestElement(cursorX, cursorY) {
+	        if (!this._boundsInfo) {
+	            return null;
+	        }
+	        var _boundsInfo = this._boundsInfo,
+	            bounds = _boundsInfo.bounds,
+	            tree = _boundsInfo.tree;
+
+	        var container = this.node().config.options.container;
+	        var flip = this.node().config.flip;
+
+	        var translate = _utilsDraw.utilsDraw.getDeepTransformTranslate(container.node());
 	        var maxHighlightDistance = this.node().config.guide.maxHighlightDistance;
 
+	        if (cursorX < bounds.left + translate.x - maxHighlightDistance || cursorX > bounds.right + translate.x + maxHighlightDistance || cursorY < bounds.top + translate.y - maxHighlightDistance || cursorY > bounds.bottom + translate.y + maxHighlightDistance) {
+	            return null;
+	        }
 
-	        var dots = container.selectAll('.i-data-anchor');
-	        var minX = Number.MAX_VALUE;
-	        var maxX = Number.MIN_VALUE;
-	        var minY = Number.MAX_VALUE;
-	        var maxY = Number.MIN_VALUE;
-	        var items = dots[0].map(function (node) {
-	            var data = _d2.default.select(node).data()[0];
-	            var translate = _utilsDraw.utilsDraw.getDeepTransformTranslate(node);
-	            var x = screenModel.x(data) + translate.x;
-	            var y = screenModel.y(data) + translate.y;
-	            var distance = Math.abs(flip ? y - cursorY : x - cursorX);
-	            var secondaryDistance = Math.abs(flip ? x - cursorX : y - cursorY);
-	            minX = Math.min(x, minX);
-	            maxX = Math.max(x, maxX);
-	            minY = Math.min(y, minY);
-	            maxY = Math.max(y, maxY);
-	            return { node: node, data: data, distance: distance, secondaryDistance: secondaryDistance, x: x, y: y };
-	        }).filter(function (d) {
-	            return d && !isNaN(d.x) && !isNaN(d.y);
+	        var cursor = flip ? cursorY - translate.y : cursorX - translate.x;
+	        var items = function getClosestElements(el) {
+	            if (Array.isArray(el)) {
+	                return el;
+	            }
+	            return getClosestElements(cursor > el.middle ? el.greater : el.lower);
+	        }(tree).map(function (el) {
+	            var x = el.x + translate.x;
+	            var y = el.y + translate.y;
+	            var distance = Math.abs(flip ? cursorY - y : cursorX - x);
+	            var secondaryDistance = Math.abs(flip ? cursorX - x : cursorY - y);
+	            return { node: el.node, data: el.data, distance: distance, secondaryDistance: secondaryDistance, x: x, y: y };
 	        }).sort(function (a, b) {
 	            return a.distance === b.distance ? a.secondaryDistance - b.secondaryDistance : a.distance - b.distance;
 	        });
-
-	        if (items.length === 0 || cursorX < minX - maxHighlightDistance || cursorX > maxX + maxHighlightDistance || cursorY < minY - maxHighlightDistance || cursorY > maxY + maxHighlightDistance) {
-	            return null;
-	        }
 
 	        var largerDistIndex = items.findIndex(function (d) {
 	            return d.distance !== items[0].distance || d.secondaryDistance !== items[0].secondaryDistance;
@@ -15217,6 +15358,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    highlight: _elementPath.BasePath.highlight,
 	    highlightDataPoints: _elementPath.BasePath.highlightDataPoints,
 	    addInteraction: _elementPath.BasePath.addInteraction,
+	    _getBoundsInfo: _elementPath.BasePath._getBoundsInfo,
 
 	    init: function init(xConfig) {
 
@@ -15336,6 +15478,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    highlight: _elementPath.BasePath.highlight,
 	    highlightDataPoints: _elementPath.BasePath.highlightDataPoints,
 	    addInteraction: _elementPath.BasePath.addInteraction,
+	    _getBoundsInfo: _elementPath.BasePath._getBoundsInfo,
 
 	    init: function init(xConfig) {
 
@@ -15813,6 +15956,9 @@ return /******/ (function(modules) { // webpackBootstrap
 	        elements.call(updateBarContainer);
 	        elements.enter().append('g').call(updateBarContainer);
 
+	        // TODO: Render bars into single container, exclude removed elements from calculation.
+	        this._boundsInfo = this._getBoundsInfo(options.container.selectAll('.bar')[0]);
+
 	        node.subscribe(new _layerLabels.LayerLabels(screenModel.model, screenModel.model.flip, config.guide.label, options).draw(fibers));
 
 	        // Put labels after bars
@@ -15935,47 +16081,140 @@ return /******/ (function(modules) { // webpackBootstrap
 	            }
 	        });
 	    },
-	    getClosestElement: function getClosestElement(cursorX, cursorY) {
-	        var container = this.node().config.options.container;
+	    _getBoundsInfo: function _getBoundsInfo(bars) {
+	        if (bars.length === 0) {
+	            return null;
+	        }
+
 	        var screenModel = this.node().screenModel;
 	        var flip = this.node().config.flip;
-	        var maxHighlightDistance = this.node().config.guide.maxHighlightDistance;
 
 
-	        var bars = container.selectAll('.bar');
-	        var minX = Number.MAX_VALUE;
-	        var maxX = Number.MIN_VALUE;
-	        var minY = Number.MAX_VALUE;
-	        var maxY = Number.MIN_VALUE;
-	        var items = bars[0].map(function (node) {
+	        var items = bars.map(function (node) {
 	            var data = _d2.default.select(node).data()[0];
-	            var translate = _utilsDraw.utilsDraw.getDeepTransformTranslate(node);
 	            var x = screenModel.x(data);
 	            var x0 = screenModel.x0(data);
 	            var y = screenModel.y(data);
 	            var y0 = screenModel.y0(data);
 	            var w = Math.abs(x - x0);
 	            var h = Math.abs(y - y0);
-	            var cx = (x + x0) / 2 + translate.x;
-	            var cy = (y + y0) / 2 + translate.y;
-	            var distance = Math.abs(flip ? cy - cursorY : cx - cursorX);
-	            var secondaryDistance = Math.abs(flip ? cx - cursorX : cy - cursorY);
-	            minX = Math.min(cx - w / 2, minX);
-	            maxX = Math.max(cx + w / 2, maxX);
-	            minY = Math.min(cy - h / 2, minY);
-	            maxY = Math.max(cy + h / 2, maxY);
-	            return { node: node, data: data, distance: distance, secondaryDistance: secondaryDistance, x: cx, y: cy };
-	        }).filter(function (d) {
-	            return !isNaN(d.x) && !isNaN(d.y);
-	        }).sort(function (a, b) {
-	            return a.distance === b.distance ? a.secondaryDistance - b.secondaryDistance : a.distance - b.distance;
+	            var cx = (x + x0) / 2;
+	            var cy = (y + y0) / 2;
+	            var invert = y > y0;
+
+	            var box = {
+	                top: cy - h / 2,
+	                right: cx + w / 2,
+	                bottom: cy + h / 2,
+	                left: cx - w / 2
+	            };
+
+	            return { node: node, data: data, cx: cx, cy: cy, box: box, invert: invert };
+	        })
+	        // TODO: Removed elements should not be passed to this function.
+	        .filter(function (item) {
+	            return !isNaN(item.cx) && !isNaN(item.cy);
 	        });
 
-	        if (items.length === 0 || cursorX < minX - maxHighlightDistance || cursorX > maxX + maxHighlightDistance || cursorY < minY - maxHighlightDistance || cursorY > maxY + maxHighlightDistance) {
+	        var bounds = items.reduce(function (bounds, _ref2) {
+	            var box = _ref2.box;
+
+	            bounds.left = Math.min(box.left, bounds.left);
+	            bounds.right = Math.max(box.right, bounds.right);
+	            bounds.top = Math.min(box.top, bounds.top);
+	            bounds.bottom = Math.max(box.bottom, bounds.bottom);
+	            return bounds;
+	        }, {
+	            left: Number.MAX_VALUE,
+	            right: Number.MIN_VALUE,
+	            top: Number.MAX_VALUE,
+	            bottom: Number.MIN_VALUE
+	        });
+
+	        var ticks = _utils.utils.unique(items.map(flip ? function (item) {
+	            return item.cy;
+	        } : function (item) {
+	            return item.cx;
+	        })).sort(function (a, b) {
+	            return a - b;
+	        });
+	        var groups = ticks.reduce(function (obj, value) {
+	            return obj[value] = [], obj;
+	        }, {});
+	        items.forEach(function (item) {
+	            var tick = ticks.find(flip ? function (value) {
+	                return item.cy === value;
+	            } : function (value) {
+	                return item.cx === value;
+	            });
+	            groups[tick].push(item);
+	        });
+	        var split = function split(values) {
+	            if (values.length === 1) {
+	                return groups[values];
+	            }
+	            var midIndex = Math.ceil(values.length / 2);
+	            var middle = (values[midIndex - 1] + values[midIndex]) / 2;
+	            return {
+	                middle: middle,
+	                lower: split(values.slice(0, midIndex)),
+	                greater: split(values.slice(midIndex))
+	            };
+	        };
+	        var tree = split(ticks);
+
+	        return { bounds: bounds, tree: tree };
+	    },
+	    getClosestElement: function getClosestElement(_cursorX, _cursorY) {
+	        if (!this._boundsInfo) {
+	            return null;
+	        }
+	        var _boundsInfo = this._boundsInfo,
+	            bounds = _boundsInfo.bounds,
+	            tree = _boundsInfo.tree;
+
+	        var container = this.node().config.options.container;
+	        var flip = this.node().config.flip;
+
+	        var translate = _utilsDraw.utilsDraw.getDeepTransformTranslate(container.node());
+	        var cursorX = _cursorX - translate.x;
+	        var cursorY = _cursorY - translate.y;
+	        var maxHighlightDistance = this.node().config.guide.maxHighlightDistance;
+
+	        if (cursorX < bounds.left - maxHighlightDistance || cursorX > bounds.right + maxHighlightDistance || cursorY < bounds.top - maxHighlightDistance || cursorY > bounds.bottom + maxHighlightDistance) {
 	            return null;
 	        }
 
-	        return items[0];
+	        var measureCursor = flip ? cursorY : cursorX;
+	        var valueCursor = flip ? cursorX : cursorY;
+	        var isBetween = function isBetween(value, start, end) {
+	            return value >= start && value <= end;
+	        };
+	        var closestElements = function getClosestElements(el) {
+	            if (Array.isArray(el)) {
+	                return el;
+	            }
+	            return getClosestElements(measureCursor > el.middle ? el.greater : el.lower);
+	        }(tree).map(function (el) {
+	            var elStart = flip ? el.box.left : el.box.top;
+	            var elEnd = flip ? el.box.right : el.box.bottom;
+	            var cursorInside = isBetween(valueCursor, elStart, elEnd);
+	            var distToValue = Math.abs(valueCursor - (el.invert !== flip ? elEnd : elStart));
+	            return Object.assign(el, { distToValue: distToValue, cursorInside: cursorInside });
+	        }).sort(function (a, b) {
+	            if (a.cursorInside !== b.cursorInside) {
+	                return b.cursorInside - a.cursorInside;
+	            }
+	            return Math.abs(a.distToValue) - Math.abs(b.distToValue);
+	        }).map(function (el) {
+	            var x = el.cx + translate.x;
+	            var y = el.cy + translate.y;
+	            var distance = Math.abs(flip ? cursorY - y : cursorX - x);
+	            var secondaryDistance = Math.abs(flip ? cursorX - x : cursorY - y);
+	            return { node: el.node, data: el.data, distance: distance, secondaryDistance: secondaryDistance, x: x, y: y };
+	        });
+
+	        return closestElements[0] || null;
 	    },
 	    highlight: function highlight(filter) {
 	        var _classed;
