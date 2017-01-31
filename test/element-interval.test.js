@@ -1059,7 +1059,7 @@ define(function (require) {
                 var svg = context.chart.getSVG();
                 var bars = svg.querySelectorAll('.bar');
                 var rects = Array.prototype.map.call(bars, (b) => b.getBoundingClientRect());
-                var cx = (rects.reduce((sum, r) => (sum + (r.left + r.right) / 2), 0) / rects.length);
+                var cx = ((Math.min(...rects.map(r => r.left)) + Math.max(...rects.map(r => r.right))) / 2);
                 var top = Math.min(...rects.map(r => r.top));
                 var bottom = Math.max(...rects.map(r => r.bottom));
                 var interpolate = (a, b, t) => ((1 - t) * a + t * b);
@@ -1068,7 +1068,7 @@ define(function (require) {
                     testUtils.simulateEvent('mousemove', svg, cx, y);
                     var highlighted = d3.select('.graphical-report__highlighted');
                     expect(highlighted.data()[0].effort).to.equal(value);
-                    expect(document.elementFromPoint(cx, y)).to.equal(highlighted.node());
+                    expect(testUtils.elementFromPoint(cx, y)).to.equal(highlighted.node());
                 };
 
                 testCursorAt(1 / 8, 40);
