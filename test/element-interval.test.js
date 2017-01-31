@@ -1057,11 +1057,14 @@ define(function (require) {
 
             it('should highlight bar under cursor', function () {
                 var svg = context.chart.getSVG();
-                var rect = svg.getBoundingClientRect();
-                var cx = ((rect.left + rect.right) / 2);
+                var bars = svg.querySelectorAll('.bar');
+                var rects = Array.prototype.map.call(bars, (b) => b.getBoundingClientRect());
+                var cx = (rects.reduce((sum, r) => (sum + (r.left + r.right) / 2), 0) / rects.length);
+                var top = Math.min(...rects.map(r => r.top));
+                var bottom = Math.max(...rects.map(r => r.bottom));
                 var interpolate = (a, b, t) => ((1 - t) * a + t * b);
                 var testCursorAt = (part, value) => {
-                    var y = (1 - part) * rect.top + part * rect.bottom;
+                    var y = ((1 - part) * top + part * bottom);
                     testUtils.simulateEvent('mousemove', svg, cx, y);
                     var highlighted = d3.select('.graphical-report__highlighted');
                     expect(highlighted.data()[0].effort).to.equal(value);
