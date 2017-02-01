@@ -3,8 +3,11 @@ import {GrammarRegistry} from '../grammar-registry';
 import {LayerLabels} from './decorators/layer-labels';
 import {d3_animationInterceptor} from '../utils/d3-decorators';
 import {utils} from '../utils/utils';
+import {utilsDom} from '../utils/utils-dom';
 import {utilsDraw} from '../utils/utils-draw';
 import d3 from 'd3';
+
+const d3Data = ((node) => d3.select(node).data()[0]);
 
 const Interval = {
 
@@ -20,6 +23,7 @@ const Interval = {
                 avoidScalesOverflow: true,
                 maxHighlightDistance: 32,
                 prettify: true,
+                sortByBarHeight: true,
                 enableColorToBarPosition: !config.stack
             });
 
@@ -139,8 +143,7 @@ const Interval = {
 
         const fibers = screenModel.toFibers();
         const data = fibers
-            .reduce((arr, f) => arr.concat(f), [])
-            .sort((a, b) => d3Attrs.height(b) - d3Attrs.height(a));
+            .reduce((arr, f) => arr.concat(f), []);
 
         const barClass = d3Attrs.class;
         const updateAttrs = utils.omit(d3Attrs, 'class');
@@ -151,9 +154,16 @@ const Interval = {
                 config.guide.animationSpeed,
                 null,
                 {
+                    [barX]: function () {
+                        var d3This = d3.select(this);
+                        var x = d3This.attr(barX) - 0;
+                        var w = d3This.attr(barW) - 0;
+                        return x + w / 2;
+                    },
                     [barY]: function () {
                         return this.getAttribute('data-zero');
                     },
+                    [barW]: 0,
                     [barH]: 0
                 },
                 ((node) => d3.select(node).remove())
@@ -173,7 +183,14 @@ const Interval = {
             )).attr('class', barClass)
             .attr('data-zero', screenModel[`${barY}0`]);
 
-        bars.order();
+        this._barsSorter = (config.guide.sortByBarHeight ?
+            ((a, b) => (d3Attrs.height(d3Data(b)) - d3Attrs.height(d3Data(a)))) :
+            ((() => {
+                var groups = fibers.reduce((obj, f, i) => (obj[screenModel.model.group(f[0])] = i, obj), {});
+                return (a, b) => (groups[screenModel.model.group(d3Data(a))] - groups[screenModel.model.group(d3Data(b))]);
+            })())
+        );
+        this._sortElements(bars[0], this._barsSorter);
 
         node.subscribe(bars);
 
@@ -269,6 +286,17 @@ const Interval = {
                 class: ((d) => `${baseCssClass} ${screenModel.class(d)}`),
                 fill: ((d) => screenModel.color(d))
             });
+    },
+
+    _sortElements(bars, ...sorters) {
+        utilsDom.sortElements(bars, (a, b) => {
+            var result = 0;
+            sorters.every((s) => {
+                result = s(a, b);
+                return (result === 0);
+            });
+            return result;
+        });
     },
 
     _getBoundsInfo(bars) {
@@ -375,9 +403,16 @@ const Interval = {
                 const elStart = (flip ? el.box.left : el.box.top);
                 const elEnd = (flip ? el.box.right : el.box.bottom);
                 const cursorInside = isBetween(valueCursor, elStart, elEnd);
+                if (!cursorInside &&
+                    (Math.abs(valueCursor - elStart) > maxHighlightDistance) &&
+                    (Math.abs(valueCursor - elEnd) > maxHighlightDistance)
+                ) {
+                    return null;
+                }
                 const distToValue = Math.abs(valueCursor - ((el.invert !== flip) ? elEnd : elStart));
                 return Object.assign(el, {distToValue, cursorInside});
             })
+            .filter((el) => el)
             .sort(((a, b) => {
                 if (a.cursorInside !== b.cursorInside) {
                     return (b.cursorInside - a.cursorInside);
@@ -406,7 +441,7 @@ const Interval = {
             [_]: ((d) => filter(d) === false)
         };
 
-        container
+        var bars = container
             .selectAll('.bar')
             .classed(classed);
 
@@ -414,8 +449,11 @@ const Interval = {
             .selectAll('.i-role-label')
             .classed(classed);
 
-        utilsDraw.raiseElements(container, '.bar', filter);
-        utilsDraw.raiseElements(container, '.frame', (fiber) => fiber.some(filter));
+        this._sortElements(
+            bars[0],
+            (a, b) => (filter(d3Data(a)) - filter(d3Data(b))),
+            this._barsSorter
+        );
     }
 };
 
