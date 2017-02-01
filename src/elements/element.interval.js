@@ -150,6 +150,7 @@ const Interval = {
         const bars = options.container.selectAll('.bar')
             .data(data, screenModel.id);
         bars.exit()
+            .classed('tau-removing', true)
             .call(createUpdateFunc(
                 config.guide.animationSpeed,
                 null,
@@ -166,7 +167,15 @@ const Interval = {
                     [barW]: 0,
                     [barH]: 0
                 },
-                ((node) => d3.select(node).remove())
+                // ((node) => d3.select(node).remove())
+                ((node) => {
+                    // NOTE: Sometimes nodes are removed after
+                    // they re-appear by filter.
+                    var el = d3.select(node);
+                    if (el.classed('tau-removing')) {
+                        el.remove();
+                    }
+                })
             ));
         bars.call(createUpdateFunc(
             config.guide.animationSpeed,
@@ -195,7 +204,7 @@ const Interval = {
         node.subscribe(bars);
 
         // TODO: Render bars into single container, exclude removed elements from calculation.
-        this._boundsInfo = this._getBoundsInfo(options.container.selectAll('.bar')[0]);
+        this._boundsInfo = this._getBoundsInfo(bars[0]);
 
         node.subscribe(new LayerLabels(screenModel.model, screenModel.model.flip, config.guide.label, options)
             .draw(fibers));
@@ -328,9 +337,7 @@ const Interval = {
                 };
 
                 return {node, data, cx, cy, box, invert};
-            })
-            // TODO: Removed elements should not be passed to this function.
-            .filter((item) => !isNaN(item.cx) && !isNaN(item.cy));
+            });
 
         const bounds = items.reduce(
             (bounds, {box}) => {
