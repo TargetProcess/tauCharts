@@ -3,8 +3,11 @@ import {GrammarRegistry} from '../grammar-registry';
 import {LayerLabels} from './decorators/layer-labels';
 import {d3_animationInterceptor} from '../utils/d3-decorators';
 import {utils} from '../utils/utils';
+import {utilsDom} from '../utils/utils-dom';
 import {utilsDraw} from '../utils/utils-draw';
 import d3 from 'd3';
+
+const d3Data = ((node) => d3.select(node).data()[0]);
 
 const Interval = {
 
@@ -20,6 +23,7 @@ const Interval = {
                 avoidScalesOverflow: true,
                 maxHighlightDistance: 32,
                 prettify: true,
+                sortByBarHeight: true,
                 enableColorToBarPosition: !config.stack
             });
 
@@ -136,81 +140,102 @@ const Interval = {
         const barY = config.flip ? 'x' : 'y';
         const barH = config.flip ? 'width' : 'height';
         const barW = config.flip ? 'height' : 'width';
-        const updateBarContainer = function () {
-            this.attr('class', 'frame i-role-bar-group');
-            const barClass = d3Attrs.class;
-            var updateAttrs = utils.omit(d3Attrs, 'class');
-            const bars = this.selectAll('.bar')
-                .data((fiber) => fiber, screenModel.id);
-            bars.exit()
-                .call(createUpdateFunc(
-                    config.guide.animationSpeed,
-                    null,
-                    {
-                        [barX]: function () {
-                            var d3This = d3.select(this);
-                            var x = d3This.attr(barX) - 0;
-                            var w = d3This.attr(barW) - 0;
-                            return x + w / 2;
-                        },
-                        [barY]: function () {
-                            var d3This = d3.select(this);
-                            var y = d3This.attr(barY) - 0;
-                            var h = d3This.attr(barH) - 0;
-                            return y + h / 2;
-                        },
-                        [barW]: 0,
-                        [barH]: 0
-                    },
-                    ((node) => d3.select(node).remove())
-                ));
-            bars.call(createUpdateFunc(
-                config.guide.animationSpeed,
-                null,
-                updateAttrs
-            )).attr('class', barClass);
-            bars.enter()
-                .append('rect')
-                .call(createUpdateFunc(
-                    config.guide.animationSpeed,
-                    {[barY]: screenModel[`${barY}0`], [barH]: 0},
-                    updateAttrs
-                )).attr('class', barClass);
-
-            node.subscribe(bars);
-        };
 
         const fibers = screenModel.toFibers();
+        const data = fibers
+            .reduce((arr, f) => arr.concat(f), []);
 
-        const elements = options
-            .container
-            .selectAll('.frame')
-            .data(fibers, (d) => screenModel.model.group(d[0]));
-        elements
-            .exit()
-            .remove();
-        elements
-            .call(updateBarContainer);
-        elements
-            .enter()
-            .append('g')
-            .call(updateBarContainer);
-
-        // TODO: Render bars into single container, exclude removed elements from calculation.
-        this._boundsInfo = this._getBoundsInfo(options.container.selectAll('.bar')[0]);
+        const barClass = d3Attrs.class;
+        const updateAttrs = utils.omit(d3Attrs, 'class');
+        const bars = options.container.selectAll('.bar')
+            .data(data, screenModel.id);
+        bars.exit()
+            .classed('tau-removing', true)
+            .call(createUpdateFunc(
+                config.guide.animationSpeed,
+                null,
+                {
+                    [barX]: function () {
+                        var d3This = d3.select(this);
+                        var x = d3This.attr(barX) - 0;
+                        var w = d3This.attr(barW) - 0;
+                        return x + w / 2;
+                    },
+                    [barY]: function () {
+                        return this.getAttribute('data-zero');
+                    },
+                    [barW]: 0,
+                    [barH]: 0
+                },
+                // ((node) => d3.select(node).remove())
+                ((node) => {
+                    // NOTE: Sometimes nodes are removed after
+                    // they re-appear by filter.
+                    var el = d3.select(node);
+                    if (el.classed('tau-removing')) {
+                        el.remove();
+                    }
+                })
+            ));
+        bars.call(createUpdateFunc(
+            config.guide.animationSpeed,
+            null,
+            updateAttrs
+        )).attr('class', barClass)
+            .attr('data-zero', screenModel[`${barY}0`]);
+        bars.enter()
+            .append('rect')
+            .call(createUpdateFunc(
+                config.guide.animationSpeed,
+                {[barY]: screenModel[`${barY}0`], [barH]: 0},
+                updateAttrs
+            )).attr('class', barClass)
+            .attr('data-zero', screenModel[`${barY}0`]);
 
         node.subscribe(new LayerLabels(screenModel.model, screenModel.model.flip, config.guide.label, options)
             .draw(fibers));
 
-        // Put labels after bars
-        const container = options.container.node();
-        const children = Array.prototype.slice.call(container.childNodes, 0);
-        const lastBarIndex = (children.length - 1 - children.slice(0).reverse()
-            .findIndex((el) => el.matches('.i-role-bar-group')));
-        const afterBar = container.childNodes.item(lastBarIndex + 1);
-        children.slice(0, lastBarIndex)
-            .filter((el) => el.matches('.i-role-label'))
-            .forEach((el) => container.insertBefore(el, afterBar));
+        const sortByWidthThenY = ((a, b) => {
+            var dataA = d3Data(a);
+            var dataB = d3Data(b);
+            if (d3Attrs.width(dataA) === d3Attrs.width(dataB)) {
+                return (d3Attrs.y(dataA) - d3Attrs.y(dataB));
+            }
+            return (d3Attrs.width(dataB) - d3Attrs.width(dataA));
+        });
+        const sortByHeightThenX = ((a, b) => {
+            var dataA = d3Data(a);
+            var dataB = d3Data(b);
+            if (d3Attrs.height(dataA) === d3Attrs.height(dataB)) {
+                return (d3Attrs.x(dataA) - d3Attrs.x(dataB));
+            }
+            return (d3Attrs.height(dataB) - d3Attrs.height(dataA));
+        });
+
+        this._barsSorter = (config.guide.sortByBarHeight ?
+            (config.flip ?
+                sortByWidthThenY :
+                sortByHeightThenX) :
+            (() => {
+                var ids = data.reduce((obj, d, i) => {
+                    obj[screenModel.model.id(d)] = i;
+                    return obj;
+                }, {});
+                return (a, b) => (
+                    ids[screenModel.model.id(d3Data(a))] -
+                    ids[screenModel.model.id(d3Data(b))]
+                );
+            })()
+        );
+
+        // Raise <text> over <rect>
+        this._typeSorter = ((a, b) => a.tagName.localeCompare(b.tagName));
+
+        this._sortElements(this._typeSorter, this._barsSorter);
+
+        node.subscribe(bars);
+
+        this._boundsInfo = this._getBoundsInfo(bars[0]);
     },
 
     buildModel(screenModel, {prettify, minBarH, minBarW, baseCssClass}) {
@@ -290,6 +315,18 @@ const Interval = {
             });
     },
 
+    _sortElements(...sorters) {
+        const container = this.node().config.options.container.node();
+        utilsDom.sortElements(container.childNodes, (a, b) => {
+            var result = 0;
+            sorters.every((s) => {
+                result = s(a, b);
+                return (result === 0);
+            });
+            return result;
+        });
+    },
+
     _getBoundsInfo(bars) {
         if (bars.length === 0) {
             return null;
@@ -319,9 +356,7 @@ const Interval = {
                 };
 
                 return {node, data, cx, cy, box, invert};
-            })
-            // TODO: Removed elements should not be passed to this function.
-            .filter((item) => !isNaN(item.cx) && !isNaN(item.cy));
+            });
 
         const bounds = items.reduce(
             (bounds, {box}) => {
@@ -394,9 +429,16 @@ const Interval = {
                 const elStart = (flip ? el.box.left : el.box.top);
                 const elEnd = (flip ? el.box.right : el.box.bottom);
                 const cursorInside = isBetween(valueCursor, elStart, elEnd);
+                if (!cursorInside &&
+                    (Math.abs(valueCursor - elStart) > maxHighlightDistance) &&
+                    (Math.abs(valueCursor - elEnd) > maxHighlightDistance)
+                ) {
+                    return null;
+                }
                 const distToValue = Math.abs(valueCursor - ((el.invert !== flip) ? elEnd : elStart));
                 return Object.assign(el, {distToValue, cursorInside});
             })
+            .filter((el) => el)
             .sort(((a, b) => {
                 if (a.cursorInside !== b.cursorInside) {
                     return (b.cursorInside - a.cursorInside);
@@ -433,8 +475,11 @@ const Interval = {
             .selectAll('.i-role-label')
             .classed(classed);
 
-        utilsDraw.raiseElements(container, '.bar', filter);
-        utilsDraw.raiseElements(container, '.frame', (fiber) => fiber.some(filter));
+        this._sortElements(
+            (a, b) => (filter(d3Data(a)) - filter(d3Data(b))),
+            this._typeSorter,
+            this._barsSorter
+        );
     }
 };
 

@@ -339,7 +339,7 @@ define(function (require) {
                 y: 'y',
                 data: [
                     {x: 0, y: 16},
-                    {x: 1, y: 0},
+                    {x: 1, y: 8},
                     {x: 2, y: 16}
                 ],
                 settings: {
@@ -349,12 +349,13 @@ define(function (require) {
             });
             chart.renderTo(container);
             var svg = chart.getSVG();
-            var rect = svg.getBoundingClientRect();
-            var cx = ((rect.left + rect.right) / 2);
-            var cy = ((rect.bottom + rect.top) / 2);
+            var rects = Array.from(svg.querySelectorAll('.bar'))
+                .map((el) => el.getBoundingClientRect());
+            var cx = (Math.min(...rects.map(r => r.left)) + Math.max(...rects.map(r => r.right)) / 2);
+            var bottom = Math.max(...rects.map(r => r.bottom));
             var getHighlightedData = (() => d3.select('.graphical-report__highlighted').data()[0]);
 
-            utils.simulateEvent('mousemove', svg, cx, cy);
+            utils.simulateEvent('mousemove', svg, cx, bottom);
             if (syncPointerEvents) {
                 expect(getHighlightedData().x).to.equal(1);
                 chart.destroy();

@@ -62,11 +62,11 @@ define(function(require){
             bar.setData(data2);
             bar.setData(data1);
             var svg = bar.getSVG();
-            var container = svg.querySelector('.i-role-bar-group').parentNode;
+            var container = svg.querySelector('.bar').parentNode;
             var children = Array.prototype.slice.call(container.childNodes);
             var lastBarIndex = (children.length - 1 - children.slice(0).reverse()
                 .findIndex(function (b) {
-                    return b.matches('.i-role-bar-group');
+                    return b.matches('.bar');
                 }));
             var firstLabelIndex = children
                 .findIndex(function (b) {
@@ -96,7 +96,7 @@ define(function(require){
             bar.renderTo(testDiv);
             var svg = bar.getSVG();
             var grid = svg.querySelector('.grid').getBoundingClientRect();
-            var bars = toArray(svg.querySelectorAll('.i-role-bar-group rect'))
+            var bars = toArray(svg.querySelectorAll('.bar'))
                 .map(el => el.getBoundingClientRect());
             var labels = toArray(svg.querySelectorAll('.i-role-label'))
                 .map(el => el.getBoundingClientRect());
@@ -141,7 +141,7 @@ define(function(require){
             bar.renderTo(testDiv);
             var svg = bar.getSVG();
             var grid = svg.querySelector('.grid').getBoundingClientRect();
-            var bars = toArray(svg.querySelectorAll('.i-role-bar-group rect'))
+            var bars = toArray(svg.querySelectorAll('.bar'))
                 .map(el => el.getBoundingClientRect());
             var labels = toArray(svg.querySelectorAll('.i-role-label'))
                 .map(el => el.getBoundingClientRect());

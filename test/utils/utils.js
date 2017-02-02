@@ -81,7 +81,7 @@ define(function (require) {
     }
 
     function getGroupBar() {
-        return d3.selectAll('.i-role-bar-group')[0];
+        return [d3.select('.bar').node().parentNode];
     }
 
     function attrib(el, prop) {

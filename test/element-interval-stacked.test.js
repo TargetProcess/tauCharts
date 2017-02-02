@@ -7,12 +7,14 @@ var tauCharts = require('src/tau.charts');
 var testUtils = require('testUtils');
 var {TauChartError, errorCodes} = require('testUtils');
 
+// NOTE: Bars are now rendered into single container.
 var getGroupBar = function (div) {
-    return Array.from(div.getElementsByClassName('i-role-bar-group'));
+    return [div.querySelector('.bar').parentNode];
 };
 var attrib = testUtils.attrib;
 
-var expectCoordsElement = function (div, expect, coords) {
+
+var expectCoordsElement = function (div, expect, coords, ...sortFields) {
 
     var bars = getGroupBar(div);
 
@@ -20,22 +22,16 @@ var expectCoordsElement = function (div, expect, coords) {
         return parseFloat(x).toFixed(0);
     };
 
-    //var r = [];
-    //bars.forEach(function (bar, index) {
-    //    Array.from(bar.childNodes).forEach(function (el, ind) {
-    //        r.push({
-    //            x: convertToFixed(attrib(el, 'x')),
-    //            width: convertToFixed(attrib(el, 'width')),
-    //
-    //            y: convertToFixed(attrib(el, 'y')),
-    //            height: convertToFixed(attrib(el, 'height')),
-    //
-    //            class: attrib(el, 'class')
-    //        });
-    //    });
-    //});
-    //
-    //console.log(JSON.stringify(r, null, 2));
+    coords = [coords.reduce((m, c) => m.concat(c), [])];
+    coords.forEach((c) => c.sort((a, b) => {
+        var result = 0;
+        sortFields.every((f) => {
+            var prop = f.replace('-', '');
+            result = ((a[prop] - b[prop]) * [1, -1][Number(f[0] === '-')]);
+            return (result === 0);
+        })
+        return result;
+    }));
 
     bars.forEach(function (bar, index) {
         Array.from(bar.childNodes).forEach(function (el, ind) {
@@ -131,7 +127,7 @@ describe('ELEMENT.INTERVAL.STACKED', function () {
                         height: 100
                     }
                 ]
-            ]);
+            ], '-height');
     });
 
     it('should draw horizontal stacked bar on y-measure / x-measure', function () {
@@ -182,7 +178,7 @@ describe('ELEMENT.INTERVAL.STACKED', function () {
                         width: 100       // 200 * 0.1
                     }
                 ]
-            ]);
+            ], '-width');
     });
 
     it('should draw vertical stacked bar on y-measure / x-category', function () {
@@ -249,7 +245,7 @@ describe('ELEMENT.INTERVAL.STACKED', function () {
                         "height": 100 // B0.1
                     }
                 ]
-            ]);
+            ], '-height', 'y');
     });
 
     it('should draw horizontal stacked bar on y-category / x-measure', function () {
@@ -315,7 +311,7 @@ describe('ELEMENT.INTERVAL.STACKED', function () {
                         "height": 1
                     }
                 ]
-            ]);
+            ], '-width', 'y');
     });
 
     it('should draw vertical stacked bar with color and size', function () {
@@ -376,7 +372,7 @@ describe('ELEMENT.INTERVAL.STACKED', function () {
                         "class": "color20-3"
                     }
                 ]
-            ]);
+            ], '-height');
     });
 
     it('should draw vertical stacked bar with color and size + prettify', function () {
@@ -436,7 +432,7 @@ describe('ELEMENT.INTERVAL.STACKED', function () {
                         "class": "color20-3"
                     }
                 ]
-            ]);
+            ], '-height');
     });
 
     it('should draw horizontal stacked bar with color and size + prettify', function () {
@@ -496,7 +492,7 @@ describe('ELEMENT.INTERVAL.STACKED', function () {
                         "class": "color20-3"
                     }
                 ]
-            ]);
+            ], '-width');
     });
 
     it('should throw on y-category / x-category', function () {
@@ -602,7 +598,7 @@ describe('ELEMENT.INTERVAL.STACKED', function () {
                         "class": "color20-3"
                     }
                 ]
-            ]);
+            ], '-height');
     });
 
     it('should support negative values in [horizontal-stacked-bar]', function () {
@@ -660,7 +656,7 @@ describe('ELEMENT.INTERVAL.STACKED', function () {
                         "class": "color20-3"
                     }
                 ]
-            ]);
+            ], '-width');
     });
 
     it('should support highlight event', function () {
