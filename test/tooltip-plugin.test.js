@@ -486,6 +486,9 @@ describe('tooltip', function () {
             type: 'bar',
             x: 'x',
             y: 'count',
+            guide: {
+                sortByBarHeight: false,
+            },
             data: [
                 {x: 2, count: 2},
                 {x: 4, count: 5}

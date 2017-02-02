@@ -192,32 +192,50 @@ const Interval = {
             )).attr('class', barClass)
             .attr('data-zero', screenModel[`${barY}0`]);
 
-        this._barsSorter = (config.guide.sortByBarHeight ?
-            ((a, b) => (d3Attrs.height(d3Data(b)) - d3Attrs.height(d3Data(a)))) :
-            ((() => {
-                var groups = fibers.reduce((obj, f, i) => (obj[screenModel.model.group(f[0])] = i, obj), {});
-                return (a, b) => (groups[screenModel.model.group(d3Data(a))] - groups[screenModel.model.group(d3Data(b))]);
-            })())
-        );
-        this._sortElements(bars[0], this._barsSorter);
-
-        node.subscribe(bars);
-
-        // TODO: Render bars into single container, exclude removed elements from calculation.
-        this._boundsInfo = this._getBoundsInfo(bars[0]);
-
         node.subscribe(new LayerLabels(screenModel.model, screenModel.model.flip, config.guide.label, options)
             .draw(fibers));
 
-        // Put labels after bars
-        const container = options.container.node();
-        const children = Array.prototype.slice.call(container.childNodes, 0);
-        const lastBarIndex = (children.length - 1 - children.slice(0).reverse()
-            .findIndex((el) => el.matches('.i-role-bar-group')));
-        const afterBar = container.childNodes.item(lastBarIndex + 1);
-        children.slice(0, lastBarIndex)
-            .filter((el) => el.matches('.i-role-label'))
-            .forEach((el) => container.insertBefore(el, afterBar));
+        const sortByWidthThenY = ((a, b) => {
+            var dataA = d3Data(a);
+            var dataB = d3Data(b);
+            if (d3Attrs.width(dataA) === d3Attrs.width(dataB)) {
+                return (d3Attrs.y(dataA) - d3Attrs.y(dataB));
+            }
+            return (d3Attrs.width(dataB) - d3Attrs.width(dataA));
+        });
+        const sortByHeightThenX = ((a, b) => {
+            var dataA = d3Data(a);
+            var dataB = d3Data(b);
+            if (d3Attrs.height(dataA) === d3Attrs.height(dataB)) {
+                return (d3Attrs.x(dataA) - d3Attrs.x(dataB));
+            }
+            return (d3Attrs.height(dataB) - d3Attrs.height(dataA));
+        });
+
+        this._barsSorter = (config.guide.sortByBarHeight ?
+            (config.flip ?
+                sortByWidthThenY :
+                sortByHeightThenX) :
+            (() => {
+                var ids = data.reduce((obj, d, i) => {
+                    obj[screenModel.model.id(d)] = i;
+                    return obj;
+                }, {});
+                return (a, b) => (
+                    ids[screenModel.model.id(d3Data(a))] -
+                    ids[screenModel.model.id(d3Data(b))]
+                );
+            })()
+        );
+
+        // Raise <text> over <rect>
+        this._typeSorter = ((a, b) => a.tagName.localeCompare(b.tagName));
+
+        this._sortElements(this._typeSorter, this._barsSorter);
+
+        node.subscribe(bars);
+
+        this._boundsInfo = this._getBoundsInfo(bars[0]);
     },
 
     buildModel(screenModel, {prettify, minBarH, minBarW, baseCssClass}) {
@@ -297,8 +315,9 @@ const Interval = {
             });
     },
 
-    _sortElements(bars, ...sorters) {
-        utilsDom.sortElements(bars, (a, b) => {
+    _sortElements(...sorters) {
+        const container = this.node().config.options.container.node();
+        utilsDom.sortElements(container.childNodes, (a, b) => {
             var result = 0;
             sorters.every((s) => {
                 result = s(a, b);
@@ -457,8 +476,8 @@ const Interval = {
             .classed(classed);
 
         this._sortElements(
-            bars[0],
             (a, b) => (filter(d3Data(a)) - filter(d3Data(b))),
+            this._typeSorter,
             this._barsSorter
         );
     }

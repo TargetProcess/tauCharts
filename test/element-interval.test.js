@@ -183,13 +183,24 @@ define(function (require) {
         }; // testUtils.describePlot;
 
     var describeChart = testUtils.describeChart;
-    var expectCoordsElement = function (expect, coords) {
+    var expectCoordsElement = function (expect, coords, ...sortFields) {
 
         var bars = getGroupBar();
 
         var convertToFixed = function (x) {
             return parseFloat(x).toFixed(0);
         };
+
+        coords = [coords.reduce((m, c) => m.concat(c), [])];
+        coords.forEach((c) => c.sort((a, b) => {
+            var result = 0;
+            sortFields.every((f) => {
+                var prop = f.replace('-', '');
+                result = ((a[prop] - b[prop]) * [1, -1][Number(f[0] === '-')]);
+                return (result === 0);
+            })
+            return result;
+        }));
 
         bars.forEach(function (bar, index) {
             Array.from(bar.childNodes).forEach(function (el, ind) {
@@ -257,7 +268,7 @@ define(function (require) {
             it('should render group bar element', function () {
                 var chart = context.chart;
                 assert.equal(schemes.barGPL.errors(chart.getSpec()), false, 'spec is right');
-                expect(getGroupBar().length).to.equal(3);
+                expect(getGroupBar().length).to.equal(1);
             });
 
             it('should contain correct interval elements', function () {
@@ -301,7 +312,7 @@ define(function (require) {
                             "height": 400
                         }
                     ]
-                ]);
+                ], '-height', 'x');
             });
         },
         {
@@ -381,7 +392,7 @@ define(function (require) {
                             height: 100
                         }
                     ]
-                ]);
+                ], '-height', 'x');
             });
         },
         {
@@ -457,7 +468,7 @@ define(function (require) {
                             height: 60
                         }
                     ]
-                ]);
+                ], '-height', 'x');
             });
         },
         {
@@ -499,7 +510,7 @@ define(function (require) {
             it('should render group bar element', function () {
                 var chart = context.chart;
                 assert.equal(schemes.barGPL.errors(chart.getSpec()), false, 'spec is right');
-                expect(getGroupBar().length).to.equal(3);
+                expect(getGroupBar().length).to.equal(1);
             });
 
             it('should contain correct interval elements', function () {
@@ -537,7 +548,7 @@ define(function (require) {
                             width: 50
                         }
                     ]
-                ]);
+                ], '-width', 'y');
             });
         },
         {
@@ -604,7 +615,7 @@ define(function (require) {
                             width: 100
                         }
                     ]
-                ]);
+                ], '-width', 'y');
             });
         },
         {
@@ -674,7 +685,7 @@ define(function (require) {
                             width: 100
                         }
                     ]
-                ]);
+                ], '-width', 'y');
             });
         },
         {
@@ -766,6 +777,9 @@ define(function (require) {
                 x: 'time',
                 units: [
                     {
+                        guide: {
+                            sortByBarHeight: false
+                        },
                         type: 'ELEMENT.INTERVAL'
                     }
                 ]
@@ -827,6 +841,9 @@ define(function (require) {
                 y: 'time',
                 units: [
                     {
+                        guide: {
+                            sortByBarHeight: false
+                        },
                         flip: true
                     }
                 ]
@@ -914,34 +931,6 @@ define(function (require) {
                 });
                 expect(utils.unique(width).length).to.equals(1);
             });
-        },
-        {
-            autoWidth: false
-        }
-    );
-
-    describeChart('interval offset without color dim',
-        {
-            type: 'bar',
-            x: 'y',
-            y: 'x'
-        },
-        [
-            {x: 2, y: "2"},
-            {x: 2, y: "4"},
-            {x: 3, y: "5"}
-        ],
-        function (context) {
-
-            it('should produce 1 frame element', function () {
-                var svg = context.chart.getSVG();
-                var offsets = Array.from(svg.querySelectorAll('.i-role-bar-group')).map(function (item) {
-                    return item.getAttribute('transform');
-                });
-                expect(offsets.length).to.equal(1);
-                expect(offsets).to.deep.equal([null]);
-            });
-
         },
         {
             autoWidth: false
@@ -1086,6 +1075,7 @@ define(function (require) {
             y    : 'dim_y',
             color: 'dim_x',
             guide: {
+                sortByBarHeight: false,
                 padding: {l: 0, r: 0, b: 0, t: 0},
                 prettify: false
             },
@@ -1132,6 +1122,7 @@ define(function (require) {
             y    : 'dim_y',
             color: 'dim_x',
             guide: {
+                sortByBarHeight: false,
                 padding: {l: 0, r: 0, b: 0, t: 0},
                 enableColorToBarPosition: true
             },
@@ -1285,7 +1276,7 @@ define(function (require) {
                             "height": 1
                         }
                     ]
-                ]);
+                ], '-width', 'y');
         });
 
         it('should draw vertical bar on 2 order axis', function () {
@@ -1361,7 +1352,7 @@ define(function (require) {
                             "height": 0
                         }
                     ]
-                ]);
+                ], '-height', 'x');
         });
     });
 });
