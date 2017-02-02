@@ -467,7 +467,7 @@ const Interval = {
             [_]: ((d) => filter(d) === false)
         };
 
-        var bars = container
+        container
             .selectAll('.bar')
             .classed(classed);
 
