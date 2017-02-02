@@ -258,18 +258,16 @@ var utilsDom = {
     },
 
     sortElements: function (elements, sorter) {
-        if (elements.length === 0) {
-            return [];
+        if (elements.length > 0) {
+            var parent = elements[0].parentNode;
+            var fragment = document.createDocumentFragment();
+            var items = Array.prototype.slice.call(elements).sort(sorter);
+            var orderChanged = items.some((d, i) => d !== elements[i]);
+            if (orderChanged) {
+                items.forEach((el) => fragment.appendChild(el));
+                parent.appendChild(fragment);
+            }
         }
-        var parent = elements[0].parentNode;
-        var fragment = document.createDocumentFragment();
-        var items = Array.prototype.slice.call(elements).sort(sorter);
-        var orderChanged = items.some((d, i) => d !== elements[i]);
-        if (orderChanged) {
-            items.forEach((el) => fragment.appendChild(el));
-            parent.appendChild(fragment);
-        }
-        return items;
     },
 
     /**
