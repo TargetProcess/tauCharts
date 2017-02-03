@@ -298,23 +298,32 @@ export class Plot extends Emitter {
             fn();
         });
         this._requestedAnimationFrames.add(id, fn);
+        return id;
+    }
+
+    _cancelAnimationFrame(id) {
+        cancelAnimationFrame(id);
+        this._requestedAnimationFrames.delete(id);
     }
 
     _initPointerEvents() {
         if (!this._liveSpec.settings.syncPointerEvents) {
-            this._pointerAnimationFrameRequested = false;
+            this._pointerAnimationFrameId = null;
         }
         const svg = d3.select(this._svg);
         const wrapEventHandler = (this._liveSpec.settings.syncPointerEvents ?
             ((handler) => () => handler(d3.event)) :
             ((handler) => (() => {
                 var e = d3.event;
-                if (!this._pointerAnimationFrameRequested) {
-                    this._requestAnimationFrame(() => {
-                        this._pointerAnimationFrameRequested = false;
+                if (this._pointerAnimationFrameId && e.type !== 'mousemove') {
+                    this._cancelAnimationFrame(this._pointerAnimationFrameId);
+                    this._pointerAnimationFrameId = null;
+                }
+                if (!this._pointerAnimationFrameId) {
+                    this._pointerAnimationFrameId = this._requestAnimationFrame(() => {
+                        this._pointerAnimationFrameId = null;
                         handler(e);
                     });
-                    this._pointerAnimationFrameRequested = true;
                 }
             }))
         );
@@ -541,8 +550,8 @@ export class Plot extends Emitter {
             this._renderingInProgress = false;
             Plot.renderingsInProgress--;
         }
-        this._requestedAnimationFrames.forEach((fn, id) => cancelAnimationFrame(id));
-        this._requestedAnimationFrames.clear();
+        this._requestedAnimationFrames.forEach((fn, id) => this._cancelAnimationFrame(id));
+        this._pointerAnimationFrameId = null;
     }
 
     _createProgressBar() {
