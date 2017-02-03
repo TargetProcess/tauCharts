@@ -556,7 +556,7 @@
                     };
                 };
                 var isColorHidden = function (key) {
-                    return Boolean(filters[key]);
+                    return (key in filters);
                 };
                 var toggleColor = function (node, show) {
                     var data = getColorData(node);
