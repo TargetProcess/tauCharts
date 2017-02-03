@@ -12,6 +12,7 @@
 })(function (tauCharts) {
 
     var utils = tauCharts.api.utils;
+    var COLOR_ITEM_SELECTOR = '.graphical-report__legend__item-color';
 
     var counter = 0;
     var getId = function () {
@@ -219,15 +220,15 @@
                         _delegateEvent(
                             this._container,
                             'click',
-                            '.graphical-report__legend__item-color',
+                            COLOR_ITEM_SELECTOR,
                             function (e, currentTarget) {
-                                this._toggleLegendItem(currentTarget);
+                                this._toggleLegendItem(currentTarget, (e.ctrlKey || e.shiftKey));
                             }.bind(this));
 
                         _delegateEvent(
                             this._container,
                             'mouseover',
-                            '.graphical-report__legend__item-color',
+                            COLOR_ITEM_SELECTOR,
                             function (e, currentTarget) {
                                 this._highlightToggle(currentTarget, true);
                             }.bind(this)
@@ -236,7 +237,7 @@
                         _delegateEvent(
                             this._container,
                             'mouseout',
-                            '.graphical-report__legend__item-color',
+                            COLOR_ITEM_SELECTOR,
                             function (e, currentTarget) {
                                 this._highlightToggle(currentTarget, false);
                             }.bind(this)
@@ -534,40 +535,71 @@
                 });
             },
 
-            _toggleLegendItem: function (target) {
+            _toggleLegendItem: function (target, leaveOthers) {
 
-                var sid = target.getAttribute('data-scale-id');
-                var dim = target.getAttribute('data-dim');
-                var val = target.getAttribute('data-value');
-                var key = dim + val;
+                var filters = this._currentFilters;
+                var colorNodes = Array.prototype.filter.call(
+                    target.parentNode.childNodes,
+                    function (el) {
+                        return el.matches(COLOR_ITEM_SELECTOR);
+                    }
+                );
 
-                var items = this._legendColorByScaleId[sid];
-                var activeItems = items.filter(function (x) {
-                    return !x.disabled;
-                });
+                var getColorData = function (node) {
+                    var dim = node.getAttribute('data-dim');
+                    var val = node.getAttribute('data-value');
+                    return {
+                        sid: node.getAttribute('data-scale-id'),
+                        dim: dim,
+                        val: val,
+                        key: (dim + val)
+                    };
+                };
+                var isColorHidden = function (key) {
+                    return Boolean(filters[key]);
+                };
+                var toggleColor = function (node, show) {
+                    var data = getColorData(node);
+                    if (isColorHidden(data.key) !== show) {
+                        return;
+                    }
+                    if (show) {
+                        var filterId = filters[data.key];
+                        delete filters[data.key];
+                        node.classList.remove('disabled');
+                        this._chart.removeFilter(filterId);
+                    } else {
+                        node.classList.add('disabled');
+                        var isRowMatch = createIsRowMatchInterceptor(data.dim, data.val);
+                        filters[data.key] = this._chart.addFilter({
+                            tag: 'legend',
+                            predicate: function (row) {
+                                return !isRowMatch(row);
+                            }
+                        });
+                    }
+                }.bind(this);
+                var isTarget = function (node) {
+                    return (node === target);
+                };
+                var isTargetHidden = isColorHidden(getColorData(target).key);
 
-                if ((activeItems.length === 1) &&
-                    (sid === activeItems[0].scaleId) &&
-                    (val === activeItems[0].value)) {
-                    return;
-                }
-
-                var state = this._currentFilters;
-                if (state.hasOwnProperty(key)) {
-                    var filterId = state[key];
-                    delete state[key];
-                    target.classList.remove('disabled');
-                    this._chart.removeFilter(filterId);
-                } else {
-                    target.classList.add('disabled');
-                    var isRowMatch = createIsRowMatchInterceptor(dim, val);
-                    state[key] = this._chart.addFilter({
-                        tag: 'legend',
-                        predicate: function (row) {
-                            return !isRowMatch(row);
+                if (leaveOthers) {
+                    colorNodes.forEach(function (node) {
+                        if (isTarget(node)) {
+                            toggleColor(node, isTargetHidden);
                         }
                     });
+                } else {
+                    var onlyTargetIsVisible = (!isTargetHidden && colorNodes.every(function (node) {
+                        return (isTarget(node) || isColorHidden(getColorData(node).key));
+                    }));
+                    colorNodes.forEach(function (node) {
+                        var show = (isTarget(node) || onlyTargetIsVisible);
+                        toggleColor(node, show);
+                    });
                 }
+
                 this._chart.refresh();
             },
 
