@@ -328,12 +328,24 @@ define(function (require) {
     });
 
     describe('Sync/async events handling', function (done) {
-        var testChart = function (syncPointerEvents) {
-            var container = document.createElement('div');
+
+        var container;
+        var chart;
+
+        beforeEach(function () {
+            container = document.createElement('div');
             container.style.width = '800px';
             container.style.height = '600px';
             document.body.appendChild(container);
-            var chart = new tauCharts.Chart({
+        });
+
+        afterEach(function () {
+            chart.destroy();
+            document.body.removeChild(container);
+        });
+
+        var createChart = function ({syncPointerEvents}) {
+            chart = new tauCharts.Chart({
                 type: 'bar',
                 x: 'x',
                 y: 'y',
@@ -348,6 +360,10 @@ define(function (require) {
                 }
             });
             chart.renderTo(container);
+        };
+
+        it('should handle events synchronously', function () {
+            createChart({syncPointerEvents: true});
             var svg = chart.getSVG();
             var rects = Array.from(svg.querySelectorAll('.bar'))
                 .map((el) => el.getBoundingClientRect());
@@ -356,24 +372,50 @@ define(function (require) {
             var getHighlightedData = (() => d3.select('.graphical-report__highlighted').data()[0]);
 
             utils.simulateEvent('mousemove', svg, cx, bottom);
-            if (syncPointerEvents) {
+            expect(getHighlightedData().x).to.equal(1);
+        });
+
+        it('should handle events asynchronously', function (done) {
+            createChart({syncPointerEvents: false});
+            var svg = chart.getSVG();
+            var rects = Array.from(svg.querySelectorAll('.bar'))
+                .map((el) => el.getBoundingClientRect());
+            var cx = (Math.min(...rects.map(r => r.left)) + Math.max(...rects.map(r => r.right)) / 2);
+            var bottom = Math.max(...rects.map(r => r.bottom));
+            var getHighlightedData = (() => d3.select('.graphical-report__highlighted').data()[0]);
+
+            utils.simulateEvent('mousemove', svg, cx, bottom);
+            setTimeout(() => {
                 expect(getHighlightedData().x).to.equal(1);
-                chart.destroy();
-                document.body.removeChild(container);
-            } else {
-                expect(getHighlightedData()).to.be.undefined;
-                setTimeout(() => {
-                    expect(getHighlightedData().x).to.equal(1);
-                    chart.destroy();
-                    document.body.removeChild(container);
-                    done();
-                }, 100);
-            }
+                done();
+            }, 100);
+        });
 
-        };
+        it('should throttle pointer events', function (done) {
+            createChart({syncPointerEvents: false});
+            var svg = chart.getSVG();
+            var rects = Array.from(svg.querySelectorAll('.bar'))
+                .map((el) => el.getBoundingClientRect());
+            var cx = (Math.min(...rects.map(r => r.left)) + Math.max(...rects.map(r => r.right)) / 2);
+            var bottom = Math.max(...rects.map(r => r.bottom));
+            var getHighlightedData = (() => d3.select('.graphical-report__highlighted').data()[0]);
 
-        testChart(true);
-        testChart(false);
+            var hoverCount = 0;
+            var clickCount = 0;
+            const unit = chart.select(() => true)[0];
+            unit.on('data-hover', () => (hoverCount++));
+            unit.on('data-click', () => (clickCount++));
+
+            utils.simulateEvent('mousemove', svg, cx, bottom);
+            utils.simulateEvent('mousemove', svg, cx, bottom);
+            utils.simulateEvent('mousemove', svg, cx, bottom);
+            utils.simulateEvent('click', svg, cx, bottom);
+            setTimeout(() => {
+                expect(hoverCount).to.equal(0);
+                expect(clickCount).to.equal(1);
+                done();
+            }, 100);
+        });
     });
 
     describe('Highlight overflown layer elements', function () {
