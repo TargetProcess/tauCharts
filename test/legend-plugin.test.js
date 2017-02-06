@@ -103,7 +103,6 @@ define(function (require) {
         var selector = '.graphical-report__legend__guide' + prefix + '-1';
         var selector2 = '.graphical-report__legend__guide' + prefix + '-2';
 
-        debugger;
         item1 = chart._layout.rightSidebar.querySelectorAll(selector)[0].parentNode.parentNode;
         svg = chart.getSVG();
         expect(svg.querySelectorAll(prefix + '-1').length).to.be.equals(1);

@@ -13,6 +13,7 @@
 
     var utils = tauCharts.api.utils;
     var COLOR_ITEM_SELECTOR = '.graphical-report__legend__item-color';
+    var COLOR_TOGGLE_SELECTOR = '.graphical-report__legend__guide';
 
     var counter = 0;
     var getId = function () {
@@ -222,7 +223,7 @@
                             'click',
                             COLOR_ITEM_SELECTOR,
                             function (e, currentTarget) {
-                                this._toggleLegendItem(currentTarget, (e.ctrlKey || e.shiftKey));
+                                this._toggleLegendItem(currentTarget, (e.ctrlKey || e.target.matches(COLOR_TOGGLE_SELECTOR)));
                             }.bind(this));
 
                         _delegateEvent(
