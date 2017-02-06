@@ -223,7 +223,10 @@
                             'click',
                             COLOR_ITEM_SELECTOR,
                             function (e, currentTarget) {
-                                this._toggleLegendItem(currentTarget, (e.ctrlKey || e.target.matches(COLOR_TOGGLE_SELECTOR)));
+                                this._toggleLegendItem(
+                                    currentTarget,
+                                    (e.ctrlKey || e.target.matches(COLOR_TOGGLE_SELECTOR))
+                                );
                             }.bind(this));
 
                         _delegateEvent(
