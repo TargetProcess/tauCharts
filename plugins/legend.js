@@ -590,7 +590,7 @@
                         }
                         scrollTimeout = setTimeout(function () {
                             self._updateResetButtonPosition();
-                            reset.style.display = null;
+                            reset.style.display = '';
                             scrollTimeout = null;
                         }, 250);
                     };
