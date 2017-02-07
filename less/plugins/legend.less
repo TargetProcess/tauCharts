@@ -40,6 +40,7 @@
         }
 
         &__reset {
+            background-color: @bg-color;
             border: 1px solid mix(@font-color, @bg-color, 37.5%);
             border-radius: 12px;
             color: mix(@font-color, @bg-color, 37.5%);
@@ -47,10 +48,12 @@
             font-size: @font-size-m;
             height: 1em;
             line-height: 1em;
+            margin-top: -4px;
             padding: 4px;
             position: absolute;
             right: 0;
-            top: -4px;
+            top: 0;
+            z-index: 2;
 
             &:hover {
                 border-color: @font-color;
@@ -59,6 +62,19 @@
 
             &.disabled {
                 display: none;
+            }
+
+            &::before {
+                border: 2px solid @bg-color;
+                border-radius: 14px;
+                content: "";
+                display: block;
+                height: ~"calc(100% + 2px)";
+                left: -3px;
+                position: absolute;
+                top: -3px;
+                width: ~"calc(100% + 2px)";
+                z-index: 1;
             }
         }
 

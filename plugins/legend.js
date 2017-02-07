@@ -295,7 +295,7 @@
                 '       </div>',
                 '   </div>',
                 '   </div>',
-                '   <%=label%>',
+                '   <span class="graphical-report__legend__guide__label"><%=label%></span>',
                 '</div>'
             ].join('')),
             _itemFillTemplate: utils.template([
@@ -322,6 +322,7 @@
 
             _clearPanel: function () {
                 if (this._container) {
+                    this._getScrollContainer().removeEventListener('scroll', this._scrollListener);
                     this._container.innerHTML = '';
                 }
             },
@@ -577,6 +578,24 @@
                             }));
                     }
                 });
+
+                if (self._color.length > 0) {
+                    self._updateResetButtonPosition();
+                    var scrollTimeout = null;
+                    self._scrollListener = function () {
+                        var reset = self._container.querySelector(RESET_SELECTOR);
+                        reset.style.display = 'none';
+                        if (scrollTimeout) {
+                            clearTimeout(scrollTimeout);
+                        }
+                        scrollTimeout = setTimeout(function () {
+                            self._updateResetButtonPosition();
+                            reset.style.display = null;
+                            scrollTimeout = null;
+                        }, 250);
+                    };
+                    self._getScrollContainer().addEventListener('scroll', self._scrollListener);
+                }
             },
 
             _toggleLegendItem: function (target, mode) {
@@ -674,6 +693,15 @@
                     .forEach(function (unit) {
                         unit.fire('highlight', isRowMatch);
                     });
+            },
+
+            _getScrollContainer: function () {
+                return this._container.parentNode.parentNode;
+            },
+
+            _updateResetButtonPosition: function () {
+                var reset = this._container.querySelector(RESET_SELECTOR);
+                reset.style.top = this._getScrollContainer().scrollTop + 'px';
             },
 
             _generateColorMap: function (domain, defBrewer) {
