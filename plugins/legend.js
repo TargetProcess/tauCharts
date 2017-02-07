@@ -13,7 +13,7 @@
 
     var utils = tauCharts.api.utils;
     var COLOR_ITEM_SELECTOR = '.graphical-report__legend__item-color';
-    var COLOR_TOGGLE_SELECTOR = '.graphical-report__legend__guide';
+    var COLOR_TOGGLE_SELECTOR = '.graphical-report__legend__guide--color__overlay';
 
     var counter = 0;
     var getId = function () {
@@ -263,8 +263,10 @@
             _itemTemplate: utils.template([
                 '<div data-scale-id=\'<%= scaleId %>\' data-dim=\'<%= dim %>\' data-value=\'<%= value %>\' class="graphical-report__legend__item graphical-report__legend__item-color <%=classDisabled%>">',
                 '   <div class="graphical-report__legend__guide__wrap">',
-                '   <div class="graphical-report__legend__guide <%=cssClass%>"',
+                '   <div class="graphical-report__legend__guide graphical-report__legend__guide--color <%=cssClass%>"',
                 '        style="background-color: <%=cssColor%>">',
+                '       <div class="graphical-report__legend__guide--color__overlay">',
+                '       </div>',
                 '   </div>',
                 '   </div>',
                 '   <%=label%>',

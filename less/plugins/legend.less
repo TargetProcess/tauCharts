@@ -68,30 +68,26 @@
 
         }
 
-        &__item &__guide:hover {
-            background: transparent;
+        &__item:hover:not(.disabled) &__guide--color::before {
+            background-color: @bg-color;
+            border: none;
+            left: 3px;
+            top: 3px;
+        }
+
+        &__item.disabled:hover &__guide--color {
+            background: @bg-color;
+        }
+
+        &__item &__guide--color:hover,
+        &__item.disabled &__guide--color:hover {
+            &::before {
+                display: inline-block;
+            }
         }
 
         &__item.disabled &__guide {
             background: transparent;
-
-            &:hover {
-                &::before {
-                    transform: skewY(45deg);
-                }
-
-                &::after {
-                    transform: skewY(-45deg);
-                }
-
-                &::before,
-                &::after {
-                    left: 1px;
-                    opacity: 0.25;
-                    top: 6px;
-                    width: 12px;
-                }
-            }
         }
 
         &__guide {
@@ -104,7 +100,6 @@
             transform: translate(-50%, -50%);
             border: 1px solid transparent;
             border-radius: 50%;
-            transition: border-radius 250ms, background-color 250ms;
 
             &__wrap {
                 position: absolute;
@@ -130,32 +125,26 @@
                 fill: @default-color;
             }
 
-            &:hover {
-                background: transparent;
-                border-radius: 0;
-
-                &::before,
-                &::after {
-                    background-color: @font-color;
-                    content: "";
-                    display: inline-block;
-                    pointer-events: none;
+            &--color {
+                &__overlay {
+                    background-color: transparent;
+                    height: 36px;
+                    left: -12px;
                     position: absolute;
+                    top: -12px;
+                    width: 36px;
                 }
 
                 &::before {
-                    height: 2px;
-                    left: 1px;
-                    top: 8px;
-                    transform: skewY(45deg);
-                    width: 4px;
-                }
-
-                &::after {
-                    height: 2px;
-                    left: 5px;
-                    top: 6px;
-                    transform: skewY(-45deg);
+                    border: 1px solid @font-color;
+                    border-radius: 50%;
+                    content: "";
+                    display: none;
+                    height: 8px;
+                    left: 2px;
+                    pointer-events: none;
+                    position: absolute;
+                    top: 2px;
                     width: 8px;
                 }
             }
