@@ -18,12 +18,14 @@
 
     &__legend {
         padding: 20px 0 10px 10px;
+        position: relative;
         margin-right: 30px;
         width: 160px;
         box-sizing: border-box;
 
         &__wrap {
           margin-bottom: 30px;
+          position: relative;
 
           &:last-child {
             margin-bottom: 0px
@@ -35,6 +37,29 @@
             text-transform: capitalize;
             font-weight: 600;
             font-size: @font-size-m;
+        }
+
+        &__reset {
+            border: 1px solid mix(@font-color, @bg-color, 37.5%);
+            border-radius: 12px;
+            color: mix(@font-color, @bg-color, 37.5%);
+            cursor: pointer;
+            font-size: @font-size-m;
+            height: 1em;
+            line-height: 1em;
+            padding: 4px;
+            position: absolute;
+            right: 0;
+            top: -4px;
+
+            &:hover {
+                border-color: @font-color;
+                color: @font-color;
+            }
+
+            &.disabled {
+                display: none;
+            }
         }
 
         &__item {
