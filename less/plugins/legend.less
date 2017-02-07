@@ -93,24 +93,6 @@
 
         }
 
-        &__item:hover:not(.disabled) &__guide--color::before {
-            background-color: @bg-color;
-            border: none;
-            left: 3px;
-            top: 3px;
-        }
-
-        &__item.disabled:hover &__guide--color {
-            background: @bg-color;
-        }
-
-        &__item &__guide--color:hover,
-        &__item.disabled &__guide--color:hover {
-            &::before {
-                display: inline-block;
-            }
-        }
-
         &__item.disabled &__guide {
             background: transparent;
         }
@@ -161,17 +143,45 @@
                 }
 
                 &::before {
-                    border: 1px solid @font-color;
-                    border-radius: 50%;
+                    content: "";
+                    display: none;
+                    height: 2px;
+                    left: 3px;
+                    pointer-events: none;
+                    position: absolute;
+                    top: 6px;
+                    width: 8px;
+                }
+
+                &::after {
                     content: "";
                     display: none;
                     height: 8px;
-                    left: 2px;
+                    left: 6px;
                     pointer-events: none;
                     position: absolute;
-                    top: 2px;
-                    width: 8px;
+                    top: 3px;
+                    width: 2px;
                 }
+            }
+        }
+
+        &__item &__guide--color:hover {
+            &::before,
+            &::after {
+                background-color: @bg-color;
+                display: inline-block;
+                transform: rotate(45deg);
+            }
+        }
+
+        &__item.disabled &__guide--color:hover {
+            background: @bg-color;
+
+            &::before,
+            &::after {
+                background-color: @font-color;
+                transform: none;
             }
         }
     }
