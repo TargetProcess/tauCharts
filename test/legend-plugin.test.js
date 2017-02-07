@@ -97,10 +97,11 @@ define(function (require) {
     );
     var AssertToggleOnClick = function (context, expect) {
         var chart = context.chart;
-        var item1;
+        var item1, item2;
         var svg;
         var prefix = '.color20';
         var selector = '.graphical-report__legend__guide' + prefix + '-1';
+        var selector2 = '.graphical-report__legend__guide' + prefix + '-2';
 
         item1 = chart._layout.rightSidebar.querySelectorAll(selector)[0].parentNode.parentNode;
         svg = chart.getSVG();
@@ -110,13 +111,14 @@ define(function (require) {
         testUtils.simulateEvent('click', item1);
 
         svg = chart.getSVG();
-        expect(svg.querySelectorAll(prefix + '-1').length).to.be.equals(0);
-        expect(svg.querySelectorAll(prefix + '-2').length).to.be.equals(1);
+        expect(svg.querySelectorAll(prefix + '-1').length).to.be.equals(1);
+        expect(svg.querySelectorAll(prefix + '-2').length).to.be.equals(0);
+
+        item2 = chart._layout.rightSidebar.querySelectorAll(selector2)[0].parentNode.parentNode;
+        expect(item2.classList.contains('disabled')).to.be.ok;
+        expect(item2.querySelectorAll(prefix + '-2').length).to.be.equals(1);
 
         item1 = chart._layout.rightSidebar.querySelectorAll(selector)[0].parentNode.parentNode;
-        expect(item1.classList.contains('disabled')).to.be.ok;
-        expect(item1.querySelectorAll(prefix + '-1').length).to.be.equals(1);
-
         testUtils.simulateEvent('click', item1);
 
         svg = chart.getSVG();
