@@ -25,6 +25,7 @@ export class SizeScale extends BaseScale {
         ];
 
         this.addField('scaleType', 'size');
+        this.addField('funcType', scaleConfig.func || 'sqrt');
     }
 
     isInDomain(x) {
