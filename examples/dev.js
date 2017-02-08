@@ -13,6 +13,7 @@
             'bar-labels',
             'category-labels-overflow',
             'horizontal-scroll',
+            'linear-bars',
             'logarithmic-scale',
             'smooth-line',
             'utc',

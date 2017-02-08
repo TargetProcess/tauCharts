@@ -1,4 +1,4 @@
-/*! taucharts - v0.10.0-beta.14 - 2017-01-31
+/*! taucharts - v0.10.0-beta.15 - 2017-02-08
 * https://github.com/TargetProcess/tauCharts
 * Copyright (c) 2017 Taucraft Limited; Licensed Apache License 2.0 */
 (function webpackUniversalModuleDefinition(root, factory) {
@@ -348,7 +348,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	}]));
 
 	/* global VERSION:false */
-	var version = ("0.10.0-beta.14");
+	var version = ("0.10.0-beta.15");
 	exports.GPL = _tau.GPL;
 	exports.Plot = _tau2.Plot;
 	exports.Chart = _tau3.Chart;
@@ -637,6 +637,23 @@ return /******/ (function(modules) { // webpackBootstrap
 	            }
 	        }
 	        return results;
+	    },
+
+	    sortElements: function sortElements(elements, sorter) {
+	        if (elements.length > 0) {
+	            var parent = elements[0].parentNode;
+	            var fragment = document.createDocumentFragment();
+	            var items = Array.prototype.slice.call(elements).sort(sorter);
+	            var orderChanged = items.some(function (d, i) {
+	                return d !== elements[i];
+	            });
+	            if (orderChanged) {
+	                items.forEach(function (el) {
+	                    return fragment.appendChild(el);
+	                });
+	                parent.appendChild(fragment);
+	            }
+	        }
 	    },
 
 	    /**
@@ -6744,6 +6761,13 @@ return /******/ (function(modules) { // webpackBootstrap
 	                fn();
 	            });
 	            this._requestedAnimationFrames.add(id, fn);
+	            return id;
+	        }
+	    }, {
+	        key: '_cancelAnimationFrame',
+	        value: function _cancelAnimationFrame(id) {
+	            cancelAnimationFrame(id);
+	            this._requestedAnimationFrames.delete(id);
 	        }
 	    }, {
 	        key: '_initPointerEvents',
@@ -6751,7 +6775,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	            var _this5 = this;
 
 	            if (!this._liveSpec.settings.syncPointerEvents) {
-	                this._pointerAnimationFrameRequested = false;
+	                this._pointerAnimationFrameId = null;
 	            }
 	            var svg = _d2.default.select(this._svg);
 	            var wrapEventHandler = this._liveSpec.settings.syncPointerEvents ? function (handler) {
@@ -6761,12 +6785,15 @@ return /******/ (function(modules) { // webpackBootstrap
 	            } : function (handler) {
 	                return function () {
 	                    var e = _d2.default.event;
-	                    if (!_this5._pointerAnimationFrameRequested) {
-	                        _this5._requestAnimationFrame(function () {
-	                            _this5._pointerAnimationFrameRequested = false;
+	                    if (_this5._pointerAnimationFrameId && e.type !== 'mousemove') {
+	                        _this5._cancelAnimationFrame(_this5._pointerAnimationFrameId);
+	                        _this5._pointerAnimationFrameId = null;
+	                    }
+	                    if (!_this5._pointerAnimationFrameId) {
+	                        _this5._pointerAnimationFrameId = _this5._requestAnimationFrame(function () {
+	                            _this5._pointerAnimationFrameId = null;
 	                            handler(e);
 	                        });
-	                        _this5._pointerAnimationFrameRequested = true;
 	                    }
 	                };
 	            };
@@ -7004,14 +7031,16 @@ return /******/ (function(modules) { // webpackBootstrap
 	    }, {
 	        key: '_cancelRendering',
 	        value: function _cancelRendering() {
+	            var _this8 = this;
+
 	            if (this._renderingInProgress) {
 	                this._renderingInProgress = false;
 	                Plot.renderingsInProgress--;
 	            }
 	            this._requestedAnimationFrames.forEach(function (fn, id) {
-	                return cancelAnimationFrame(id);
+	                return _this8._cancelAnimationFrame(id);
 	            });
-	            this._requestedAnimationFrames.clear();
+	            this._pointerAnimationFrameId = null;
 	        }
 	    }, {
 	        key: '_createProgressBar',
@@ -7052,10 +7081,10 @@ return /******/ (function(modules) { // webpackBootstrap
 	    }, {
 	        key: 'getSourceFiltersIterator',
 	        value: function getSourceFiltersIterator(rejectFiltersPredicate) {
-	            var _this8 = this;
+	            var _this9 = this;
 
 	            var filters = _utils.utils.flatten(Object.keys(this._filtersStore.filters).map(function (key) {
-	                return _this8._filtersStore.filters[key];
+	                return _this9._filtersStore.filters[key];
 	            })).filter(function (f) {
 	                return !rejectFiltersPredicate(f);
 	            }).map(function (x) {
@@ -7071,7 +7100,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    }, {
 	        key: 'getDataSources',
 	        value: function getDataSources() {
-	            var _this9 = this;
+	            var _this10 = this;
 
 	            var param = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
 
@@ -7087,7 +7116,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	                return k !== '?';
 	            }).reduce(function (memo, k) {
 	                var item = chartDataModel[k];
-	                var filterIterator = _this9.getSourceFiltersIterator(excludeFiltersByTagAndSource(k));
+	                var filterIterator = _this10.getSourceFiltersIterator(excludeFiltersByTagAndSource(k));
 	                memo[k] = {
 	                    dims: item.dims,
 	                    data: item.data.filter(filterIterator)
@@ -7157,10 +7186,10 @@ return /******/ (function(modules) { // webpackBootstrap
 	    }, {
 	        key: 'removeFilter',
 	        value: function removeFilter(id) {
-	            var _this10 = this;
+	            var _this11 = this;
 
 	            Object.keys(this._filtersStore.filters).map(function (key) {
-	                _this10._filtersStore.filters[key] = _this10._filtersStore.filters[key].filter(function (item) {
+	                _this11._filtersStore.filters[key] = _this11._filtersStore.filters[key].filter(function (item) {
 	                    return item.id !== id;
 	                });
 	            });
@@ -7224,7 +7253,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    }, {
 	        key: '_displayTimeoutWarning',
 	        value: function _displayTimeoutWarning(_ref) {
-	            var _this11 = this;
+	            var _this12 = this;
 
 	            var proceed = _ref.proceed,
 	                cancel = _ref.cancel,
@@ -7242,12 +7271,12 @@ return /******/ (function(modules) { // webpackBootstrap
 	            this._layout.content.style.height = '100%';
 	            this._layout.content.insertAdjacentHTML('beforeend', '\n            <div class="' + _const.CSS_PREFIX + 'rendering-timeout-warning">\n            <svg\n                viewBox="0 0 ' + width + ' ' + height + '">\n                <text\n                    text-anchor="middle"\n                    font-size="' + fontSize + '">\n                    <tspan x="' + midX + '" y="' + getY(1) + '">Rendering took more than ' + Math.round(timeout) / 1000 + 's</tspan>\n                    <tspan x="' + midX + '" y="' + getY(2) + '">Would you like to continue?</tspan>\n                </text>\n                <text\n                    class="' + _const.CSS_PREFIX + 'rendering-timeout-continue-btn"\n                    text-anchor="end"\n                    font-size="' + fontSize + '"\n                    cursor="pointer"\n                    text-decoration="underline"\n                    x="' + (midX - fontSize / 3) + '"\n                    y="' + getY(3) + '">\n                    Continue\n                </text>\n                <text\n                    class="' + _const.CSS_PREFIX + 'rendering-timeout-cancel-btn"\n                    text-anchor="start"\n                    font-size="' + fontSize + '"\n                    cursor="pointer"\n                    text-decoration="underline"\n                    x="' + (midX + fontSize / 3) + '"\n                    y="' + getY(3) + '">\n                    Cancel\n                </text>\n            </svg>\n            </div>\n        ');
 	            this._layout.content.querySelector('.' + _const.CSS_PREFIX + 'rendering-timeout-continue-btn').addEventListener('click', function () {
-	                _this11._clearTimeoutWarning();
-	                proceed.call(_this11);
+	                _this12._clearTimeoutWarning();
+	                proceed.call(_this12);
 	            });
 	            this._layout.content.querySelector('.' + _const.CSS_PREFIX + 'rendering-timeout-cancel-btn').addEventListener('click', function () {
-	                _this11._clearTimeoutWarning();
-	                cancel.call(_this11);
+	                _this12._clearTimeoutWarning();
+	                cancel.call(_this12);
 	            });
 	        }
 	    }, {
@@ -15819,6 +15848,8 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	var _utils = __webpack_require__(3);
 
+	var _utilsDom = __webpack_require__(1);
+
 	var _utilsDraw = __webpack_require__(10);
 
 	var _d = __webpack_require__(2);
@@ -15828,6 +15859,10 @@ return /******/ (function(modules) { // webpackBootstrap
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 	function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
+
+	var d3Data = function d3Data(node) {
+	    return _d2.default.select(node).data()[0];
+	};
 
 	var Interval = {
 	    init: function init(xConfig) {
@@ -15840,6 +15875,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	            avoidScalesOverflow: true,
 	            maxHighlightDistance: 32,
 	            prettify: true,
+	            sortByBarHeight: true,
 	            enableColorToBarPosition: !config.stack
 	        });
 
@@ -15903,6 +15939,8 @@ return /******/ (function(modules) { // webpackBootstrap
 	        });
 	    },
 	    draw: function draw() {
+	        var _createUpdateFunc, _createUpdateFunc2;
+
 	        var node = this.node();
 	        var config = node.config;
 	        var options = config.options;
@@ -15919,60 +15957,74 @@ return /******/ (function(modules) { // webpackBootstrap
 	        var barY = config.flip ? 'x' : 'y';
 	        var barH = config.flip ? 'width' : 'height';
 	        var barW = config.flip ? 'height' : 'width';
-	        var updateBarContainer = function updateBarContainer() {
-	            var _createUpdateFunc, _createUpdateFunc2;
-
-	            this.attr('class', 'frame i-role-bar-group');
-	            var barClass = d3Attrs.class;
-	            var updateAttrs = _utils.utils.omit(d3Attrs, 'class');
-	            var bars = this.selectAll('.bar').data(function (fiber) {
-	                return fiber;
-	            }, screenModel.id);
-	            bars.exit().call(createUpdateFunc(config.guide.animationSpeed, null, (_createUpdateFunc = {}, _defineProperty(_createUpdateFunc, barX, function () {
-	                var d3This = _d2.default.select(this);
-	                var x = d3This.attr(barX) - 0;
-	                var w = d3This.attr(barW) - 0;
-	                return x + w / 2;
-	            }), _defineProperty(_createUpdateFunc, barY, function () {
-	                var d3This = _d2.default.select(this);
-	                var y = d3This.attr(barY) - 0;
-	                var h = d3This.attr(barH) - 0;
-	                return y + h / 2;
-	            }), _defineProperty(_createUpdateFunc, barW, 0), _defineProperty(_createUpdateFunc, barH, 0), _createUpdateFunc), function (node) {
-	                return _d2.default.select(node).remove();
-	            }));
-	            bars.call(createUpdateFunc(config.guide.animationSpeed, null, updateAttrs)).attr('class', barClass);
-	            bars.enter().append('rect').call(createUpdateFunc(config.guide.animationSpeed, (_createUpdateFunc2 = {}, _defineProperty(_createUpdateFunc2, barY, screenModel[barY + '0']), _defineProperty(_createUpdateFunc2, barH, 0), _createUpdateFunc2), updateAttrs)).attr('class', barClass);
-
-	            node.subscribe(bars);
-	        };
 
 	        var fibers = screenModel.toFibers();
+	        var data = fibers.reduce(function (arr, f) {
+	            return arr.concat(f);
+	        }, []);
 
-	        var elements = options.container.selectAll('.frame').data(fibers, function (d) {
-	            return screenModel.model.group(d[0]);
-	        });
-	        elements.exit().remove();
-	        elements.call(updateBarContainer);
-	        elements.enter().append('g').call(updateBarContainer);
-
-	        // TODO: Render bars into single container, exclude removed elements from calculation.
-	        this._boundsInfo = this._getBoundsInfo(options.container.selectAll('.bar')[0]);
+	        var barClass = d3Attrs.class;
+	        var updateAttrs = _utils.utils.omit(d3Attrs, 'class');
+	        var bars = options.container.selectAll('.bar').data(data, screenModel.id);
+	        bars.exit().classed('tau-removing', true).call(createUpdateFunc(config.guide.animationSpeed, null, (_createUpdateFunc = {}, _defineProperty(_createUpdateFunc, barX, function () {
+	            var d3This = _d2.default.select(this);
+	            var x = d3This.attr(barX) - 0;
+	            var w = d3This.attr(barW) - 0;
+	            return x + w / 2;
+	        }), _defineProperty(_createUpdateFunc, barY, function () {
+	            return this.getAttribute('data-zero');
+	        }), _defineProperty(_createUpdateFunc, barW, 0), _defineProperty(_createUpdateFunc, barH, 0), _createUpdateFunc),
+	        // ((node) => d3.select(node).remove())
+	        function (node) {
+	            // NOTE: Sometimes nodes are removed after
+	            // they re-appear by filter.
+	            var el = _d2.default.select(node);
+	            if (el.classed('tau-removing')) {
+	                el.remove();
+	            }
+	        }));
+	        bars.call(createUpdateFunc(config.guide.animationSpeed, null, updateAttrs)).attr('class', barClass).attr('data-zero', screenModel[barY + '0']);
+	        bars.enter().append('rect').call(createUpdateFunc(config.guide.animationSpeed, (_createUpdateFunc2 = {}, _defineProperty(_createUpdateFunc2, barY, screenModel[barY + '0']), _defineProperty(_createUpdateFunc2, barH, 0), _createUpdateFunc2), updateAttrs)).attr('class', barClass).attr('data-zero', screenModel[barY + '0']);
 
 	        node.subscribe(new _layerLabels.LayerLabels(screenModel.model, screenModel.model.flip, config.guide.label, options).draw(fibers));
 
-	        // Put labels after bars
-	        var container = options.container.node();
-	        var children = Array.prototype.slice.call(container.childNodes, 0);
-	        var lastBarIndex = children.length - 1 - children.slice(0).reverse().findIndex(function (el) {
-	            return el.matches('.i-role-bar-group');
-	        });
-	        var afterBar = container.childNodes.item(lastBarIndex + 1);
-	        children.slice(0, lastBarIndex).filter(function (el) {
-	            return el.matches('.i-role-label');
-	        }).forEach(function (el) {
-	            return container.insertBefore(el, afterBar);
-	        });
+	        var sortByWidthThenY = function sortByWidthThenY(a, b) {
+	            var dataA = d3Data(a);
+	            var dataB = d3Data(b);
+	            if (d3Attrs.width(dataA) === d3Attrs.width(dataB)) {
+	                return d3Attrs.y(dataA) - d3Attrs.y(dataB);
+	            }
+	            return d3Attrs.width(dataB) - d3Attrs.width(dataA);
+	        };
+	        var sortByHeightThenX = function sortByHeightThenX(a, b) {
+	            var dataA = d3Data(a);
+	            var dataB = d3Data(b);
+	            if (d3Attrs.height(dataA) === d3Attrs.height(dataB)) {
+	                return d3Attrs.x(dataA) - d3Attrs.x(dataB);
+	            }
+	            return d3Attrs.height(dataB) - d3Attrs.height(dataA);
+	        };
+
+	        this._barsSorter = config.guide.sortByBarHeight ? config.flip ? sortByWidthThenY : sortByHeightThenX : function () {
+	            var ids = data.reduce(function (obj, d, i) {
+	                obj[screenModel.model.id(d)] = i;
+	                return obj;
+	            }, {});
+	            return function (a, b) {
+	                return ids[screenModel.model.id(d3Data(a))] - ids[screenModel.model.id(d3Data(b))];
+	            };
+	        }();
+
+	        // Raise <text> over <rect>
+	        this._typeSorter = function (a, b) {
+	            return a.tagName.localeCompare(b.tagName);
+	        };
+
+	        this._sortElements(this._typeSorter, this._barsSorter);
+
+	        node.subscribe(bars);
+
+	        this._boundsInfo = this._getBoundsInfo(bars[0]);
 	    },
 	    buildModel: function buildModel(screenModel, _ref) {
 	        var prettify = _ref.prettify,
@@ -16081,6 +16133,21 @@ return /******/ (function(modules) { // webpackBootstrap
 	            }
 	        });
 	    },
+	    _sortElements: function _sortElements() {
+	        for (var _len = arguments.length, sorters = Array(_len), _key = 0; _key < _len; _key++) {
+	            sorters[_key] = arguments[_key];
+	        }
+
+	        var container = this.node().config.options.container.node();
+	        _utilsDom.utilsDom.sortElements(container.childNodes, function (a, b) {
+	            var result = 0;
+	            sorters.every(function (s) {
+	                result = s(a, b);
+	                return result === 0;
+	            });
+	            return result;
+	        });
+	    },
 	    _getBoundsInfo: function _getBoundsInfo(bars) {
 	        if (bars.length === 0) {
 	            return null;
@@ -16110,10 +16177,6 @@ return /******/ (function(modules) { // webpackBootstrap
 	            };
 
 	            return { node: node, data: data, cx: cx, cy: cy, box: box, invert: invert };
-	        })
-	        // TODO: Removed elements should not be passed to this function.
-	        .filter(function (item) {
-	            return !isNaN(item.cx) && !isNaN(item.cy);
 	        });
 
 	        var bounds = items.reduce(function (bounds, _ref2) {
@@ -16199,8 +16262,13 @@ return /******/ (function(modules) { // webpackBootstrap
 	            var elStart = flip ? el.box.left : el.box.top;
 	            var elEnd = flip ? el.box.right : el.box.bottom;
 	            var cursorInside = isBetween(valueCursor, elStart, elEnd);
+	            if (!cursorInside && Math.abs(valueCursor - elStart) > maxHighlightDistance && Math.abs(valueCursor - elEnd) > maxHighlightDistance) {
+	                return null;
+	            }
 	            var distToValue = Math.abs(valueCursor - (el.invert !== flip ? elEnd : elStart));
 	            return Object.assign(el, { distToValue: distToValue, cursorInside: cursorInside });
+	        }).filter(function (el) {
+	            return el;
 	        }).sort(function (a, b) {
 	            if (a.cursorInside !== b.cursorInside) {
 	                return b.cursorInside - a.cursorInside;
@@ -16233,10 +16301,9 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	        container.selectAll('.i-role-label').classed(classed);
 
-	        _utilsDraw.utilsDraw.raiseElements(container, '.bar', filter);
-	        _utilsDraw.utilsDraw.raiseElements(container, '.frame', function (fiber) {
-	            return fiber.some(filter);
-	        });
+	        this._sortElements(function (a, b) {
+	            return filter(d3Data(a)) - filter(d3Data(b));
+	        }, this._typeSorter, this._barsSorter);
 	    }
 	};
 

@@ -12,6 +12,9 @@
 })(function (tauCharts) {
 
     var utils = tauCharts.api.utils;
+    var RESET_SELECTOR = '.graphical-report__legend__reset';
+    var COLOR_ITEM_SELECTOR = '.graphical-report__legend__item-color';
+    var COLOR_TOGGLE_SELECTOR = '.graphical-report__legend__guide--color__overlay';
 
     var counter = 0;
     var getId = function () {
@@ -219,15 +222,26 @@
                         _delegateEvent(
                             this._container,
                             'click',
-                            '.graphical-report__legend__item-color',
+                            RESET_SELECTOR,
                             function (e, currentTarget) {
-                                this._toggleLegendItem(currentTarget);
+                                this._toggleLegendItem(currentTarget, 'reset');
+                            }.bind(this));
+
+                        _delegateEvent(
+                            this._container,
+                            'click',
+                            COLOR_ITEM_SELECTOR,
+                            function (e, currentTarget) {
+                                var mode = (e.ctrlKey || e.target.matches(COLOR_TOGGLE_SELECTOR) ?
+                                    'leave-others' :
+                                    'focus-single');
+                                this._toggleLegendItem(currentTarget, mode);
                             }.bind(this));
 
                         _delegateEvent(
                             this._container,
                             'mouseover',
-                            '.graphical-report__legend__item-color',
+                            COLOR_ITEM_SELECTOR,
                             function (e, currentTarget) {
                                 this._highlightToggle(currentTarget, true);
                             }.bind(this)
@@ -236,11 +250,22 @@
                         _delegateEvent(
                             this._container,
                             'mouseout',
-                            '.graphical-report__legend__item-color',
+                            COLOR_ITEM_SELECTOR,
                             function (e, currentTarget) {
                                 this._highlightToggle(currentTarget, false);
                             }.bind(this)
                         );
+
+                        _delegateEvent(
+                            this._container,
+                            'click',
+                            COLOR_ITEM_SELECTOR,
+                            function (e, currentTarget) {
+                                this._toggleLegendItem(
+                                    currentTarget,
+                                    (e.ctrlKey || e.target.matches(COLOR_TOGGLE_SELECTOR))
+                                );
+                            }.bind(this));
                     }
                 }
             },
@@ -254,15 +279,23 @@
 
             // jscs:disable maximumLineLength
             _containerTemplate: '<div class="graphical-report__legend"></div>',
-            _template: utils.template('<div class="graphical-report__legend__wrap"><div class="graphical-report__legend__title"><%=name%></div><%=items%></div>'),
+            _template: utils.template([
+                '<div class="graphical-report__legend__wrap">',
+                '<div class="graphical-report__legend__title"><%=name%></div>',
+                '<%=top%>',
+                '<%=items%>',
+                '</div>'
+            ].join('')),
             _itemTemplate: utils.template([
                 '<div data-scale-id=\'<%= scaleId %>\' data-dim=\'<%= dim %>\' data-value=\'<%= value %>\' class="graphical-report__legend__item graphical-report__legend__item-color <%=classDisabled%>">',
                 '   <div class="graphical-report__legend__guide__wrap">',
-                '   <div class="graphical-report__legend__guide <%=cssClass%>"',
+                '   <div class="graphical-report__legend__guide graphical-report__legend__guide--color <%=cssClass%>"',
                 '        style="background-color: <%=cssColor%>">',
+                '       <div class="graphical-report__legend__guide--color__overlay">',
+                '       </div>',
                 '   </div>',
                 '   </div>',
-                '   <%=label%>',
+                '   <span class="graphical-report__legend__guide__label"><%=label%></span>',
                 '</div>'
             ].join('')),
             _itemFillTemplate: utils.template([
@@ -280,10 +313,16 @@
                 '</div><%=value%>',
                 '</div>'
             ].join('')),
+            _resetTemplate: utils.template([
+                '<div role="button" class="graphical-report__legend__reset <%=classDisabled%>">',
+                'Reset',
+                '</div>'
+            ].join('')),
             // jscs:enable maximumLineLength
 
             _clearPanel: function () {
                 if (this._container) {
+                    this._getScrollContainer().removeEventListener('scroll', this._scrollListener);
                     this._container.innerHTML = '';
                 }
             },
@@ -377,6 +416,7 @@
                         self._container
                             .insertAdjacentHTML('beforeend', self._template({
                                 name: title,
+                                top: null,
                                 items: gradient
                             }));
                     }
@@ -441,6 +481,7 @@
                         self._container
                             .insertAdjacentHTML('beforeend', self._template({
                                 name: title,
+                                top: null,
                                 items: values
                                     .map(function (value) {
                                         var diameter = sizeScale(value);
@@ -515,6 +556,11 @@
                         self._container
                             .insertAdjacentHTML('beforeend', self._template({
                                 name: title,
+                                top: self._resetTemplate({
+                                    classDisabled: (legendColorItems.some(function (d) {
+                                        return d.disabled;
+                                    }) ? '' : 'disabled')
+                                }),
                                 items: legendColorItems
                                     .map(function (d) {
                                         return self._itemTemplate({
@@ -532,42 +578,95 @@
                             }));
                     }
                 });
+
+                if (self._color.length > 0) {
+                    self._updateResetButtonPosition();
+                    var scrollTimeout = null;
+                    self._scrollListener = function () {
+                        var reset = self._container.querySelector(RESET_SELECTOR);
+                        reset.style.display = 'none';
+                        if (scrollTimeout) {
+                            clearTimeout(scrollTimeout);
+                        }
+                        scrollTimeout = setTimeout(function () {
+                            self._updateResetButtonPosition();
+                            reset.style.display = '';
+                            scrollTimeout = null;
+                        }, 250);
+                    };
+                    self._getScrollContainer().addEventListener('scroll', self._scrollListener);
+                }
             },
 
-            _toggleLegendItem: function (target) {
+            _toggleLegendItem: function (target, mode) {
 
-                var sid = target.getAttribute('data-scale-id');
-                var dim = target.getAttribute('data-dim');
-                var val = target.getAttribute('data-value');
-                var key = dim + val;
+                var filters = this._currentFilters;
+                var colorNodes = (target ? Array.prototype.filter.call(
+                    target.parentNode.childNodes,
+                    function (el) {
+                        return el.matches(COLOR_ITEM_SELECTOR);
+                    }
+                ) : null);
 
-                var items = this._legendColorByScaleId[sid];
-                var activeItems = items.filter(function (x) {
-                    return !x.disabled;
-                });
+                var getColorData = function (node) {
+                    var dim = node.getAttribute('data-dim');
+                    var val = node.getAttribute('data-value');
+                    return {
+                        sid: node.getAttribute('data-scale-id'),
+                        dim: dim,
+                        val: val,
+                        key: (dim + val)
+                    };
+                };
+                var isColorHidden = function (key) {
+                    return (key in filters);
+                };
+                var toggleColor = function (node, show) {
+                    var data = getColorData(node);
+                    if (isColorHidden(data.key) !== show) {
+                        return;
+                    }
+                    if (show) {
+                        var filterId = filters[data.key];
+                        delete filters[data.key];
+                        node.classList.remove('disabled');
+                        this._chart.removeFilter(filterId);
+                    } else {
+                        node.classList.add('disabled');
+                        var isRowMatch = createIsRowMatchInterceptor(data.dim, data.val);
+                        filters[data.key] = this._chart.addFilter({
+                            tag: 'legend',
+                            predicate: function (row) {
+                                return !isRowMatch(row);
+                            }
+                        });
+                    }
+                }.bind(this);
+                var isTarget = function (node) {
+                    return (node === target);
+                };
+                var isTargetHidden = (target ? isColorHidden(getColorData(target).key) : false);
 
-                if ((activeItems.length === 1) &&
-                    (sid === activeItems[0].scaleId) &&
-                    (val === activeItems[0].value)) {
-                    return;
-                }
-
-                var state = this._currentFilters;
-                if (state.hasOwnProperty(key)) {
-                    var filterId = state[key];
-                    delete state[key];
-                    target.classList.remove('disabled');
-                    this._chart.removeFilter(filterId);
-                } else {
-                    target.classList.add('disabled');
-                    var isRowMatch = createIsRowMatchInterceptor(dim, val);
-                    state[key] = this._chart.addFilter({
-                        tag: 'legend',
-                        predicate: function (row) {
-                            return !isRowMatch(row);
+                if (mode === 'reset') {
+                    colorNodes.forEach(function (node) {
+                        toggleColor(node, true);
+                    });
+                } else if (mode === 'leave-others') {
+                    colorNodes.forEach(function (node) {
+                        if (isTarget(node)) {
+                            toggleColor(node, isTargetHidden);
                         }
                     });
+                } else if (mode === 'focus-single') {
+                    var onlyTargetIsVisible = (!isTargetHidden && colorNodes.every(function (node) {
+                        return (isTarget(node) || isColorHidden(getColorData(node).key));
+                    }));
+                    colorNodes.forEach(function (node) {
+                        var show = (isTarget(node) || onlyTargetIsVisible);
+                        toggleColor(node, show);
+                    });
                 }
+
                 this._chart.refresh();
             },
 
@@ -594,6 +693,15 @@
                     .forEach(function (unit) {
                         unit.fire('highlight', isRowMatch);
                     });
+            },
+
+            _getScrollContainer: function () {
+                return this._container.parentNode.parentNode;
+            },
+
+            _updateResetButtonPosition: function () {
+                var reset = this._container.querySelector(RESET_SELECTOR);
+                reset.style.top = this._getScrollContainer().scrollTop + 'px';
             },
 
             _generateColorMap: function (domain, defBrewer) {
