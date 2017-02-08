@@ -1,4 +1,4 @@
-/*! taucharts - v0.10.0-beta.16 - 2017-02-08
+/*! taucharts - v0.10.0-beta.17 - 2017-02-08
 * https://github.com/TargetProcess/tauCharts
 * Copyright (c) 2017 Taucraft Limited; Licensed Apache License 2.0 */
 (function webpackUniversalModuleDefinition(root, factory) {
@@ -348,7 +348,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	}]));
 
 	/* global VERSION:false */
-	var version = ("0.10.0-beta.16");
+	var version = ("0.10.0-beta.17");
 	exports.GPL = _tau.GPL;
 	exports.Plot = _tau2.Plot;
 	exports.Chart = _tau3.Chart;
@@ -16904,6 +16904,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	        _this.vars = [Math.min.apply(Math, _toConsumableArray([min, vars[0]].filter(Number.isFinite))), Math.max.apply(Math, _toConsumableArray([max, vars[1]].filter(Number.isFinite)))];
 
 	        _this.addField('scaleType', 'size');
+	        _this.addField('funcType', scaleConfig.func || 'sqrt');
 	        return _this;
 	    }
 
