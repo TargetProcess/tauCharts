@@ -15,6 +15,7 @@
     var RESET_SELECTOR = '.graphical-report__legend__reset';
     var COLOR_ITEM_SELECTOR = '.graphical-report__legend__item-color';
     var COLOR_TOGGLE_SELECTOR = '.graphical-report__legend__guide--color__overlay';
+    var SIZE_TICKS_COUNT = 4;
 
     var counter = 0;
     var getId = function () {
@@ -31,12 +32,25 @@
         return [min].concat(chunks).concat(max);
     };
 
-    var splitRealValuesEvenly = function (values, count) {
+    var splitRealValuesEvenly = function (values, count, funcType) {
 
         if (values.length < 3) {
             return values.slice(0);
         }
+        if (count < 3) {
+            return [values[0], values[values.length - 1]];
+        }
 
+        var repeat = function (x) {
+            return x;
+        };
+        var square = function (x) {
+            return Math.pow(x, 2);
+        };
+        var input = (funcType === 'sqrt' ? Math.sqrt : repeat);
+        var ouput = (funcType === 'sqrt' ? square : repeat);
+
+        values = values.map(input);
         var result = [values[0]];
         var length = (values[values.length - 1] - values[0]);
         var halfStep = (0.5 * length / (count - 1));
@@ -93,6 +107,8 @@
         });
 
         result.push(values[values.length - 1]);
+
+        result = result.map(ouput);
 
         return result;
     };
@@ -470,7 +486,7 @@
                                 .sort(function (a, b) {
                                     return (a - b);
                                 });
-                            var steps = splitRealValuesEvenly(realValues, 5);
+                            var steps = splitRealValuesEvenly(realValues, SIZE_TICKS_COUNT, sizeScale.funcType);
 
                             values = utils.unique(steps
                                 .map(function (x) {
