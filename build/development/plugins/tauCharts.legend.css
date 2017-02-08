@@ -28,6 +28,7 @@
   background-color: #fff;
   border: 1px solid #b3b3b3;
   border-radius: 12px;
+  box-sizing: content-box;
   color: #b3b3b3;
   cursor: pointer;
   font-size: 13px;
