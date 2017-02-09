@@ -173,7 +173,7 @@ const Point = {
             .call(updateGroups);
 
         // TODO: Render bars into single container, exclude removed elements from calculation.
-        this._boundsInfo = this._getBoundsInfo(options.container.selectAll('.dot')[0]);
+        this._boundsInfo = this._getBoundsInfo(frameGroups.selectAll('.dot').reduce((m, g) => m.concat(g), []));
 
         transition(frameGroups.exit())
             .attr('opacity', 0)
