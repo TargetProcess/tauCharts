@@ -1,0 +1,20 @@
+@import "variable";
+
+.graphical-report-btn{
+    background-color: fade(@bg-color, 90%);
+    border: 1px solid currentColor;
+    border-radius: 4px;
+    box-shadow: 0 0 1px fade(@shadow-color, 10%);
+    box-sizing: border-box;
+    color: mix(@font-color, @bg-color, 37.5%);
+    cursor: pointer;
+    font-size: @font-size-m;
+    padding: 0 6px;
+    line-height: 1.5em;
+    height: ~'calc(1.5em + 2px)';
+
+    &:hover {
+        border-color: mix(@font-color, @bg-color, 50%);
+        color: @font-color;
+    }
+}

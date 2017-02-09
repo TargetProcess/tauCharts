@@ -297,8 +297,8 @@
             _containerTemplate: '<div class="graphical-report__legend"></div>',
             _template: utils.template([
                 '<div class="graphical-report__legend__wrap">',
-                '<div class="graphical-report__legend__title"><%=name%></div>',
                 '<%=top%>',
+                '<div class="graphical-report__legend__title"><%=name%></div>',
                 '<%=items%>',
                 '</div>'
             ].join('')),
@@ -330,8 +330,8 @@
                 '</div>'
             ].join('')),
             _resetTemplate: utils.template([
-                '<div role="button" class="graphical-report__legend__reset <%=classDisabled%>">',
-                'Reset',
+                '<div class="graphical-report__legend__reset <%=classDisabled%>">',
+                    '<div role="button" class="graphical-report-btn">Reset</div>',
                 '</div>'
             ].join('')),
             // jscs:enable maximumLineLength

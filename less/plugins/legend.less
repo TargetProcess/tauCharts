@@ -24,12 +24,12 @@
         box-sizing: border-box;
 
         &__wrap {
-          margin-bottom: 30px;
-          position: relative;
+            margin-bottom: 30px;
+            position: relative;
 
-          &:last-child {
-            margin-bottom: 0px
-          }
+            &:last-child {
+                margin-bottom: 0;
+            }
         }
 
         &__title {
@@ -40,29 +40,19 @@
         }
 
         &__reset {
-            background-color: fade(@bg-color, 90%);
-            border: 1px solid mix(@font-color, @bg-color, 37.5%);
-            border-radius: 4px;
-            box-shadow: 0 1px 4px 0 fade(@shadow-color, 20%), 0 0 0 1px fade(@shadow-color, 0.5%);
-            box-sizing: border-box;
-            color: mix(@font-color, @bg-color, 37.5%);
-            cursor: pointer;
-            font-size: @font-size-m;
             margin-top: -4px;
-            padding: 4px 6px;
             position: absolute;
             right: 0;
             top: 0;
             z-index: 1;
 
-            &:hover {
-                border-color: mix(@font-color, @bg-color, 50%);
-                color: @font-color;
-            }
-
             &.disabled {
                 display: none;
             }
+        }
+
+        &__reset + &__title {
+            margin-right: 3.7em;
         }
 
         &__item {
