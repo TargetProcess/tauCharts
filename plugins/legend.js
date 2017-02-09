@@ -306,7 +306,7 @@
                 '<div data-scale-id=\'<%= scaleId %>\' data-dim=\'<%= dim %>\' data-value=\'<%= value %>\' class="graphical-report__legend__item graphical-report__legend__item-color <%=classDisabled%>">',
                 '   <div class="graphical-report__legend__guide__wrap">',
                 '   <div class="graphical-report__legend__guide graphical-report__legend__guide--color <%=cssClass%>"',
-                '        style="background-color: <%=cssColor%>">',
+                '        style="background-color: <%=cssColor%>; border-color: <%=borderColor%>;">',
                 '       <div class="graphical-report__legend__guide--color__overlay">',
                 '       </div>',
                 '   </div>',
@@ -584,7 +584,8 @@
                                             dim: utils.escape(d.dim),
                                             color: d.color,
                                             cssClass: (colorScale.toClass(d.color)),
-                                            cssColor: (colorScale.toColor(d.color)),
+                                            cssColor: (d.disabled ? 'transparent' : colorScale.toColor(d.color)),
+                                            borderColor: colorScale.toColor(d.color),
                                             classDisabled: d.disabled ? 'disabled' : '',
                                             label: utils.escape(isEmpty(d.label) ? noVal : d.label),
                                             value: utils.escape(d.value)
@@ -673,6 +674,10 @@
                             toggleColor(node, isTargetHidden);
                         }
                     });
+                    // BUG: Render doesn't happen when no items to display, so have to manually disable color.
+                    if (!isTargetHidden) {
+                        target.querySelector('.graphical-report__legend__guide').style.backgroundColor = 'transparent';
+                    }
                 } else if (mode === 'focus-single') {
                     var onlyTargetIsVisible = (!isTargetHidden && colorNodes.every(function (node) {
                         return (isTarget(node) || isColorHidden(getColorData(node).key));
