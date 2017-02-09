@@ -386,8 +386,9 @@
 
                         var brewerLength = fillScale.brewer.length;
 
-                        var height = 120;
+                        var height = 50;
                         var fontHeight = 13;
+                        var width = self._container.getBoundingClientRect().width;
 
                         var stops = splitEvenly(numDomain, brewerLength)
                             .reverse()
@@ -402,30 +403,27 @@
                             ((numDomain[1] - numDomain[0]) % 3 === 0) ? 4 :
                                 ((numDomain[1] - numDomain[0]) % 2 === 0) ? 3 : 2
                         );
-                        var labels = splitEvenly(numDomain, labelsLength)
-                            .reverse()
-                            .map(function (x, i, list) {
-                                var p = (i / (labelsLength - 1));
-                                var vPad = 0.5 * ((i === 0) ?
-                                        fontHeight :
-                                        ((i === list.length - 1) ? (-fontHeight) : 0));
-                                var y = (height * p) + vPad + fontHeight / 2;
-                                return '<text x="25" y="' + y + '">' + castNum(x) + '</text>';
-                            });
+                        var labels = splitEvenly(numDomain, labelsLength).map(castNum);
+                        var charW = (fontHeight * 0.75);
+                        var padL = (labels[0].length * charW / 2);
+                        var padR = (labels[labels.length - 1].length * charW / 2);
 
                         var title = ((guide.color || {}).label || {}).text || fillScale.dim;
                         var gradientId = 'legend-gradient-' + self.instanceId;
 
                         var gradient = [
-                            '<svg height="' + height + '" width="100%" style="margin: 0 0 10px 10px">',
+                            '<svg height="40" width="' + width + '" style="margin: 0 0 10px 10px">',
                             '   <defs>',
-                            '       <linearGradient id="' + gradientId + '" x1="0%" y1="0%" x2="0%" y2="100%">',
+                            '       <linearGradient id="' + gradientId + '" x1="0%" y1="0%" x2="100%" y2="0%">',
                             stops.join(''),
                             '       </linearGradient>',
                             '   </defs>',
-                            '   <rect x="0" y="0" height="100%" width="20" fill="url(#' + gradientId + ')"></rect>',
-                            labels.join(''),
-                            '   Sorry, your browser does not support inline SVG.',
+                            '   <rect x="' + padL + '" y="0" height="20" width="' + (width - padL - padR) + '" fill="url(#' + gradientId + ')"></rect>',
+                            labels.map(function (n, i) {
+                                var t = (i / (labels.length - 1));
+                                var x = (padL * (1 - t) + (width - padR) * t);
+                                return '<text x="' + x + '" y="40" text-anchor="middle">' + n + '</text>';
+                            }).join(''),
                             '</svg>'
                         ].join('');
 
