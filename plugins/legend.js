@@ -386,8 +386,10 @@
 
                         var brewerLength = fillScale.brewer.length;
 
-                        var height = 50;
                         var fontHeight = 13;
+                        var barHeight = 20;
+                        var indent = 10;
+                        var height = (barHeight + fontHeight + indent);
                         var width = self._container.getBoundingClientRect().width;
 
                         var stops = splitEvenly(numDomain, brewerLength)
@@ -412,17 +414,17 @@
                         var gradientId = 'legend-gradient-' + self.instanceId;
 
                         var gradient = [
-                            '<svg height="40" width="' + width + '" style="margin: 0 0 10px 10px">',
+                            '<svg height="' + height + '" width="' + width + '" style="margin: 0 0 10px 10px">',
                             '   <defs>',
                             '       <linearGradient id="' + gradientId + '" x1="0%" y1="0%" x2="100%" y2="0%">',
                             stops.join(''),
                             '       </linearGradient>',
                             '   </defs>',
-                            '   <rect x="' + padL + '" y="0" height="20" width="' + (width - padL - padR) + '" fill="url(#' + gradientId + ')"></rect>',
+                            '   <rect x="' + padL + '" y="0" height="' + barHeight + '" width="' + (width - padL - padR) + '" fill="url(#' + gradientId + ')"></rect>',
                             labels.map(function (n, i) {
                                 var t = (i / (labels.length - 1));
                                 var x = (padL * (1 - t) + (width - padR) * t);
-                                return '<text x="' + x + '" y="40" text-anchor="middle">' + n + '</text>';
+                                return '<text x="' + x + '" y="' + (barHeight + indent) + '" text-anchor="middle">' + n + '</text>';
                             }).join(''),
                             '</svg>'
                         ].join('');
@@ -458,6 +460,8 @@
                             return a - b;
                         });
 
+                        var castNum = ((x) => String(x));
+
                         var title = ((guide.size || {}).label || {}).text || sizeScale.dim;
 
                         var first = domain[0];
@@ -492,22 +496,48 @@
                                 }));
                         }
 
+                        var fontHeight = 13;
+                        var sizes = values.map(sizeScale);
+                        var maxSize = sizes[sizes.length - 1];
+                        var indent = 10;
+                        var height = (maxSize + fontHeight + indent);
+                        var width = self._container.getBoundingClientRect().width;
+
+                        var labels = values.map(castNum);
+                        var charW = (fontHeight * 0.75);
+                        var padL = (labels[0].length * charW / 2);
+                        var padR = (labels[labels.length - 1].length * charW / 2);
+
+                        var gap = (width - sizes.reduce(function (sum, n) {
+                            return (sum + n);
+                        }, 0) - padL - padR) / (sizes.length - 1);
+                        var ticks = [padL];
+                        for (var i = 1, n, p; i < sizes.length; i++) {
+                            n = (sizes[i] / 2);
+                            p = (sizes[i - 1] / 2);
+                            ticks.push(ticks[i - 1] + p + gap + n);
+                        }
+
+                        var legend = [
+                            '<svg height="' + height + '" width="' + width + '" style="margin: 0 0 10px 10px">',
+                            sizes.map(function (s, i) {
+                                var x = ticks[i];
+                                var y = (maxSize - s / 2);
+                                return '<circle class="graphical-report__dot" cx="' + x + '" cy="' + y + '" r="' + (s / 2) + '"/>';
+                            }),
+                            labels.map(function (n, i) {
+                                var t = (i / (labels.length - 1));
+                                var x = ticks[i];
+                                return '<text x="' + x + '" y="' + (maxSize + indent + fontHeight) + '" text-anchor="middle">' + n + '</text>';
+                            }).join(''),
+                            '</svg>'
+                        ].join('');
+
                         self._container
                             .insertAdjacentHTML('beforeend', self._template({
                                 name: title,
                                 top: null,
-                                items: values
-                                    .map(function (value) {
-                                        var diameter = sizeScale(value);
-                                        return self._itemSizeTemplate({
-                                            diameter: doEven(diameter + 2),
-                                            radius: diameter / 2,
-                                            value: value,
-                                            className: firstNode.config.color ? 'color-definite' : 'color-default-size'
-                                        });
-                                    })
-                                    .reverse()
-                                    .join('')
+                                items: legend
                             }));
                     }
                 });
