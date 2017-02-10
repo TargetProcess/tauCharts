@@ -414,18 +414,20 @@
                         var gradientId = 'legend-gradient-' + self.instanceId;
 
                         var gradient = [
-                            '<svg height="' + height + '" width="' + width + '" style="margin: 0 0 10px 10px">',
+                            '<svg class="graphical-report__legend__gradient" height="' + height + '" width="' + width + '">',
                             '   <defs>',
                             '       <linearGradient id="' + gradientId + '" x1="0%" y1="0%" x2="100%" y2="0%">',
                             stops.join(''),
                             '       </linearGradient>',
                             '   </defs>',
-                            '   <rect x="' + padL + '" y="0" height="' + barHeight + '" width="' + (width - padL - padR) + '" fill="url(#' + gradientId + ')"></rect>',
-                            labels.map(function (n, i) {
-                                var t = (i / (labels.length - 1));
-                                var x = (padL * (1 - t) + (width - padR) * t);
-                                return '<text x="' + x + '" y="' + (barHeight + indent) + '" text-anchor="middle">' + n + '</text>';
-                            }).join(''),
+                            '   <rect class="graphical-report__legend__gradient__bar" x="' + padL + '" y="0" height="' + barHeight + '" width="' + (width - padL - padR) + '" fill="url(#' + gradientId + ')"></rect>',
+                            (labels[0] === labels[labels.length - 1] ?
+                                ('<text x="' + padL + '" y="' + height + '" text-anchor="start">' + labels[0] + '</text>') :
+                                labels.map(function (n, i) {
+                                    var t = (i / (labels.length - 1));
+                                    var x = (padL * (1 - t) + (width - padR) * t);
+                                    return '<text x="' + x + '" y="' + height + '" text-anchor="middle">' + n + '</text>';
+                                }).join('')),
                             '</svg>'
                         ].join('');
 
@@ -505,12 +507,13 @@
 
                         var labels = values.map(castNum);
                         var charW = (fontHeight * 0.75);
-                        var padL = (labels[0].length * charW / 2);
-                        var padR = (labels[labels.length - 1].length * charW / 2);
+                        var padL = Math.max(labels[0].length * charW / 2, sizes[0] / 2);
+                        var padR = Math.max(labels[labels.length - 1].length * charW / 2, maxSize / 2);
 
-                        var gap = (width - sizes.reduce(function (sum, n) {
-                            return (sum + n);
-                        }, 0) - padL - padR) / (sizes.length - 1);
+                        var maxGap = 24;
+                        var gap = Math.min((width - sizes.reduce(function (sum, n, i) {
+                            return (sum + (i === 0 || i === sizes.length - 1 ? n / 2 : n));
+                        }, 0) - padL - padR) / (sizes.length - 1), maxGap);
                         var ticks = [padL];
                         for (var i = 1, n, p; i < sizes.length; i++) {
                             n = (sizes[i] / 2);
@@ -518,17 +521,17 @@
                             ticks.push(ticks[i - 1] + p + gap + n);
                         }
 
-                        var legend = [
-                            '<svg height="' + height + '" width="' + width + '" style="margin: 0 0 10px 10px">',
+                        var sizeLegend = [
+                            '<svg class="graphical-report__legend__size" height="' + height + '" width="' + width + '">',
                             sizes.map(function (s, i) {
                                 var x = ticks[i];
                                 var y = (maxSize - s / 2);
-                                return '<circle class="graphical-report__dot" cx="' + x + '" cy="' + y + '" r="' + (s / 2) + '"/>';
+                                return '<circle class="graphical-report__legend__size__item ' + (firstNode.config.color ? 'color-definite' : 'color-default-size') + '" cx="' + x + '" cy="' + y + '" r="' + (s / 2) + '"/>';
                             }),
                             labels.map(function (n, i) {
                                 var t = (i / (labels.length - 1));
                                 var x = ticks[i];
-                                return '<text x="' + x + '" y="' + (maxSize + indent + fontHeight) + '" text-anchor="middle">' + n + '</text>';
+                                return '<text x="' + x + '" y="' + height + '" text-anchor="middle">' + n + '</text>';
                             }).join(''),
                             '</svg>'
                         ].join('');
@@ -537,7 +540,7 @@
                             .insertAdjacentHTML('beforeend', self._template({
                                 name: title,
                                 top: null,
-                                items: legend
+                                items: sizeLegend
                             }));
                     }
                 });

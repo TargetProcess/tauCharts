@@ -115,16 +115,6 @@
 
             }
 
-            &.color-definite {
-                stroke: @color-definite;
-                fill: @color-definite;
-            }
-
-            &.color-default-size {
-                stroke: @default-color;
-                fill: @default-color;
-            }
-
             &--color {
                 &__overlay {
                     background-color: transparent;
@@ -175,6 +165,31 @@
             &::after {
                 background-color: @font-color;
                 transform: none;
+            }
+        }
+
+        &__size {
+            margin: 0 0 10px 10px;
+
+            &__item {
+                &.color-definite {
+                    stroke: @color-definite;
+                    fill: @color-definite;
+                }
+
+                &.color-default-size {
+                    stroke: @default-color;
+                    fill: @default-color;
+                }
+            }
+        }
+        
+        &__gradient {
+            margin: 0 0 10px 10px;
+
+            &__bar {
+                rx: 4px;
+                ry: 4px;
             }
         }
     }
