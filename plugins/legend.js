@@ -11,6 +11,7 @@
     }
 })(function (tauCharts) {
 
+    var d3 = tauCharts.api.d3;
     var utils = tauCharts.api.utils;
     var RESET_SELECTOR = '.graphical-report__legend__reset';
     var COLOR_ITEM_SELECTOR = '.graphical-report__legend__item-color';
@@ -41,13 +42,17 @@
             return [values[0], values[values.length - 1]];
         }
 
+        var neg = (values[0] < 0 ? Math.abs(values[0]) : 0);
         var repeat = function (x) {
             return x;
         };
-        var square = function (x) {
-            return Math.pow(x, 2);
+        var sqrt = function (x) {
+            return Math.sqrt(x + neg);
         };
-        var input = (funcType === 'sqrt' ? Math.sqrt : repeat);
+        var square = function (x) {
+            return (Math.pow(x, 2) - neg);
+        };
+        var input = (funcType === 'sqrt' ? sqrt : repeat);
         var ouput = (funcType === 'sqrt' ? square : repeat);
 
         values = values.map(input);
@@ -113,18 +118,46 @@
         return result;
     };
 
+    var log10 = function (x) {
+        return Math.log(x) / Math.LN10;
+    };
+
+    var removeRedundantZeros = (function () {
+        var zerosAfterDot = /\.0+([^\d].*)?$/;
+        var zerosAfterNotZero = /(\.\d+?)0+([^\d].*)?$/;
+        return function (str) {
+            return str
+                .replace(zerosAfterDot, '$1')
+                .replace(zerosAfterNotZero, '$1$2');
+        };
+    })();
+
+    var tauFormat = tauCharts.api.tickFormat.get('x-num-auto');
+    var d3Format3S = d3.format('.3s');
+    var shortNumFormat = function (num) {
+        return removeRedundantZeros(d3Format3S(num));
+    };
     var getSignificantDigitsFormatter = function (start, end) {
-        var diff = Math.abs(end - start);
-        var significantNumbers = 2;
-        if (diff > 0 && diff < 1) {
-            significantNumbers += String(diff).split('.')[1].split(0).findIndex(function (x) {
-                return x !== '';
-            });
+        var max = Math.max(Math.abs(start), Math.abs(end));
+        var exp = Math.floor(log10(max));
+        var diff = (start * end > 0 ? Math.abs(end - start) : max);
+        var diffExp = Math.floor(log10(diff));
+
+        if (Math.abs(exp - diffExp) > 3) {
+            return function (num) {
+                if (num === start) {
+                    return shortNumFormat(num);
+                }
+                return (shortNumFormat(start) + '+' + tauFormat(num - start));
+            };
         }
 
-        return function (num) {
-            return String(parseFloat((num).toFixed(significantNumbers)));
-        };
+        if (Math.abs(exp) < 4) {
+            return function (num) {
+                return removeRedundantZeros(num.toFixed(3));
+            };
+        }
+        return tauFormat;
     };
 
     function ChartLegend(xSettings) {
@@ -134,10 +167,6 @@
             {
                 // add default settings here
             });
-
-        var log10 = function (x) {
-            return Math.log(x) / Math.LN10;
-        };
 
         var doEven = function (n) {
             n = Math.round(n);
@@ -393,7 +422,6 @@
                         var width = self._container.getBoundingClientRect().width;
 
                         var stops = splitEvenly(numDomain, brewerLength)
-                            .reverse()
                             .map(function (x, i) {
                                 var p = (i / (brewerLength - 1)) * 100;
                                 return (
@@ -406,9 +434,16 @@
                                 ((numDomain[1] - numDomain[0]) % 2 === 0) ? 3 : 2
                         );
                         var labels = splitEvenly(numDomain, labelsLength).map(castNum);
-                        var charW = (fontHeight * 0.75);
-                        var padL = (labels[0].length * charW / 2);
-                        var padR = (labels[labels.length - 1].length * charW / 2);
+                        var areEqual = (labels[0] === labels[labels.length - 1]);
+                        var charW = (fontHeight * 0.618);
+                        var totalLabelW = labels.reduce(function (sum, label) {
+                            return (sum + label.length * charW);
+                        }, 0);
+                        if (totalLabelW > width) {
+                            labels = [labels[0], labels[labels.length - 1]];
+                        }
+                        var padL = ((areEqual ? 0 : (labels[0].length * charW / 2)) + 10);
+                        var padR = (areEqual ? 0 : labels[labels.length - 1].length * charW / 2);
 
                         var title = ((guide.color || {}).label || {}).text || fillScale.dim;
                         var gradientId = 'legend-gradient-' + self.instanceId;
@@ -421,7 +456,7 @@
                             '       </linearGradient>',
                             '   </defs>',
                             '   <rect class="graphical-report__legend__gradient__bar" x="' + padL + '" y="0" height="' + barHeight + '" width="' + (width - padL - padR) + '" fill="url(#' + gradientId + ')"></rect>',
-                            (labels[0] === labels[labels.length - 1] ?
+                            (areEqual ?
                                 ('<text x="' + padL + '" y="' + height + '" text-anchor="start">' + labels[0] + '</text>') :
                                 labels.map(function (n, i) {
                                     var t = (i / (labels.length - 1));
@@ -462,8 +497,6 @@
                             return a - b;
                         });
 
-                        var castNum = ((x) => String(x));
-
                         var title = ((guide.size || {}).label || {}).text || sizeScale.dim;
 
                         var first = domain[0];
@@ -498,27 +531,37 @@
                                 }));
                         }
 
+                        var castNum = getSignificantDigitsFormatter(values[0], values[values.length - 1]);
+
                         var fontHeight = 13;
+                        values.reverse();
                         var sizes = values.map(sizeScale);
-                        var maxSize = sizes[sizes.length - 1];
+                        var maxSize = Math.max.apply(null, sizes);
                         var indent = 10;
                         var height = (maxSize + fontHeight + indent);
                         var width = self._container.getBoundingClientRect().width;
 
                         var labels = values.map(castNum);
-                        var charW = (fontHeight * 0.75);
-                        var padL = Math.max(labels[0].length * charW / 2, sizes[0] / 2);
+                        var charW = (fontHeight * 0.618);
+                        var padL = (Math.max(labels[0].length * charW / 2, sizes[0] / 2) + 10);
                         var padR = Math.max(labels[labels.length - 1].length * charW / 2, maxSize / 2);
 
-                        var maxGap = 24;
-                        var gap = Math.min((width - sizes.reduce(function (sum, n, i) {
+                        var gap = (width - sizes.reduce(function (sum, n, i) {
                             return (sum + (i === 0 || i === sizes.length - 1 ? n / 2 : n));
-                        }, 0) - padL - padR) / (sizes.length - 1), maxGap);
+                        }, 0) - padL - padR) / (SIZE_TICKS_COUNT - 1);
                         var ticks = [padL];
                         for (var i = 1, n, p; i < sizes.length; i++) {
                             n = (sizes[i] / 2);
                             p = (sizes[i - 1] / 2);
                             ticks.push(ticks[i - 1] + p + gap + n);
+                        }
+                        var maxLabelW = Math.max.apply(null, labels.map(function (label) {
+                            return (label.length * charW);
+                        }));
+                        if (maxLabelW > width / 4) {
+                            labels = [labels[0], labels[labels.length - 1]];
+                            sizes = [sizes[0], sizes[sizes.length - 1]];
+                            ticks = [padL, width - padR];
                         }
 
                         var sizeLegend = [

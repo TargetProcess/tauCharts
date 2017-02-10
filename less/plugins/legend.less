@@ -168,9 +168,13 @@
             }
         }
 
-        &__size {
-            margin: 0 0 10px 10px;
+        &__size,
+        &__gradient {
+            margin-bottom: 10px;
+            margin-top: 4px;
+        }
 
+        &__size {
             &__item {
                 &.color-definite {
                     stroke: @color-definite;
@@ -185,8 +189,6 @@
         }
         
         &__gradient {
-            margin: 0 0 10px 10px;
-
             &__bar {
                 rx: 4px;
                 ry: 4px;
