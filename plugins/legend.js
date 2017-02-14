@@ -23,6 +23,23 @@
         return ++counter;
     };
 
+    var xml = function (tag, _attrs) {
+        var childrenArgIndex = 2;
+        var attrs = _attrs;
+        if (typeof attrs !== 'object') {
+            childrenArgIndex = 1;
+            attrs = {};
+        }
+        var children = Array.prototype.slice.call(arguments, childrenArgIndex);
+        return (
+            '<' + tag +
+            Object.keys(attrs).map(function (key) {
+                return ' ' + key + '="' + attrs[key] + '"';
+            }).join('') +
+            (children.length > 0 ? ('>' + children.join('') + '</' + tag + '>') : '/>')
+        );
+    };
+
     var splitEvenly = function (domain, parts) {
         var min = domain[0];
         var max = domain[1];
@@ -122,6 +139,13 @@
         return Math.log(x) / Math.LN10;
     };
 
+    var getExponent = function (x) {
+        if (x === 0) {
+            return 0;
+        }
+        return Math.floor(log10(Math.abs(x)));
+    };
+
     var removeRedundantZeros = (function () {
         var zerosAfterDot = /\.0+([^\d].*)?$/;
         var zerosAfterNotZero = /(\.\d+?)0+([^\d].*)?$/;
@@ -132,32 +156,36 @@
         };
     })();
 
-    var tauFormat = tauCharts.api.tickFormat.get('x-num-auto');
     var d3Format3S = d3.format('.3s');
     var shortNumFormat = function (num) {
         return removeRedundantZeros(d3Format3S(num));
     };
-    var getSignificantDigitsFormatter = function (start, end) {
+
+    var getNumberFormatter = function (start, end) {
+
         var max = Math.max(Math.abs(start), Math.abs(end));
-        var exp = Math.floor(log10(max));
+        var absExp = getExponent(max);
         var diff = (start * end > 0 ? Math.abs(end - start) : max);
-        var diffExp = Math.floor(log10(diff));
+        var diffExp = getExponent(diff);
+        var absExpVsDiffExp = Math.abs(absExp - diffExp);
 
-        if (Math.abs(exp - diffExp) > 3) {
-            return function (num) {
-                if (num === start) {
-                    return shortNumFormat(num);
-                }
-                return (shortNumFormat(start) + '+' + tauFormat(num - start));
-            };
+        if (Math.abs(absExp) > 3 && absExpVsDiffExp <= 3) {
+            // Short format
+            // 1k, 500k, 1M.
+            return shortNumFormat;
         }
 
-        if (Math.abs(exp) < 4) {
-            return function (num) {
-                return removeRedundantZeros(num.toFixed(3));
-            };
-        }
-        return tauFormat;
+        // Show necessary digits:
+        // 100001, 100002, 100003;
+        // 0.10001, 0.10002, 0.10003.
+        return function (num) {
+            var numExp = getExponent(max - num);
+            var trailingDigits = Math.min((
+                (diffExp < 0 ? Math.abs(diffExp) : 0) +
+                (numExp < diffExp ? 1 : 0)
+            ), 20); // NOTE: `toFixed` accepts values between 0 and 20.
+            return removeRedundantZeros(num.toFixed(trailingDigits));
+        };
     };
 
     function ChartLegend(xSettings) {
@@ -343,21 +371,6 @@
                 '   <span class="graphical-report__legend__guide__label"><%=label%></span>',
                 '</div>'
             ].join('')),
-            _itemFillTemplate: utils.template([
-                '<div data-value=\'<%=value%>\' class="graphical-report__legend__item graphical-report__legend__item-color" style="padding: 6px 0px 10px 40px;margin-left:10px;">',
-                '<div class="graphical-report__legend__guide__wrap" style="top:0;left:0;">',
-                '   <span class="graphical-report__legend__guide" style="background-color:<%=color%>;border-radius:0"></span>',
-                '   <span style="padding-left: 20px"><%=label%></span>',
-                '</div>',
-                '</div>'
-            ].join('')),
-            _itemSizeTemplate: utils.template([
-                '<div class="graphical-report__legend__item graphical-report__legend__item--size">',
-                '<div class="graphical-report__legend__guide__wrap">',
-                '<svg class="graphical-report__legend__guide graphical-report__legend__guide--size  <%=className%>" style="width: <%=diameter%>px;height: <%=diameter%>px;"><circle cx="<%=radius%>" cy="<%=radius%>" class="graphical-report__dot" r="<%=radius%>"></circle></svg>',
-                '</div><%=value%>',
-                '</div>'
-            ].join('')),
             _resetTemplate: utils.template([
                 '<div class="graphical-report__legend__reset <%=classDisabled%>">',
                     '<div role="button" class="graphical-report-btn">Reset</div>',
@@ -403,7 +416,7 @@
                             }) :
                             domain);
 
-                        var numFormatter = getSignificantDigitsFormatter(numDomain[0], numDomain[numDomain.length - 1]);
+                        var numFormatter = getNumberFormatter(numDomain[0], numDomain[numDomain.length - 1]);
 
                         var castNum = (isDate ?
                             function (x) {
@@ -416,10 +429,80 @@
                         var brewerLength = fillScale.brewer.length;
 
                         var fontHeight = 13;
-                        var barHeight = 20;
-                        var indent = 10;
-                        var height = (barHeight + fontHeight + indent);
+                        var getTextWidth = function (text) {
+                            return (text.length * fontHeight * 0.618);
+                        };
+                        var labelsCount = (!fillScale.isInteger ? 3 :
+                            ((numDomain[1] - numDomain[0]) % 3 === 0) ? 4 :
+                                ((numDomain[1] - numDomain[0]) % 2 === 0) ? 3 : 2
+                        );
+                        var labels = splitEvenly(numDomain, labelsCount).map(castNum);
+                        if (labels[0] === labels[labels.length - 1]) {
+                            labels = [labels[0]];
+                        }
+
                         var width = self._container.getBoundingClientRect().width;
+                        var totalLabelsW = labels.reduce(function (sum, label) {
+                            return (sum + getTextWidth(label));
+                        }, 0);
+                        var isVerticalLayout = false;
+                        if (totalLabelsW > width) {
+                            if (labels.length > 1 &&
+                                getTextWidth(labels[0]) + getTextWidth(labels[labels.length - 1]) > width
+                            ) {
+                                isVerticalLayout = true;
+                            } else {
+                                labels = [labels[0], labels[labels.length - 1]];
+                            }
+                        }
+
+                        var barSize = 20;
+                        var layout = (isVerticalLayout ?
+                            (function () {
+                                var height = 120;
+                                return {
+                                    width: width,
+                                    height: height,
+                                    barX: 0,
+                                    barY: 0,
+                                    barWidth: barSize,
+                                    barHeight: height,
+                                    textAnchor: 'start',
+                                    textX: utils.range(labelsCount).map(function () {
+                                        return 25;
+                                    }),
+                                    textY: (labels.length === 1 ?
+                                        (height / 2 + fontHeight * 0.618) :
+                                        labels.map(function (_, i) {
+                                            var t = (i / (labels.length - 1));
+                                            return (fontHeight * (1 - t) + height * t);
+                                        }))
+                                }
+                            })() :
+                            (function () {
+                                var padL = (getTextWidth(labels[0]) / 2);
+                                var padR = (getTextWidth(labels[labels.length - 1]) / 2);
+                                var indent = 10;
+                                return {
+                                    width: width,
+                                    height: (barSize + indent + fontHeight),
+                                    barX: 0,
+                                    barY: 0,
+                                    barWidth: width,
+                                    barHeight: barSize,
+                                    textAnchor: 'middle',
+                                    textX: (labels.length === 1 ?
+                                        [width / 2] :
+                                        labels.map(function (_, i) {
+                                            var t = (i / (labels.length - 1));
+                                            return (padL * (1 - t) + (width - padR) * t);;
+                                        })),
+                                    textY: utils.range(labelsCount).map(function () {
+                                        return (barSize + indent + fontHeight);
+                                    })
+                                }
+                            })()
+                        );
 
                         var stops = splitEvenly(numDomain, brewerLength)
                             .map(function (x, i) {
@@ -429,42 +512,45 @@
                                     '      style="stop-color:' + fillScale(x) + ';stop-opacity:1" />');
                             });
 
-                        var labelsLength = (!fillScale.isInteger ? 3 :
-                            ((numDomain[1] - numDomain[0]) % 3 === 0) ? 4 :
-                                ((numDomain[1] - numDomain[0]) % 2 === 0) ? 3 : 2
-                        );
-                        var labels = splitEvenly(numDomain, labelsLength).map(castNum);
-                        var areEqual = (labels[0] === labels[labels.length - 1]);
-                        var charW = (fontHeight * 0.618);
-                        var totalLabelW = labels.reduce(function (sum, label) {
-                            return (sum + label.length * charW);
-                        }, 0);
-                        if (totalLabelW > width) {
-                            labels = [labels[0], labels[labels.length - 1]];
-                        }
-                        var padL = ((areEqual ? 0 : (labels[0].length * charW / 2)) + 10);
-                        var padR = (areEqual ? 0 : labels[labels.length - 1].length * charW / 2);
-
                         var title = ((guide.color || {}).label || {}).text || fillScale.dim;
                         var gradientId = 'legend-gradient-' + self.instanceId;
 
-                        var gradient = [
-                            '<svg class="graphical-report__legend__gradient" height="' + height + '" width="' + width + '">',
-                            '   <defs>',
-                            '       <linearGradient id="' + gradientId + '" x1="0%" y1="0%" x2="100%" y2="0%">',
-                            stops.join(''),
-                            '       </linearGradient>',
-                            '   </defs>',
-                            '   <rect class="graphical-report__legend__gradient__bar" x="' + padL + '" y="0" height="' + barHeight + '" width="' + (width - padL - padR) + '" fill="url(#' + gradientId + ')"></rect>',
-                            (areEqual ?
-                                ('<text x="' + padL + '" y="' + height + '" text-anchor="start">' + labels[0] + '</text>') :
-                                labels.map(function (n, i) {
-                                    var t = (i / (labels.length - 1));
-                                    var x = (padL * (1 - t) + (width - padR) * t);
-                                    return '<text x="' + x + '" y="' + height + '" text-anchor="middle">' + n + '</text>';
-                                }).join('')),
-                            '</svg>'
-                        ].join('');
+                        var gradient = (
+                            xml('svg',
+                                {
+                                    class: 'graphical-report__legend__gradient',
+                                    width: layout.width,
+                                    height: layout.height
+                                },
+                                xml('defs',
+                                    xml('linearGradient',
+                                        {
+                                            id: gradientId,
+                                            x1: '0%',
+                                            y1: '0%',
+                                            x2: (isVerticalLayout ? '0%' : '100%'),
+                                            y2: (isVerticalLayout ? '100%' : '0%')
+                                        },
+                                        stops.join('')
+                                    )
+                                ),
+                                xml('rect', {
+                                    class: 'graphical-report__legend__gradient__bar',
+                                    x: layout.barX,
+                                    y: layout.barY,
+                                    width: layout.barWidth,
+                                    height: layout.barHeight,
+                                    fill: 'url(#' + gradientId + ')'
+                                }),
+                                labels.map(function (text, i) {
+                                    return xml('text', {
+                                        x: layout.textX[i],
+                                        y: layout.textY[i],
+                                        'text-anchor': layout.textAnchor
+                                    }, text);
+                                }).join('')
+                            )
+                        );
 
                         self._container
                             .insertAdjacentHTML('beforeend', self._template({
@@ -531,53 +617,110 @@
                                 }));
                         }
 
-                        var castNum = getSignificantDigitsFormatter(values[0], values[values.length - 1]);
+                        var castNum = getNumberFormatter(values[0], values[values.length - 1]);
 
                         var fontHeight = 13;
+                        var getTextWidth = function (text) {
+                            return (text.length * fontHeight * 0.618);
+                        };
                         values.reverse();
                         var sizes = values.map(sizeScale);
                         var maxSize = Math.max.apply(null, sizes);
-                        var indent = 10;
-                        var height = (maxSize + fontHeight + indent);
-                        var width = self._container.getBoundingClientRect().width;
 
                         var labels = values.map(castNum);
-                        var charW = (fontHeight * 0.618);
-                        var padL = (Math.max(labels[0].length * charW / 2, sizes[0] / 2) + 10);
-                        var padR = Math.max(labels[labels.length - 1].length * charW / 2, maxSize / 2);
-
-                        var gap = (width - sizes.reduce(function (sum, n, i) {
-                            return (sum + (i === 0 || i === sizes.length - 1 ? n / 2 : n));
-                        }, 0) - padL - padR) / (SIZE_TICKS_COUNT - 1);
-                        var ticks = [padL];
-                        for (var i = 1, n, p; i < sizes.length; i++) {
-                            n = (sizes[i] / 2);
-                            p = (sizes[i - 1] / 2);
-                            ticks.push(ticks[i - 1] + p + gap + n);
-                        }
-                        var maxLabelW = Math.max.apply(null, labels.map(function (label) {
-                            return (label.length * charW);
-                        }));
+                        var width = self._container.getBoundingClientRect().width;
+                        var maxLabelW = Math.max.apply(null, labels.map(getTextWidth));
+                        var isVerticalLayout = false;
                         if (maxLabelW > width / 4) {
-                            labels = [labels[0], labels[labels.length - 1]];
-                            sizes = [sizes[0], sizes[sizes.length - 1]];
-                            ticks = [padL, width - padR];
+                            isVerticalLayout = true;
                         }
 
-                        var sizeLegend = [
-                            '<svg class="graphical-report__legend__size" height="' + height + '" width="' + width + '">',
-                            sizes.map(function (s, i) {
-                                var x = ticks[i];
-                                var y = (maxSize - s / 2);
-                                return '<circle class="graphical-report__legend__size__item ' + (firstNode.config.color ? 'color-definite' : 'color-default-size') + '" cx="' + x + '" cy="' + y + '" r="' + (s / 2) + '"/>';
-                            }),
-                            labels.map(function (n, i) {
-                                var t = (i / (labels.length - 1));
-                                var x = ticks[i];
-                                return '<text x="' + x + '" y="' + height + '" text-anchor="middle">' + n + '</text>';
-                            }).join(''),
-                            '</svg>'
-                        ].join('');
+                        var layout = (isVerticalLayout ?
+                            (function () {
+                                var gap = 24;
+                                var padT = (sizes[0] / 2);
+                                var padB = (sizes[sizes.length - 1] / 2);
+                                var indent = 5;
+                                var cy = [padT];
+                                for (var i = 1, n, p; i < sizes.length; i++) {
+                                    p = (sizes[i - 1] / 2);
+                                    n = (sizes[i] / 2);
+                                    cy.push(cy[i - 1] + p + gap + n);
+                                }
+                                var dy = (fontHeight * 0.618 / 2);
+                                return {
+                                    width: width,
+                                    height: (cy[cy.length - 1] + padB),
+                                    circleX: utils.range(sizes.length).map(function () {
+                                        return (maxSize / 2);
+                                    }),
+                                    circleY: cy,
+                                    textAnchor: 'start',
+                                    textX: utils.range(labels.length).map(function () {
+                                        return (maxSize + indent);
+                                    }),
+                                    textY: cy.map(function (y) {
+                                        return (y + dy);
+                                    })
+                                };
+                            })() :
+                            (function () {
+                                var padL = Math.max(getTextWidth(labels[0]) / 2, sizes[0] / 2);
+                                var padR = Math.max(getTextWidth(labels[labels.length - 1]) / 2, sizes[sizes.length - 1] / 2);
+                                var gap = (width - sizes.reduce(function (sum, n, i) {
+                                    return (sum + (i === 0 || i === sizes.length - 1 ? n / 2 : n));
+                                }, 0) - padL - padR) / (SIZE_TICKS_COUNT - 1);
+                                var indent = 10;
+                                var cx = [padL];
+                                for (var i = 1, n, p; i < sizes.length; i++) {
+                                    p = (sizes[i - 1] / 2);
+                                    n = (sizes[i] / 2);
+                                    cx.push(cx[i - 1] + p + gap + n);
+                                }
+                                var cy = sizes.map(function (size) {
+                                    return (maxSize - size / 2);
+                                });
+                                return {
+                                    width: width,
+                                    height: (maxSize + indent + fontHeight),
+                                    circleX: cx,
+                                    circleY: cy,
+                                    textAnchor: 'middle',
+                                    textX: cx,
+                                    textY: utils.range(labels.length).map(function () {
+                                        return (maxSize + indent + fontHeight);
+                                    }),
+                                };
+                            })()
+                        );
+
+                        var sizeLegend = (
+                            xml('svg',
+                                {
+                                    class: 'graphical-report__legend__size',
+                                    width: layout.width,
+                                    height: layout.height
+                                },
+                                sizes.map(function (size, i) {
+                                    return xml('circle', {
+                                        class: (
+                                            'graphical-report__legend__size__item ' +
+                                            (firstNode.config.color ? 'color-definite' : 'color-default-size')
+                                        ),
+                                        cx: layout.circleX[i],
+                                        cy: layout.circleY[i],
+                                        r: (size / 2)
+                                    });
+                                }).join(''),
+                                labels.map(function (text, i) {
+                                    return xml('text', {
+                                        x: layout.textX[i],
+                                        y: layout.textY[i],
+                                        'text-anchor': layout.textAnchor
+                                    }, text);
+                                }).join('')
+                            )
+                        );
 
                         self._container
                             .insertAdjacentHTML('beforeend', self._template({
