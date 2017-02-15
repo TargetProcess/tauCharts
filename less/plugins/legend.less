@@ -115,16 +115,6 @@
 
             }
 
-            &.color-definite {
-                stroke: @color-definite;
-                fill: @color-definite;
-            }
-
-            &.color-default-size {
-                stroke: @default-color;
-                fill: @default-color;
-            }
-
             &--color {
                 &__overlay {
                     background-color: transparent;
@@ -175,6 +165,40 @@
             &::after {
                 background-color: @font-color;
                 transform: none;
+            }
+        }
+
+        &__size-wrapper,
+        &__gradient-wrapper {
+            box-sizing: border-box;
+            margin: 10px;
+            overflow: visible;
+            width: 100%;
+        }
+
+        &__size,
+        &__gradient {
+            overflow: visible;
+        }
+
+        &__size {
+            &__item__circle {
+                &.color-definite {
+                    stroke: @color-definite;
+                    fill: @color-definite;
+                }
+
+                &.color-default-size {
+                    stroke: @default-color;
+                    fill: @default-color;
+                }
+            }
+        }
+        
+        &__gradient {
+            &__bar {
+                rx: 4px;
+                ry: 4px;
             }
         }
     }

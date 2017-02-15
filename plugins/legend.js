@@ -11,15 +11,34 @@
     }
 })(function (tauCharts) {
 
+    var d3 = tauCharts.api.d3;
     var utils = tauCharts.api.utils;
     var RESET_SELECTOR = '.graphical-report__legend__reset';
     var COLOR_ITEM_SELECTOR = '.graphical-report__legend__item-color';
     var COLOR_TOGGLE_SELECTOR = '.graphical-report__legend__guide--color__overlay';
     var SIZE_TICKS_COUNT = 4;
+    var FONT_SIZE = 13;
 
     var counter = 0;
     var getId = function () {
         return ++counter;
+    };
+
+    var xml = function (tag, _attrs) {
+        var childrenArgIndex = 2;
+        var attrs = _attrs;
+        if (typeof attrs !== 'object') {
+            childrenArgIndex = 1;
+            attrs = {};
+        }
+        var children = Array.prototype.slice.call(arguments, childrenArgIndex);
+        return (
+            '<' + tag +
+            Object.keys(attrs).map(function (key) {
+                return ' ' + key + '="' + attrs[key] + '"';
+            }).join('') +
+            (children.length > 0 ? ('>' + children.join('') + '</' + tag + '>') : '/>')
+        );
     };
 
     var splitEvenly = function (domain, parts) {
@@ -41,13 +60,17 @@
             return [values[0], values[values.length - 1]];
         }
 
+        var neg = (values[0] < 0 ? Math.abs(values[0]) : 0);
         var repeat = function (x) {
             return x;
         };
-        var square = function (x) {
-            return Math.pow(x, 2);
+        var sqrt = function (x) {
+            return Math.sqrt(x + neg);
         };
-        var input = (funcType === 'sqrt' ? Math.sqrt : repeat);
+        var square = function (x) {
+            return (Math.pow(x, 2) - neg);
+        };
+        var input = (funcType === 'sqrt' ? sqrt : repeat);
         var ouput = (funcType === 'sqrt' ? square : repeat);
 
         values = values.map(input);
@@ -113,17 +136,56 @@
         return result;
     };
 
-    var getSignificantDigitsFormatter = function (start, end) {
-        var diff = Math.abs(end - start);
-        var significantNumbers = 2;
-        if (diff > 0 && diff < 1) {
-            significantNumbers += String(diff).split('.')[1].split(0).findIndex(function (x) {
-                return x !== '';
-            });
+    var log10 = function (x) {
+        return Math.log(x) / Math.LN10;
+    };
+
+    var getExponent = function (x) {
+        if (x === 0) {
+            return 0;
+        }
+        return Math.floor(log10(Math.abs(x)));
+    };
+
+    var removeRedundantZeros = (function () {
+        var zerosAfterDot = /\.0+([^\d].*)?$/;
+        var zerosAfterNotZero = /(\.\d+?)0+([^\d].*)?$/;
+        return function (str) {
+            return str
+                .replace(zerosAfterDot, '$1')
+                .replace(zerosAfterNotZero, '$1$2');
+        };
+    })();
+
+    var d3Format3S = d3.format('.3s');
+    var shortNumFormat = function (num) {
+        return removeRedundantZeros(d3Format3S(num));
+    };
+
+    var getNumberFormatter = function (start, end) {
+
+        var max = Math.max(Math.abs(start), Math.abs(end));
+        var absExp = getExponent(max);
+        var diff = (start * end > 0 ? Math.abs(end - start) : max);
+        var diffExp = getExponent(diff);
+        var absExpVsDiffExp = Math.abs(absExp - diffExp);
+
+        if (Math.abs(absExp) > 3 && absExpVsDiffExp <= 3) {
+            // Short format
+            // 1k, 500k, 1M.
+            return shortNumFormat;
         }
 
+        // Show necessary digits:
+        // 100001, 100002, 100003;
+        // 0.10001, 0.10002, 0.10003.
         return function (num) {
-            return String(parseFloat((num).toFixed(significantNumbers)));
+            var numExp = getExponent(max - num);
+            var trailingDigits = Math.min((
+                (diffExp < 0 ? Math.abs(diffExp) : 0) +
+                (numExp < diffExp ? 1 : 0)
+            ), 20); // NOTE: `toFixed` accepts values between 0 and 20.
+            return removeRedundantZeros(num.toFixed(trailingDigits));
         };
     };
 
@@ -134,10 +196,6 @@
             {
                 // add default settings here
             });
-
-        var log10 = function (x) {
-            return Math.log(x) / Math.LN10;
-        };
 
         var doEven = function (n) {
             n = Math.round(n);
@@ -314,21 +372,6 @@
                 '   <span class="graphical-report__legend__guide__label"><%=label%></span>',
                 '</div>'
             ].join('')),
-            _itemFillTemplate: utils.template([
-                '<div data-value=\'<%=value%>\' class="graphical-report__legend__item graphical-report__legend__item-color" style="padding: 6px 0px 10px 40px;margin-left:10px;">',
-                '<div class="graphical-report__legend__guide__wrap" style="top:0;left:0;">',
-                '   <span class="graphical-report__legend__guide" style="background-color:<%=color%>;border-radius:0"></span>',
-                '   <span style="padding-left: 20px"><%=label%></span>',
-                '</div>',
-                '</div>'
-            ].join('')),
-            _itemSizeTemplate: utils.template([
-                '<div class="graphical-report__legend__item graphical-report__legend__item--size">',
-                '<div class="graphical-report__legend__guide__wrap">',
-                '<svg class="graphical-report__legend__guide graphical-report__legend__guide--size  <%=className%>" style="width: <%=diameter%>px;height: <%=diameter%>px;"><circle cx="<%=radius%>" cy="<%=radius%>" class="graphical-report__dot" r="<%=radius%>"></circle></svg>',
-                '</div><%=value%>',
-                '</div>'
-            ].join('')),
             _resetTemplate: utils.template([
                 '<div class="graphical-report__legend__reset <%=classDisabled%>">',
                     '<div role="button" class="graphical-report-btn">Reset</div>',
@@ -374,7 +417,7 @@
                             }) :
                             domain);
 
-                        var numFormatter = getSignificantDigitsFormatter(numDomain[0], numDomain[numDomain.length - 1]);
+                        var numFormatter = getNumberFormatter(numDomain[0], numDomain[numDomain.length - 1]);
 
                         var castNum = (isDate ?
                             function (x) {
@@ -385,12 +428,94 @@
                             });
 
                         var brewerLength = fillScale.brewer.length;
+                        var title = ((guide.color || {}).label || {}).text || fillScale.dim;
 
-                        var height = 120;
-                        var fontHeight = 13;
+                        var getTextWidth = function (text) {
+                            return (text.length * FONT_SIZE * 0.618);
+                        };
+                        var labelsCount = (!fillScale.isInteger ? 3 :
+                            ((numDomain[1] - numDomain[0]) % 3 === 0) ? 4 :
+                                ((numDomain[1] - numDomain[0]) % 2 === 0) ? 3 : 2
+                        );
+                        var labels = splitEvenly(numDomain, labelsCount).map(castNum);
+                        if (labels[0] === labels[labels.length - 1]) {
+                            labels = [labels[0]];
+                        }
+
+                        self._container
+                            .insertAdjacentHTML('beforeend', self._template({
+                                name: title,
+                                top: null,
+                                items: '<div class="graphical-report__legend__gradient-wrapper"></div>'
+                            }));
+                        var container = self._container
+                            .lastElementChild
+                            .querySelector('.graphical-report__legend__gradient-wrapper');
+                        var width = container.getBoundingClientRect().width;
+                        var totalLabelsW = labels.reduce(function (sum, label) {
+                            return (sum + getTextWidth(label));
+                        }, 0);
+                        var isVerticalLayout = false;
+                        if (totalLabelsW > width) {
+                            if (labels.length > 1 &&
+                                getTextWidth(labels[0]) + getTextWidth(labels[labels.length - 1]) > width
+                            ) {
+                                isVerticalLayout = true;
+                            } else {
+                                labels = [labels[0], labels[labels.length - 1]];
+                            }
+                        }
+
+                        var barSize = 20;
+                        var layout = (isVerticalLayout ?
+                            (function () {
+                                var height = 120;
+                                var dy = (FONT_SIZE * (0.618 - 1) / 2);
+                                return {
+                                    width: width,
+                                    height: height,
+                                    barX: 0,
+                                    barY: 0,
+                                    barWidth: barSize,
+                                    barHeight: height,
+                                    textAnchor: 'start',
+                                    textX: utils.range(labelsCount).map(function () {
+                                        return 25;
+                                    }),
+                                    textY: (labels.length === 1 ?
+                                        (height / 2 + FONT_SIZE * 0.618) :
+                                        labels.map(function (_, i) {
+                                            var t = ((labels.length - 1 - i) / (labels.length - 1));
+                                            return (FONT_SIZE * (1 - t) + height * t + dy);
+                                        }))
+                                };
+                            })() :
+                            (function () {
+                                var padL = (getTextWidth(labels[0]) / 2);
+                                var padR = (getTextWidth(labels[labels.length - 1]) / 2);
+                                var indent = 8;
+                                return {
+                                    width: width,
+                                    height: (barSize + indent + FONT_SIZE),
+                                    barX: 0,
+                                    barY: 0,
+                                    barWidth: width,
+                                    barHeight: barSize,
+                                    textAnchor: 'middle',
+                                    textX: (labels.length === 1 ?
+                                        [width / 2] :
+                                        labels.map(function (_, i) {
+                                            var t = (i / (labels.length - 1));
+                                            return (padL * (1 - t) + (width - padR) * t);;
+                                        })),
+                                    textY: utils.range(labelsCount).map(function () {
+                                        return (barSize + indent + FONT_SIZE);
+                                    })
+                                };
+                            })()
+                        );
 
                         var stops = splitEvenly(numDomain, brewerLength)
-                            .reverse()
                             .map(function (x, i) {
                                 var p = (i / (brewerLength - 1)) * 100;
                                 return (
@@ -398,43 +523,47 @@
                                     '      style="stop-color:' + fillScale(x) + ';stop-opacity:1" />');
                             });
 
-                        var labelsLength = (!fillScale.isInteger ? 3 :
-                            ((numDomain[1] - numDomain[0]) % 3 === 0) ? 4 :
-                                ((numDomain[1] - numDomain[0]) % 2 === 0) ? 3 : 2
-                        );
-                        var labels = splitEvenly(numDomain, labelsLength)
-                            .reverse()
-                            .map(function (x, i, list) {
-                                var p = (i / (labelsLength - 1));
-                                var vPad = 0.5 * ((i === 0) ?
-                                        fontHeight :
-                                        ((i === list.length - 1) ? (-fontHeight) : 0));
-                                var y = (height * p) + vPad + fontHeight / 2;
-                                return '<text x="25" y="' + y + '">' + castNum(x) + '</text>';
-                            });
-
-                        var title = ((guide.color || {}).label || {}).text || fillScale.dim;
                         var gradientId = 'legend-gradient-' + self.instanceId;
 
-                        var gradient = [
-                            '<svg height="' + height + '" width="100%" style="margin: 0 0 10px 10px">',
-                            '   <defs>',
-                            '       <linearGradient id="' + gradientId + '" x1="0%" y1="0%" x2="0%" y2="100%">',
-                            stops.join(''),
-                            '       </linearGradient>',
-                            '   </defs>',
-                            '   <rect x="0" y="0" height="100%" width="20" fill="url(#' + gradientId + ')"></rect>',
-                            labels.join(''),
-                            '   Sorry, your browser does not support inline SVG.',
-                            '</svg>'
-                        ].join('');
+                        var gradient = (
+                            xml('svg',
+                                {
+                                    class: 'graphical-report__legend__gradient',
+                                    width: layout.width,
+                                    height: layout.height
+                                },
+                                xml('defs',
+                                    xml('linearGradient',
+                                        {
+                                            id: gradientId,
+                                            x1: '0%',
+                                            y1: (isVerticalLayout ? '100%' : '0%'),
+                                            x2: (isVerticalLayout ? '0%' : '100%'),
+                                            y2: '0%'
+                                        },
+                                        stops.join('')
+                                    )
+                                ),
+                                xml('rect', {
+                                    class: 'graphical-report__legend__gradient__bar',
+                                    x: layout.barX,
+                                    y: layout.barY,
+                                    width: layout.barWidth,
+                                    height: layout.barHeight,
+                                    fill: 'url(#' + gradientId + ')'
+                                }),
+                                labels.map(function (text, i) {
+                                    return xml('text', {
+                                        x: layout.textX[i],
+                                        y: layout.textY[i],
+                                        'text-anchor': layout.textAnchor
+                                    }, text);
+                                }).join('')
+                            )
+                        );
 
-                        self._container
-                            .insertAdjacentHTML('beforeend', self._template({
-                                name: title,
-                                top: null,
-                                items: gradient
-                            }));
+                        container
+                            .insertAdjacentHTML('beforeend', gradient);
                     }
                 });
             },
@@ -494,23 +623,128 @@
                                 }));
                         }
 
+                        var castNum = getNumberFormatter(values[0], values[values.length - 1]);
+
+                        var getTextWidth = function (text) {
+                            return (text.length * FONT_SIZE * 0.618);
+                        };
+                        values.reverse();
+                        var sizes = values.map(sizeScale);
+                        var maxSize = Math.max.apply(null, sizes);
+
+                        var labels = values.map(castNum);
                         self._container
                             .insertAdjacentHTML('beforeend', self._template({
                                 name: title,
                                 top: null,
-                                items: values
-                                    .map(function (value) {
-                                        var diameter = sizeScale(value);
-                                        return self._itemSizeTemplate({
-                                            diameter: doEven(diameter + 2),
-                                            radius: diameter / 2,
-                                            value: value,
-                                            className: firstNode.config.color ? 'color-definite' : 'color-default-size'
-                                        });
-                                    })
-                                    .reverse()
-                                    .join('')
+                                items: '<div class="graphical-report__legend__size-wrapper"></div>'
                             }));
+                        var container = self._container
+                            .lastElementChild
+                            .querySelector('.graphical-report__legend__size-wrapper');
+                        var width = container.getBoundingClientRect().width;
+                        var maxLabelW = Math.max.apply(null, labels.map(getTextWidth));
+                        var isVerticalLayout = false;
+                        if (maxLabelW > width / 4 || labels.length === 1) {
+                            isVerticalLayout = true;
+                        }
+
+                        var layout = (isVerticalLayout ?
+                            (function () {
+                                var gap = FONT_SIZE;
+                                var padT = (sizes[0] / 2);
+                                var padB = (sizes[sizes.length - 1] / 2);
+                                var indent = 8;
+                                var cy = [padT];
+                                for (var i = 1, n, p; i < sizes.length; i++) {
+                                    p = (sizes[i - 1] / 2);
+                                    n = (sizes[i] / 2);
+                                    cy.push(cy[i - 1] + Math.max(FONT_SIZE * 1.618, p + gap + n));
+                                }
+                                var dy = (FONT_SIZE * 0.618 / 2);
+                                return {
+                                    width: width,
+                                    height: (cy[cy.length - 1] + Math.max(padB, FONT_SIZE / 2)),
+                                    circleX: utils.range(sizes.length).map(function () {
+                                        return (maxSize / 2);
+                                    }),
+                                    circleY: cy,
+                                    textAnchor: 'start',
+                                    textX: utils.range(labels.length).map(function () {
+                                        return (maxSize + indent);
+                                    }),
+                                    textY: cy.map(function (y) {
+                                        return (y + dy);
+                                    })
+                                };
+                            })() :
+                            (function () {
+                                var padL = Math.max(
+                                    getTextWidth(labels[0]) / 2,
+                                    sizes[0] / 2
+                                );
+                                var padR = Math.max(
+                                    getTextWidth(labels[labels.length - 1]) / 2,
+                                    sizes[sizes.length - 1] / 2
+                                );
+                                var gap = (width - sizes.reduce(function (sum, n, i) {
+                                    return (sum + (i === 0 || i === sizes.length - 1 ? n / 2 : n));
+                                }, 0) - padL - padR) / (SIZE_TICKS_COUNT - 1);
+                                var indent = 8;
+                                var cx = [padL];
+                                for (var i = 1, n, p; i < sizes.length; i++) {
+                                    p = (sizes[i - 1] / 2);
+                                    n = (sizes[i] / 2);
+                                    cx.push(cx[i - 1] + p + gap + n);
+                                }
+                                var cy = sizes.map(function (size) {
+                                    return (maxSize - size / 2);
+                                });
+                                return {
+                                    width: width,
+                                    height: (maxSize + indent + FONT_SIZE),
+                                    circleX: cx,
+                                    circleY: cy,
+                                    textAnchor: 'middle',
+                                    textX: cx,
+                                    textY: utils.range(labels.length).map(function () {
+                                        return (maxSize + indent + FONT_SIZE);
+                                    }),
+                                };
+                            })()
+                        );
+
+                        var sizeLegend = (
+                            xml('svg',
+                                {
+                                    class: 'graphical-report__legend__size',
+                                    width: layout.width,
+                                    height: layout.height
+                                },
+                                sizes.map(function (size, i) {
+                                    return xml('circle', {
+                                        class: (
+                                            'graphical-report__legend__size__item__circle ' +
+                                            (firstNode.config.color ? 'color-definite' : 'color-default-size')
+                                        ),
+                                        cx: layout.circleX[i],
+                                        cy: layout.circleY[i],
+                                        r: (size / 2)
+                                    });
+                                }).join(''),
+                                labels.map(function (text, i) {
+                                    return xml('text', {
+                                        class: 'graphical-report__legend__size__item__label',
+                                        x: layout.textX[i],
+                                        y: layout.textY[i],
+                                        'text-anchor': layout.textAnchor
+                                    }, text);
+                                }).join('')
+                            )
+                        );
+
+                        container
+                            .insertAdjacentHTML('beforeend', sizeLegend);
                     }
                 });
             },
