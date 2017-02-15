@@ -485,7 +485,7 @@
                                     textY: (labels.length === 1 ?
                                         (height / 2 + FONT_SIZE * 0.618) :
                                         labels.map(function (_, i) {
-                                            var t = (i / (labels.length - 1));
+                                            var t = ((labels.length - 1 - i) / (labels.length - 1));
                                             return (FONT_SIZE * (1 - t) + height * t + dy);
                                         }))
                                 };
@@ -537,9 +537,9 @@
                                         {
                                             id: gradientId,
                                             x1: '0%',
-                                            y1: '0%',
+                                            y1: (isVerticalLayout ? '100%' : '0%'),
                                             x2: (isVerticalLayout ? '0%' : '100%'),
-                                            y2: (isVerticalLayout ? '100%' : '0%')
+                                            y2: '0%'
                                         },
                                         stops.join('')
                                     )
