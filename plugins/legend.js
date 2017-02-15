@@ -645,7 +645,7 @@
                         var width = container.getBoundingClientRect().width;
                         var maxLabelW = Math.max.apply(null, labels.map(getTextWidth));
                         var isVerticalLayout = false;
-                        if (maxLabelW > width / 4) {
+                        if (maxLabelW > width / 4 || labels.length === 1) {
                             isVerticalLayout = true;
                         }
 
