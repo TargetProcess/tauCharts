@@ -372,12 +372,13 @@ define(function (require) {
             it("should support size scale", function () {
                 var sidebar = context.chart._layout.rightSidebar;
                 var legendBlock = sidebar.querySelector('.graphical-report__legend');
-                var nodeList = legendBlock.querySelectorAll('.graphical-report__legend__guide');
+                var nodeList = legendBlock.querySelectorAll('.graphical-report__legend__size__item__circle');
+                var texts = legendBlock.querySelectorAll('.graphical-report__legend__size__item__label');
 
                 expect(nodeList.length).to.equal(2);
 
-                expect(getText(nodeList[0])).to.equal('123');
-                expect(getText(nodeList[1])).to.equal('10');
+                expect(texts[0].textContent).to.equal('123');
+                expect(texts[1].textContent).to.equal('10');
             });
         },
         {

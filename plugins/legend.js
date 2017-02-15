@@ -488,7 +488,7 @@
                                             var t = (i / (labels.length - 1));
                                             return (FONT_SIZE * (1 - t) + height * t + dy);
                                         }))
-                                }
+                                };
                             })() :
                             (function () {
                                 var padL = (getTextWidth(labels[0]) / 2);
@@ -511,7 +511,7 @@
                                     textY: utils.range(labelsCount).map(function () {
                                         return (barSize + indent + FONT_SIZE);
                                     })
-                                }
+                                };
                             })()
                         );
 
@@ -679,8 +679,14 @@
                                 };
                             })() :
                             (function () {
-                                var padL = Math.max(getTextWidth(labels[0]) / 2, sizes[0] / 2);
-                                var padR = Math.max(getTextWidth(labels[labels.length - 1]) / 2, sizes[sizes.length - 1] / 2);
+                                var padL = Math.max(
+                                    getTextWidth(labels[0]) / 2,
+                                    sizes[0] / 2
+                                );
+                                var padR = Math.max(
+                                    getTextWidth(labels[labels.length - 1]) / 2,
+                                    sizes[sizes.length - 1] / 2
+                                );
                                 var gap = (width - sizes.reduce(function (sum, n, i) {
                                     return (sum + (i === 0 || i === sizes.length - 1 ? n / 2 : n));
                                 }, 0) - padL - padR) / (SIZE_TICKS_COUNT - 1);
@@ -718,7 +724,7 @@
                                 sizes.map(function (size, i) {
                                     return xml('circle', {
                                         class: (
-                                            'graphical-report__legend__size__item ' +
+                                            'graphical-report__legend__size__item__circle ' +
                                             (firstNode.config.color ? 'color-definite' : 'color-default-size')
                                         ),
                                         cx: layout.circleX[i],
@@ -728,6 +734,7 @@
                                 }).join(''),
                                 labels.map(function (text, i) {
                                     return xml('text', {
+                                        class: 'graphical-report__legend__size__item__label',
                                         x: layout.textX[i],
                                         y: layout.textY[i],
                                         'text-anchor': layout.textAnchor
