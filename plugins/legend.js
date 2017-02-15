@@ -17,6 +17,7 @@
     var COLOR_ITEM_SELECTOR = '.graphical-report__legend__item-color';
     var COLOR_TOGGLE_SELECTOR = '.graphical-report__legend__guide--color__overlay';
     var SIZE_TICKS_COUNT = 4;
+    var FONT_SIZE = 13;
 
     var counter = 0;
     var getId = function () {
@@ -427,10 +428,10 @@
                             });
 
                         var brewerLength = fillScale.brewer.length;
+                        var title = ((guide.color || {}).label || {}).text || fillScale.dim;
 
-                        var fontHeight = 13;
                         var getTextWidth = function (text) {
-                            return (text.length * fontHeight * 0.618);
+                            return (text.length * FONT_SIZE * 0.618);
                         };
                         var labelsCount = (!fillScale.isInteger ? 3 :
                             ((numDomain[1] - numDomain[0]) % 3 === 0) ? 4 :
@@ -441,7 +442,16 @@
                             labels = [labels[0]];
                         }
 
-                        var width = self._container.getBoundingClientRect().width;
+                        self._container
+                            .insertAdjacentHTML('beforeend', self._template({
+                                name: title,
+                                top: null,
+                                items: '<div class="graphical-report__legend__gradient-wrapper"></div>'
+                            }));
+                        var container = self._container
+                            .lastElementChild
+                            .querySelector('.graphical-report__legend__gradient-wrapper');
+                        var width = container.getBoundingClientRect().width;
                         var totalLabelsW = labels.reduce(function (sum, label) {
                             return (sum + getTextWidth(label));
                         }, 0);
@@ -460,6 +470,7 @@
                         var layout = (isVerticalLayout ?
                             (function () {
                                 var height = 120;
+                                var dy = (FONT_SIZE * (0.618 - 1) / 2);
                                 return {
                                     width: width,
                                     height: height,
@@ -472,20 +483,20 @@
                                         return 25;
                                     }),
                                     textY: (labels.length === 1 ?
-                                        (height / 2 + fontHeight * 0.618) :
+                                        (height / 2 + FONT_SIZE * 0.618) :
                                         labels.map(function (_, i) {
                                             var t = (i / (labels.length - 1));
-                                            return (fontHeight * (1 - t) + height * t);
+                                            return (FONT_SIZE * (1 - t) + height * t + dy);
                                         }))
                                 }
                             })() :
                             (function () {
                                 var padL = (getTextWidth(labels[0]) / 2);
                                 var padR = (getTextWidth(labels[labels.length - 1]) / 2);
-                                var indent = 10;
+                                var indent = 8;
                                 return {
                                     width: width,
-                                    height: (barSize + indent + fontHeight),
+                                    height: (barSize + indent + FONT_SIZE),
                                     barX: 0,
                                     barY: 0,
                                     barWidth: width,
@@ -498,7 +509,7 @@
                                             return (padL * (1 - t) + (width - padR) * t);;
                                         })),
                                     textY: utils.range(labelsCount).map(function () {
-                                        return (barSize + indent + fontHeight);
+                                        return (barSize + indent + FONT_SIZE);
                                     })
                                 }
                             })()
@@ -512,7 +523,6 @@
                                     '      style="stop-color:' + fillScale(x) + ';stop-opacity:1" />');
                             });
 
-                        var title = ((guide.color || {}).label || {}).text || fillScale.dim;
                         var gradientId = 'legend-gradient-' + self.instanceId;
 
                         var gradient = (
@@ -552,12 +562,8 @@
                             )
                         );
 
-                        self._container
-                            .insertAdjacentHTML('beforeend', self._template({
-                                name: title,
-                                top: null,
-                                items: gradient
-                            }));
+                        container
+                            .insertAdjacentHTML('beforeend', gradient);
                     }
                 });
             },
@@ -619,16 +625,24 @@
 
                         var castNum = getNumberFormatter(values[0], values[values.length - 1]);
 
-                        var fontHeight = 13;
                         var getTextWidth = function (text) {
-                            return (text.length * fontHeight * 0.618);
+                            return (text.length * FONT_SIZE * 0.618);
                         };
                         values.reverse();
                         var sizes = values.map(sizeScale);
                         var maxSize = Math.max.apply(null, sizes);
 
                         var labels = values.map(castNum);
-                        var width = self._container.getBoundingClientRect().width;
+                        self._container
+                            .insertAdjacentHTML('beforeend', self._template({
+                                name: title,
+                                top: null,
+                                items: '<div class="graphical-report__legend__size-wrapper"></div>'
+                            }));
+                        var container = self._container
+                            .lastElementChild
+                            .querySelector('.graphical-report__legend__size-wrapper');
+                        var width = container.getBoundingClientRect().width;
                         var maxLabelW = Math.max.apply(null, labels.map(getTextWidth));
                         var isVerticalLayout = false;
                         if (maxLabelW > width / 4) {
@@ -640,14 +654,14 @@
                                 var gap = 24;
                                 var padT = (sizes[0] / 2);
                                 var padB = (sizes[sizes.length - 1] / 2);
-                                var indent = 5;
+                                var indent = 8;
                                 var cy = [padT];
                                 for (var i = 1, n, p; i < sizes.length; i++) {
                                     p = (sizes[i - 1] / 2);
                                     n = (sizes[i] / 2);
                                     cy.push(cy[i - 1] + p + gap + n);
                                 }
-                                var dy = (fontHeight * 0.618 / 2);
+                                var dy = (FONT_SIZE * 0.618 / 2);
                                 return {
                                     width: width,
                                     height: (cy[cy.length - 1] + padB),
@@ -670,7 +684,7 @@
                                 var gap = (width - sizes.reduce(function (sum, n, i) {
                                     return (sum + (i === 0 || i === sizes.length - 1 ? n / 2 : n));
                                 }, 0) - padL - padR) / (SIZE_TICKS_COUNT - 1);
-                                var indent = 10;
+                                var indent = 8;
                                 var cx = [padL];
                                 for (var i = 1, n, p; i < sizes.length; i++) {
                                     p = (sizes[i - 1] / 2);
@@ -682,13 +696,13 @@
                                 });
                                 return {
                                     width: width,
-                                    height: (maxSize + indent + fontHeight),
+                                    height: (maxSize + indent + FONT_SIZE),
                                     circleX: cx,
                                     circleY: cy,
                                     textAnchor: 'middle',
                                     textX: cx,
                                     textY: utils.range(labels.length).map(function () {
-                                        return (maxSize + indent + fontHeight);
+                                        return (maxSize + indent + FONT_SIZE);
                                     }),
                                 };
                             })()
@@ -722,12 +736,8 @@
                             )
                         );
 
-                        self._container
-                            .insertAdjacentHTML('beforeend', self._template({
-                                name: title,
-                                top: null,
-                                items: sizeLegend
-                            }));
+                        container
+                            .insertAdjacentHTML('beforeend', sizeLegend);
                     }
                 });
             },
