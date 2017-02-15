@@ -193,6 +193,23 @@
 .graphical-report__select option[disabled] {
   opacity: 0.6;
 }
+.graphical-report-btn {
+  background-color: rgba(255, 255, 255, 0.9);
+  border: 1px solid currentColor;
+  border-radius: 4px;
+  box-shadow: 0 0 1px rgba(0, 0, 0, 0.1);
+  box-sizing: border-box;
+  color: #b3b3b3;
+  cursor: pointer;
+  font-size: 13px;
+  padding: 0 6px;
+  line-height: 1.5em;
+  height: calc(1.5em + 2px);
+}
+.graphical-report-btn:hover {
+  border-color: #999999;
+  color: #333;
+}
 /* region Generate .color@{n}-@{i}  function  */
 .graphical-report__svg .color20-1 {
   stroke: #6FA1D9;

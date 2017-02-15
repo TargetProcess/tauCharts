@@ -16,7 +16,7 @@
   position: relative;
 }
 .graphical-report__legend__wrap:last-child {
-  margin-bottom: 0px;
+  margin-bottom: 0;
 }
 .graphical-report__legend__title {
   margin: 0 0 10px 10px;
@@ -25,27 +25,17 @@
   font-size: 13px;
 }
 .graphical-report__legend__reset {
-  background-color: rgba(0, 0, 0, 0.9);
-  border: 1px solid #606060;
-  border-radius: 4px;
-  box-shadow: 0 1px 4px 0 rgba(255, 255, 255, 0.2), 0 0 0 1px rgba(255, 255, 255, 0.005);
-  box-sizing: border-box;
-  color: #606060;
-  cursor: pointer;
-  font-size: 13px;
   margin-top: -4px;
-  padding: 4px 6px;
   position: absolute;
   right: 0;
   top: 0;
   z-index: 1;
 }
-.graphical-report__legend__reset:hover {
-  border-color: #808080;
-  color: #fff;
-}
 .graphical-report__legend__reset.disabled {
   display: none;
+}
+.graphical-report__legend__reset + .graphical-report__legend__title {
+  margin-right: 3.7em;
 }
 .graphical-report__legend__item {
   padding: 10px 20px 8px 40px;
@@ -96,14 +86,6 @@
   stroke: #6FA1D9;
   fill: #6FA1D9;
 }
-.graphical-report__legend__guide.color-definite {
-  stroke: #cacaca;
-  fill: #cacaca;
-}
-.graphical-report__legend__guide.color-default-size {
-  stroke: #6FA1D9;
-  fill: #6FA1D9;
-}
 .graphical-report__legend__guide--color__overlay {
   background-color: transparent;
   height: 36px;
@@ -145,6 +127,29 @@
 .graphical-report__legend__item.disabled .graphical-report__legend__guide--color:hover::after {
   background-color: #fff;
   transform: none;
+}
+.graphical-report__legend__size-wrapper,
+.graphical-report__legend__gradient-wrapper {
+  box-sizing: border-box;
+  margin: 10px;
+  overflow: visible;
+  width: 100%;
+}
+.graphical-report__legend__size,
+.graphical-report__legend__gradient {
+  overflow: visible;
+}
+.graphical-report__legend__size__item__circle.color-definite {
+  stroke: #cacaca;
+  fill: #cacaca;
+}
+.graphical-report__legend__size__item__circle.color-default-size {
+  stroke: #6FA1D9;
+  fill: #6FA1D9;
+}
+.graphical-report__legend__gradient__bar {
+  rx: 4px;
+  ry: 4px;
 }
 .graphical-report__legend__item .color20-1 {
   background: #6FA1D9;

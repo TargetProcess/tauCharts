@@ -13,6 +13,7 @@
             'bar-labels',
             'category-labels-overflow',
             'horizontal-scroll',
+            'legend-flip',
             'linear-bars',
             'logarithmic-scale',
             'smooth-line',

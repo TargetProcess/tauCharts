@@ -15,7 +15,7 @@
     var utils = tauCharts.api.utils;
     var pluginsSDK = tauCharts.api.pluginsSDK;
     var TARGET_SVG_CLASS = 'graphical-report__tooltip-target';
-    var TARGET_SVG_STUCK_CLASS = 'graphical-report__tooltip-target-stuck';
+    var TARGET_STUCK_CLASS = 'graphical-report__tooltip-target-stuck';
 
     function Tooltip(xSettings) {
 
@@ -100,7 +100,6 @@
                     });
                 }.bind(this);
                 window.addEventListener('scroll', this._scrollHandler, true);
-                window.addEventListener('resize', this._scrollHandler, true);
 
                 this._outerClickHandler = function (e) {
                     var tooltipRect = this.getTooltipNode().getBoundingClientRect();
@@ -154,7 +153,6 @@
                         requestAnimationFrame(function () {
                             this._setTargetSvgClass(true);
                         }.bind(this));
-                        this._setTargetSvgClass(true);
                     } else if (!state.isStuck && prev.highlight.data && !state.highlight.data) {
                         this._removeFocus();
                         this.hideTooltip();
@@ -177,7 +175,7 @@
                     if (state.isStuck) {
                         window.addEventListener('click', this._outerClickHandler, true);
                         tooltipNode.classList.add('stuck');
-                        this._setTargetSvgStuckClass(true);
+                        this._setTargetStuckClass(true);
                         this._tooltip.updateSize();
                     } else {
                         window.removeEventListener('click', this._outerClickHandler, true);
@@ -185,7 +183,7 @@
                         // NOTE: Prevent showing tooltip immediately
                         // after pointer events appear.
                         requestAnimationFrame(function () {
-                            this._setTargetSvgStuckClass(false);
+                            this._setTargetStuckClass(false);
                         }.bind(this));
                     }
                 }
@@ -219,11 +217,7 @@
 
             destroy: function () {
                 window.removeEventListener('scroll', this._scrollHandler, true);
-                window.removeEventListener('resize', this._scrollHandler, true);
                 this._setTargetSvgClass(false);
-                if (this.state.highlight.unit) {
-                    this._removeFocus();
-                }
                 this.setState({
                     highlight: null,
                     isStuck: false
@@ -367,14 +361,19 @@
                 this._skipInfo = info.skip;
 
                 this._subscribeToHover();
+
+                this.setState({
+                    highlight: null,
+                    isStuck: false
+                });
             },
 
             _setTargetSvgClass: function (isSet) {
                 d3.select(this._chart.getSVG()).classed(TARGET_SVG_CLASS, isSet);
             },
 
-            _setTargetSvgStuckClass: function (isSet) {
-                d3.select(this._chart.getSVG()).classed(TARGET_SVG_STUCK_CLASS, isSet);
+            _setTargetStuckClass: function (isSet) {
+                d3.select(this._chart.getLayout().layout).classed(TARGET_STUCK_CLASS, isSet);
             },
 
             templateRevealAggregation: [

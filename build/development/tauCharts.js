@@ -1,4 +1,4 @@
-/*! taucharts - v0.10.0-beta.17 - 2017-02-08
+/*! taucharts - v0.10.0-beta.18 - 2017-02-15
 * https://github.com/TargetProcess/tauCharts
 * Copyright (c) 2017 Taucraft Limited; Licensed Apache License 2.0 */
 (function webpackUniversalModuleDefinition(root, factory) {
@@ -348,7 +348,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	}]));
 
 	/* global VERSION:false */
-	var version = ("0.10.0-beta.17");
+	var version = ("0.10.0-beta.18");
 	exports.GPL = _tau.GPL;
 	exports.Plot = _tau2.Plot;
 	exports.Chart = _tau3.Chart;
@@ -13322,7 +13322,9 @@ return /******/ (function(modules) { // webpackBootstrap
 	        frameGroups.call(updateGroups);
 
 	        // TODO: Render bars into single container, exclude removed elements from calculation.
-	        this._boundsInfo = this._getBoundsInfo(options.container.selectAll('.dot')[0]);
+	        this._boundsInfo = this._getBoundsInfo(frameGroups.selectAll('.dot').reduce(function (m, g) {
+	            return m.concat(g);
+	        }, []));
 
 	        transition(frameGroups.exit()).attr('opacity', 0).remove().selectAll('circle').attr('r', 0);
 
