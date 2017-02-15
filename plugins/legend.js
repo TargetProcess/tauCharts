@@ -651,7 +651,7 @@
 
                         var layout = (isVerticalLayout ?
                             (function () {
-                                var gap = 24;
+                                var gap = FONT_SIZE;
                                 var padT = (sizes[0] / 2);
                                 var padB = (sizes[sizes.length - 1] / 2);
                                 var indent = 8;
@@ -659,12 +659,12 @@
                                 for (var i = 1, n, p; i < sizes.length; i++) {
                                     p = (sizes[i - 1] / 2);
                                     n = (sizes[i] / 2);
-                                    cy.push(cy[i - 1] + p + gap + n);
+                                    cy.push(cy[i - 1] + Math.max(FONT_SIZE * 1.618, p + gap + n));
                                 }
                                 var dy = (FONT_SIZE * 0.618 / 2);
                                 return {
                                     width: width,
-                                    height: (cy[cy.length - 1] + padB),
+                                    height: (cy[cy.length - 1] + Math.max(padB, FONT_SIZE / 2)),
                                     circleX: utils.range(sizes.length).map(function () {
                                         return (maxSize / 2);
                                     }),
