@@ -257,16 +257,41 @@ var utilsDom = {
         return results;
     },
 
-    sortElements: function (elements, sorter) {
-        if (elements.length > 0) {
-            var parent = elements[0].parentNode;
-            var fragment = document.createDocumentFragment();
-            var items = Array.prototype.slice.call(elements).sort(sorter);
-            var orderChanged = items.some((d, i) => d !== elements[i]);
-            if (orderChanged) {
-                items.forEach((el) => fragment.appendChild(el));
-                parent.appendChild(fragment);
+    sortChildren: function (parent, sorter) {
+        if (parent.childElementCount > 0) {
+            // Note: move DOM elements with minimal number of iterations.
+            const unsorted = Array.prototype.filter.call(
+                parent.childNodes,
+                (el) => el.nodeType === Node.ELEMENT_NODE);
+            const sorted = unsorted.slice().sort(sorter);
+            const sortedIndices = sorted.reduce((map, el, i) => {
+                map.set(el, i);
+                return map;
+            }, new Map());
+            const indices = unsorted.map((el, i) => {
+                return {
+                    from: i,
+                    to: sortedIndices.get(el)
+                };
+            });
+            indices.sort((a, b) => b.to - a.to);
+            for (var i = 0; i < indices.length - 1; i++) {
+                for (var j = i + 1; j < indices.length; j++) {
+                    if (indices[i].from < indices[j].from) {
+                        indices[j].from--;
+                    }
+                }
             }
+            var mirror = unsorted.slice();
+            indices
+                .filter((i) => i.to !== i.from)
+                .forEach((i) => {
+                    var targetNode = mirror[i.from];
+                    var siblingAfter = mirror[i.to + (i.from < i.to ? 2 : 1)];
+                    parent.insertBefore(targetNode, siblingAfter);
+                    mirror.splice(i.from, 1);
+                    mirror.splice(i.to, 0, targetNode);
+                });
         }
     },
 

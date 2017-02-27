@@ -317,14 +317,7 @@ const Interval = {
 
     _sortElements(...sorters) {
         const container = this.node().config.options.container.node();
-        utilsDom.sortElements(container.childNodes, (a, b) => {
-            var result = 0;
-            sorters.every((s) => {
-                result = s(a, b);
-                return (result === 0);
-            });
-            return result;
-        });
+        utilsDom.sortChildren(container, utils.createMultiSorter(...sorters));
     },
 
     _getBoundsInfo(bars) {
