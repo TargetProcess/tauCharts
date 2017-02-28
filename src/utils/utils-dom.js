@@ -287,7 +287,7 @@ var utilsDom = {
                 .filter((i) => i.to !== i.from)
                 .forEach((i) => {
                     var targetNode = mirror[i.from];
-                    var siblingAfter = mirror[i.to + (i.from < i.to ? 2 : 1)];
+                    var siblingAfter = mirror[i.to + (i.from < i.to ? 1 : 0)];
                     parent.insertBefore(targetNode, siblingAfter);
                     mirror.splice(i.from, 1);
                     mirror.splice(i.to, 0, targetNode);
