@@ -259,38 +259,112 @@ var utilsDom = {
 
     sortChildren: function (parent, sorter) {
         if (parent.childElementCount > 0) {
-            // Note: move DOM elements with minimal number of iterations.
+
+            // Note: move DOM elements with
+            // minimal number of iterations.
+
+            // Get from/to index pairs.
             const unsorted = Array.prototype.filter.call(
                 parent.childNodes,
                 (el) => el.nodeType === Node.ELEMENT_NODE);
             const sorted = unsorted.slice().sort(sorter);
-            const sortedIndices = sorted.reduce((map, el, i) => {
+            const unsortedIndices = unsorted.reduce((map, el, i) => {
                 map.set(el, i);
                 return map;
             }, new Map());
-            const indices = unsorted.map((el, i) => {
+            const indices = sorted.map((el, i) => {
                 return {
-                    from: i,
-                    to: sortedIndices.get(el)
+                    from: unsortedIndices.get(el),
+                    to: i
                 };
             });
-            indices.sort((a, b) => b.to - a.to);
-            for (var i = 0; i < indices.length - 1; i++) {
-                for (var j = i + 1; j < indices.length; j++) {
-                    if (indices[i].from < indices[j].from) {
-                        indices[j].from--;
+
+            // Get groups (sequences of elements with unchanged order)
+            var currGroup;
+            var currDiff;
+            const groupsInfo = sorted.reduce((groupsInfo, el, to) => {
+                const from = unsortedIndices.get(el);
+                const diff = (to - from);
+                if (diff !== currDiff) {
+                    if (currGroup) {
+                        groupsInfo.push(currGroup);
+                    }
+                    currDiff = diff;
+                    currGroup = {
+                        from,
+                        to,
+                        elements: []
+                    };
+                }
+                currGroup.elements.push(el);
+                if (to === sorted.length - 1) {
+                    groupsInfo.push(currGroup);
+                }
+                return groupsInfo;
+            }, []);
+            const unsortedGroups = groupsInfo.slice().sort((a, b) => {
+                return (a.from - b.from);
+            });
+            const unsortedGroupsIndices = unsortedGroups.reduce((map, g, i) => {
+                map.set(g, i);
+                return map;
+            }, new Map());
+            const groups = groupsInfo
+                .map((g, i) => {
+                    return {
+                        count: g.elements.length,
+                        from: unsortedGroupsIndices.get(g),
+                        to: i,
+                        srcFrom: g.from,
+                        srcTo: g.to
+                    };
+                })
+                .sort(utils.createMultiSorter(
+                    // ((a, b) => a.count - b.count), // Bug: wrong result order.
+                    ((a, b) => a.to - b.to)
+                ));
+
+            // Get required iterations
+            for (var i = 0, j, g, h; i < groups.length; i++) {
+                g = groups[i];
+                if (g.from > g.to) {
+                    for (j = i + 1; j < groups.length; j++) {
+                        h = groups[j];
+                        if (h.from >= g.to && h.from < g.from) {
+                            h.from++;
+                            h.srcFrom += g.count;
+                        }
+                    }
+                }
+                if (g.from < g.to) {
+                    for (j = i + 1; j < groups.length; j++) {
+                        h = groups[j];
+                        if (h.from > g.from && h.from <= g.to) {
+                            h.from--;
+                            h.srcFrom -= g.count;
+                        }
                     }
                 }
             }
-            var mirror = unsorted.slice();
-            indices
-                .filter((i) => i.to !== i.from)
-                .forEach((i) => {
-                    var targetNode = mirror[i.from];
-                    var siblingAfter = mirror[i.to + (i.from < i.to ? 1 : 0)];
+
+            // Finally sort DOM nodes
+            const mirror = unsorted.slice();
+            groups
+                .filter((g) => g.from !== g.to)
+                .forEach((g) => {
+                    const siblingAfter = mirror[g.srcTo + (g.srcFrom < g.srcTo ? g.count : 0)];
+                    var targetNode;
+                    if (g.count === 1) {
+                        targetNode = mirror[g.srcFrom];
+                    } else {
+                        targetNode = document.createDocumentFragment();
+                        utils.range(g.count).forEach((i) => {
+                            targetNode.appendChild(mirror[g.srcFrom + i]);
+                        });
+                    }
                     parent.insertBefore(targetNode, siblingAfter);
-                    mirror.splice(i.from, 1);
-                    mirror.splice(i.to, 0, targetNode);
+                    const removed = mirror.splice(g.srcFrom, g.count);
+                    mirror.splice(g.srcTo, 0, ...removed);
                 });
         }
     },
@@ -321,4 +395,4 @@ var utilsDom = {
     }
 };
 // TODO: Export functions separately.
-export {utilsDom};
+export { utilsDom };
