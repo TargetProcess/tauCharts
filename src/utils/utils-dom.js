@@ -309,62 +309,59 @@ var utilsDom = {
                 map.set(g, i);
                 return map;
             }, new Map());
-            const groups = groupsInfo
+
+            // Get required iterations
+            const iterations = groupsInfo
                 .map((g, i) => {
                     return {
-                        count: g.elements.length,
+                        elements: g.elements,
                         from: unsortedGroupsIndices.get(g),
-                        to: i,
-                        srcFrom: g.from,
-                        srcTo: g.to
+                        to: i
                     };
                 })
                 .sort(utils.createMultiSorter(
-                    // ((a, b) => a.count - b.count), // Bug: wrong result order.
+                    ((a, b) => a.elements.length - b.elements.length),
                     ((a, b) => a.to - b.to)
                 ));
-
-            // Get required iterations
-            for (var i = 0, j, g, h; i < groups.length; i++) {
-                g = groups[i];
+            for (var i = 0, j, g, h; i < iterations.length; i++) {
+                g = iterations[i];
                 if (g.from > g.to) {
-                    for (j = i + 1; j < groups.length; j++) {
-                        h = groups[j];
+                    for (j = i + 1; j < iterations.length; j++) {
+                        h = iterations[j];
                         if (h.from >= g.to && h.from < g.from) {
                             h.from++;
-                            h.srcFrom += g.count;
                         }
                     }
                 }
                 if (g.from < g.to) {
-                    for (j = i + 1; j < groups.length; j++) {
-                        h = groups[j];
+                    for (j = i + 1; j < iterations.length; j++) {
+                        h = iterations[j];
                         if (h.from > g.from && h.from <= g.to) {
                             h.from--;
-                            h.srcFrom -= g.count;
                         }
                     }
                 }
             }
 
             // Finally sort DOM nodes
-            const mirror = unsorted.slice();
-            groups
+            const mirror = unsortedGroups.map(g => g.elements);
+            iterations
                 .filter((g) => g.from !== g.to)
                 .forEach((g) => {
-                    const siblingAfter = mirror[g.srcTo + (g.srcFrom < g.srcTo ? g.count : 0)];
+                    const targetGroup = mirror.splice(g.from, 1)[0];
+                    const groupAfter = mirror[g.to];
+                    const siblingAfter = (groupAfter ? groupAfter[0] : null);
                     var targetNode;
-                    if (g.count === 1) {
-                        targetNode = mirror[g.srcFrom];
+                    if (g.elements.length === 1) {
+                        targetNode = targetGroup[0];
                     } else {
                         targetNode = document.createDocumentFragment();
-                        utils.range(g.count).forEach((i) => {
-                            targetNode.appendChild(mirror[g.srcFrom + i]);
+                        targetGroup.forEach((el) => {
+                            targetNode.appendChild(el);
                         });
                     }
                     parent.insertBefore(targetNode, siblingAfter);
-                    const removed = mirror.splice(g.srcFrom, g.count);
-                    mirror.splice(g.srcTo, 0, ...removed);
+                    mirror.splice(g.to, 0, targetGroup);
                 });
         }
     },
