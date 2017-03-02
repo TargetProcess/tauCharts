@@ -311,42 +311,49 @@ var utilsDom = {
             }, new Map());
 
             // Get required iterations
-            const iterations = groupsInfo
-                .map((g, i) => {
-                    return {
-                        elements: g.elements,
-                        from: unsortedGroupsIndices.get(g),
-                        to: i
-                    };
-                })
-                .sort(utils.createMultiSorter(
-                    ((a, b) => a.elements.length - b.elements.length),
-                    ((a, b) => a.to - b.to)
-                ));
-            for (var i = 0, j, g, h; i < iterations.length; i++) {
-                g = iterations[i];
-                if (g.from > g.to) {
-                    for (j = i + 1; j < iterations.length; j++) {
-                        h = iterations[j];
-                        if (h.from >= g.to && h.from < g.from) {
-                            h.from++;
+            const createIterations = (forward) => {
+                const iterations = groupsInfo
+                    .map((g, i) => {
+                        return {
+                            elements: g.elements,
+                            from: unsortedGroupsIndices.get(g),
+                            to: i
+                        };
+                    })
+                    .sort(utils.createMultiSorter(
+                        ((a, b) => a.elements.length - b.elements.length),
+                        (forward ? ((a, b) => b.to - a.to) : ((a, b) => a.to - b.to))
+                    ));
+                for (var i = 0, j, g, h; i < iterations.length; i++) {
+                    g = iterations[i];
+                    if (g.from > g.to) {
+                        for (j = i + 1; j < iterations.length; j++) {
+                            h = iterations[j];
+                            if (h.from >= g.to && h.from < g.from) {
+                                h.from++;
+                            }
+                        }
+                    }
+                    if (g.from < g.to) {
+                        for (j = i + 1; j < iterations.length; j++) {
+                            h = iterations[j];
+                            if (h.from > g.from && h.from <= g.to) {
+                                h.from--;
+                            }
                         }
                     }
                 }
-                if (g.from < g.to) {
-                    for (j = i + 1; j < iterations.length; j++) {
-                        h = iterations[j];
-                        if (h.from > g.from && h.from <= g.to) {
-                            h.from--;
-                        }
-                    }
-                }
-            }
+                return iterations.filter((g) => g.from !== g.to);
+            };
+            const forwardIterations = createIterations(true);
+            const backwardIterations = createIterations(false);
+            const iterations = (forwardIterations.length < backwardIterations.length ?
+                forwardIterations :
+                backwardIterations);
 
             // Finally sort DOM nodes
             const mirror = unsortedGroups.map(g => g.elements);
             iterations
-                .filter((g) => g.from !== g.to)
                 .forEach((g) => {
                     const targetGroup = mirror.splice(g.from, 1)[0];
                     const groupAfter = mirror[g.to];
