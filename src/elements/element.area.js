@@ -15,6 +15,7 @@ const Area = {
     highlightDataPoints: BasePath.highlightDataPoints,
     addInteraction: BasePath.addInteraction,
     _getBoundsInfo: BasePath._getBoundsInfo,
+    _sortPaths: BasePath._sortPaths,
 
     init(xConfig) {
 

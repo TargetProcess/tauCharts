@@ -286,6 +286,7 @@ const BasePath = {
                 return currentIndex;
             };
         })();
+        this._getDataSetId = getDataSetId;
 
         const frameBinding = frameSelection
             .data(fullFibers, getDataSetId);
@@ -454,6 +455,8 @@ const BasePath = {
         container
             .selectAll('.i-role-label')
             .classed(classed);
+
+        this._sortPaths(filter);
     },
 
     highlightDataPoints(filter) {
@@ -483,11 +486,24 @@ const BasePath = {
             })
             .classed(`${CSS_PREFIX}highlighted`, filter);
 
-        utilsDraw.raiseElements(container, '.i-role-path', (fiber) => {
-            return fiber
+        this._sortPaths(filter);
+    },
+
+    _sortPaths(filter) {
+        const container = this.node().config.options.container;
+        const pathId = new Map();
+        const pathFilter = new Map();
+        const getDataSetId = this._getDataSetId;
+        container.selectAll('.i-role-path').each(function (d) {
+            pathId.set(this, getDataSetId(d));
+            pathFilter.set(this, d
                 .filter(isNonSyntheticRecord)
-                .some(filter);
+                .some(filter));
         });
+        utilsDom.sortChildren(container.node(), utils.createMultiSorter(
+            (a, b) => (pathFilter.get(a) - pathFilter.get(b)),
+            (a, b) => (pathId.get(a) - pathId.get(b))
+        ));
     }
 };
 

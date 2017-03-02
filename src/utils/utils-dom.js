@@ -261,7 +261,9 @@ var utilsDom = {
         if (parent.childElementCount > 0) {
 
             // Note: move DOM elements with
-            // minimal number of iterations.
+            // minimal number of iterations
+            // and affected nodes to prevent
+            // unneccessary repaints.
 
             // Get from/to index pairs.
             const unsorted = Array.prototype.filter.call(
@@ -282,7 +284,7 @@ var utilsDom = {
             // Get groups (sequences of elements with unchanged order)
             var currGroup;
             var currDiff;
-            const groupsInfo = sorted.reduce((groupsInfo, el, to) => {
+            const groups = sorted.reduce((groupsInfo, el, to) => {
                 const from = unsortedIndices.get(el);
                 const diff = (to - from);
                 if (diff !== currDiff) {
@@ -302,7 +304,7 @@ var utilsDom = {
                 }
                 return groupsInfo;
             }, []);
-            const unsortedGroups = groupsInfo.slice().sort((a, b) => {
+            const unsortedGroups = groups.slice().sort((a, b) => {
                 return (a.from - b.from);
             });
             const unsortedGroupsIndices = unsortedGroups.reduce((map, g, i) => {
@@ -312,7 +314,7 @@ var utilsDom = {
 
             // Get required iterations
             const createIterations = (forward) => {
-                const iterations = groupsInfo
+                const iterations = groups
                     .map((g, i) => {
                         return {
                             elements: g.elements,
