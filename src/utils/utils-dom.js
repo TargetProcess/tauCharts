@@ -257,16 +257,115 @@ var utilsDom = {
         return results;
     },
 
-    sortElements: function (elements, sorter) {
-        if (elements.length > 0) {
-            var parent = elements[0].parentNode;
-            var fragment = document.createDocumentFragment();
-            var items = Array.prototype.slice.call(elements).sort(sorter);
-            var orderChanged = items.some((d, i) => d !== elements[i]);
-            if (orderChanged) {
-                items.forEach((el) => fragment.appendChild(el));
-                parent.appendChild(fragment);
-            }
+    sortChildren: function (parent, sorter) {
+        if (parent.childElementCount > 0) {
+
+            // Note: move DOM elements with
+            // minimal number of iterations
+            // and affected nodes to prevent
+            // unneccessary repaints.
+
+            // Get from/to index pairs.
+            const unsorted = Array.prototype.filter.call(
+                parent.childNodes,
+                (el) => el.nodeType === Node.ELEMENT_NODE);
+            const sorted = unsorted.slice().sort(sorter);
+            const unsortedIndices = unsorted.reduce((map, el, i) => {
+                map.set(el, i);
+                return map;
+            }, new Map());
+
+            // Get groups (sequences of elements with unchanged order)
+            var currGroup;
+            var currDiff;
+            const groups = sorted.reduce((groupsInfo, el, to) => {
+                const from = unsortedIndices.get(el);
+                const diff = (to - from);
+                if (diff !== currDiff) {
+                    if (currGroup) {
+                        groupsInfo.push(currGroup);
+                    }
+                    currDiff = diff;
+                    currGroup = {
+                        from,
+                        to,
+                        elements: []
+                    };
+                }
+                currGroup.elements.push(el);
+                if (to === sorted.length - 1) {
+                    groupsInfo.push(currGroup);
+                }
+                return groupsInfo;
+            }, []);
+            const unsortedGroups = groups.slice().sort((a, b) => {
+                return (a.from - b.from);
+            });
+            const unsortedGroupsIndices = unsortedGroups.reduce((map, g, i) => {
+                map.set(g, i);
+                return map;
+            }, new Map());
+
+            // Get required iterations
+            const createIterations = (forward) => {
+                const iterations = groups
+                    .map((g, i) => {
+                        return {
+                            elements: g.elements,
+                            from: unsortedGroupsIndices.get(g),
+                            to: i
+                        };
+                    })
+                    .sort(utils.createMultiSorter(
+                        ((a, b) => a.elements.length - b.elements.length),
+                        (forward ? ((a, b) => b.to - a.to) : ((a, b) => a.to - b.to))
+                    ));
+                for (var i = 0, j, g, h; i < iterations.length; i++) {
+                    g = iterations[i];
+                    if (g.from > g.to) {
+                        for (j = i + 1; j < iterations.length; j++) {
+                            h = iterations[j];
+                            if (h.from >= g.to && h.from < g.from) {
+                                h.from++;
+                            }
+                        }
+                    }
+                    if (g.from < g.to) {
+                        for (j = i + 1; j < iterations.length; j++) {
+                            h = iterations[j];
+                            if (h.from > g.from && h.from <= g.to) {
+                                h.from--;
+                            }
+                        }
+                    }
+                }
+                return iterations.filter((g) => g.from !== g.to);
+            };
+            const forwardIterations = createIterations(true);
+            const backwardIterations = createIterations(false);
+            const iterations = (forwardIterations.length < backwardIterations.length ?
+                forwardIterations :
+                backwardIterations);
+
+            // Finally sort DOM nodes
+            const mirror = unsortedGroups.map(g => g.elements);
+            iterations
+                .forEach((g) => {
+                    const targetGroup = mirror.splice(g.from, 1)[0];
+                    const groupAfter = mirror[g.to];
+                    const siblingAfter = (groupAfter ? groupAfter[0] : null);
+                    var targetNode;
+                    if (g.elements.length === 1) {
+                        targetNode = targetGroup[0];
+                    } else {
+                        targetNode = document.createDocumentFragment();
+                        targetGroup.forEach((el) => {
+                            targetNode.appendChild(el);
+                        });
+                    }
+                    parent.insertBefore(targetNode, siblingAfter);
+                    mirror.splice(g.to, 0, targetGroup);
+                });
         }
     },
 

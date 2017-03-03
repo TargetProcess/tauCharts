@@ -649,6 +649,17 @@ var utils = {
         return memoize;
     },
 
+    createMultiSorter: function (...sorters) {
+        return (a, b) => {
+            var result = 0;
+            sorters.every((s) => {
+                result = s(a, b);
+                return (result === 0);
+            });
+            return result;
+        };
+    },
+
     // TODO Remove this methods and its associated configs
     // which are just for templating in some plugins
     pick: (object, ...props) => {

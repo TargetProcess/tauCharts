@@ -3,6 +3,7 @@ import {GrammarRegistry} from '../grammar-registry';
 import {LayerLabels} from './decorators/layer-labels';
 import {d3_transition} from '../utils/d3-decorators';
 import {utils} from '../utils/utils';
+import {utilsDom} from '../utils/utils-dom';
 import {utilsDraw} from '../utils/utils-draw';
 import d3 from 'd3';
 
@@ -157,6 +158,13 @@ const Point = {
         };
 
         const fibers = screenModel.toFibers();
+        this._getGroupOrder = (() => {
+            var map = fibers.reduce((map, f, i) => {
+                map.set(f, i);
+                return map;
+            }, new Map());
+            return ((g) => map.get(g));
+        })();
 
         const frameGroups = options
             .container
@@ -316,8 +324,36 @@ const Point = {
             .selectAll('.i-role-label')
             .classed(classed);
 
+        this._sortElements(filter);
+    },
+
+    _sortElements(filter) {
+
+        const screenModel = this.node().screenModel;
+        const container = this.node().config.options.container;
+
+        // Sort frames
+        const filters = new Map();
+        const groups = new Map();
+        container
+            .selectAll('.frame')
+            .each(function (d) {
+                filters.set(this, d.some(filter));
+                groups.set(this, screenModel.group(d[0]));
+            });
+        const compareFilterThenGroupId = utils.createMultiSorter(
+            (a, b) => (filters.get(a) - filters.get(b)),
+            (a, b) => (this._getGroupOrder(a) - this._getGroupOrder(b))
+        );
+        utilsDom.sortChildren(container.node(), (a, b) => {
+            if (a.tagName === 'g' && b.tagName === 'g') {
+                return compareFilterThenGroupId(a, b);
+            }
+            return a.tagName.localeCompare(b.tagName); // Note: raise <text> over <g>.
+        });
+
+        // Raise filtered dots over others
         utilsDraw.raiseElements(container, '.dot', filter);
-        utilsDraw.raiseElements(container, '.frame', (fiber) => fiber.some(filter));
     }
 };
 
