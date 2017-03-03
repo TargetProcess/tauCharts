@@ -456,7 +456,7 @@ const BasePath = {
             .selectAll('.i-role-label')
             .classed(classed);
 
-        this._sortPaths(filter);
+        this._sortElements(filter);
     },
 
     highlightDataPoints(filter) {
@@ -486,11 +486,13 @@ const BasePath = {
             })
             .classed(`${CSS_PREFIX}highlighted`, filter);
 
-        this._sortPaths(filter);
+        this._sortElements(filter);
     },
 
-    _sortPaths(filter) {
+    _sortElements(filter) {
+
         const container = this.node().config.options.container;
+
         const pathId = new Map();
         const pathFilter = new Map();
         const getDataSetId = this._getDataSetId;
@@ -500,10 +502,17 @@ const BasePath = {
                 .filter(isNonSyntheticRecord)
                 .some(filter));
         });
-        utilsDom.sortChildren(container.node(), utils.createMultiSorter(
+
+        const compareFilterThenGroupId = utils.createMultiSorter(
             (a, b) => (pathFilter.get(a) - pathFilter.get(b)),
             (a, b) => (pathId.get(a) - pathId.get(b))
-        ));
+        );
+        utilsDom.sortChildren(container.node(), (a, b) => {
+            if (a.tagName === 'g' && b.tagName === 'g') {
+                return compareFilterThenGroupId(a, b);
+            }
+            return a.tagName.localeCompare(b.tagName); // Note: raise <text> over <g>.
+        });
     }
 };
 

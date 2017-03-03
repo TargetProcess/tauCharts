@@ -3,6 +3,7 @@ import {GrammarRegistry} from '../grammar-registry';
 import {LayerLabels} from './decorators/layer-labels';
 import {d3_transition} from '../utils/d3-decorators';
 import {utils} from '../utils/utils';
+import {utilsDom} from '../utils/utils-dom';
 import {utilsDraw} from '../utils/utils-draw';
 import d3 from 'd3';
 
@@ -156,7 +157,8 @@ const Point = {
                 .attr('opacity', 1);
         };
 
-        const fibers = screenModel.toFibers();
+        const fibers = screenModel.toFibers()
+            .sort((a, b) => screenModel.group(a[0]).localeCompare(screenModel.group(b[0])));
 
         const frameGroups = options
             .container
@@ -314,10 +316,38 @@ const Point = {
 
         container
             .selectAll('.i-role-label')
-            .classed(classed);
+            .classed(classed);        
 
+        this._sortElements(filter);
+    },
+
+    _sortElements(filter) {
+
+        const screenModel = this.node().screenModel;
+        const container = this.node().config.options.container;
+
+        // Sort frames
+        const filters = new Map();
+        const groups = new Map();
+        container
+            .selectAll('.frame')
+            .each(function (d) {
+                filters.set(this, d.some(filter));
+                groups.set(this, screenModel.group(d[0]));
+            });
+        const compareFilterThenGroupId = utils.createMultiSorter(
+            (a, b) => (filters.get(a) - filters.get(b)),
+            (a, b) => groups.get(a).localeCompare(groups.get(b))
+        );
+        utilsDom.sortChildren(container.node(), (a, b) => {
+            if (a.tagName === 'g' && b.tagName === 'g') {
+                return compareFilterThenGroupId(a, b);
+            }            
+            return a.tagName.localeCompare(b.tagName); // Note: raise <text> over <g>.
+        });
+
+        // Raise filtered dots over others
         utilsDraw.raiseElements(container, '.dot', filter);
-        utilsDraw.raiseElements(container, '.frame', (fiber) => fiber.some(filter));
     }
 };
 
