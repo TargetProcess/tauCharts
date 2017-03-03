@@ -316,7 +316,7 @@ const Point = {
 
         container
             .selectAll('.i-role-label')
-            .classed(classed);        
+            .classed(classed);
 
         this._sortElements(filter);
     },
@@ -342,7 +342,7 @@ const Point = {
         utilsDom.sortChildren(container.node(), (a, b) => {
             if (a.tagName === 'g' && b.tagName === 'g') {
                 return compareFilterThenGroupId(a, b);
-            }            
+            }
             return a.tagName.localeCompare(b.tagName); // Note: raise <text> over <g>.
         });
 

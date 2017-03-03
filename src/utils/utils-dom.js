@@ -274,12 +274,6 @@ var utilsDom = {
                 map.set(el, i);
                 return map;
             }, new Map());
-            const indices = sorted.map((el, i) => {
-                return {
-                    from: unsortedIndices.get(el),
-                    to: i
-                };
-            });
 
             // Get groups (sequences of elements with unchanged order)
             var currGroup;
