@@ -157,8 +157,14 @@ const Point = {
                 .attr('opacity', 1);
         };
 
-        const fibers = screenModel.toFibers()
-            .sort((a, b) => screenModel.group(a[0]).localeCompare(screenModel.group(b[0])));
+        const fibers = screenModel.toFibers();
+        this._getGroupOrder = (() => {
+            var map = fibers.reduce((map, f, i) => {
+                map.set(f, i);
+                return map;
+            }, new Map());
+            return ((g) => map.get(g));
+        })();
 
         const frameGroups = options
             .container
@@ -337,7 +343,7 @@ const Point = {
             });
         const compareFilterThenGroupId = utils.createMultiSorter(
             (a, b) => (filters.get(a) - filters.get(b)),
-            (a, b) => groups.get(a).localeCompare(groups.get(b))
+            (a, b) => (this._getGroupOrder(a) - this._getGroupOrder(b))
         );
         utilsDom.sortChildren(container.node(), (a, b) => {
             if (a.tagName === 'g' && b.tagName === 'g') {
