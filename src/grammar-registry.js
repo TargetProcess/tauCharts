@@ -62,8 +62,6 @@ GrammarRegistry
                     scaleColor.domain() :
                     scaleColor.originalSeries().sort((a, b) => a - b);
                 var categoriesCount = (categories.length || 1);
-                // -1 (not found) to 0
-                var colorIndexScale = ((d) => Math.max(0, categories.indexOf(d[model.scaleColor.dim])));
                 var space = ((d) => baseScale.stepSize(d[baseScale.dim]) * (categoriesCount / (1 + categoriesCount)));
 
                 return {
@@ -71,7 +69,7 @@ GrammarRegistry
                         const x = d[model.scaleX.dim];
                         const colors = xColors[x];
                         const total = colors.length;
-                        const index = colors.indexOf(d[model.scaleColor.dim])
+                        const index = colors.indexOf(d[model.scaleColor.dim]);
                         var availableSpace = space(d);
                         var middleStep = (availableSpace / (categoriesCount + 1));
                         var absTickStart = (model.xi(d) - (total + 1) * middleStep / 2);
