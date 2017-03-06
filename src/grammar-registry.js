@@ -46,10 +46,13 @@ GrammarRegistry
                 const xColors = dataSource
                     .reduce((map, row) => {
                         const x = row[model.scaleX.dim];
+                        const color = row[model.scaleColor.dim];
                         if (!(x in map)) {
                             map[x] = [];
                         }
-                        map[x].push(row[model.scaleColor.dim]);
+                        if (map[x].indexOf(color) < 0) {
+                            map[x].push(color);
+                        }
                         return map;
                     }, {});
 
