@@ -42,6 +42,17 @@ GrammarRegistry
 
         var method = (model.scaleX.discrete ?
             ((model) => {
+                const dataSource = model.data();
+                const xColors = dataSource
+                    .reduce((map, row) => {
+                        const x = row[model.scaleX.dim];
+                        if (!(x in map)) {
+                            map[x] = [];
+                        }
+                        map[x].push(row[model.scaleColor.dim]);
+                        return map;
+                    }, {});
+
                 var baseScale = model.scaleX;
                 var scaleColor = model.scaleColor;
                 var categories = scaleColor.discrete ?
@@ -54,10 +65,14 @@ GrammarRegistry
 
                 return {
                     xi: ((d) => {
+                        const x = d[model.scaleX.dim];
+                        const colors = xColors[x];
+                        const total = colors.length;
+                        const index = colors.indexOf(d[model.scaleColor.dim])
                         var availableSpace = space(d);
-                        var absTickStart = (model.xi(d) - (availableSpace / 2));
                         var middleStep = (availableSpace / (categoriesCount + 1));
-                        var relSegmStart = ((1 + colorIndexScale(d)) * middleStep);
+                        var absTickStart = (model.xi(d) - (total + 1) * middleStep / 2);
+                        var relSegmStart = ((1 + index) * middleStep);
                         return absTickStart + relSegmStart;
                     })
                 };

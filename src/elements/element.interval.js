@@ -228,8 +228,11 @@ const Interval = {
             })()
         );
 
-        // Raise <text> over <rect>
-        this._typeSorter = ((a, b) => a.tagName.localeCompare(b.tagName));
+        const elementsOrder = {
+            rect: 0,
+            text: 1
+        };
+        this._typeSorter = ((a, b) => elementsOrder[a.tagName] - elementsOrder[b.tagName]);
 
         this._sortElements(this._typeSorter, this._barsSorter);
 
