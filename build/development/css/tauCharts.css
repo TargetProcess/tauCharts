@@ -462,6 +462,11 @@
 .graphical-report__svg .grid .line path {
   shape-rendering: auto;
 }
+.graphical-report__svg .grid .cursor-line {
+  shape-rendering: crispEdges;
+  stroke: #cccccc;
+  stroke-width: 1px;
+}
 .graphical-report__svg .label {
   font-size: 12px;
   font-weight: 600;

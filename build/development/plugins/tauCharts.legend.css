@@ -27,7 +27,7 @@
 .graphical-report__legend__reset {
   margin-top: -4px;
   position: absolute;
-  right: 0;
+  right: -25px;
   top: 0;
   z-index: 1;
 }
@@ -35,7 +35,7 @@
   display: none;
 }
 .graphical-report__legend__reset + .graphical-report__legend__title {
-  margin-right: 3.7em;
+  margin-right: 1.7em;
 }
 .graphical-report__legend__item {
   padding: 10px 20px 8px 40px;

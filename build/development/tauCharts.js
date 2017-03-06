@@ -1,4 +1,4 @@
-/*! taucharts - v0.10.0-beta.18 - 2017-02-15
+/*! taucharts - v0.10.0-beta.19 - 2017-03-06
 * https://github.com/TargetProcess/tauCharts
 * Copyright (c) 2017 Taucraft Limited; Licensed Apache License 2.0 */
 (function webpackUniversalModuleDefinition(root, factory) {
@@ -348,7 +348,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	}]));
 
 	/* global VERSION:false */
-	var version = ("0.10.0-beta.18");
+	var version = ("0.10.0-beta.19");
 	exports.GPL = _tau.GPL;
 	exports.Plot = _tau2.Plot;
 	exports.Chart = _tau3.Chart;
@@ -639,20 +639,121 @@ return /******/ (function(modules) { // webpackBootstrap
 	        return results;
 	    },
 
-	    sortElements: function sortElements(elements, sorter) {
-	        if (elements.length > 0) {
-	            var parent = elements[0].parentNode;
-	            var fragment = document.createDocumentFragment();
-	            var items = Array.prototype.slice.call(elements).sort(sorter);
-	            var orderChanged = items.some(function (d, i) {
-	                return d !== elements[i];
-	            });
-	            if (orderChanged) {
-	                items.forEach(function (el) {
-	                    return fragment.appendChild(el);
+	    sortChildren: function sortChildren(parent, sorter) {
+	        if (parent.childElementCount > 0) {
+	            var currGroup;
+	            var currDiff;
+
+	            (function () {
+
+	                // Note: move DOM elements with
+	                // minimal number of iterations
+	                // and affected nodes to prevent
+	                // unneccessary repaints.
+
+	                // Get from/to index pairs.
+	                var unsorted = Array.prototype.filter.call(parent.childNodes, function (el) {
+	                    return el.nodeType === Node.ELEMENT_NODE;
 	                });
-	                parent.appendChild(fragment);
-	            }
+	                var sorted = unsorted.slice().sort(sorter);
+	                var unsortedIndices = unsorted.reduce(function (map, el, i) {
+	                    map.set(el, i);
+	                    return map;
+	                }, new Map());
+
+	                // Get groups (sequences of elements with unchanged order)
+
+	                var groups = sorted.reduce(function (groupsInfo, el, to) {
+	                    var from = unsortedIndices.get(el);
+	                    var diff = to - from;
+	                    if (diff !== currDiff) {
+	                        if (currGroup) {
+	                            groupsInfo.push(currGroup);
+	                        }
+	                        currDiff = diff;
+	                        currGroup = {
+	                            from: from,
+	                            to: to,
+	                            elements: []
+	                        };
+	                    }
+	                    currGroup.elements.push(el);
+	                    if (to === sorted.length - 1) {
+	                        groupsInfo.push(currGroup);
+	                    }
+	                    return groupsInfo;
+	                }, []);
+	                var unsortedGroups = groups.slice().sort(function (a, b) {
+	                    return a.from - b.from;
+	                });
+	                var unsortedGroupsIndices = unsortedGroups.reduce(function (map, g, i) {
+	                    map.set(g, i);
+	                    return map;
+	                }, new Map());
+
+	                // Get required iterations
+	                var createIterations = function createIterations(forward) {
+	                    var iterations = groups.map(function (g, i) {
+	                        return {
+	                            elements: g.elements,
+	                            from: unsortedGroupsIndices.get(g),
+	                            to: i
+	                        };
+	                    }).sort(_utils.utils.createMultiSorter(function (a, b) {
+	                        return a.elements.length - b.elements.length;
+	                    }, forward ? function (a, b) {
+	                        return b.to - a.to;
+	                    } : function (a, b) {
+	                        return a.to - b.to;
+	                    }));
+	                    for (var i = 0, j, g, h; i < iterations.length; i++) {
+	                        g = iterations[i];
+	                        if (g.from > g.to) {
+	                            for (j = i + 1; j < iterations.length; j++) {
+	                                h = iterations[j];
+	                                if (h.from >= g.to && h.from < g.from) {
+	                                    h.from++;
+	                                }
+	                            }
+	                        }
+	                        if (g.from < g.to) {
+	                            for (j = i + 1; j < iterations.length; j++) {
+	                                h = iterations[j];
+	                                if (h.from > g.from && h.from <= g.to) {
+	                                    h.from--;
+	                                }
+	                            }
+	                        }
+	                    }
+	                    return iterations.filter(function (g) {
+	                        return g.from !== g.to;
+	                    });
+	                };
+	                var forwardIterations = createIterations(true);
+	                var backwardIterations = createIterations(false);
+	                var iterations = forwardIterations.length < backwardIterations.length ? forwardIterations : backwardIterations;
+
+	                // Finally sort DOM nodes
+	                var mirror = unsortedGroups.map(function (g) {
+	                    return g.elements;
+	                });
+	                iterations.forEach(function (g) {
+	                    var targetGroup = mirror.splice(g.from, 1)[0];
+	                    var groupAfter = mirror[g.to];
+	                    var siblingAfter = groupAfter ? groupAfter[0] : null;
+	                    var targetNode;
+	                    if (g.elements.length === 1) {
+	                        targetNode = targetGroup[0];
+	                    } else {
+	                        targetNode = document.createDocumentFragment();
+	                        targetGroup.forEach(function (el) {
+	                            targetNode.appendChild(el);
+	                        });
+	                    }
+	                    parent.insertBefore(targetNode, siblingAfter);
+	                    mirror.splice(g.to, 0, targetGroup);
+	                });
+	            })();
 	        }
 	    },
 
@@ -1402,11 +1503,26 @@ return /******/ (function(modules) { // webpackBootstrap
 	        return memoize;
 	    },
 
+	    createMultiSorter: function createMultiSorter() {
+	        for (var _len5 = arguments.length, sorters = Array(_len5), _key5 = 0; _key5 < _len5; _key5++) {
+	            sorters[_key5] = arguments[_key5];
+	        }
+
+	        return function (a, b) {
+	            var result = 0;
+	            sorters.every(function (s) {
+	                result = s(a, b);
+	                return result === 0;
+	            });
+	            return result;
+	        };
+	    },
+
 	    // TODO Remove this methods and its associated configs
 	    // which are just for templating in some plugins
 	    pick: function pick(object) {
-	        for (var _len5 = arguments.length, props = Array(_len5 > 1 ? _len5 - 1 : 0), _key5 = 1; _key5 < _len5; _key5++) {
-	            props[_key5 - 1] = arguments[_key5];
+	        for (var _len6 = arguments.length, props = Array(_len6 > 1 ? _len6 - 1 : 0), _key6 = 1; _key6 < _len6; _key6++) {
+	            props[_key6 - 1] = arguments[_key6];
 	        }
 
 	        var result = {};
@@ -2185,26 +2301,39 @@ return /******/ (function(modules) { // webpackBootstrap
 	}).reg('positioningByColor', function (model) {
 
 	    var method = model.scaleX.discrete ? function (model) {
+	        var dataSource = model.data();
+	        var xColors = dataSource.reduce(function (map, row) {
+	            var x = row[model.scaleX.dim];
+	            var color = row[model.scaleColor.dim];
+	            if (!(x in map)) {
+	                map[x] = [];
+	            }
+	            if (map[x].indexOf(color) < 0) {
+	                map[x].push(color);
+	            }
+	            return map;
+	        }, {});
+
 	        var baseScale = model.scaleX;
 	        var scaleColor = model.scaleColor;
 	        var categories = scaleColor.discrete ? scaleColor.domain() : scaleColor.originalSeries().sort(function (a, b) {
 	            return a - b;
 	        });
 	        var categoriesCount = categories.length || 1;
-	        // -1 (not found) to 0
-	        var colorIndexScale = function colorIndexScale(d) {
-	            return Math.max(0, categories.indexOf(d[model.scaleColor.dim]));
-	        };
 	        var space = function space(d) {
 	            return baseScale.stepSize(d[baseScale.dim]) * (categoriesCount / (1 + categoriesCount));
 	        };
 
 	        return {
 	            xi: function xi(d) {
+	                var x = d[model.scaleX.dim];
+	                var colors = xColors[x];
+	                var total = colors.length;
+	                var index = colors.indexOf(d[model.scaleColor.dim]);
 	                var availableSpace = space(d);
-	                var absTickStart = model.xi(d) - availableSpace / 2;
 	                var middleStep = availableSpace / (categoriesCount + 1);
-	                var relSegmStart = (1 + colorIndexScale(d)) * middleStep;
+	                var absTickStart = model.xi(d) - (total + 1) * middleStep / 2;
+	                var relSegmStart = (1 + index) * middleStep;
 	                return absTickStart + relSegmStart;
 	            }
 	        };
@@ -13165,6 +13294,8 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	var _utils = __webpack_require__(3);
 
+	var _utilsDom = __webpack_require__(1);
+
 	var _utilsDraw = __webpack_require__(10);
 
 	var _d = __webpack_require__(2);
@@ -13312,6 +13443,15 @@ return /******/ (function(modules) { // webpackBootstrap
 	        };
 
 	        var fibers = screenModel.toFibers();
+	        this._getGroupOrder = function () {
+	            var map = fibers.reduce(function (map, f, i) {
+	                map.set(f, i);
+	                return map;
+	            }, new Map());
+	            return function (g) {
+	                return map.get(g);
+	            };
+	        }();
 
 	        var frameGroups = options.container.selectAll('.frame').data(fibers, function (f) {
 	            return screenModel.group(f[0]);
@@ -13459,10 +13599,35 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	        container.selectAll('.i-role-label').classed(classed);
 
-	        _utilsDraw.utilsDraw.raiseElements(container, '.dot', filter);
-	        _utilsDraw.utilsDraw.raiseElements(container, '.frame', function (fiber) {
-	            return fiber.some(filter);
+	        this._sortElements(filter);
+	    },
+	    _sortElements: function _sortElements(filter) {
+	        var _this2 = this;
+
+	        var screenModel = this.node().screenModel;
+	        var container = this.node().config.options.container;
+
+	        // Sort frames
+	        var filters = new Map();
+	        var groups = new Map();
+	        container.selectAll('.frame').each(function (d) {
+	            filters.set(this, d.some(filter));
+	            groups.set(this, screenModel.group(d[0]));
 	        });
+	        var compareFilterThenGroupId = _utils.utils.createMultiSorter(function (a, b) {
+	            return filters.get(a) - filters.get(b);
+	        }, function (a, b) {
+	            return _this2._getGroupOrder(a) - _this2._getGroupOrder(b);
+	        });
+	        _utilsDom.utilsDom.sortChildren(container.node(), function (a, b) {
+	            if (a.tagName === 'g' && b.tagName === 'g') {
+	                return compareFilterThenGroupId(a, b);
+	            }
+	            return a.tagName.localeCompare(b.tagName); // Note: raise <text> over <g>.
+	        });
+
+	        // Raise filtered dots over others
+	        _utilsDraw.utilsDraw.raiseElements(container, '.dot', filter);
 	    }
 	};
 
@@ -14689,6 +14854,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    highlightDataPoints: _elementPath.BasePath.highlightDataPoints,
 	    addInteraction: _elementPath.BasePath.addInteraction,
 	    _getBoundsInfo: _elementPath.BasePath._getBoundsInfo,
+	    _sortElements: _elementPath.BasePath._sortElements,
 
 	    init: function init(xConfig) {
 
@@ -15090,6 +15256,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	                return currentIndex;
 	            };
 	        }();
+	        this._getDataSetId = getDataSetId;
 
 	        var frameBinding = frameSelection.data(fullFibers, getDataSetId);
 	        frameBinding.exit().remove();
@@ -15254,6 +15421,8 @@ return /******/ (function(modules) { // webpackBootstrap
 	        container.selectAll('.i-role-dot').classed(classed);
 
 	        container.selectAll('.i-role-label').classed(classed);
+
+	        this._sortElements(filter);
 	    },
 	    highlightDataPoints: function highlightDataPoints(filter) {
 	        var cssClass = 'i-data-anchor';
@@ -15261,8 +15430,9 @@ return /******/ (function(modules) { // webpackBootstrap
 	        var showOnHover = this.node().config.guide.showAnchors === 'hover';
 	        var rmin = 4; // Min highlight radius
 	        var rx = 1.25; // Highlight multiplier
-	        var container = this.node().config.options.container;
-	        container.selectAll('.' + cssClass).attr({
+	        var unit = this.node();
+	        var container = unit.config.options.container;
+	        var dots = container.selectAll('.' + cssClass).attr({
 	            r: showOnHover ? function (d) {
 	                return filter(d) ? Math.max(rmin, screenModel.size(d) / 2) : 0;
 	            } : function (d) {
@@ -15284,8 +15454,54 @@ return /******/ (function(modules) { // webpackBootstrap
 	            }
 	        }).classed(_const.CSS_PREFIX + 'highlighted', filter);
 
-	        _utilsDraw.utilsDraw.raiseElements(container, '.i-role-path', function (fiber) {
-	            return fiber.filter(isNonSyntheticRecord).some(filter);
+	        // Display cursor line
+	        var flip = unit.config.flip;
+	        var highlighted = dots.filter(filter);
+	        var cursorLine = container.select('.cursor-line');
+	        if (highlighted.empty()) {
+	            cursorLine.remove();
+	        } else {
+	            if (cursorLine.empty()) {
+	                cursorLine = container.append('line');
+	            }
+	            var model = unit.screenModel.model;
+	            var x1 = model.xi(highlighted.data()[0]);
+	            var x2 = model.xi(highlighted.data()[0]);
+	            var domain = model.scaleY.domain();
+	            var y1 = model.scaleY(domain[0]);
+	            var y2 = model.scaleY(domain[1]);
+	            cursorLine.attr('class', 'cursor-line').attr('x1', flip ? y1 : x1).attr('y1', flip ? x1 : y1).attr('x2', flip ? y2 : x2).attr('y2', flip ? x2 : y2);
+	        }
+
+	        this._sortElements(filter);
+	    },
+	    _sortElements: function _sortElements(filter) {
+
+	        var container = this.node().config.options.container;
+
+	        var pathId = new Map();
+	        var pathFilter = new Map();
+	        var getDataSetId = this._getDataSetId;
+	        container.selectAll('.i-role-path').each(function (d) {
+	            pathId.set(this, getDataSetId(d));
+	            pathFilter.set(this, d.filter(isNonSyntheticRecord).some(filter));
+	        });
+
+	        var compareFilterThenGroupId = _utils.utils.createMultiSorter(function (a, b) {
+	            return pathFilter.get(a) - pathFilter.get(b);
+	        }, function (a, b) {
+	            return pathId.get(a) - pathId.get(b);
+	        });
+	        var elementsOrder = {
+	            line: 0,
+	            g: 1,
+	            text: 2
+	        };
+	        _utilsDom.utilsDom.sortChildren(container.node(), function (a, b) {
+	            if (a.tagName === 'g' && b.tagName === 'g') {
+	                return compareFilterThenGroupId(a, b);
+	            }
+	            return elementsOrder[a.tagName] - elementsOrder[b.tagName];
 	        });
 	    }
 	};
@@ -15390,6 +15606,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    highlightDataPoints: _elementPath.BasePath.highlightDataPoints,
 	    addInteraction: _elementPath.BasePath.addInteraction,
 	    _getBoundsInfo: _elementPath.BasePath._getBoundsInfo,
+	    _sortElements: _elementPath.BasePath._sortElements,
 
 	    init: function init(xConfig) {
 
@@ -15510,6 +15727,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    highlightDataPoints: _elementPath.BasePath.highlightDataPoints,
 	    addInteraction: _elementPath.BasePath.addInteraction,
 	    _getBoundsInfo: _elementPath.BasePath._getBoundsInfo,
+	    _sortElements: _elementPath.BasePath._sortElements,
 
 	    init: function init(xConfig) {
 
@@ -16017,9 +16235,12 @@ return /******/ (function(modules) { // webpackBootstrap
 	            };
 	        }();
 
-	        // Raise <text> over <rect>
+	        var elementsOrder = {
+	            rect: 0,
+	            text: 1
+	        };
 	        this._typeSorter = function (a, b) {
-	            return a.tagName.localeCompare(b.tagName);
+	            return elementsOrder[a.tagName] - elementsOrder[b.tagName];
 	        };
 
 	        this._sortElements(this._typeSorter, this._barsSorter);
@@ -16136,19 +16357,8 @@ return /******/ (function(modules) { // webpackBootstrap
 	        });
 	    },
 	    _sortElements: function _sortElements() {
-	        for (var _len = arguments.length, sorters = Array(_len), _key = 0; _key < _len; _key++) {
-	            sorters[_key] = arguments[_key];
-	        }
-
 	        var container = this.node().config.options.container.node();
-	        _utilsDom.utilsDom.sortElements(container.childNodes, function (a, b) {
-	            var result = 0;
-	            sorters.every(function (s) {
-	                result = s(a, b);
-	                return result === 0;
-	            });
-	            return result;
-	        });
+	        _utilsDom.utilsDom.sortChildren(container, _utils.utils.createMultiSorter.apply(_utils.utils, arguments));
 	    },
 	    _getBoundsInfo: function _getBoundsInfo(bars) {
 	        if (bars.length === 0) {

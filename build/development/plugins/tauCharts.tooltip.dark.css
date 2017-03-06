@@ -29,6 +29,18 @@
   opacity: 1;
   transition-duration: 500ms;
 }
+.graphical-report__tooltip.top-right,
+.graphical-report__tooltip.bottom-right {
+  margin-left: 8px;
+}
+.graphical-report__tooltip.top-left,
+.graphical-report__tooltip.bottom-left {
+  margin-left: -8px;
+}
+.graphical-report__tooltip.top-right,
+.graphical-report__tooltip.top-left {
+  margin-top: 8px;
+}
 .graphical-report__tooltip__content {
   max-width: 500px;
   overflow: hidden;
