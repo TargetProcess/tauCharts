@@ -204,6 +204,11 @@
             .line path {
                 shape-rendering: auto;
             }
+            .cursor-line {
+                shape-rendering: crispEdges;
+                stroke: mix(@font-color, @bg-color, 25%);
+                stroke-width: 1px;
+            }
         }
         .label {
             font-size: @font-size-s;
