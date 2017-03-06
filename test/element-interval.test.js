@@ -278,7 +278,7 @@ define(function (require) {
                 expectCoordsElement(expect, [
                     [
                         {
-                            "x": 66,
+                            "x": 122,
                             "y": 0,
                             "width": barWidth,
                             "height": 400
@@ -292,13 +292,13 @@ define(function (require) {
                             "height": 200
                         },
                         {
-                            "x": 722,
+                            "x": 694,
                             "y": 400,
                             "width": barWidth,
                             "height": 0
                         },
                         {
-                            "x": 722,
+                            "x": 694,
                             "y": 400,
                             "width": barWidth,
                             "height": 200
@@ -306,7 +306,7 @@ define(function (require) {
                     ],
                     [
                         {
-                            "x": 778,
+                            "x": 750,
                             "y": 400,
                             "width": barWidth,
                             "height": 400
@@ -521,7 +521,7 @@ define(function (require) {
                     [
                         {
                             "x": 50,    // 100
-                            "y": 89,
+                            "y": 96,
                             height: barWidth,
                             width: 50
                         }
@@ -535,7 +535,7 @@ define(function (require) {
                         },
                         {
                             "x": 50,    // 0
-                            "y": 16,
+                            "y": 13,
                             height: barWidth,
                             width: 0
                         }
@@ -543,7 +543,7 @@ define(function (require) {
                     [
                         {
                             "x": 0,     // -100
-                            "y": 24,
+                            "y": 20,
                             height: barWidth,
                             width: 50
                         }
@@ -1140,10 +1140,10 @@ define(function (require) {
                 var svg0 = context.chart.getSVG();
                 var bars = svg0.querySelectorAll('.bar');
                 expect(bars.length).to.equals(4);
-                expect(d3.select(bars[0]).attr('x')).to.equals('32');
-                expect(d3.select(bars[1]).attr('x')).to.equals('264');
-                expect(d3.select(bars[2]).attr('x')).to.equals('496');
-                expect(d3.select(bars[3]).attr('x')).to.equals('728');
+                expect(d3.select(bars[0]).attr('x')).to.equals('80');
+                expect(d3.select(bars[1]).attr('x')).to.equals('280');
+                expect(d3.select(bars[2]).attr('x')).to.equals('480');
+                expect(d3.select(bars[3]).attr('x')).to.equals('680');
 
                 var barWidth = '40';
                 expect(d3.select(bars[0]).attr('width')).to.equals(barWidth);

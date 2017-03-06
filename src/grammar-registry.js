@@ -42,22 +42,38 @@ GrammarRegistry
 
         var method = (model.scaleX.discrete ?
             ((model) => {
+                const dataSource = model.data();
+                const xColors = dataSource
+                    .reduce((map, row) => {
+                        const x = row[model.scaleX.dim];
+                        const color = row[model.scaleColor.dim];
+                        if (!(x in map)) {
+                            map[x] = [];
+                        }
+                        if (map[x].indexOf(color) < 0) {
+                            map[x].push(color);
+                        }
+                        return map;
+                    }, {});
+
                 var baseScale = model.scaleX;
                 var scaleColor = model.scaleColor;
                 var categories = scaleColor.discrete ?
                     scaleColor.domain() :
                     scaleColor.originalSeries().sort((a, b) => a - b);
                 var categoriesCount = (categories.length || 1);
-                // -1 (not found) to 0
-                var colorIndexScale = ((d) => Math.max(0, categories.indexOf(d[model.scaleColor.dim])));
                 var space = ((d) => baseScale.stepSize(d[baseScale.dim]) * (categoriesCount / (1 + categoriesCount)));
 
                 return {
                     xi: ((d) => {
+                        const x = d[model.scaleX.dim];
+                        const colors = xColors[x];
+                        const total = colors.length;
+                        const index = colors.indexOf(d[model.scaleColor.dim]);
                         var availableSpace = space(d);
-                        var absTickStart = (model.xi(d) - (availableSpace / 2));
                         var middleStep = (availableSpace / (categoriesCount + 1));
-                        var relSegmStart = ((1 + colorIndexScale(d)) * middleStep);
+                        var absTickStart = (model.xi(d) - (total + 1) * middleStep / 2);
+                        var relSegmStart = ((1 + index) * middleStep);
                         return absTickStart + relSegmStart;
                     })
                 };
