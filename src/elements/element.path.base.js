@@ -465,8 +465,9 @@ const BasePath = {
         const showOnHover = this.node().config.guide.showAnchors === 'hover';
         const rmin = 4; // Min highlight radius
         const rx = 1.25; // Highlight multiplier
-        const container = this.node().config.options.container;
-        container
+        const unit = this.node();
+        const container = unit.config.options.container;
+        const dots = container
             .selectAll(`.${cssClass}`)
             .attr({
                 r: (showOnHover ?
@@ -485,6 +486,30 @@ const BasePath = {
                 class: (d) => utilsDom.classes(cssClass, screenModel.class(d))
             })
             .classed(`${CSS_PREFIX}highlighted`, filter);
+
+        // Display cursor line
+        const flip = unit.config.flip;
+        const highlighted = dots.filter(filter);
+        var cursorLine = container.select('.cursor-line');
+        if (highlighted.empty()) {
+            cursorLine.remove();
+        } else {
+            if (cursorLine.empty()) {
+                cursorLine = container.append('line');
+            }
+            const model = unit.screenModel.model;
+            const x1 = model.xi(highlighted.data()[0]);
+            const x2 = model.xi(highlighted.data()[0]);
+            const domain = model.scaleY.domain();
+            const y1 = model.scaleY(domain[0]);
+            const y2 = model.scaleY(domain[1]);
+            cursorLine
+                .attr('class', 'cursor-line')
+                .attr('x1', flip ? y1 : x1)
+                .attr('y1', flip ? x1 : y1)
+                .attr('x2', flip ? y2 : x2)
+                .attr('y2', flip ? x2 : y2);
+        }
 
         this._sortElements(filter);
     },
@@ -507,11 +532,16 @@ const BasePath = {
             (a, b) => (pathFilter.get(a) - pathFilter.get(b)),
             (a, b) => (pathId.get(a) - pathId.get(b))
         );
+        const elementsOrder = {
+            line: 0,
+            g: 1,
+            text: 2
+        };
         utilsDom.sortChildren(container.node(), (a, b) => {
             if (a.tagName === 'g' && b.tagName === 'g') {
                 return compareFilterThenGroupId(a, b);
             }
-            return a.tagName.localeCompare(b.tagName); // Note: raise <text> over <g>.
+            return (elementsOrder[a.tagName] - elementsOrder[b.tagName]);
         });
     }
 };
