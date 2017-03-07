@@ -67,7 +67,7 @@ GrammarRegistry
                 return {
                     xi: ((d) => {
                         const x = d[model.scaleX.dim];
-                        const colors = xColors[x];
+                        const colors = xColors[x] || [d[model.scaleColor.dim]];
                         const total = colors.length;
                         const index = colors.indexOf(d[model.scaleColor.dim]);
                         var availableSpace = space(d);

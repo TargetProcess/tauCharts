@@ -13,6 +13,7 @@
 
     var d3 = tauCharts.api.d3;
     var utils = tauCharts.api.utils;
+    var pluginsSDK = tauCharts.api.pluginsSDK;
     var RESET_SELECTOR = '.graphical-report__legend__reset';
     var COLOR_ITEM_SELECTOR = '.graphical-report__legend__item-color';
     var COLOR_TOGGLE_SELECTOR = '.graphical-report__legend__guide--color__overlay';
@@ -412,20 +413,26 @@
                         }, true);
 
                         var numDomain = (isDate ?
-                            domain.map(function (x) {
-                                return x - 0;
-                            }) :
+                            domain.map(Number) :
                             domain);
 
                         var numFormatter = getNumberFormatter(numDomain[0], numDomain[numDomain.length - 1]);
+                        var dateFormatter = (function () {
+                            var spec = self._chart.getSpec();
+                            var formatter = pluginsSDK.extractFieldsFormatInfo(spec)[fillScale.dim].format;
+                            if (!formatter) {
+                                formatter = function (x) {
+                                    return new Date(x);
+                                };
+                            }
+                            return function (x) {
+                                return String(formatter(x));
+                            };
+                        })();
 
-                        var castNum = (isDate ?
-                            function (x) {
-                                return new Date(x);
-                            } :
-                            function (x) {
-                                return numFormatter(x);
-                            });
+                        var formatter = (isDate ?
+                            dateFormatter :
+                            numFormatter);
 
                         var brewerLength = fillScale.brewer.length;
                         var title = ((guide.color || {}).label || {}).text || fillScale.dim;
@@ -437,7 +444,10 @@
                             ((numDomain[1] - numDomain[0]) % 3 === 0) ? 4 :
                                 ((numDomain[1] - numDomain[0]) % 2 === 0) ? 3 : 2
                         );
-                        var labels = splitEvenly(numDomain, labelsCount).map(castNum);
+                        var splitted = splitEvenly(numDomain, labelsCount);
+                        var labels = (isDate ? splitted.map(function (x) {
+                            return new Date(x);
+                        }) : splitted).map(formatter);
                         if (labels[0] === labels[labels.length - 1]) {
                             labels = [labels[0]];
                         }
@@ -588,6 +598,9 @@
                         var domain = sizeScale.domain().sort(function (a, b) {
                             return a - b;
                         });
+                        if (!Array.isArray(domain) || !domain.every(isFinite)) {
+                            return;
+                        }
 
                         var title = ((guide.size || {}).label || {}).text || sizeScale.dim;
 
