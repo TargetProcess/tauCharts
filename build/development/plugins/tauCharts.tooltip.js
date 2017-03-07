@@ -17,6 +17,15 @@
     var TARGET_SVG_CLASS = 'graphical-report__tooltip-target';
     var TARGET_STUCK_CLASS = 'graphical-report__tooltip-target-stuck';
 
+    var escapeHtml = function (x) {
+        return String(x)
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;')
+            .replace(/'/g, '&#039;');
+    };
+
     function Tooltip(xSettings) {
 
         var settings = utils.defaults(
@@ -298,14 +307,14 @@
 
             renderItem: function (label, formattedValue, fieldKey, fieldVal) {
                 return this.itemTemplate({
-                    label: label,
-                    value: formattedValue
+                    label: escapeHtml(label),
+                    value: escapeHtml(formattedValue)
                 });
             },
 
             _getFormat: function (k) {
                 var meta = this._metaInfo[k] || {format: function (x) {
-                    return x;
+                    return String(x);
                 }};
                 return meta.format;
             },
