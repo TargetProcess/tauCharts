@@ -305,7 +305,7 @@
 
             _getFormat: function (k) {
                 var meta = this._metaInfo[k] || {format: function (x) {
-                    return x;
+                    return String(x);
                 }};
                 return meta.format;
             },
