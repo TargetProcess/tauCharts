@@ -418,15 +418,19 @@
 
                         var numFormatter = getNumberFormatter(numDomain[0], numDomain[numDomain.length - 1]);
                         var dateFormatter = (function () {
-                            var formatter = pluginsSDK.extractFieldsFormatInfo(self._chart.getSpec())[fillScale.dim].format || function (x) {
-                                return new Date(x);
-                            };
+                            var spec = self._chart.getSpec();
+                            var formatter = pluginsSDK.extractFieldsFormatInfo(spec)[fillScale.dim].format;
+                            if (!formatter) {
+                                formatter = function (x) {
+                                    return new Date(x);
+                                };
+                            }
                             return function (x) {
                                 return String(formatter(x));
                             };
                         })();
 
-                        var format = (isDate ?
+                        var formatter = (isDate ?
                             dateFormatter :
                             numFormatter);
 
@@ -440,9 +444,10 @@
                             ((numDomain[1] - numDomain[0]) % 3 === 0) ? 4 :
                                 ((numDomain[1] - numDomain[0]) % 2 === 0) ? 3 : 2
                         );
-                        var labels = splitEvenly(numDomain, labelsCount)
-                            .map(isDate ? ((x) => new Date(x)) : ((x) => x))
-                            .map(format);
+                        var splitted = splitEvenly(numDomain, labelsCount);
+                        var labels = (isDate ? splitted.map(function (x) {
+                            return new Date(x);
+                        }) : splitted).map(formatter);
                         if (labels[0] === labels[labels.length - 1]) {
                             labels = [labels[0]];
                         }
