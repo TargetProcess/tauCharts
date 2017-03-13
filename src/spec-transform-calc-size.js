@@ -95,9 +95,25 @@ var fitModelStrategies = {
             SpecTransformOptimize.hideAxisTicks(specRef.unit, specRef.settings, 'y');
         }
 
+        var normalW = srcSize.width;
         var widthByMaxText = calcSize('x', specRef.unit, byOptimisticMaxText);
         if (widthByMaxText <= srcSize.width) {
             tryOptimizeSpec(specRef.unit, specRef.settings);
+        } else {
+            var pessimisticWidthByMaxText = calcSize('x', specRef.unit, byPessimisticMaxText);
+            if (pessimisticWidthByMaxText > srcSize.width) {
+                var widthByDensity = Math.max(srcSize.width, calcSize('x', specRef.unit, byDensity));
+                normalW = Math.min(pessimisticWidthByMaxText, widthByDensity);
+            }
+        }
+        var normalH = Math.max(srcSize.height, calcSize('y', specRef.unit, byDensity));
+
+        if (!shouldHideXAxis && (normalW > srcSize.width)) {
+            SpecTransformOptimize.hideAxisTicks(specRef.unit, specRef.settings, 'x');
+        }
+
+        if (!shouldHideYAxis && (normalH > srcSize.height)) {
+            SpecTransformOptimize.hideAxisTicks(specRef.unit, specRef.settings, 'y');
         }
 
         var newW = srcSize.width;
