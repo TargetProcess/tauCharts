@@ -442,8 +442,8 @@ const Interval = {
                 return (Math.abs(a.distToValue) - Math.abs(b.distToValue));
             }))
             .map((el) => {
-                const x = (el.cx + translate.x);
-                const y = (el.cy + translate.y);
+                const x = (el.cx);
+                const y = (el.cy);
                 const distance = Math.abs(flip ? (cursorY - y) : (cursorX - x));
                 const secondaryDistance = Math.abs(flip ? (cursorX - x) : (cursorY - y));
                 return {node: el.node, data: el.data, distance, secondaryDistance, x, y};
