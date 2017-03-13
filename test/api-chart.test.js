@@ -299,6 +299,87 @@ define(function (require) {
         });
     });
 
+    describe('Hide ticks for large density', function () {
+
+        var div;
+
+        var createDiv = function () {
+            var div = document.createElement('div');
+            div.style.width = 350 + 'px';
+            div.style.height = 350 + 'px';
+            document.body.appendChild(div);
+            return div;
+        };
+
+        var createConfig = function (fitModel) {
+            return {
+                type: 'scatterplot',
+                x: 'x',
+                y: 'y',
+                size: 'z',
+                data: [
+                    {x: 'A', y: 'a', z: 1},
+                    {x: 'B', y: 'b', z: 2},
+                    {x: 'C', y: 'c', z: 2},
+                    {x: 'D', y: 'd', z: 2},
+                    {x: 'E', y: 'e', z: 3},
+                    {x: 'F', y: 'f', z: 2},
+                    {x: 'G', y: 'g', z: 2},
+                    {x: 'H', y: 'h', z: 2},
+                    {x: 'I', y: 'i', z: 3},
+                    {x: 'J', y: 'j', z: 2},
+                    {x: 'K', y: 'k', z: 2},
+                    {x: 'L', y: 'l', z: 2},
+                    {x: 'M', y: 'm', z: 5},
+                    {x: 'N', y: 'n', z: 3},
+                    {x: 'O', y: 'o', z: 2},
+                    {x: 'P', y: 'p', z: 5},
+                    {x: 'Q', y: 'q', z: 3},
+                    {x: 'R', y: 'r', z: 2},
+                    {x: 'S', y: 's', z: 5},
+                    {x: 'T', y: 't', z: 3},
+                    {x: 'U', y: 'u', z: 2},
+                    {x: 'V', y: 'v', z: 2},
+                    {x: 'W', y: 'w', z: 2},
+                    {x: 'X', y: 'x', z: 2},
+                    {x: 'Y', y: 'y', z: 2},
+                    {x: 'Z', y: 'z', z: 2}
+                ],
+                settings: {
+                    fitModel: fitModel
+                }
+            };
+        };
+
+        function getTicks(chart, axis) {
+            return chart.getSVG().querySelectorAll(`.${axis}.axis .tick text`);
+        }
+
+        beforeEach(function () {
+            div = createDiv();
+            utils.noScrollStyle.create();
+        });
+
+        it('should not hide axes ticks for [normal] model', function () {
+            var chart = new tauCharts.Chart(createConfig('normal'));
+            chart.renderTo(div);
+            expect(getTicks(chart, 'x').length).to.be.above(0);
+            expect(getTicks(chart, 'y').length).to.be.above(0);
+        });
+
+        it('should hide axes ticks for [entire-view] model', function () {
+            var chart = new tauCharts.Chart(createConfig('entire-view'));
+            chart.renderTo(div);
+            expect(getTicks(chart, 'x').length).to.be.equal(0);
+            expect(getTicks(chart, 'y').length).to.be.equal(0);
+        });
+
+        afterEach(function () {
+            div.parentNode.removeChild(div);
+            utils.noScrollStyle.remove();
+        });
+    });
+
     describe('Avoid chart scrollbar', function () {
         var testChart = function (avoidScrollAtRatio, expectHeight) {
             var container = document.createElement('div');
