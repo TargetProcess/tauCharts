@@ -269,21 +269,37 @@ const BasePath = {
         // we assume that path remains the same.
         // TODO: Id of data array should remain the same (then use `fib => self.screenModel.id(fib)`).
         const getDataSetId = (() => {
-            var currentDataSets = (frameSelection.empty() ? [] : frameSelection.data());
-            var currentDatasetsIds = currentDataSets.map((ds) => ds.map(screenModel.id));
-            var notFoundDatasets = 0;
+            const currentDataSets = (frameSelection.empty() ? [] : frameSelection.data());
+            const currentDataSetsIds = new Map();
+            frameSelection.each(function (d) {
+                currentDataSetsIds.set(d, Number(this.getAttribute('data-id')));
+            });
+            const currentDataSetsInnerIds = currentDataSets.reduce((map, ds) => {
+                map.set(ds, ds.map(screenModel.id));
+                return map;
+            }, new Map());
+            const newDataSetsIds = new Map();
+            var notFoundDatasetsCounter = Math.max(0, ...Array.from(currentDataSetsIds.values()));
             return (fib) => {
-                var fibIds = fib.map((f) => screenModel.id(f));
-                var currentIndex = currentDatasetsIds.findIndex((currIds) => {
+                if (newDataSetsIds.has(fib)) {
+                    // console.log('found', newDataSetsIds.get(fib));
+                    return newDataSetsIds.get(fib);
+                }
+                const fibIds = fib.map((f) => screenModel.id(f));
+                const matchingDataSet = (Array.from(currentDataSetsInnerIds.entries()).find(([_, currIds]) => {
                     return fibIds.some((newId) => {
                         return currIds.some((id) => id === newId);
                     });
-                });
-                if (currentIndex < 0) {
-                    ++notFoundDatasets;
-                    return -notFoundDatasets;
+                }) || [null])[0];
+                var result;
+                if (matchingDataSet) {
+                    result = currentDataSetsIds.get(matchingDataSet);
+                } else {
+                    ++notFoundDatasetsCounter;
+                    result = notFoundDatasetsCounter;
                 }
-                return currentIndex;
+                newDataSetsIds.set(fib, result);
+                return result;
             };
         })();
         this._getDataSetId = getDataSetId;
@@ -298,6 +314,7 @@ const BasePath = {
         frameBinding
             .enter()
             .append('g')
+            .attr('data-id', getDataSetId)
             .call(updateGroupContainer);
 
         frameBinding.order();
