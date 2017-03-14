@@ -269,36 +269,35 @@ const BasePath = {
         // we assume that path remains the same.
         // TODO: Id of data array should remain the same (then use `fib => self.screenModel.id(fib)`).
         const getDataSetId = (() => {
-            const currentDataSets = (frameSelection.empty() ? [] : frameSelection.data());
-            const currentDataSetsIds = new Map();
+            const current = (frameSelection.empty() ? [] : frameSelection.data());
+            const currentIds = new Map();
             frameSelection.each(function (d) {
-                currentDataSetsIds.set(d, Number(this.getAttribute('data-id')));
+                currentIds.set(d, Number(this.getAttribute('data-id')));
             });
-            const currentDataSetsInnerIds = currentDataSets.reduce((map, ds) => {
+            const currentInnerIds = current.reduce((map, ds) => {
                 map.set(ds, ds.map(screenModel.id));
                 return map;
             }, new Map());
-            const newDataSetsIds = new Map();
-            var notFoundDatasetsCounter = Math.max(0, ...Array.from(currentDataSetsIds.values()));
+            const newIds = new Map();
+            var notFoundCounter = Math.max(0, ...Array.from(currentIds.values()));
             return (fib) => {
-                if (newDataSetsIds.has(fib)) {
-                    // console.log('found', newDataSetsIds.get(fib));
-                    return newDataSetsIds.get(fib);
+                if (newIds.has(fib)) {
+                    return newIds.get(fib);
                 }
                 const fibIds = fib.map((f) => screenModel.id(f));
-                const matchingDataSet = (Array.from(currentDataSetsInnerIds.entries()).find(([_, currIds]) => {
+                const matching = (Array.from(currentInnerIds.entries()).find(([, currIds]) => {
                     return fibIds.some((newId) => {
                         return currIds.some((id) => id === newId);
                     });
                 }) || [null])[0];
                 var result;
-                if (matchingDataSet) {
-                    result = currentDataSetsIds.get(matchingDataSet);
+                if (matching) {
+                    result = currentIds.get(matching);
                 } else {
-                    ++notFoundDatasetsCounter;
-                    result = notFoundDatasetsCounter;
+                    ++notFoundCounter;
+                    result = notFoundCounter;
                 }
-                newDataSetsIds.set(fib, result);
+                newIds.set(fib, result);
                 return result;
             };
         })();
