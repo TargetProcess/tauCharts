@@ -67,9 +67,13 @@ export class GPL extends Emitter {
             });
     }
 
-    static traverseSpec(spec, enter, exit, rootNode = null, rootFrame = null) {
+    static traverseSpec(spec, enter, exit, rootNode = null, rootFrame = null, timer) {
 
         var traverse = (node, enter, exit, parentNode, currFrame) => {
+
+            if (timer && !timer.tick()) {
+                return;
+            }
 
             enter(node, parentNode, currFrame);
 
@@ -90,7 +94,7 @@ export class GPL extends Emitter {
         return this.config;
     }
 
-    getDrawScenario(root) {
+    getDrawScenario(root, timer) {
         const grammarRules = this.grammarRules;
         this._flattenDrawScenario(root, (parentInstance, unit, rootFrame) => {
             // Rule to cancel parent frame inheritance
@@ -110,7 +114,7 @@ export class GPL extends Emitter {
             instance.node().screenModel = instance.createScreenModel(grammarModel);
 
             return instance;
-        });
+        }, timer);
 
         Object
             .keys(this.scales)
@@ -134,10 +138,10 @@ export class GPL extends Emitter {
             instance.addInteraction();
 
             return instance;
-        });
+        }, timer);
     }
 
-    _flattenDrawScenario(root, iterator) {
+    _flattenDrawScenario(root, iterator, timer) {
 
         var uids = {};
         var scenario = [];
@@ -187,7 +191,8 @@ export class GPL extends Emitter {
             this._datify({
                 source: this.root.expression.source,
                 pipe: []
-            }));
+            }),
+            timer);
 
         return scenario;
     }

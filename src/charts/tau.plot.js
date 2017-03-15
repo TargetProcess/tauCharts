@@ -411,6 +411,24 @@ export class Plot extends Emitter {
                 height: newSize.height,
                 containerHeight: newSize.height
             })
+        }, {
+                start: Date.now(),
+                duration: 0,
+                last: Date.now(),
+                limit: 1000,
+                tick: function () {
+                    var now = Date.now();
+                    this.duration += now - this.last;
+                    this.last = now;
+                    if (this.duration > this.limit) {
+                        if (!this.alerted) {
+                            alert(`Too long: ${this.duration}ms`);
+                            this.alerted = true;
+                        }
+                        return false;
+                    }
+                    return true;
+                }
         });
 
         var frameRootId = scenario[0].config.uid;
