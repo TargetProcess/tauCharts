@@ -67,15 +67,13 @@ export class GPL extends Emitter {
             });
     }
 
-    static traverseSpec(spec, enter, exit, rootNode = null, rootFrame = null, timer) {
+    static traverseSpec(spec, enter, exit, rootNode = null, rootFrame = null, taskRunner) {
 
         var traverse = (node, enter, exit, parentNode, currFrame) => {
 
-            if (timer && !timer.tick()) {
-                return;
-            }
-
-            enter(node, parentNode, currFrame);
+            taskRunner.addTask(() => {
+                enter(node, parentNode, currFrame);
+            });
 
             if (node.frames) {
                 node.frames.forEach((frame) => {
@@ -83,7 +81,7 @@ export class GPL extends Emitter {
                 });
             }
 
-            exit(node, parentNode, currFrame);
+            taskRunner.addTask(() => exit(node, parentNode, currFrame));
         };
 
         traverse(spec.unit, enter, exit, rootNode, rootFrame);
@@ -94,7 +92,7 @@ export class GPL extends Emitter {
         return this.config;
     }
 
-    getDrawScenario(root, timer) {
+    getDrawScenario(root, taskRunner) {
         const grammarRules = this.grammarRules;
         this._flattenDrawScenario(root, (parentInstance, unit, rootFrame) => {
             // Rule to cancel parent frame inheritance
@@ -114,13 +112,15 @@ export class GPL extends Emitter {
             instance.node().screenModel = instance.createScreenModel(grammarModel);
 
             return instance;
-        }, timer);
+        }, taskRunner);
 
-        Object
-            .keys(this.scales)
-            .forEach((k) => this.scalesHub.createScaleInfo(this.scales[k]).commit());
+        taskRunner.addTask(() => {
+            Object
+                .keys(this.scales)
+                .forEach((k) => this.scalesHub.createScaleInfo(this.scales[k]).commit());
+        });
 
-        return this._flattenDrawScenario(root, (parentInstance, unit, rootFrame) => {
+        this._flattenDrawScenario(root, (parentInstance, unit, rootFrame) => {
             const frame = (unit.expression.inherit === false) ? null : rootFrame;
             const scalesFactoryMethod = this._createFrameScalesFactoryMethod(frame);
             const instance = this.unitSet.create(
@@ -138,10 +138,10 @@ export class GPL extends Emitter {
             instance.addInteraction();
 
             return instance;
-        }, timer);
+        }, taskRunner);
     }
 
-    _flattenDrawScenario(root, iterator, timer) {
+    _flattenDrawScenario(root, iterator, taskRunner) {
 
         var uids = {};
         var scenario = [];
@@ -192,9 +192,9 @@ export class GPL extends Emitter {
                 source: this.root.expression.source,
                 pipe: []
             }),
-            timer);
+            taskRunner);
 
-        return scenario;
+        taskRunner.addTask(() => scenario);
     }
 
     _expandUnitsStructure(root, parentPipe = []) {

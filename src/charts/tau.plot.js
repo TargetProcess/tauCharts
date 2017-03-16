@@ -21,7 +21,8 @@ import {SpecTransformExtractAxes} from '../spec-transform-extract-axes';
 import {CSS_PREFIX} from '../const';
 
 import {GPL} from './tau.gpl';
-import {default as d3} from 'd3';
+import d3 from 'd3';
+import TaskRunner from './task-runner';
 var selectOrAppend = utilsDom.selectOrAppend;
 var selectImmediate = utilsDom.selectImmediate;
 
@@ -400,7 +401,38 @@ export class Plot extends Emitter {
         var newSize = xGpl.config.settings.size;
         var d3Target = d3.select(content);
 
-        var scenario = xGpl.getDrawScenario({
+        this._createProgressBar();
+        this._clearRenderingError();
+        this._clearTimeoutWarning();
+
+        this._taskRunner = new TaskRunner({
+            timeout: 1000,//,
+            syncInterval: Infinity,
+            callbacks: {
+                done: (result) => {
+                    console.log('done');
+                },
+                timeout: (timeout) => {
+                    this._displayTimeoutWarning({
+                        timeout,
+                        proceed: () => {
+                            this._taskRunner.timeout = Infinity;
+                            this._taskRunner.run();
+                        },
+                        cancel: () => {
+                            this._cancelRendering();
+                        }
+                    });
+                    this.fire('renderingtimeout');
+                },
+                progress: (progress) => {
+                    console.log(progress);
+                    this._reportProgress(progress);
+                }
+            }
+        });
+
+        xGpl.getDrawScenario({
             allocateRect: () => ({
                 slot: ((uid) => d3Target.selectAll(`.uid_${uid}`)),
                 frameId: 'root',
@@ -411,26 +443,22 @@ export class Plot extends Emitter {
                 height: newSize.height,
                 containerHeight: newSize.height
             })
-        }, {
-                start: Date.now(),
-                duration: 0,
-                last: Date.now(),
-                limit: 1000,
-                tick: function () {
-                    var now = Date.now();
-                    this.duration += now - this.last;
-                    this.last = now;
-                    if (this.duration > this.limit) {
-                        if (!this.alerted) {
-                            alert(`Too long: ${this.duration}ms`);
-                            this.alerted = true;
-                        }
-                        return false;
-                    }
-                    return true;
-                }
+        }, this._taskRunner);
+
+        this._taskRunner.addTask((scenario) => {
+            this._renderRoot({scenario, d3Target, newSize});
+            return scenario;
         });
 
+        this._taskRunner.addTask((scenario) => {
+            this._cancelRendering();
+            this._renderScenario(scenario);
+        });
+
+        this._taskRunner.run();
+    }
+
+    _renderRoot({scenario, d3Target, newSize}) {
         var frameRootId = scenario[0].config.uid;
         var svg = selectOrAppend(d3Target, `svg`).attr({
             width: Math.floor(newSize.width),
@@ -462,9 +490,6 @@ export class Plot extends Emitter {
                     .attr('opacity', 1e-6)
                     .remove();
             });
-
-        this._cancelRendering();
-        this._renderScenario(scenario);
     }
 
     _renderScenario(scenario) {
@@ -489,47 +514,53 @@ export class Plot extends Emitter {
                 }
             }
         };
-        this._createProgressBar();
-        this._clearRenderingError();
-        this._clearTimeoutWarning();
+        // this._createProgressBar();
+        // this._clearRenderingError();
+        // this._clearTimeoutWarning();
 
-        var drawScenario = () => {
-            var item = scenario[i];
-
-            var start = Date.now();
+        scenario.forEach((item) => {
             item.draw();
             this.onUnitDraw(item.node());
             this._renderedItems.push(item);
-            var end = Date.now();
-            duration += end - start;
-            syncDuration += end - start;
+        });
 
-            i++;
-            this._reportProgress(i / scenario.length);
-            if (i === scenario.length) {
-                done();
-            } else if (duration > timeout) {
-                timeoutReached();
-            } else {
-                next();
-            }
-        };
+        // var drawScenario = () => {
+        //     var item = scenario[i];
 
-        var timeoutReached = () => {
-            this._displayTimeoutWarning({
-                timeout: timeout,
-                proceed: () => {
-                    timeout = Infinity;
-                    next();
-                },
-                cancel: () => {
-                    this._cancelRendering();
-                }
-            });
-            this.fire('renderingtimeout');
-        };
+        //     var start = Date.now();
+        //     item.draw();
+        //     this.onUnitDraw(item.node());
+        //     this._renderedItems.push(item);
+        //     var end = Date.now();
+        //     duration += end - start;
+        //     syncDuration += end - start;
 
-        var done = () => {
+        //     i++;
+        //     this._reportProgress(i / scenario.length);
+        //     if (i === scenario.length) {
+        //         done();
+        //     } else if (duration > timeout) {
+        //         timeoutReached();
+        //     } else {
+        //         next();
+        //     }
+        // };
+
+        // var timeoutReached = () => {
+        //     this._displayTimeoutWarning({
+        //         timeout: timeout,
+        //         proceed: () => {
+        //             timeout = Infinity;
+        //             next();
+        //         },
+        //         cancel: () => {
+        //             this._cancelRendering();
+        //         }
+        //     });
+        //     this.fire('renderingtimeout');
+        // };
+
+        this._taskRunner.addTask(() => {
             this._renderingInProgress = false;
             Plot.renderingsInProgress--;
 
@@ -541,26 +572,26 @@ export class Plot extends Emitter {
 
             // NOTE: After plugins have rendered, the panel scrollbar may appear, so need to handle it again.
             utilsDom.setScrollPadding(this._layout.rightSidebarContainer, 'vertical');
-        };
+        });
 
-        var nextSync = () => drawScenario();
-        var nextAsync = () => {
-            this._requestAnimationFrame(safe(() => drawScenario()));
-        };
+        // var nextSync = () => drawScenario();
+        // var nextAsync = () => {
+        //     this._requestAnimationFrame(safe(() => drawScenario()));
+        // };
 
-        var next = () => {
-            if (
-                this._liveSpec.settings.asyncRendering &&
-                syncDuration >= this._liveSpec.settings.syncRenderingDuration / Plot.renderingsInProgress
-            ) {
-                syncDuration = 0;
-                nextAsync();
-            } else {
-                nextSync();
-            }
-        };
+        // var next = () => {
+        //     if (
+        //         this._liveSpec.settings.asyncRendering &&
+        //         syncDuration >= this._liveSpec.settings.syncRenderingDuration / Plot.renderingsInProgress
+        //     ) {
+        //         syncDuration = 0;
+        //         nextAsync();
+        //     } else {
+        //         nextSync();
+        //     }
+        // };
 
-        safe(next)();
+        // safe(next)();
     }
 
     _cancelRendering() {
