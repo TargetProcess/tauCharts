@@ -348,6 +348,7 @@ export class Plot extends Emitter {
                 Infinity),
             callbacks: {
                 done: () => {
+                    this._completeRender();
                     this._renderingPhase = null;
                 },
                 timeout: (timeout) => {
@@ -545,18 +546,18 @@ export class Plot extends Emitter {
                 this._renderedItems.push(item);
             });
         });
+    }
 
-        this._taskRunner.addTask(() => {
-            // TODO: Render panels before chart, to
-            // prevent chart size shrink. Use some other event.
-            utilsDom.setScrollPadding(this._layout.contentContainer);
-            this._layout.rightSidebar.style.maxHeight = (`${this._liveSpec.settings.size.height}px`);
-            this.enablePointerEvents();
-            this.fire('render', this._svg);
+    _completeRender() {
+        // TODO: Render panels before chart, to
+        // prevent chart size shrink. Use some other event.
+        utilsDom.setScrollPadding(this._layout.contentContainer);
+        this._layout.rightSidebar.style.maxHeight = (`${this._liveSpec.settings.size.height}px`);
+        this.enablePointerEvents();
+        this.fire('render', this._svg);
 
-            // NOTE: After plugins have rendered, the panel scrollbar may appear, so need to handle it again.
-            utilsDom.setScrollPadding(this._layout.rightSidebarContainer, 'vertical');
-        });
+        // NOTE: After plugins have rendered, the panel scrollbar may appear, so need to handle it again.
+        utilsDom.setScrollPadding(this._layout.rightSidebarContainer, 'vertical');
     }
 
     _cancelRendering() {

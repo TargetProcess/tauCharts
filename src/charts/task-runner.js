@@ -82,6 +82,9 @@ export default class TaskRunner {
             (task = this._queue.shift())
         ) {
             duration = this._runTask(task);
+            if (duration === null) {
+                return;
+            }
             this._syncDuration += duration;
             this._asyncDuration += duration;
             frameDuration += duration;
@@ -91,10 +94,10 @@ export default class TaskRunner {
             isTimeoutReached &&
             (this._queue.length > 0)
         ) {
+            this.stop();
             this._callbacks.timeout.call(null,
                 this._asyncDuration,
                 this);
-            this.stop();
         }
 
         if (
@@ -106,10 +109,10 @@ export default class TaskRunner {
         }
 
         if (this._queue.length === 0) {
+            this.stop();
             this._callbacks.done.call(null,
                 this._result,
                 this);
-            this.stop();
         }
     }
 
@@ -125,6 +128,7 @@ export default class TaskRunner {
                 this._callbacks.error.call(null,
                     err,
                     this);
+                return null;
             }
         } else {
             this._result = task.call(null,
@@ -156,8 +160,10 @@ export default class TaskRunner {
         }
         this._running = false;
         TaskRunner.runnersInProgress--;
-        cancelAnimationFrame(this._requestedFrameId);
-        this._requestedFrameId = null;
+        if (this._requestedFrameId) {
+            cancelAnimationFrame(this._requestedFrameId);
+            this._requestedFrameId = null;
+        }
     }
 }
 
