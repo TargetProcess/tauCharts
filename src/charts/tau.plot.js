@@ -367,8 +367,8 @@ export class Plot extends Emitter {
                 },
                 progress: (progress) => {
                     var phases = {
-                        'spec': 0,
-                        'draw': 1
+                        spec: 0,
+                        draw: 1
                     };
                     var p = (phases[this._renderingPhase] / 2 + progress / 2);
                     this._reportProgress(p);
@@ -379,7 +379,10 @@ export class Plot extends Emitter {
                         this._displayRenderingError(err);
                         this.fire('renderingerror', err);
                         if (this._liveSpec.settings.asyncRendering) {
-                            this._liveSpec.settings.log(`An arror occured during chart rendering: ${err.message}`, 'ERROR');
+                            this._liveSpec.settings.log(
+                                `An arror occured during chart rendering: ${err.message}`,
+                                'ERROR'
+                            );
                         } else {
                             throw err;
                         }
