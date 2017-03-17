@@ -712,7 +712,7 @@ define(function (require) {
                 settings: {
                     asyncRendering: true,
                     renderingTimeout: 0.1,
-                    syncRenderingDuration: 1
+                    syncRenderingInterval: 1
                 }
             });
             var timeoutCount = 0;
@@ -777,7 +777,7 @@ define(function (require) {
                 },
                 settings: {
                     asyncRendering: true,
-                    syncRenderingDuration: 1
+                    syncRenderingInterval: 1
                 }
             });
 

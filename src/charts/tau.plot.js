@@ -72,8 +72,9 @@ export class Plot extends Emitter {
         this._plugins = new Plugins(plugins, this);
 
         this._reportProgress = null;
-        this._renderingInProgress = false;
-        this._requestedAnimationFrames = new Set();
+        this._taskRunner = null;
+        this._renderingPhase = null;
+        this._pointerEnentsEnabled = true;
     }
 
     destroy() {
@@ -253,6 +254,16 @@ export class Plot extends Emitter {
             });
     }
 
+    disablePointerEvents() {
+        this._pointerEnentsEnabled = false;
+        this._layout.layout.style.pointerEvents = 'none';
+    }
+
+    enablePointerEvents() {
+        this._pointerEnentsEnabled = true;
+        this._layout.layout.style.pointerEvents = '';
+    }
+
     _handlePointerEvent(event) {
         // TODO: Highlight API seems not consistent.
         // Just predicate is not enough, also
@@ -293,20 +304,6 @@ export class Plot extends Emitter {
         items.forEach((item) => item.unit.fire(dataEvent, {event, data, node}));
     }
 
-    _requestAnimationFrame(fn) {
-        var id = requestAnimationFrame(() => {
-            this._requestedAnimationFrames.delete(id);
-            fn();
-        });
-        this._requestedAnimationFrames.add(id, fn);
-        return id;
-    }
-
-    _cancelAnimationFrame(id) {
-        cancelAnimationFrame(id);
-        this._requestedAnimationFrames.delete(id);
-    }
-
     _initPointerEvents() {
         if (!this._liveSpec.settings.syncPointerEvents) {
             this._pointerAnimationFrameId = null;
@@ -317,11 +314,10 @@ export class Plot extends Emitter {
             ((handler) => (() => {
                 var e = d3.event;
                 if (this._pointerAnimationFrameId && e.type !== 'mousemove') {
-                    this._cancelAnimationFrame(this._pointerAnimationFrameId);
-                    this._pointerAnimationFrameId = null;
+                    this._cancelPointerAnimationFrame();
                 }
                 if (!this._pointerAnimationFrameId) {
-                    this._pointerAnimationFrameId = this._requestAnimationFrame(() => {
+                    this._pointerAnimationFrameId = requestAnimationFrame(() => {
                         this._pointerAnimationFrameId = null;
                         handler(e);
                     });
@@ -339,7 +335,56 @@ export class Plot extends Emitter {
         }));
     }
 
+    _cancelPointerAnimationFrame() {
+        cancelAnimationFrame(this._pointerAnimationFrameId);
+        this._pointerAnimationFrameId = null;
+    }
+
+    _setupTaskRunner() {
+        this._resetTaskRunner();
+        this._taskRunner = new TaskRunner({
+            timeout: (this._liveSpec.settings.renderingTimeout || Infinity),
+            syncInterval: (this._liveSpec.settings.asyncRendering ?
+                this._liveSpec.settings.syncRenderingInterval :
+                Infinity),
+            callbacks: {
+                done: (result) => {
+                    this._renderingPhase = null;
+                },
+                timeout: (timeout) => {
+                    this._displayTimeoutWarning({
+                        timeout,
+                        proceed: () => {
+                            this._taskRunner.setTimeout(Infinity);
+                            this._taskRunner.run();
+                        },
+                        cancel: () => {
+                            this._cancelRendering();
+                        }
+                    });
+                    this.fire('renderingtimeout');
+                },
+                progress: (progress) => {
+                    var phases = {
+                        'spec': 0,
+                        'draw': 1
+                    };
+                    var p = (phases[this._renderingPhase] / 2 + progress / 2);
+                    this._reportProgress(p);
+                }
+            }
+        });
+    }
+
+    _resetTaskRunner() {
+        if (this._taskRunner && this._taskRunner.isRunning()) {
+            this._taskRunner.stop();
+            this._taskRunner = null;
+        }
+    }
+
     renderTo(target, xSize) {
+        this.disablePointerEvents();
         this._svg = null;
         this._target = target;
         this._defaultSize = Object.assign({}, xSize);
@@ -401,37 +446,10 @@ export class Plot extends Emitter {
         var newSize = xGpl.config.settings.size;
         var d3Target = d3.select(content);
 
-        this._createProgressBar();
-        this._clearRenderingError();
-        this._clearTimeoutWarning();
+        this._clearWarnings();
+        this._setupTaskRunner();
 
-        this._taskRunner = new TaskRunner({
-            timeout: 1000,//,
-            syncInterval: Infinity,
-            callbacks: {
-                done: (result) => {
-                    console.log('done');
-                },
-                timeout: (timeout) => {
-                    this._displayTimeoutWarning({
-                        timeout,
-                        proceed: () => {
-                            this._taskRunner.timeout = Infinity;
-                            this._taskRunner.run();
-                        },
-                        cancel: () => {
-                            this._cancelRendering();
-                        }
-                    });
-                    this.fire('renderingtimeout');
-                },
-                progress: (progress) => {
-                    console.log(progress);
-                    this._reportProgress(progress);
-                }
-            }
-        });
-
+        this._renderingPhase = 'spec';
         xGpl.getDrawScenario({
             allocateRect: () => ({
                 slot: ((uid) => d3Target.selectAll(`.uid_${uid}`)),
@@ -445,17 +463,27 @@ export class Plot extends Emitter {
             })
         }, this._taskRunner);
 
-        this._taskRunner.addTask((scenario) => {
-            this._renderRoot({scenario, d3Target, newSize});
-            return scenario;
-        });
-
-        this._taskRunner.addTask((scenario) => {
-            this._cancelRendering();
-            this._renderScenario(scenario);
-        });
+        this._taskRunner
+            .addTask((scenario) => {
+                this._renderingPhase = 'draw';
+                return scenario;
+            })
+            .addTask((scenario) => {
+                this._renderRoot({scenario, d3Target, newSize});
+                return scenario;
+            })
+            .addTask((scenario) => {
+                this._cancelPointerAnimationFrame();
+                this._renderScenario(scenario);
+            });
 
         this._taskRunner.run();
+    }
+
+    _clearWarnings() {
+        this._createProgressBar();
+        this._clearRenderingError();
+        this._clearTimeoutWarning();
     }
 
     _renderRoot({scenario, d3Target, newSize}) {
@@ -494,12 +522,6 @@ export class Plot extends Emitter {
 
     _renderScenario(scenario) {
 
-        var duration = 0;
-        var syncDuration = 0;
-        var timeout = this._liveSpec.settings.renderingTimeout || Infinity;
-        var i = 0;
-        this._renderingInProgress = true;
-        Plot.renderingsInProgress++;
         var safe = (fn) => () => {
             try {
                 fn();
@@ -514,9 +536,6 @@ export class Plot extends Emitter {
                 }
             }
         };
-        // this._createProgressBar();
-        // this._clearRenderingError();
-        // this._clearTimeoutWarning();
 
         scenario.forEach((item) => {
             item.draw();
@@ -524,83 +543,22 @@ export class Plot extends Emitter {
             this._renderedItems.push(item);
         });
 
-        // var drawScenario = () => {
-        //     var item = scenario[i];
-
-        //     var start = Date.now();
-        //     item.draw();
-        //     this.onUnitDraw(item.node());
-        //     this._renderedItems.push(item);
-        //     var end = Date.now();
-        //     duration += end - start;
-        //     syncDuration += end - start;
-
-        //     i++;
-        //     this._reportProgress(i / scenario.length);
-        //     if (i === scenario.length) {
-        //         done();
-        //     } else if (duration > timeout) {
-        //         timeoutReached();
-        //     } else {
-        //         next();
-        //     }
-        // };
-
-        // var timeoutReached = () => {
-        //     this._displayTimeoutWarning({
-        //         timeout: timeout,
-        //         proceed: () => {
-        //             timeout = Infinity;
-        //             next();
-        //         },
-        //         cancel: () => {
-        //             this._cancelRendering();
-        //         }
-        //     });
-        //     this.fire('renderingtimeout');
-        // };
-
         this._taskRunner.addTask(() => {
-            this._renderingInProgress = false;
-            Plot.renderingsInProgress--;
-
             // TODO: Render panels before chart, to
             // prevent chart size shrink. Use some other event.
             utilsDom.setScrollPadding(this._layout.contentContainer);
             this._layout.rightSidebar.style.maxHeight = (`${this._liveSpec.settings.size.height}px`);
+            this.enablePointerEvents();
             this.fire('render', this._svg);
 
             // NOTE: After plugins have rendered, the panel scrollbar may appear, so need to handle it again.
             utilsDom.setScrollPadding(this._layout.rightSidebarContainer, 'vertical');
         });
-
-        // var nextSync = () => drawScenario();
-        // var nextAsync = () => {
-        //     this._requestAnimationFrame(safe(() => drawScenario()));
-        // };
-
-        // var next = () => {
-        //     if (
-        //         this._liveSpec.settings.asyncRendering &&
-        //         syncDuration >= this._liveSpec.settings.syncRenderingDuration / Plot.renderingsInProgress
-        //     ) {
-        //         syncDuration = 0;
-        //         nextAsync();
-        //     } else {
-        //         nextSync();
-        //     }
-        // };
-
-        // safe(next)();
     }
 
     _cancelRendering() {
-        if (this._renderingInProgress) {
-            this._renderingInProgress = false;
-            Plot.renderingsInProgress--;
-        }
-        this._requestedAnimationFrames.forEach((fn, id) => this._cancelAnimationFrame(id));
-        this._pointerAnimationFrameId = null;
+        this._resetTaskRunner();
+        this._cancelPointerAnimationFrame();
     }
 
     _createProgressBar() {
@@ -612,7 +570,7 @@ export class Plot extends Emitter {
             .style('width', 0);
         this._reportProgress = function (value) {
             progressBar.classed(`${CSS_PREFIX}progress_active`, value < 1);
-            progressValue.style('width', (value * 100) + '%');
+            progressValue.style('width', `${value * 100}%`);
         };
     }
 
@@ -824,5 +782,3 @@ export class Plot extends Emitter {
         }
     }
 }
-
-Plot.renderingsInProgress = 0;

@@ -5,11 +5,17 @@ export default class TaskRunner {
         callbacks
     }) {
 
-        this.timeout = timeout;
-        this.syncInterval = syncInterval;
-        this.callbacks = callbacks;
+        checkType(timeout, 'number');
+        checkType(syncInterval, 'number');
+        checkType(callbacks, 'object');
+        checkType(callbacks.done, 'function');
+        checkType(callbacks.timeout, 'function');
+        checkType(callbacks.progress, 'function');
+        this._timeout = timeout;
+        this._syncInterval = syncInterval;
+        this._callbacks = callbacks;
 
-        this.stopped = true;
+        this._running = false;
         this._queue = [];
         this._result = null;
         this._syncDuration = 0;
@@ -21,20 +27,37 @@ export default class TaskRunner {
         this._finishedTasksCount = 0;
     }
 
+    setTimeout(timeout) {
+        checkType(timeout, 'number');
+        this._timeout = timeout;
+    }
+
     addTask(fn) {
         this._queue.push(fn);
         this._tasksCount++;
+        return this;
     }
 
     insertTask(fn) {
         this._queue.unshift(fn);
         this._tasksCount++;
+        return this;
     }
 
     run() {
-        this._checkFrameRequest();
-        this.stopped = false;
+        if (this._requestedFrameId) {
+            throw new Error('Task Runner is waiting for the next frame');
+        }
+        if (this._running) {
+            throw new Error('Task Runner is already running');
+        }
+        this._running = true;
+        TaskRunner.runnersInProgress++;
         this._loopTasks();
+    }
+
+    isRunning() {
+        return this._running;
     }
 
     _loopTasks() {
@@ -44,10 +67,11 @@ export default class TaskRunner {
         var frameDuration = 0;
         var isTimeoutReached;
         var isFrameTimeoutReached;
+        var syncInterval = (this._syncInterval / 1/*TaskRunner.runnersInProgress*/);
         while (
-            !this.stopped &&
-            !(isTimeoutReached = this._syncDuration > this.timeout) &&
-            !(isFrameTimeoutReached = frameDuration > this.syncInterval) &&
+            this._running &&
+            !(isTimeoutReached = (this._syncDuration > this._timeout)) &&
+            !(isFrameTimeoutReached = (frameDuration > syncInterval)) &&
             (task = this._queue.shift())
         ) {
             duration = this._runTask(task);
@@ -57,7 +81,7 @@ export default class TaskRunner {
         }
 
         if (isTimeoutReached) {
-            this.callbacks.timeout.call(null,
+            this._callbacks.timeout.call(null,
                 this._asyncDuration,
                 this,
                 this._syncDuration);
@@ -73,11 +97,12 @@ export default class TaskRunner {
         }
 
         if (this._queue.length === 0) {
-            this.callbacks.done.call(null,
+            this._callbacks.done.call(null,
                 this._result,
                 this,
                 this._asyncDuration,
                 this._syncDuration);
+            this.stop();
         }
     }
 
@@ -89,7 +114,7 @@ export default class TaskRunner {
         var end = performance.now();
         var duration = (end - start);
         this._finishedTasksCount++;
-        this.callbacks.progress.call(null,
+        this._callbacks.progress.call(null,
             (this._finishedTasksCount / this._tasksCount),
             this);
         return duration;
@@ -105,15 +130,21 @@ export default class TaskRunner {
         });
     }
 
-    _checkFrameRequest() {
-        if (this._requestedFrameId) {
-            throw new Error('Task Runner is waiting for the next frame');
-        }
-    }
-
     stop() {
-        this.stopped = true;
+        if (!this._running) {
+            throw new Error('Task Runner is already stopped');
+        }
+        this._running = false;
+        TaskRunner.runnersInProgress--;
         cancelAnimationFrame(this._requestedFrameId);
         this._requestedFrameId = null;
+    }
+}
+
+TaskRunner.runnersInProgress = 0;
+
+function checkType(x, t) {
+    if (typeof x !== t) {
+        throw new Error('Unexpected Task Runner property type');
     }
 }
