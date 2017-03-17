@@ -77,7 +77,7 @@ export default class TaskRunner {
         var syncInterval = (this._syncInterval / TaskRunner.runnersInProgress);
         while (
             this._running &&
-            !(isTimeoutReached = (this._syncDuration > this._timeout)) &&
+            !(isTimeoutReached = (this._asyncDuration > this._timeout)) &&
             !(isFrameTimeoutReached = (frameDuration > syncInterval)) &&
             (task = this._queue.shift())
         ) {
@@ -87,7 +87,10 @@ export default class TaskRunner {
             frameDuration += duration;
         }
 
-        if (isTimeoutReached) {
+        if (
+            isTimeoutReached &&
+            (this._queue.length > 0)
+        ) {
             this._callbacks.timeout.call(null,
                 this._asyncDuration,
                 this,

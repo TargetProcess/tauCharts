@@ -355,6 +355,7 @@ export class Plot extends Emitter {
                     this._displayTimeoutWarning({
                         timeout,
                         proceed: () => {
+                            this.disablePointerEvents();
                             this._taskRunner.setTimeout(Infinity);
                             this._taskRunner.run();
                         },
@@ -362,6 +363,7 @@ export class Plot extends Emitter {
                             this._cancelRendering();
                         }
                     });
+                    this.enablePointerEvents();
                     this.fire('renderingtimeout');
                 },
                 progress: (progress) => {
@@ -538,9 +540,11 @@ export class Plot extends Emitter {
         };
 
         scenario.forEach((item) => {
-            item.draw();
-            this.onUnitDraw(item.node());
-            this._renderedItems.push(item);
+            this._taskRunner.addTask(() => {
+                item.draw();
+                this.onUnitDraw(item.node());
+                this._renderedItems.push(item);
+            });
         });
 
         this._taskRunner.addTask(() => {
