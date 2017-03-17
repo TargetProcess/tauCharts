@@ -348,7 +348,7 @@ export class Plot extends Emitter {
                 this._liveSpec.settings.syncRenderingInterval :
                 Infinity),
             callbacks: {
-                done: (result) => {
+                done: () => {
                     this._renderingPhase = null;
                 },
                 timeout: (timeout) => {
@@ -569,8 +569,10 @@ export class Plot extends Emitter {
             .classed(`${CSS_PREFIX}progress__value`, true)
             .style('width', 0);
         this._reportProgress = function (value) {
-            progressBar.classed(`${CSS_PREFIX}progress_active`, value < 1);
-            progressValue.style('width', `${value * 100}%`);
+            requestAnimationFrame(() => {
+                progressBar.classed(`${CSS_PREFIX}progress_active`, value < 1);
+                progressValue.style('width', `${value * 100}%`);
+            });
         };
     }
 

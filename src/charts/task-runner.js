@@ -5,15 +5,9 @@ export default class TaskRunner {
         callbacks
     }) {
 
-        checkType(timeout, 'number');
-        checkType(syncInterval, 'number');
-        checkType(callbacks, 'object');
-        checkType(callbacks.done, 'function');
-        checkType(callbacks.timeout, 'function');
-        checkType(callbacks.progress, 'function');
-        this._timeout = timeout;
-        this._syncInterval = syncInterval;
-        this._callbacks = callbacks;
+        this.setTimeout(timeout);
+        this.setSyncInterval(syncInterval);
+        this.setCallbacks(callbacks);
 
         this._running = false;
         this._queue = [];
@@ -30,6 +24,19 @@ export default class TaskRunner {
     setTimeout(timeout) {
         checkType(timeout, 'number');
         this._timeout = timeout;
+    }
+
+    setSyncInterval(syncInterval) {
+        checkType(syncInterval, 'number');
+        this._syncInterval = syncInterval;
+    }
+
+    setCallbacks(callbacks) {
+        checkType(callbacks, 'object');
+        checkType(callbacks.done, 'function');
+        checkType(callbacks.timeout, 'function');
+        checkType(callbacks.progress, 'function');
+        this._callbacks = Object.assign({}, callbacks);
     }
 
     addTask(fn) {
@@ -67,7 +74,7 @@ export default class TaskRunner {
         var frameDuration = 0;
         var isTimeoutReached;
         var isFrameTimeoutReached;
-        var syncInterval = (this._syncInterval / 1/*TaskRunner.runnersInProgress*/);
+        var syncInterval = (this._syncInterval / TaskRunner.runnersInProgress);
         while (
             this._running &&
             !(isTimeoutReached = (this._syncDuration > this._timeout)) &&
