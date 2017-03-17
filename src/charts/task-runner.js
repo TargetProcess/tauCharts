@@ -33,10 +33,10 @@ export default class TaskRunner {
 
     setCallbacks(callbacks) {
         checkType(callbacks, 'object');
+        this._callbacks = Object.assign({}, callbacks);
         checkType(callbacks.done, 'function');
         checkType(callbacks.timeout, 'function');
         checkType(callbacks.progress, 'function');
-        this._callbacks = Object.assign({}, callbacks);
     }
 
     addTask(fn) {
@@ -93,8 +93,7 @@ export default class TaskRunner {
         ) {
             this._callbacks.timeout.call(null,
                 this._asyncDuration,
-                this,
-                this._syncDuration);
+                this);
             this.stop();
         }
 
@@ -109,18 +108,29 @@ export default class TaskRunner {
         if (this._queue.length === 0) {
             this._callbacks.done.call(null,
                 this._result,
-                this,
-                this._asyncDuration,
-                this._syncDuration);
+                this);
             this.stop();
         }
     }
 
     _runTask(task) {
         var start = performance.now();
-        this._result = task.call(null,
-            this._result,
-            this);
+        if (this._callbacks.error) {
+            try {
+                this._result = task.call(null,
+                    this._result,
+                    this);
+            } catch (err) {
+                this.stop();
+                this._callbacks.error.call(null,
+                    err,
+                    this);
+            }
+        } else {
+            this._result = task.call(null,
+                this._result,
+                this);
+        }
         var end = performance.now();
         var duration = (end - start);
         this._finishedTasksCount++;

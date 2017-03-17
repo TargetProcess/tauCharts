@@ -97,6 +97,7 @@ var api = {
         asyncRendering: false,
         syncRenderingInterval: 50,
         syncPointerEvents: false,
+        handleRenderingErrors: true,
 
         defaultNiceColor: true,
 

@@ -10,7 +10,6 @@ import {scalesRegistry} from '../scales-registry';
 import {ScalesFactory} from '../scales-factory';
 import {DataProcessor} from '../data-processor';
 import WeakMap from 'core-js/library/fn/weak-map';
-import Set from 'core-js/library/fn/set';
 import {getLayout} from '../utils/layuot-template';
 import {SpecConverter} from '../spec-converter';
 import {SpecTransformAutoLayout} from '../spec-transform-auto-layout';
@@ -373,7 +372,19 @@ export class Plot extends Emitter {
                     };
                     var p = (phases[this._renderingPhase] / 2 + progress / 2);
                     this._reportProgress(p);
-                }
+                },
+                error: (this._liveSpec.settings.handleRenderingErrors ?
+                    ((err) => {
+                        this._cancelRendering();
+                        this._displayRenderingError(err);
+                        this.fire('renderingerror', err);
+                        if (this._liveSpec.settings.asyncRendering) {
+                            this._liveSpec.settings.log(`An arror occured during chart rendering: ${err.message}`, 'ERROR');
+                        } else {
+                            throw err;
+                        }
+                    }) :
+                    null)
             }
         });
     }
@@ -448,7 +459,7 @@ export class Plot extends Emitter {
         var newSize = xGpl.config.settings.size;
         var d3Target = d3.select(content);
 
-        this._clearWarnings();
+        this._resetProgressLayout();
         this._setupTaskRunner();
 
         this._renderingPhase = 'spec';
@@ -482,7 +493,7 @@ export class Plot extends Emitter {
         this._taskRunner.run();
     }
 
-    _clearWarnings() {
+    _resetProgressLayout() {
         this._createProgressBar();
         this._clearRenderingError();
         this._clearTimeoutWarning();
@@ -523,21 +534,6 @@ export class Plot extends Emitter {
     }
 
     _renderScenario(scenario) {
-
-        var safe = (fn) => () => {
-            try {
-                fn();
-            } catch (err) {
-                this._cancelRendering();
-                this._displayRenderingError(err);
-                this.fire('renderingerror', err);
-                if (this._liveSpec.settings.asyncRendering) {
-                    this._liveSpec.settings.log(`An arror occured while rendering: ${err.message}`, 'ERROR');
-                } else {
-                    throw err;
-                }
-            }
-        };
 
         scenario.forEach((item) => {
             this._taskRunner.addTask(() => {
