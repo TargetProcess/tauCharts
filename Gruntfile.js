@@ -19,7 +19,7 @@ module.exports = function (grunt) {
             '<%= grunt.template.today("yyyy-mm-dd") %>\n',
             '<%= pkg.homepage ? "* " + pkg.homepage + "\\n" : "" %>',
             '* Copyright (c) <%= grunt.template.today("yyyy") %> <%= pkg.author.name %>;',
-            ' Licensed <%= _.pluck(pkg.licenses, "type").join(", ") %> */\n'
+            ' Licensed <%= pkg.licenses.map(x => x["type"]).join(", ") %> */\n'
         ].join(''),
         concat: {
             options: {
@@ -159,6 +159,14 @@ module.exports = function (grunt) {
                     {
                         src: 'plugins/quick-filter.js',
                         dest: 'build/development/plugins/tauCharts.quick-filter.js'
+                    },
+                    {
+                        src: 'plugins/floating-axes.js',
+                        dest: 'build/development/plugins/tauCharts.floating-axes.js'
+                    },
+                    {
+                        src: 'plugins/box-whiskers.js',
+                        dest: 'build/development/plugins/tauCharts.box-whiskers.js'
                     }
                 ].concat(cssConfig.css)
             }
@@ -202,6 +210,7 @@ module.exports = function (grunt) {
                 publicPath: '/'
             },
             start: {
+                host: '0.0.0.0',
                 port: 9000,
                 keepAlive: true,
                 webpack: {

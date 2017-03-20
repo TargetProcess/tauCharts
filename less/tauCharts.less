@@ -2,6 +2,7 @@
 @import "fonts";
 @import "layout";
 @import "forms";
+@import "buttons";
 @link-color: #3962FF;
 @link-hover-color: #E17152;
 
@@ -180,6 +181,9 @@
         .tick text {
             font-size: @font-size-xs;
         }
+        .tick.zero-tick line {
+            stroke: mix(@axis-color, @font-color, 82.5%);
+        }
         .grid {
             .grid-lines {
                 path {
@@ -199,6 +203,11 @@
             }
             .line path {
                 shape-rendering: auto;
+            }
+            .cursor-line {
+                shape-rendering: crispEdges;
+                stroke: mix(@font-color, @bg-color, 25%);
+                stroke-width: 1px;
             }
         }
         .label {
@@ -240,28 +249,13 @@
         .background {
             stroke: @parallel-background-line-color;
         }
-        .caption {
-            stroke-width: 0.1;
-            font-size: 11px;
-            text-anchor: middle;
-        }
-        .caption.caption-left-edge,
-        .caption.caption-top-edge,
-        .caption.caption-bottom-edge,
-        {
-            text-anchor: start;
-        }
-        .caption.caption-right-edge,
-        {
-            text-anchor: end;
-        }
     }
 
     /* Scatterplot  */
     &__dot {
         opacity: @dot-opacity;
-        transition: stroke-width 0.1s ease, opacity 0.1s ease;
         stroke-width: 0;
+        transition: stroke-width 0.1s ease, opacity 0.2s ease;
     }
 
     /* Linechart  */
@@ -275,27 +269,26 @@
     }
     /*  Bar  */
     &__bar {
-        shape-rendering: crispEdges;
-        transition: opacity 0.2s ease;
-        //fill: steelblue;
-    }
-
-    /*  Bar  */
-    &__bar-stacked {
-        shape-rendering: crispEdges;
-        transition: opacity 0.2s ease;
+        shape-rendering: geometricPrecision;
         stroke-opacity: 0.5;
         stroke-width: 1;
         stroke: #fff;
+        transition: opacity 0.2s ease;
     }
-    &__area polygon {
-        opacity: 0.55;
-        transition: stroke-opacity 0.2s ease, stroke-width 0.2s ease;
+
+    &__area {
+        transition: opacity 0.2s ease;
+
+        path,
+        polygon {
+            opacity: 0.6;
+            transition: stroke-opacity 0.2s ease, stroke-width 0.2s ease;
+        }
     }
 
     /* TODO: fix to avoid conflict on "stroke" with color brewer */
     /* TODO: remove this when CSS for color brewer is fixed */
-    .graphical-report__svg &__bar-stacked {
+    .graphical-report__svg &__bar {
         stroke: #fff;
     }
 
@@ -303,7 +296,7 @@
 
     /*  Highlighter  */
     &__dot&__highlighted {
-        stroke-width: 2;
+        stroke-width: 1;
         opacity: 1;
     }
 
@@ -320,16 +313,16 @@
         stroke-opacity: 0.2;
     }
 
+    .i-role-label&__highlighted,
     &__area&__highlighted,
-    &__bar&__highlighted,
-    &__bar-stacked&__highlighted {
+    &__bar&__highlighted {
         stroke-opacity: 1;
         opacity: 1;
     }
 
+    .i-role-label&__dimmed,
     &__area&__dimmed,
-    &__bar&__dimmed,
-    &__bar-stacked&__dimmed {
+    &__bar&__dimmed {
         opacity: 0.2;
     }
 }

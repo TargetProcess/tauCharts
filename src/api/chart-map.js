@@ -1,14 +1,9 @@
-import {default as _} from 'underscore';
+import {utils} from '../utils/utils';
 var ChartMap = (config) => {
+    let guide = Object.assign({sourcemap: config.settings.defaultSourceMap}, config.guide || {});
 
-    var guide = _.extend(
-        {
-            sourcemap: config.settings.defaultSourceMap
-        },
-        config.guide || {});
-
-    guide.size = _.defaults(guide.size || {}, {min: 1, max: 10});
-    guide.code = _.defaults(guide.code || {}, {georole: 'countries'});
+    guide.size = utils.defaults(guide.size || {}, {min: 1, max: 10});
+    guide.code = utils.defaults(guide.code || {}, {georole: 'countries'});
 
     var scales = {};
 
@@ -25,10 +20,7 @@ var ChartMap = (config) => {
         }
 
         if (!scales.hasOwnProperty(key)) {
-            scales[key] = _.extend(
-                {type: type, source: src, dim: dim},
-                guide
-            );
+            scales[key] = Object.assign({type: type, source: src, dim: dim}, guide);
         }
 
         return key;
@@ -63,8 +55,8 @@ var ChartMap = (config) => {
 
             size: scalesPool('size', config.size, guide.size),
             color: scalesPool('color', config.color, guide.color),
-            latitude: scalesPool('linear', config.latitude, {autoScale: false}),
-            longitude: scalesPool('linear', config.longitude, {autoScale: false}),
+            latitude: scalesPool('linear', config.latitude, {nice: false}),
+            longitude: scalesPool('linear', config.longitude, {nice: false}),
 
             guide: guide
         },

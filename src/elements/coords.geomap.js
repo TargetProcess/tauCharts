@@ -1,5 +1,5 @@
 import {default as d3} from 'd3';
-import {default as _} from 'underscore';
+import {utils} from '../utils/utils';
 import {default as topojson} from 'topojson';
 import {d3Labeler} from '../utils/d3-labeler';
 import {Element} from './element';
@@ -34,7 +34,7 @@ export class GeoMap extends Element {
         super(config);
 
         this.config = config;
-        this.config.guide = _.defaults(
+        this.config.guide = utils.defaults(
             this.config.guide || {},
             {
                 defaultFill: 'rgba(128,128,128,0.25)',
@@ -48,7 +48,7 @@ export class GeoMap extends Element {
         this.on('highlight', (sender, e) => this._highlightPoint(e));
     }
 
-    createScales(fnCreateScale) {
+    defineGrammarModel(fnCreateScale) {
 
         var node = this.config;
 
@@ -75,13 +75,14 @@ export class GeoMap extends Element {
         this.W = innerWidth;
         this.H = innerHeight;
 
-        return this
-            .regScale('latitude', this.latScale)
+        this.regScale('latitude', this.latScale)
             .regScale('longitude', this.lonScale)
             .regScale('size', this.sizeScale)
             .regScale('color', this.colorScale)
             .regScale('code', this.codeScale)
             .regScale('fill', this.fillScale);
+
+        return {};
     }
 
     drawFrames(frames) {
@@ -149,7 +150,7 @@ export class GeoMap extends Element {
                         isRef: isRef
                     };
                 })
-                .filter((d) => !isNaN(d.x) && !isNaN(d.y));
+                .filter((d) => !Number.isNaN(d.x) && !Number.isNaN(d.y));
 
             var anchors = labels.map(d => ({x: d.sx, y: d.sy, r: d.r}));
 
@@ -250,7 +251,7 @@ export class GeoMap extends Element {
 
         var xmap = node
             .selectAll('.map-container')
-            .data([`${innerW}${innerH}${center}${contours.join('-')}`], _.identity);
+            .data([`${innerW}${innerH}${center}${contours.join('-')}`], (x) => x);
         xmap.exit()
             .remove();
         xmap.enter()
@@ -424,7 +425,7 @@ export class GeoMap extends Element {
 
         var updateGroups = function () {
 
-            this.attr('class', (f) => `frame-id-${options.uid} frame-${f.hash}`)
+            this.attr('class', (f) => `frame frame-${f.hash}`)
                 .call(function () {
                     var points = this
                         .selectAll('circle')
@@ -444,7 +445,7 @@ export class GeoMap extends Element {
         var mapper = (f) => ({tags: f.key || {}, hash: f.hash(), data: f.part()});
 
         var frameGroups = xmap
-            .selectAll('.frame-id-' + options.uid)
+            .selectAll('.frame')
             .data(frames.map(mapper), (f) => f.hash);
         frameGroups
             .exit()

@@ -1,10 +1,10 @@
 (function (factory) {
     if (typeof define === 'function' && define.amd) {
-        define(['tauCharts'], function (tauPlugins) {
+        define(['taucharts'], function (tauPlugins) {
             return factory(tauPlugins);
         });
     } else if (typeof module === 'object' && module.exports) {
-        var tauPlugins = require('tauCharts');
+        var tauPlugins = require('taucharts');
         module.exports = factory(tauPlugins);
     } else {
         factory(this.tauCharts);
@@ -320,12 +320,12 @@
         });
     }());
     // jscs:enable
-    var _ = tauCharts.api._;
+    var utils = tauCharts.api.utils;
     var d3 = tauCharts.api.d3;
 
     function trendline(xSettings) {
 
-        var settings = _.defaults(
+        var settings = utils.defaults(
             xSettings || {},
             {
                 type: 'linear',
@@ -417,7 +417,7 @@
                     return false;
                 }
 
-                if (this._applicableElements.indexOf(unit.type) === -1) {
+                if ((this._applicableElements.indexOf(unit.type) === -1) || (unit.stack)) {
                     return false;
                 }
 
@@ -448,46 +448,63 @@
 
                     var x = props.x.dim;
                     var y = props.y.dim;
+                    var g = props.g.dim;
 
                     var isXPeriod = (props.x.type === 'period' && props.x.period);
                     var isYPeriod = (props.y.type === 'period' && props.y.period);
 
                     var xMapper = isXPeriod ?
                         (createPeriodCaster(props.x.period)) :
-                        (_.identity);
+                        (function (x) {
+                            return x;
+                        });
 
                     var yMapper = isYPeriod ?
                         (createPeriodCaster(props.y.period)) :
-                        (_.identity);
+                        (function (x) {
+                            return x;
+                        });
 
                     var src = data.map(function (item) {
-                        var ix = _.isDate(item[x]) ? item[x].getTime() : item[x];
-                        var iy = _.isDate(item[y]) ? item[y].getTime() : item[y];
-                        return [ix, iy];
+                        var ix = utils.isDate(item[x]) ? item[x].getTime() : item[x];
+                        var iy = utils.isDate(item[y]) ? item[y].getTime() : item[y];
+                        var ig = item[g];
+                        return [ix, iy, ig];
                     });
 
-                    var regression = regressionsHub(props.type, src);
-                    var points = _(regression.points)
-                        .chain()
-                        .filter(function (p) {
-                            return ((p[0] !== null) && (p[1] !== null));
-                        })
-                        .sortBy(function (p) {
-                            return p[0];
-                        })
-                        .map(function (p) {
-                            var item = {};
-                            item[x] = xMapper(p[0]);
-                            item[y] = yMapper(p[1]);
-                            return item;
-                        })
-                        .value();
+                    var groups = utils.groupBy(src, function(x) {
+                        return x['2'];
+                    });
+                    return Object.keys(groups).reduce(
+                        function (memo, k) {
+                            var fiber = groups[k];
+                            var regression = regressionsHub(props.type, fiber);
+                            var points = regression.points
+                                .filter(function (p) {
+                                    return ((p[0] !== null) && (p[1] !== null));
+                                })
+                                .sort(function (p1, p2) {
+                                    return p1[0] - p2[0];
+                                })
+                                .map(function (p) {
+                                    var item = {};
+                                    item[x] = xMapper(p[0]);
+                                    item[y] = yMapper(p[1]);
 
-                    if ((points.length > 1) && (isXPeriod || isYPeriod)) {
-                        points = [points[0], points[points.length - 1]];
-                    }
+                                    if (g) {
+                                        item[g] = k;
+                                    }
 
-                    return points.length > 1 ? points : [];
+                                    return item;
+                                });
+
+                            if ((points.length > 1) && (isXPeriod || isYPeriod)) {
+                                points = [points[0], points[points.length - 1]];
+                            }
+
+                            return memo.concat(points.length > 1 ? points : []);
+                        },
+                        []);
                 };
 
                 chart.traverseSpec(
@@ -500,10 +517,12 @@
 
                         var xScale = specRef.scales[unit.x];
                         var yScale = specRef.scales[unit.y];
+                        var colorScale = specRef.scales[unit.color] || {};
 
                         var trend = JSON.parse(JSON.stringify(unit));
 
                         trend.type = 'ELEMENT.LINE';
+                        trend.size = 'size_null';
                         trend.namespace = 'trendline';
                         trend.transformation = trend.transformation || [];
                         trend.transformation.push({
@@ -511,11 +530,15 @@
                             args: {
                                 type: settings.type,
                                 x: xScale,
-                                y: yScale
+                                y: yScale,
+                                g: colorScale
                             }
                         });
-                        trend.guide = trend.guide || {};
-                        trend.guide.showAnchors   = false;
+                        // var basicGuide = {interpolate: 'basis'};
+                        var basicGuide = {};
+                        trend.guide = utils.defaults(basicGuide, trend.guide || {});
+                        trend.guide.interpolate = 'linear';
+                        trend.guide.showAnchors = 'never';
                         trend.guide.cssClass      = 'graphical-report__trendline';
                         trend.guide.widthCssClass = 'graphical-report__line-width-1';
 
@@ -525,7 +548,7 @@
 
             // jscs:disable maximumLineLength
             containerTemplate: '<div class="graphical-report__trendlinepanel"></div>',
-            template: _.template([
+            template: utils.template([
                 '<label class="graphical-report__trendlinepanel__title graphical-report__checkbox">',
                 '<input type="checkbox" class="graphical-report__checkbox__input i-role-show-trend" <%= showTrend %> />',
                 '<span class="graphical-report__checkbox__icon"></span>',

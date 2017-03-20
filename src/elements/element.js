@@ -7,6 +7,7 @@ export class Element extends Emitter {
     // add base behaviour here
     constructor(config) {
         super(config);
+        this.screenModel = null;
         this._elementNameSpace = (config.namespace || 'default');
         this._elementScalesHub = {};
     }
@@ -43,7 +44,7 @@ export class Element extends Emitter {
             },
             {
                 event: 'mousemove',
-                limit: 25
+                limit: 'requestAnimationFrame'
             }
         ].forEach((item) => {
             var eventName = item.event;
@@ -60,5 +61,57 @@ export class Element extends Emitter {
 
             sel.on(eventName, utils.throttleLastEvent(last, eventName, callback, limit));
         });
+    }
+
+    allocateRect() {
+        return {
+            left: 0,
+            top: 0,
+            width: 0,
+            height: 0
+        };
+    }
+
+    /* eslint-disable */
+    defineGrammarModel(fnCreateScale) {
+        return {};
+    }
+
+    getGrammarRules() {
+        return [];
+    }
+
+    getAdjustScalesRules() {
+        return [];
+    }
+
+    createScreenModel(grammarModel) {
+        // return nothing
+    }
+
+    getClosestElement(x, y) {
+        return null;
+    }
+    /* eslint-enable */
+
+    addInteraction() {
+        // do nothing
+    }
+
+    draw() {
+        // TODO: expose to explicit call everywhere
+        this.config.options.container = this.config.options.slot(this.config.uid);
+        this.drawFrames(this.config.frames);
+    }
+
+    data() {
+        return this
+            .config
+            .frames
+            .reduce(((data, frame) => data.concat(frame.part())), []);
+    }
+
+    node() {
+        return this;
     }
 }

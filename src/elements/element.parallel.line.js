@@ -1,6 +1,6 @@
 import {CSS_PREFIX} from '../const';
 import {Element} from './element';
-import {default as _} from 'underscore';
+import {utils} from '../utils/utils';
 import {default as d3} from 'd3';
 
 export class ParallelLine extends Element {
@@ -10,7 +10,7 @@ export class ParallelLine extends Element {
         super(config);
 
         this.config = config;
-        this.config.guide = _.defaults(
+        this.config.guide = utils.defaults(
             this.config.guide || {},
             {
                 // params here
@@ -19,7 +19,7 @@ export class ParallelLine extends Element {
         this.on('highlight', (sender, e) => this.highlight(e));
     }
 
-    createScales(fnCreateScale) {
+    defineGrammarModel(fnCreateScale) {
 
         var config = this.config;
         var options = config.options;
@@ -42,9 +42,10 @@ export class ParallelLine extends Element {
 
         this.xBase = ((p) => colsMap[p]);
 
-        return this
-            .regScale('columns', this.scalesMap)
+        this.regScale('columns', this.scalesMap)
             .regScale('color', this.color);
+
+        return {};
     }
 
     drawFrames(frames) {
@@ -59,11 +60,16 @@ export class ParallelLine extends Element {
         var d3Line = d3.svg.line();
 
         var drawPath = function () {
-            this.attr('d', (row) => d3Line(node.columns.map((p) => [xBase(p), scalesMap[p](row[scalesMap[p].dim])])));
+            this.attr({
+                d: (row) => d3Line(node.columns.map((p) => [xBase(p), scalesMap[p](row[scalesMap[p].dim])]))
+            });
         };
 
         var markPath = function () {
-            this.attr('class', (row) => `${CSS_PREFIX}__line line ${color(row[color.dim])} foreground`);
+            this.attr({
+                stroke: (row) => color.toColor(color(row[color.dim])),
+                class: (row) => `${CSS_PREFIX}__line line ${color.toClass(color(row[color.dim]))} foreground`
+            });
         };
 
         var updateFrame = function () {

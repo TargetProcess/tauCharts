@@ -1,11 +1,6 @@
-import {default as _} from 'underscore';
 var ChartParallel = (config) => {
 
-    var guide = _.extend(
-        {
-            columns: {}
-        },
-        config.guide || {});
+    var guide = Object.assign({columns: {}}, config.guide || {});
 
     var scales = {};
 
@@ -22,7 +17,7 @@ var ChartParallel = (config) => {
         }
 
         if (!scales.hasOwnProperty(key)) {
-            scales[key] = _.extend(
+            scales[key] = Object.assign(
                 {type: type, source: src, dim: dim},
                 guide
             );

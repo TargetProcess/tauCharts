@@ -1,10 +1,10 @@
-(function (samples) {
+(function (dev) {
 
     var createSampleGuide = function (xName, yName) {
         return {
             autoLayout: "",
             x: {
-                autoScale: true,
+                nice: true,
                 cssClass: "x axis",
                 hide: false,
                 label: {
@@ -21,7 +21,7 @@
                 textAnchor: "start"
             },
             y: {
-                autoScale: true,
+                nice: true,
                 cssClass: "y axis",
                 hide: false,
                 label: {
@@ -47,7 +47,7 @@
         };
     };
 
-    samples.push({
+    dev.spec({
 
         settings: {
             fitModel: 'none'
@@ -136,20 +136,20 @@
                 "type": "ordinal",
                 "source": "/",
                 "dim": "product_name",
-                "autoScale": true,
+                "nice": true,
                 "dimType": "category"
             },
-            "y_param1": {"type": "linear", "source": "/", "dim": "param1", "autoScale": true, "dimType": "measure"},
-            "y_param2": {"type": "linear", "source": "/", "dim": "param2", "autoScale": true, "dimType": "measure"},
+            "y_param1": {"type": "linear", "source": "/", "dim": "param1", "nice": true, "dimType": "measure"},
+            "y_param2": {"type": "linear", "source": "/", "dim": "param2", "nice": true, "dimType": "measure"},
 
             "color_undefined": {"type": "color", "source": "/"},
-            "size_undefined": {"type": "size", "source": "/", "min": 2, "max": 10, "mid": 5},
+            "size_undefined": {"type": "size", "source": "/", "minSize": 0, "maxSize": 1},
 
             "stacked_m1": {
                 "type": "linear",
                 "source": "STACKED",
                 "dim": "m1",
-                "autoScale": false,
+                "nice": false,
                 "dimType": "measure"
             },
             "stacked_c1": {"type": "color", "source": "STACKED", "dim": "c1"}
@@ -191,6 +191,7 @@
                                     y: "x_product_name",
                                     x: "y_param1",
                                     color: "color_undefined",
+                                    flip: true,
                                     expression: {
                                         inherit: false,
                                         operator: "none",
@@ -198,7 +199,6 @@
                                         source: "/"
                                     },
                                     guide: {
-                                        flip: true,
                                         anchors: false,
                                         cssClass: "i-role-datum",
                                         showGridLines: "xy",
@@ -232,6 +232,7 @@
                                     type: "ELEMENT.INTERVAL",
                                     y: "x_product_name",
                                     x: "y_param2",
+                                    flip: true,
                                     color: "color_undefined",
                                     expression: {
                                         inherit: false,
@@ -240,7 +241,6 @@
                                         source: "/"
                                     },
                                     guide: {
-                                        flip: true,
                                         anchors: false,
                                         cssClass: "i-role-datum",
                                         showGridLines: "xy",
@@ -270,7 +270,8 @@
                             guide: createSampleGuide('C1', 'Product name'),
                             units: [
                                 {
-                                    type: "ELEMENT.INTERVAL.STACKED",
+                                    type: "ELEMENT.INTERVAL",
+                                    stack: true,
                                     flip: true,
                                     y: "x_product_name",
                                     x: "stacked_m1",
@@ -283,7 +284,6 @@
                                         source: "STACKED"
                                     },
                                     guide: {
-                                        flip: true,
                                         anchors: false,
                                         cssClass: "i-role-datum",
                                         showGridLines: "xy",
@@ -299,4 +299,4 @@
             ]
         }
     });
-})(window.samples);
+})(dev);

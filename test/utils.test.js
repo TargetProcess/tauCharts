@@ -3,11 +3,34 @@ define(function (require) {
     var assert = require('chai').assert;
     var utils = require('src/utils/utils').utils;
     var drawUtils = require('src/utils/utils-draw').utilsDraw;
-    var d3_decorator_avoid_labels_collisions = require('src/utils/d3-decorators').d3_decorator_avoid_labels_collisions;
+    var domUtils = require('src/utils/utils-dom').utilsDom;
+    var d3 = require('d3');
+    var d3_decorator_avoidLabelsCollisions = require('src/utils/d3-decorators').d3_decorator_avoidLabelsCollisions;
 
     var check = function (samples) {
         samples.forEach(function (s) {
-            expect(utils.autoScale(s[0])).to.deep.equal(s[1]);
+            expect(utils.niceZeroBased(s[0])).to.deep.equal(s[1]);
+        });
+    };
+
+    var checkTime = function (samples) {
+        var dateString = ((date) => {
+            var y = date.getFullYear();
+            var m = (date.getMonth() + 1);
+            if (m < 10) {
+                m = ('0' + m);
+            }
+            var d = date.getDate();
+            if (d < 10) {
+                d = ('0' + d);
+            }
+            return `${y}-${m}-${d}`;
+        });
+        samples.forEach(function (s) {
+            var domain = s[0].map(d => new Date(d));
+            var nice = utils.niceTimeDomain(domain).map(dateString);
+            var expected = s[1].map(d => new Date(d)).map(dateString);
+            expect(nice).to.deep.equal(expected);
         });
     };
 
@@ -15,9 +38,10 @@ define(function (require) {
 
         it('should expand domain up', function () {
             var samples = [
-                [[0, 0.092], [0, 0.1]],
-                [[0, 99]   , [0, 110]],
-                [[0, 9]    , [0, 10]]
+                [[0, 0.096], [0, 0.1]],
+                [[0, 99]   , [0, 100]],
+                [[0, 9]    , [0, 9]],
+                [[0, 5e-324], [0, 0.1]]
             ];
 
             check(samples);
@@ -25,9 +49,9 @@ define(function (require) {
 
         it('should expand domain down', function () {
             var samples = [
-                [[-0.099, 0.092], [-0.12, 0.12]],
-                [[-10, 99]      , [-20, 110]],
-                [[-1, 9]        , [-2, 10]]
+                [[-0.099, 0.092], [-0.1, 0.1]],
+                [[-16, 99]      , [-20, 100]],
+                [[-1, 9]        , [-1, 9]]
             ];
 
             check(samples);
@@ -35,9 +59,9 @@ define(function (require) {
 
         it('should add 0 by default for positive numbers', function () {
             var samples = [
-                [[0.01, 0.092], [0, 0.1]],
-                [[10, 99]     , [0, 110]],
-                [[2, 9]       , [0, 10]]
+                [[0.01, 0.096], [0, 0.1]],
+                [[10, 99]     , [0, 100]],
+                [[2, 9]       , [0, 9]]
             ];
 
             check(samples);
@@ -45,9 +69,9 @@ define(function (require) {
 
         it('should add 0 by default for negative numbers', function () {
             var samples = [
-                [[-0.01, -0.092], [-0.1, 0]],
-                [[-10, -99]     , [-110, 0]],
-                [[-2, -9]       , [-10, 0]]
+                [[-0.01, -0.096], [-0.1, 0]],
+                [[-10, -99]     , [-100, 0]],
+                [[-2, -9]       , [-9, 0]]
             ];
 
             check(samples);
@@ -55,15 +79,25 @@ define(function (require) {
 
         it('should nice domain', function () {
             var samples = [
-                [[1, 2, 20, 40   ], [0, 45]],
-                [[20, 23, 45, 150], [0, 160]],
-                [[3], [0, 3.35]],
-                [[0], [0, 0.11]],
-                [[-3], [-3.05, 0]],
-                [[-30, -10], [-32, 0]]
+                [[1, 2, 20, 40   ], [0, 40]],
+                [[20, 23, 45, 155], [0, 160]],
+                [[3], [0, 3.5]],
+                [[0], [0, 0.1]],
+                [[-3], [-3, 0]],
+                [[-39, -10], [-40, 0]]
             ];
 
             check(samples);
+        });
+
+        it('should nice time domain', function () {
+            var samples = [
+                [['2000-01-01', '2012-01-01'], ['2000-01-01', '2012-01-01']],
+                [['2004-09-03', '2012-03-01'], ['2004-09-03', '2012-03-01']],
+                [['2004-03-01', '2012-09-01'], ['2004-01-01', '2013-01-01']],
+                [['2012-09-03', '2012-09-03'], ['2012-09-02', '2012-09-04']]
+            ];
+            checkTime(samples);
         });
 
         var createLiveSpec = function (padding) {
@@ -149,6 +183,50 @@ define(function (require) {
         });
     });
 
+    describe('utils.splitEvenly()', function() {
+
+        it('should split source domain to chunks', function() {
+            var x0 = utils.splitEvenly([0, 100], 5);
+            expect(x0).to.deep.equal([0, 25, 50, 75, 100]);
+
+            var x1 = utils.splitEvenly([0, 100], 3);
+            expect(x1).to.deep.equal([0, 50, 100]);
+
+            var x2 = utils.splitEvenly([-100, 100], 3);
+            expect(x2).to.deep.equal([-100, 0, 100]);
+
+            var x3 = utils.splitEvenly([-100, 100], 5);
+            expect(x3).to.deep.equal([-100, -50, 0, 50, 100]);
+
+            var x4 = utils.splitEvenly([-100, 100], 0);
+            expect(x4).to.deep.equal([-100, 100]);
+        });
+    });
+
+    describe('utils.extRGBColor()', function() {
+
+        it('should extract color if value starts from # or "rgb(" or "rgba("', function() {
+            expect(utils.extRGBColor('')).to.equal('');
+            expect(utils.extRGBColor('#000000')).to.equal('#000000');
+            expect(utils.extRGBColor('rgb(0,0,0)')).to.equal('rgb(0,0,0)');
+            expect(utils.extRGBColor('rgba(0,0,0,1)')).to.equal('rgba(0,0,0,1)');
+            expect(utils.extRGBColor('rgbaL(0,0,0,1)')).to.equal('');
+        });
+    });
+
+    describe('utils.extCSSClass()', function() {
+
+        it('should extract color if value starts from # or "rgb(" or "rgba("', function() {
+            expect(utils.extCSSClass('')).to.equal('');
+            expect(utils.extCSSClass('#000000')).to.equal('');
+            expect(utils.extCSSClass('rgb(0,0,0)')).to.equal('');
+            expect(utils.extCSSClass('rgba(0,0,0,1)')).to.equal('');
+
+            expect(utils.extCSSClass('rgbaL(0,0,0,1)')).to.equal('rgbaL(0,0,0,1)', 'returns any invalid stuff');
+            expect(utils.extCSSClass('zzz')).to.equal('zzz');
+        });
+    });
+
     describe('d3 decorators', function() {
 
         var svgNode;
@@ -170,7 +248,7 @@ define(function (require) {
             div.parentNode.removeChild(div);
         });
 
-        it('should support d3_decorator_avoid_labels_collisions method', function() {
+        it('should support d3_decorator_avoidLabelsCollisions method', function() {
 
             var domain = [
                 'Too long name for the ordinal axis 0',
@@ -189,6 +267,7 @@ define(function (require) {
             var d3Axis = svgNode.append('g').call(axis);
 
             var ticks = d3Axis.selectAll('.tick');
+            d3Axis.select('.tick text').attr('transform', 'rotate(270)');
             var actBefore = [];
             ticks.each(function () {
                 var d3Tick = d3.select(this);
@@ -197,13 +276,13 @@ define(function (require) {
             expect(ticks[0].length).to.equal(domain.length, 'Ticks created');
             expect(actBefore).to.deep.equal(['9', '9', '9', '9'], 'text y before decorator');
 
-            d3_decorator_avoid_labels_collisions(d3Axis, true);
+            d3_decorator_avoidLabelsCollisions(d3Axis, true, scale.domain());
 
             var actAfter = [];
             var lineAfter = [];
             ticks.each(function () {
                 var d3Tick = d3.select(this);
-                actAfter.push(d3Tick.selectAll('text').attr('y'));
+                actAfter.push(d3Tick.selectAll('text').attr('transform'));
                 var lineRef = d3Tick.selectAll('.label-ref');
                 lineAfter.push([
                     lineRef.attr('y1'),
@@ -211,13 +290,69 @@ define(function (require) {
                 ]);
             });
             expect(ticks[0].length).to.equal(domain.length, 'Ticks created');
-            expect(actAfter).to.deep.equal(['-2', '9', '20', '-2'], 'text y after decorator');
+            expect(actAfter).to.deep.equal([
+                'translate(0,-11) rotate(270)',
+                'translate(0,0) rotate(0)',
+                'translate(0,11) rotate(0)',
+                'translate(0,-11) rotate(0)'
+            ], 'text transform after decorator');
             expect(lineAfter).to.deep.equal([
                 ['-3', '-10'],
                 ['8', '-10'],
                 ['19', '-10'],
                 ['-3', '-10']
             ], 'text y after decorator');
+        });
+    });
+
+    describe('utils-dom', function () {
+        var node = document.createElement('div');
+        node.innerHTML = [
+            '<span class="x" id="x">',
+            '  <a class="y" id="y"></a>',
+            '  <a class="z"></a>',
+            '</span>',
+            '<a class="z" id="z1"></a>',
+            '<a class="z" id="z2"></a>'
+        ].join('\n');
+
+        it('should select immediate child or create new', function () {
+            var n0 = node.querySelector('#x');
+            var n1 = domUtils.selectOrAppend(node, 'span#x.x');
+            expect(n1).to.equal(n0);
+            n1 = domUtils.selectOrAppend(d3.select(node), 'span#x.x').node();
+            expect(n1).to.equal(n0);
+
+            var n2 = domUtils.selectOrAppend(d3.select(node), 'a.y').node();
+            expect(n2.id).to.equal('');
+            expect(n2.getAttribute('class')).to.equal('y');
+            expect(n2.tagName).to.equal('A');
+
+            var n3 = domUtils.selectOrAppend(n2, 'p#p1.p2');
+            expect(n3.id).to.equal('p1');
+            expect(n3.getAttribute('class')).to.equal('p2');
+            expect(n3.tagName).to.equal('P');
+
+            var n4 = domUtils.selectAllImmediate(node, '.z');
+            expect(n4.length).to.equal(2);
+            expect(n4[0].id).to.equal('z1');
+            expect(n4[1].id).to.equal('z2');
+
+            var n5 = domUtils.selectImmediate(node, '.z');
+            expect(n5.id).to.equal('z1');
+
+            expect(function () {
+                domUtils.selectOrAppend(d3.select(node), '.x');
+            }).to.throw(/Selector must have tag at the beginning/);
+
+            expect(function () {
+                domUtils.selectOrAppend(d3.select(node), '.x .y');
+            }).to.throw(/Selector should not contain whitespaces/);
+        });
+
+        it('should create class name', function () {
+            var classes = domUtils.classes('x', null, {y: true, z: false}, 'a  b ');
+            expect(classes).to.equal('x y a b');
         });
     });
 });

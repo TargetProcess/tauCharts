@@ -7,11 +7,11 @@ var ensureDir = function (absolutePath) {
     fs.mkdirsSync(absolutePath);
     return absolutePath;
 };
-var coverage = [{
+var coverage =  {
     test: /\.js$/,
-    exclude: /test|addons|plugins|node_modules|bower_components|libs\//,
-    loader: 'istanbul-instrumenter'
-}];
+    exclude: /test|addons|plugins|node_modules|bower_components|libs\/|src\/utils\/polyfills\.js/,
+    loader: 'isparta-loader'
+};
 
 var toAbsolute = function (relativePath) {
     return path.join(__dirname, relativePath);
@@ -26,7 +26,7 @@ var babelConfig = {
         cacheDirectory: ensureDir(path.join(cachePath, './babelJS'))
     }
 };
-var generateTestConf = function (postLoader) {
+var generateTestConf = function (addLoaders) {
     return {
         resolve: {
             root: [
@@ -42,6 +42,7 @@ var generateTestConf = function (postLoader) {
                 testUtils: 'test/utils/utils.js',
                 brewer: 'src/addons/color-brewer.js',
                 tauCharts: 'src/tau.charts.js',
+                taucharts: 'src/tau.charts.js',
                 'print.style.css': 'plugins/print.style.css',
                 rgbcolor: 'bower_components/canvg/rgbcolor.js',
                 stackblur: 'bower_components/canvg/StackBlur.js',
@@ -53,6 +54,14 @@ var generateTestConf = function (postLoader) {
             extensions: ['', '.js', '.json']
         },
         devtool: 'inline-source-map',
+        isparta: {
+            embedSource: true,
+            noAutoWrap: true,
+            // these babel options will be passed only to isparta and not to babel-loader
+            babel: {
+                presets: ['es2015']
+            }
+        },
         module: {
             loaders: [
                 {test: /\.css$/, loader: 'css-loader'},
@@ -61,12 +70,10 @@ var generateTestConf = function (postLoader) {
                     loader: 'imports?this=>window!exports?window.Modernizr'
                 },
                 babelConfig
-            ],
-            postLoaders: postLoader
+            ].concat(addLoaders)
         },
         externals: {
-            d3: 'd3',
-            underscore: '_'
+            d3: 'd3'
         },
         query: {
             cacheDirectory: ensureDir(path.join(cachePath, './babelJS'))
@@ -76,7 +83,12 @@ var generateTestConf = function (postLoader) {
             colors: true,
             reasons: true
         },
-        progress: true
+        progress: true,
+        plugins: [
+            new webpack.DefinePlugin({
+                VERSION: JSON.stringify(require('../package.json').version)
+            })
+        ]
     };
 };
 
@@ -91,6 +103,7 @@ var exportBuild = {
     resolve: {
         alias: {
             tauCharts: toAbsolute('../src/tau.charts.js'),
+            taucharts: toAbsolute('../src/tau.charts.js'),
             'print.style.css': toAbsolute('../plugins/print.style.css'),
             rgbcolor: toAbsolute('../bower_components/canvg/rgbcolor.js'),
             stackblur: toAbsolute('../bower_components/canvg/StackBlur.js'),
@@ -101,7 +114,12 @@ var exportBuild = {
         }
     },
     externals: {
-        tauCharts: 'tauCharts'
+        taucharts: {
+            commonjs: 'taucharts',
+            commonjs2: 'taucharts',
+            amd: 'taucharts',
+            root: 'tauCharts'
+        }
     },
     module: {
         loaders: [
@@ -114,7 +132,12 @@ var exportBuild = {
     },
     stats: {
         timings: true
-    }
+    },
+    plugins: [
+        new webpack.DefinePlugin({
+            VERSION: JSON.stringify(require('../package.json').version)
+        })
+    ]
 };
 var webpackConf = {
     entry: './src/tau.charts.js',
@@ -125,15 +148,19 @@ var webpackConf = {
         filename: 'tauCharts.js'
     },
     externals:  transformUMDExternal({
-        d3: 'd3',
-        underscore: '_'
+        d3: 'd3'
     }),
     module: {
         loaders: [babelConfig]
     },
     stats: {
         timings: true
-    }
+    },
+    plugins: [
+        new webpack.DefinePlugin({
+            VERSION: JSON.stringify(require('../package.json').version)
+        })
+    ]
 };
 
 module.exports = {

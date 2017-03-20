@@ -1,96 +1,195 @@
 import {Emitter} from '../event';
 import {utils} from '../utils/utils';
-import {utilsDom} from '../utils/utils-dom';
-import {CSS_PREFIX} from '../const';
 import {FramesAlgebra} from '../algebra';
 import {DataFrame} from '../data-frame';
-import {default as _} from 'underscore';
-import {default as d3} from 'd3';
-var cast = (v) => (_.isDate(v) ? v.getTime() : v);
+var cast = (v) => (utils.isDate(v) ? v.getTime() : v);
+
+const MixinModel = function (prev) {
+    Object
+        .keys(prev)
+        .forEach((k) => this[k] = prev[k]);
+};
+
+const compose = (prev, updates = {}) => {
+    return (Object.assign(new MixinModel(prev), updates));
+};
+
+const evalGrammarRules = (grammarRules, initialGrammarModel, grammarRegistry) => {
+    return grammarRules
+        .map((rule) => {
+            return ((typeof(rule) === 'string') ? grammarRegistry.get(rule) : rule);
+        })
+        .filter(x => x)
+        .reduce((prevModel, rule) => compose(prevModel, rule(prevModel, {})), initialGrammarModel);
+};
 
 export class GPL extends Emitter {
 
-    constructor(config, scalesRegistryInstance, unitsRegistry) {
+    constructor(config, scalesRegistryInstance, unitsRegistry, grammarRules) {
 
         super();
 
+        // jscs:disable
+        utils.defaults(config.scales, {
+            'size_null': {type: 'size', source: '?'},
+            'split_null': {type: 'value', source: '?'},
+            'label_null': {type: 'value', source: '?'},
+            'color_null': {type: 'color', source: '?'},
+            'identity_null': {type: 'identity', source: '?'},
+            'size:default': {type: 'size', source: '?'},
+            'color:default': {type: 'color', source: '?'},
+            'split:default': {type: 'value', source: '?'},
+            'label:default': {type: 'value', source: '?'},
+            'identity:default': {type: 'identity', source: '?'}
+        });
+        // jscs:enable
+
+        config.settings = (config.settings || {});
+
         this.config = config;
-
-        this.config.settings = this.config.settings || {};
         this.sources = config.sources;
-
+        this.scales = config.scales;
         this.unitSet = unitsRegistry;
+        this.grammarRules = grammarRules;
         this.scalesHub = scalesRegistryInstance;
 
-        this.scales = config.scales;
-
-        this.transformations = _.extend(
+        this.transformations = Object.assign(
             config.transformations || {},
             {
                 where(data, tuple) {
-                    var predicates = _.map(tuple, (v, k) => {
-                        return (row) => (cast(row[k]) === v);
+                    var predicates = Object.keys(tuple || {}).map((k) => {
+                        return (row) => (cast(row[k]) === tuple[k]);
                     });
-                    return _(data).filter((row) => {
-                        return _.every(predicates, (p) => p(row));
+                    return data.filter((row) => {
+                        return predicates.every((p) => p(row));
                     });
                 }
             });
-
-        this.onUnitDraw = config.onUnitDraw;
-        this.onUnitsStructureExpanded = config.onUnitsStructureExpanded || ((x) => (x));
     }
 
-    static destroyNodes (nodes) {
-        nodes.forEach((node) => node.destroy());
-        return [];
+    static traverseSpec(spec, enter, exit, rootNode = null, rootFrame = null) {
+
+        var traverse = (node, enter, exit, parentNode, currFrame) => {
+
+            enter(node, parentNode, currFrame);
+
+            if (node.frames) {
+                node.frames.forEach((frame) => {
+                    (frame.units || []).map((subNode) => traverse(subNode, enter, exit, node, frame));
+                });
+            }
+
+            exit(node, parentNode, currFrame);
+        };
+
+        traverse(spec.unit, enter, exit, rootNode, rootFrame);
     }
 
-    renderTo(target, xSize) {
-
-        var d3Target = d3.select(target);
-
-        this.config.settings.size = xSize || _.defaults(utilsDom.getContainerSize(d3Target.node()));
-
+    unfoldStructure() {
         this.root = this._expandUnitsStructure(this.config.unit);
+        return this.config;
+    }
 
-        this._adaptSpecToUnitsStructure(this.root, this.config);
+    getDrawScenario(root) {
+        const grammarRules = this.grammarRules;
+        this._flattenDrawScenario(root, (parentInstance, unit, rootFrame) => {
+            // Rule to cancel parent frame inheritance
+            const frame = (unit.expression.inherit === false) ? null : rootFrame;
+            const scalesFactoryMethod = this._createFrameScalesFactoryMethod(frame);
+            const instance = this.unitSet.create(
+                unit.type,
+                Object.assign(
+                    {},
+                    (unit),
+                    {options: parentInstance.allocateRect(rootFrame.key)}
+                ));
 
-        this.onUnitsStructureExpanded(this.config);
+            const initialModel = new MixinModel(instance.defineGrammarModel(scalesFactoryMethod));
+            const grammarModel = evalGrammarRules(instance.getGrammarRules(), initialModel, grammarRules);
+            evalGrammarRules(instance.getAdjustScalesRules(), grammarModel, grammarRules);
+            instance.node().screenModel = instance.createScreenModel(grammarModel);
 
-        var xSvg = d3Target.selectAll('svg').data([1]);
+            return instance;
+        });
 
-        var size = this.config.settings.size;
+        Object
+            .keys(this.scales)
+            .forEach((k) => this.scalesHub.createScaleInfo(this.scales[k]).commit());
 
-        var attr = {
-            class: (`${CSS_PREFIX}svg`),
-            width: size.width,
-            height: size.height
-        };
+        return this._flattenDrawScenario(root, (parentInstance, unit, rootFrame) => {
+            const frame = (unit.expression.inherit === false) ? null : rootFrame;
+            const scalesFactoryMethod = this._createFrameScalesFactoryMethod(frame);
+            const instance = this.unitSet.create(
+                unit.type,
+                Object.assign(
+                    {},
+                    (unit),
+                    {options: parentInstance.allocateRect(rootFrame.key)}
+                ));
 
-        xSvg.attr(attr);
+            const initialModel = new MixinModel(instance.defineGrammarModel(scalesFactoryMethod));
+            const grammarModel = evalGrammarRules(instance.getGrammarRules(), initialModel, grammarRules);
+            instance.node().screenModel = instance.createScreenModel(grammarModel);
+            instance.parentUnit = parentInstance;
+            instance.addInteraction();
 
-        xSvg.enter()
-            .append('svg')
-            .attr(attr)
-            .append('g')
-            .attr('class', `${CSS_PREFIX}cell cell frame-root`);
+            return instance;
+        });
+    }
 
-        this.root.options = {
-            container: d3Target.select('.frame-root'),
-            frameId: 'root',
-            left: 0,
-            top: 0,
-            width: size.width,
-            height: size.height
-        };
+    _flattenDrawScenario(root, iterator) {
 
-        this._drawUnitsStructure(
-            this.root,
+        var uids = {};
+        var scenario = [];
+
+        var stack = [root];
+
+        var put = ((x) => stack.unshift(x));
+        var pop = (() => stack.shift());
+        var top = (() => stack[0]);
+
+        GPL.traverseSpec(
+            {unit: this.root},
+            // enter
+            (unit, parentUnit, currFrame) => {
+
+                unit.uid = (() => {
+                    var uid = utils.generateHash(
+                        (parentUnit ? `${parentUnit.uid}/` : '') +
+                        JSON.stringify(Object.keys(unit)
+                            .filter((key) => typeof unit[key] === 'string')
+                            .reduce((memo, key) => (memo[key] = unit[key], memo), {})) +
+                        `-${JSON.stringify(currFrame.pipe)}`);
+                    if (uid in uids) {
+                        uid += `-${++uids[uid]}`;
+                    } else {
+                        uids[uid] = 0;
+                    }
+                    return uid;
+                })();
+                unit.guide = utils.clone(unit.guide);
+
+                var instance = iterator(top(), unit, currFrame);
+
+                scenario.push(instance);
+
+                if (unit.type.indexOf('COORDS.') === 0) {
+                    put(instance);
+                }
+            },
+            // exit
+            (unit) => {
+                if (unit.type.indexOf('COORDS.') === 0) {
+                    pop();
+                }
+            },
+            null,
             this._datify({
                 source: this.root.expression.source,
                 pipe: []
             }));
+
+        return scenario;
     }
 
     _expandUnitsStructure(root, parentPipe = []) {
@@ -103,7 +202,7 @@ export class GPL extends Emitter {
 
         } else {
 
-            var expr = this._parseExpression(root.expression, parentPipe);
+            var expr = this._parseExpression(root.expression, parentPipe, root.guide);
 
             root.transformation = root.transformation || [];
 
@@ -139,58 +238,22 @@ export class GPL extends Emitter {
         return root;
     }
 
-    _adaptSpecToUnitsStructure(root, spec) {
-
-        var UnitClass = this.unitSet.get(root.type);
-        if (UnitClass.embedUnitFrameToSpec) {
-            UnitClass.embedUnitFrameToSpec(root, spec); // static method
-        }
-
-        root.frames.forEach(
-            (f) => (f.units.forEach(
-                (unit) => this._adaptSpecToUnitsStructure(unit, spec)
-            ))
-        );
-
-        return root;
-    }
-
-    _drawUnitsStructure(unitConfig, rootFrame, rootUnit = null) {
-
+    _createFrameScalesFactoryMethod(passFrame) {
         var self = this;
-
-        // Rule to cancel parent frame inheritance
-        var passFrame = (unitConfig.expression.inherit === false) ? null : rootFrame;
-
-        var UnitClass = self.unitSet.get(unitConfig.type);
-        var unitNode = new UnitClass(unitConfig);
-        unitNode.parentUnit = rootUnit;
-        unitNode
-            .createScales((type, alias, dynamicProps) => {
-                var key = (alias || `${type}:default`);
-                return self
-                    .scalesHub
-                    .createScaleInfo(self.scales[key], passFrame)
-                    .create(dynamicProps);
-            })
-            .drawFrames(unitConfig.frames, (function (rootUnit) {
-                return function (rootConf, rootFrame) {
-                    self._drawUnitsStructure.bind(self)(rootConf, rootFrame, rootUnit);
-                };
-            }(unitNode)));
-
-        if (self.onUnitDraw) {
-            self.onUnitDraw(unitNode);
-        }
-
-        return unitConfig;
+        return ((type, alias, dynamicProps) => {
+            var key = (alias || `${type}:default`);
+            return self
+                .scalesHub
+                .createScaleInfo(self.scales[key], passFrame)
+                .create(dynamicProps);
+        });
     }
 
     _datify(frame) {
         return new DataFrame(frame, this.sources[frame.source].data, this.transformations);
     }
 
-    _parseExpression(expr, parentPipe) {
+    _parseExpression(expr, parentPipe, guide) {
 
         var funcName = expr.operator || 'none';
         var srcAlias = expr.source;
@@ -215,7 +278,7 @@ export class GPL extends Emitter {
             inherit: bInherit,
             func: func,
             args: funcArgs,
-            exec: () => func.apply(null, [dataFn].concat(funcArgs))
+            exec: () => func(dataFn, ...(funcArgs || []), guide)
         };
     }
 }

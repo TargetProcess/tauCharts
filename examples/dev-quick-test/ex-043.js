@@ -3,7 +3,7 @@ function days (i) {
     return (new Date(now - i * 1000 * 60 * 60 * 24));
 }
 
-window.samples.push({
+dev.spec({
 
     data: [
         {z: 'Abc', x: days(7), reposts: 10, likes: 21, comments: 10, followers: 100},

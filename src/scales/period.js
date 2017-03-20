@@ -1,7 +1,7 @@
 import {BaseScale} from './base';
 import {UnitDomainPeriodGenerator} from '../unit-domain-period-generator';
+import {utils} from '../utils/utils';
 /* jshint ignore:start */
-import {default as _} from 'underscore';
 import {default as d3} from 'd3';
 /* jshint ignore:end */
 
@@ -15,26 +15,31 @@ export class PeriodScale extends BaseScale {
         var vars = this.vars;
 
         var domain = d3.extent(vars);
-        var min = (_.isNull(props.min) || _.isUndefined(props.min)) ? domain[0] : new Date(props.min).getTime();
-        var max = (_.isNull(props.max) || _.isUndefined(props.max)) ? domain[1] : new Date(props.max).getTime();
+        var min = (props.min === null || props.min === undefined) ? domain[0] : new Date(props.min).getTime();
+        var max = (props.max === null || props.max === undefined) ? domain[1] : new Date(props.max).getTime();
 
         var range = [
             new Date(Math.min(min, domain[0])),
             new Date(Math.max(max, domain[1]))
         ];
 
-        if (props.fitToFrameByDims) {
-            this.vars = _(vars).chain()
-                .uniq((x) => new Date(x).getTime())
-                .map((x) => new Date(x))
-                .sortBy((x) => -x)
-                .value();
+        var periodGenerator = UnitDomainPeriodGenerator.get(props.period, {utc: props.utcTime});
+        if (props.fitToFrameByDims || (periodGenerator === null)) {
+            this.vars = utils.unique(vars.map((x) => new Date(x)), (x) => x.getTime())
+                .sort((date1, date2) => date2 - date1);
         } else {
-            this.vars = UnitDomainPeriodGenerator.generate(range[0], range[1], props.period);
+            this.vars = UnitDomainPeriodGenerator.generate(range[0], range[1], props.period, {utc: props.utcTime});
         }
 
         this.addField('scaleType', 'period')
+            .addField('period', this.scaleConfig.period)
             .addField('discrete', true);
+    }
+
+    isInDomain(aTime) {
+        var gen = UnitDomainPeriodGenerator.get(this.scaleConfig.period, {utc: this.scaleConfig.utcTime});
+        var val = gen.cast(new Date(aTime)).getTime();
+        return (this.domain().map(x => x.getTime()).indexOf(val) >= 0);
     }
 
     create(interval) {

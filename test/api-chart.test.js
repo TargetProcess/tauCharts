@@ -9,6 +9,7 @@ define(function (require) {
     var utils = require('testUtils');
     var $ = require('jquery');
     var tauCharts = require('src/tau.charts');
+    var layers = require('plugins/layers');
     var div, spec;
     var config = {
         layoutEngine: 'DEFAULT',
@@ -56,6 +57,7 @@ define(function (require) {
             div1 = createDiv();
             div2 = createDiv();
             div3 = createDiv();
+            utils.noScrollStyle.create();
         });
 
         it('should correct handler resize', function (done) {
@@ -69,11 +71,9 @@ define(function (require) {
             };
 
             function checkSizes(chart, width, height) {
-                if (modernizer.flexbox) {
-                    var svg = chart.getSVG();
-                    expect(parseInt($(svg).attr('width'))).to.be.equal(width);
-                    expect(parseInt($(svg).attr('height'))).to.be.equal(height);
-                }
+                var svg = chart.getSVG();
+                expect(parseInt($(svg).attr('width'))).to.be.equal(width);
+                expect(parseInt($(svg).attr('height'))).to.be.equal(height);
             }
 
             var chart1 = new tauCharts.Chart(createConfig());
@@ -118,6 +118,7 @@ define(function (require) {
             div1.parentNode.removeChild(div1);
             div2.parentNode.removeChild(div2);
             div3.parentNode.removeChild(div3);
+            utils.noScrollStyle.remove();
         });
     });
 
@@ -146,21 +147,22 @@ define(function (require) {
                     {x: 'TP3', y: 'Lambda', z: 3}
                 ],
                 settings: {
-                    fitModel: fitModel
+                    fitModel: fitModel,
+                    xDensityPadding: 0,
+                    yDensityPadding: 0
                 }
             };
         };
 
         function checkSizes(chart, width, height) {
-            if (modernizer.flexbox) {
-                var svg = chart.getSVG();
-                expect(parseInt($(svg).attr('width'))).to.be.equal(width);
-                expect(parseInt($(svg).attr('height'))).to.be.equal(height);
-            }
+            var svg = chart.getSVG();
+            expect(parseInt(svg.getAttribute('width'))).to.be.closeTo(width, 10);
+            expect(parseInt(svg.getAttribute('height'))).to.be.closeTo(height, 10);
         }
 
         beforeEach(function () {
             div1 = createDiv();
+            utils.noScrollStyle.create();
         });
 
         it('should support [entire-view] model', function () {
@@ -178,24 +180,370 @@ define(function (require) {
         it('should support [fit-width] model', function () {
             var chart1 = new tauCharts.Chart(createConfig('fit-width'));
             chart1.renderTo(div1);
-            checkSizes(chart1, 600, 185);
+            checkSizes(chart1, 600, 218);
         });
 
         it('should support [fit-height] model', function () {
             var chart1 = new tauCharts.Chart(createConfig('fit-height'));
             chart1.renderTo(div1);
-            checkSizes(chart1, 242, 800);
+            checkSizes(chart1, 165, 800);
         });
 
         it('should support [minimal] model', function () {
             var chart1 = new tauCharts.Chart(createConfig('minimal'));
             chart1.renderTo(div1);
-            checkSizes(chart1, 242, 220);
+            checkSizes(chart1, 165, 256);
         });
 
         afterEach(function () {
             div1.parentNode.removeChild(div1);
+            utils.noScrollStyle.remove();
         });
+    });
+
+    describe('Hide ticks for small facets', function () {
+
+        var div;
+
+        var createDiv = function () {
+            var div = document.createElement('div');
+            div.style.width = 400 + 'px';
+            div.style.height = 300 + 'px';
+            document.body.appendChild(div);
+            return div;
+        };
+
+        var createConfig = function (fitModel) {
+            return {
+                type: 'bar',
+                x: ['x', 'y'],
+                y: ['w', 'z'],
+                data: [
+                    {w: 'A', x: 'TP2', y: 'Lambda', z: 1},
+                    {w: 'A', x: 'TP3', y: 'Alaska', z: 2},
+                    {w: 'A', x: 'TP3', y: 'Denver', z: 2},
+                    {w: 'A', x: 'TP4', y: 'Denver', z: 2},
+                    {w: 'B', x: 'TP2', y: 'Lambda', z: 3},
+                    {w: 'B', x: 'TP3', y: 'Alaska', z: 2},
+                    {w: 'B', x: 'TP3', y: 'Denver', z: 2},
+                    {w: 'B', x: 'TP4', y: 'Alaska', z: 2},
+                    {w: 'C', x: 'TP2', y: 'Lambda', z: 3},
+                    {w: 'C', x: 'TP3', y: 'Alaska', z: 2},
+                    {w: 'C', x: 'TP3', y: 'Denver', z: 2},
+                    {w: 'C', x: 'TP3', y: 'Denver', z: 2},
+                    {w: 'A', x: 'TP2', y: 'Alaska', z: 5},
+                    {w: 'A', x: 'TP4', y: 'Lambda', z: 3},
+                    {w: 'A', x: 'TP3', y: 'Denver', z: 2},
+                    {w: 'B', x: 'TP2', y: 'Alaska', z: 5},
+                    {w: 'B', x: 'TP3', y: 'Lambda', z: 3},
+                    {w: 'B', x: 'TP3', y: 'Denver', z: 2},
+                    {w: 'C', x: 'TP2', y: 'Alaska', z: 5},
+                    {w: 'C', x: 'TP3', y: 'Lambda', z: 3},
+                    {w: 'C', x: 'TP3', y: 'Denver', z: 2},
+                    {w: 'C', x: 'TP3', y: 'Grisha', z: 2},
+                    {w: 'C', x: 'TP4', y: 'Grisha', z: 2}
+                ],
+                settings: {
+                    fitModel: fitModel
+                }
+            };
+        };
+
+        function getTicks(chart, axis) {
+            return chart.getSVG().querySelectorAll(`.${axis}.axis .tick text`);
+        }
+
+        beforeEach(function () {
+            div = createDiv();
+            utils.noScrollStyle.create();
+        });
+
+        it('should support [normal] model', function () {
+            var chart = new tauCharts.Chart(createConfig('normal'));
+            chart.renderTo(div);
+            expect(getTicks(chart, 'x').length).to.be.above(0);
+            expect(getTicks(chart, 'y').length).to.be.above(0);
+        });
+
+        it('should support [entire-view] model', function () {
+            var chart = new tauCharts.Chart(createConfig('entire-view'));
+            chart.renderTo(div);
+            expect(getTicks(chart, 'x').length).to.be.equal(0);
+            expect(getTicks(chart, 'y').length).to.be.equal(0);
+        });
+
+        it('should support [fit-width] model', function () {
+            var chart = new tauCharts.Chart(createConfig('fit-width'));
+            chart.renderTo(div);
+            expect(getTicks(chart, 'x').length).to.be.above(0);
+            expect(getTicks(chart, 'y').length).to.be.equal(0);
+        });
+
+        it('should support [fit-height] model', function () {
+            var chart = new tauCharts.Chart(createConfig('fit-height'));
+            chart.renderTo(div);
+            expect(getTicks(chart, 'x').length).to.be.equal(0);
+            expect(getTicks(chart, 'y').length).to.be.above(0);
+        });
+
+        it('should support [minimal] model', function () {
+            var chart = new tauCharts.Chart(createConfig('minimal'));
+            chart.renderTo(div);
+            expect(getTicks(chart, 'x').length).to.be.above(0);
+            expect(getTicks(chart, 'y').length).to.be.above(0);
+        });
+
+        afterEach(function () {
+            div.parentNode.removeChild(div);
+            utils.noScrollStyle.remove();
+        });
+    });
+
+    describe('Hide ticks for large density', function () {
+
+        var div;
+
+        var createDiv = function () {
+            var div = document.createElement('div');
+            div.style.width = 350 + 'px';
+            div.style.height = 350 + 'px';
+            document.body.appendChild(div);
+            return div;
+        };
+
+        var createConfig = function (fitModel) {
+            return {
+                type: 'scatterplot',
+                x: 'x',
+                y: 'y',
+                size: 'z',
+                data: [
+                    {x: 'A', y: 'a', z: 1},
+                    {x: 'B', y: 'b', z: 2},
+                    {x: 'C', y: 'c', z: 2},
+                    {x: 'D', y: 'd', z: 2},
+                    {x: 'E', y: 'e', z: 3},
+                    {x: 'F', y: 'f', z: 2},
+                    {x: 'G', y: 'g', z: 2},
+                    {x: 'H', y: 'h', z: 2},
+                    {x: 'I', y: 'i', z: 3},
+                    {x: 'J', y: 'j', z: 2},
+                    {x: 'K', y: 'k', z: 2},
+                    {x: 'L', y: 'l', z: 2},
+                    {x: 'M', y: 'm', z: 5},
+                    {x: 'N', y: 'n', z: 3},
+                    {x: 'O', y: 'o', z: 2},
+                    {x: 'P', y: 'p', z: 5},
+                    {x: 'Q', y: 'q', z: 3},
+                    {x: 'R', y: 'r', z: 2},
+                    {x: 'S', y: 's', z: 5},
+                    {x: 'T', y: 't', z: 3},
+                    {x: 'U', y: 'u', z: 2},
+                    {x: 'V', y: 'v', z: 2},
+                    {x: 'W', y: 'w', z: 2},
+                    {x: 'X', y: 'x', z: 2},
+                    {x: 'Y', y: 'y', z: 2},
+                    {x: 'Z', y: 'z', z: 2}
+                ],
+                settings: {
+                    fitModel: fitModel
+                }
+            };
+        };
+
+        function getTicks(chart, axis) {
+            return chart.getSVG().querySelectorAll(`.${axis}.axis .tick text`);
+        }
+
+        beforeEach(function () {
+            div = createDiv();
+            utils.noScrollStyle.create();
+        });
+
+        it('should not hide axes ticks for [normal] model', function () {
+            var chart = new tauCharts.Chart(createConfig('normal'));
+            chart.renderTo(div);
+            expect(getTicks(chart, 'x').length).to.be.above(0);
+            expect(getTicks(chart, 'y').length).to.be.above(0);
+        });
+
+        it('should hide axes ticks for [entire-view] model', function () {
+            var chart = new tauCharts.Chart(createConfig('entire-view'));
+            chart.renderTo(div);
+            expect(getTicks(chart, 'x').length).to.be.equal(0);
+            expect(getTicks(chart, 'y').length).to.be.equal(0);
+        });
+
+        afterEach(function () {
+            div.parentNode.removeChild(div);
+            utils.noScrollStyle.remove();
+        });
+    });
+
+    describe('Avoid chart scrollbar', function () {
+        var testChart = function (avoidScrollAtRatio, expectHeight) {
+            var container = document.createElement('div');
+            container.style.width = '120px';
+            container.style.height = '120px';
+            document.body.appendChild(container);
+            var scrollbar = tauCharts.api.globalSettings.getScrollbarSize(container);
+            var chart = new tauCharts.Chart({
+                type: 'bar',
+                x: 'x',
+                y: 'y',
+                data: [{ x: 'o_O', y: 16 }],
+                settings: {
+                    fitModel: 'normal',
+                    avoidScrollAtRatio: avoidScrollAtRatio
+                }
+            });
+            chart.renderTo(container);
+            var svg = chart.getSVG();
+            expect(parseInt(svg.getAttribute('height')) + scrollbar.height).to.be.closeTo(expectHeight, 10);
+            chart.destroy();
+            document.body.removeChild(container);
+        };
+
+        testChart(1, 160);
+        testChart(2, 120);
+    });
+
+    describe('Sync/async events handling', function (done) {
+
+        var container;
+        var chart;
+
+        beforeEach(function () {
+            container = document.createElement('div');
+            container.style.width = '800px';
+            container.style.height = '600px';
+            document.body.appendChild(container);
+        });
+
+        afterEach(function () {
+            chart.destroy();
+            document.body.removeChild(container);
+        });
+
+        var createChart = function ({syncPointerEvents}) {
+            chart = new tauCharts.Chart({
+                type: 'bar',
+                x: 'x',
+                y: 'y',
+                data: [
+                    {x: 0, y: 16},
+                    {x: 1, y: 8},
+                    {x: 2, y: 16}
+                ],
+                settings: {
+                    fitModel: 'normal',
+                    syncPointerEvents
+                }
+            });
+            chart.renderTo(container);
+        };
+
+        it('should handle events synchronously', function () {
+            createChart({syncPointerEvents: true});
+            var svg = chart.getSVG();
+            var rects = Array.from(svg.querySelectorAll('.bar'))
+                .map((el) => el.getBoundingClientRect());
+            var cx = (Math.min(...rects.map(r => r.left)) + Math.max(...rects.map(r => r.right)) / 2);
+            var bottom = Math.max(...rects.map(r => r.bottom));
+            var getHighlightedData = (() => d3.select('.graphical-report__highlighted').data()[0]);
+
+            utils.simulateEvent('mousemove', svg, cx, bottom);
+            expect(getHighlightedData().x).to.equal(1);
+        });
+
+        it('should handle events asynchronously', function (done) {
+            createChart({syncPointerEvents: false});
+            var svg = chart.getSVG();
+            var rects = Array.from(svg.querySelectorAll('.bar'))
+                .map((el) => el.getBoundingClientRect());
+            var cx = (Math.min(...rects.map(r => r.left)) + Math.max(...rects.map(r => r.right)) / 2);
+            var bottom = Math.max(...rects.map(r => r.bottom));
+            var getHighlightedData = (() => d3.select('.graphical-report__highlighted').data()[0]);
+
+            utils.simulateEvent('mousemove', svg, cx, bottom);
+            setTimeout(() => {
+                expect(getHighlightedData().x).to.equal(1);
+                done();
+            }, 100);
+        });
+
+        it('should throttle pointer events', function (done) {
+            createChart({syncPointerEvents: false});
+            var svg = chart.getSVG();
+            var rects = Array.from(svg.querySelectorAll('.bar'))
+                .map((el) => el.getBoundingClientRect());
+            var cx = (Math.min(...rects.map(r => r.left)) + Math.max(...rects.map(r => r.right)) / 2);
+            var bottom = Math.max(...rects.map(r => r.bottom));
+            var getHighlightedData = (() => d3.select('.graphical-report__highlighted').data()[0]);
+
+            var hoverCount = 0;
+            var clickCount = 0;
+            const unit = chart.select(() => true)[0];
+            unit.on('data-hover', () => (hoverCount++));
+            unit.on('data-click', () => (clickCount++));
+
+            utils.simulateEvent('mousemove', svg, cx, bottom);
+            utils.simulateEvent('mousemove', svg, cx, bottom);
+            utils.simulateEvent('mousemove', svg, cx, bottom);
+            utils.simulateEvent('click', svg, cx, bottom);
+            setTimeout(() => {
+                expect(hoverCount).to.equal(0);
+                expect(clickCount).to.equal(1);
+                done();
+            }, 100);
+        });
+    });
+
+    describe('Highlight overflown layer elements', function () {
+        var container = document.createElement('div');
+        container.style.width = '800px';
+        container.style.height = '600px';
+        document.body.appendChild(container);
+        var chart = new tauCharts.Chart({
+            type: 'line',
+            x: 'date',
+            y: 'value',
+            data: [
+                {date: '2017-01-21', value: 20, count: 8},
+                {date: '2017-01-22', value: 90, count: 9},
+                {date: '2017-01-23', value: 80, count: 2}
+            ],
+            plugins: [
+                layers({
+                    mode: 'dock',
+                    showPanel: false,
+                    layers: [
+                        {
+                            type: 'line',
+                            y: 'count',
+                            guide: {
+                                nice: false
+                            }
+                        }
+                    ]
+                })
+            ]
+        });
+        chart.renderTo(container);
+        var svg = chart.getSVG();
+
+        var points = svg.querySelectorAll('.i-data-anchor');
+        var midPoints = Array.prototype.filter.call(points, (el) => d3.select(el).data()[0].date === '2017-01-22');
+        var rect = midPoints[0].getBoundingClientRect();
+        var cx = ((rect.left + rect.right) / 2);
+        var cy = ((rect.bottom + rect.top) / 2);
+        utils.simulateEvent('mousemove', svg, cx, cy - 10);
+        expect(d3.select('.graphical-report__highlighted').data()[0]['Layer Type']).to.equal('count');
+        utils.simulateEvent('mousemove', svg, cx, cy + 10);
+        expect(d3.select('.graphical-report__highlighted').data()[0]['Layer Type']).to.equal('value');
+
+        chart.destroy();
+        document.body.removeChild(container);
     });
 
     describe('API CHART', function () {
@@ -205,12 +553,14 @@ define(function (require) {
             div.style.width = 600 + 'px';
             div.style.height = 800 + 'px';
             document.body.appendChild(div);
+            utils.noScrollStyle.create();
         });
 
         afterEach(function () {
             if (div && div.parentNode) {
                 div.parentNode.removeChild(div);
             }
+            utils.noScrollStyle.remove();
         });
 
         it('api test element events', function (done) {
@@ -408,7 +758,7 @@ define(function (require) {
         });
 
         it('api test filters', function () {
-            var newConfig = tauCharts.api._.clone(config);
+            var newConfig = Object.assign({}, config);
             newConfig.data = [{x: 1, y: 2, z: 'category1'}, {x: 3, y: 4, z: 'category2'}, {x: 3, y: 1, z: 'category3'}];
             var plot = new tauCharts.Plot(newConfig);
             var id = plot.addFilter({

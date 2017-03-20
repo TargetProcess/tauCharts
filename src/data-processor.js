@@ -1,6 +1,4 @@
 import {utils} from './utils/utils';
-import {default as _} from 'underscore';
-var isObject = (obj) => obj === Object(obj);
 
 var DataProcessor = {
 
@@ -14,7 +12,7 @@ var DataProcessor = {
 
                     var fnVar = (hash, f) => {
                         var propValue = item[f];
-                        var hashValue = isObject(propValue) ? JSON.stringify(propValue) : propValue;
+                        var hashValue = utils.isObject(propValue) ? JSON.stringify(propValue) : propValue;
                         hash.push(hashValue);
                         return hash;
                     };
@@ -87,7 +85,7 @@ var DataProcessor = {
         Object.keys(dimensions).forEach((k) => {
             var item = dimensions[k];
             var type = (item.type || defaultType).toLowerCase();
-            r[k] = _.extend(
+            r[k] = Object.assign(
                 {},
                 item,
                 {
@@ -111,13 +109,13 @@ var DataProcessor = {
 
             var pair = defaultDetect;
 
-            if (_.isDate(propertyValue)) {
+            if (utils.isDate(propertyValue)) {
                 pair.type = 'measure';
                 pair.scale = 'time';
-            } else if (_.isObject(propertyValue)) {
+            } else if (utils.isObject(propertyValue)) {
                 pair.type = 'order';
                 pair.scale = 'ordinal';
-            } else if (_.isNumber(propertyValue)) {
+            } else if (Number.isFinite(propertyValue)) {
                 pair.type = 'measure';
                 pair.scale = 'linear';
             }
@@ -152,13 +150,20 @@ var DataProcessor = {
             return memo;
         };
 
-        return _.reduce(data, reducer, {});
+        return data.reduce(reducer, {});
     },
 
     sortByDim: function (data, dimName, dimInfo) {
         var rows = data;
+
+        var interceptor = (['period', 'time'].indexOf(dimInfo.scale) >= 0) ?
+            (x => new Date(x)) :
+            (x => x);
+
         if ((dimInfo.type === 'measure') || (dimInfo.scale === 'period')) {
-            rows = _(data).sortBy(dimName);
+            rows = data.map(r => r).sort((a, b) => {
+                return interceptor(a[dimName]) - interceptor(b[dimName]);
+            });
         } else if (dimInfo.order) {
             var hashOrder = dimInfo.order.reduce(
                 (memo, x, i) => {

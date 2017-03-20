@@ -16,6 +16,7 @@ The library's architecture allows you to build [facets](http://api.taucharts.com
 The Taucharts team is passionate about beautiful design.
 #### ...
 Dive into the high-level [Taucharts concepts](http://blog.taucharts.com/taucharts-data-focused-charting-library/) and [usage reviews](#taucharts-examples--usage-reviews).
+If you want to contribute - see [how to run the project locally](#how-to-run-the-project-locally)
 
 ## How to use Taucharts
 
@@ -25,7 +26,6 @@ Load javascript dependencies
 
 ```html
 <script src="//cdn.jsdelivr.net/d3js/latest/d3.min.js" charset="utf-8"></script>
-<script src="//cdn.jsdelivr.net/underscorejs/latest/underscore-min.js" type="text/javascript"></script>
 <script src="//cdn.jsdelivr.net/taucharts/latest/tauCharts.min.js" type="text/javascript"></script>
 ```
 
@@ -173,11 +173,11 @@ var chart1 = new tauCharts.Chart({
     ...
 });
 ```
-[![Streaming Data Chart](https://dl.dropboxusercontent.com/u/96767946/taucharts.com/data-streaming.gif)](http://jsfiddle.net/4o4z6fqn/6/)
+[![Streaming Data Chart](https://dl.dropboxusercontent.com/u/96767946/taucharts.com/data-streaming.gif)](//jsfiddle.net/taucharts/qdn76nab/)
 
 This sample uses the [setData(..)] method to refresh the chart's data source.
 
-See [streaming sample online](http://jsfiddle.net/4o4z6fqn/6/)
+See [streaming sample online](//jsfiddle.net/taucharts/qdn76nab/)
 
 ___
 
@@ -187,6 +187,44 @@ ___
 See [composable chart sample online](http://jsfiddle.net/6LzefLo4/4/)
 
 ___
+
+## How to run the project locally
+
+Clone (forked) repository:
+```
+git clone https://github.com/TargetProcess/tauCharts.git
+```
+
+Initialize dependencies:
+```
+npm install
+```
+
+Run local webpack dev server (with hot reload):
+```
+npm run devserver
+```
+
+Local server will be started on port 9000 and live taucharts assembly will be exposed by url:
+```
+http://localhost:9000/tauCharts.js
+```
+
+Now you can see some taucharts examples:
+```
+http://localhost:9000/examples/
+```
+
+To run tests (with hot reload):
+```
+npm run devtest
+```
+
+To build a static assembly:
+```
+npm run build
+```
+This command creates development and production assemblies in a *[./build]* folder.
 
 ## Taucharts examples / usage reviews
 
@@ -200,7 +238,9 @@ ___
 
 [Taucharts Twitter channel](https://twitter.com/search?q=taucharts)
 
-[Taucharts samples](http://taucharts.com/taulab/index.html)
+[Taucharts demo page](https://demo.taucharts.com/)
+
+[GeoTremor mobile app](http://geotremor.tangentapps.com)
 
 ## License
 

@@ -1,17 +1,18 @@
 (function (factory) {
     if (typeof define === 'function' && define.amd) {
-        define(['tauCharts'], function (tauPlugins) {
+        define(['taucharts'], function (tauPlugins) {
             return factory(tauPlugins);
         });
     } else if (typeof module === 'object' && module.exports) {
-        var tauPlugins = require('tauCharts');
+        var tauPlugins = require('taucharts');
         module.exports = factory(tauPlugins);
     } else {
         factory(this.tauCharts);
     }
 })(function (tauCharts) {
 
-    var _ = tauCharts.api._;
+    var utils = tauCharts.api.utils;
+    var REFRESH_DELAY = 0;
 
     function QuickFilter(xSettings) {
 
@@ -42,9 +43,13 @@
                 var spec = this._chart.getSpec();
                 var sources = spec.sources['/'];
 
-                this._fields = ((_.isArray(xSettings) && xSettings.length > 0) ?
-                    (xSettings) :
-                    (_(sources.dims).keys()));
+                var fields = (xSettings && xSettings.fields || xSettings);
+
+                this._fields = ((Array.isArray(fields) && fields.length > 0) ?
+                    (fields) :
+                    (Object.keys(sources.dims)));
+
+                this._applyImmediately = Boolean(xSettings && xSettings.applyImmediately);
 
                 var chartData = self._chart.getChartModelData();
 
@@ -61,7 +66,9 @@
                         return isMeasure;
                     })
                     .forEach(function (dim) {
-                        self._data[dim] = _(chartData).pluck(dim);
+                        self._data[dim] = chartData.map(function (x) {
+                            return x[dim];
+                        });
                         self._bounds[dim] = d3.extent(self._data[dim]);
                         self._filter[dim] = self._bounds[dim];
 
@@ -77,7 +84,7 @@
             },
 
             _filtersContainer: '<div class="graphical-report__filter"></div>',
-            _filterWrapper: _.template(
+            _filterWrapper: utils.template(
                 '<div class="graphical-report__filter__wrap">' +
                     '<div class="graphical-report__legend__title"><%=name%></div>' +
                 '</div>'
@@ -89,7 +96,7 @@
                 var bounds = this._bounds[dim];
 
                 var filter = this._filter[dim];
-                var isDate = (_.isDate(bounds[0]) || _.isDate(bounds[1]));
+                var isDate = (utils.isDate(bounds[0]) || utils.isDate(bounds[1]));
 
                 var self = this;
 
@@ -107,12 +114,11 @@
                     .extent(filter)
                     .on('brushstart', function () {
                         self._layout.style['overflow-y'] = 'hidden';
-                        brushing();
                     })
-                    .on('brush', brushing)
+                    .on('brush', (this._applyImmediately ? applyBrush : updateBrush))
                     .on('brushend', function () {
                         self._layout.style['overflow-y'] = '';
-                        brushing();
+                        applyBrush();
                     });
 
                 var svg = d3.select(this._container[dim]).append('svg')
@@ -157,7 +163,7 @@
 
                 function getFormatters(formatters) {
 
-                    var index = _(formatters)
+                    var index = formatters
                         .findIndex(function (token) {
                             var f = d3.time.format(token);
                             return (f(new Date(bounds[0])) !== f(new Date(bounds[1])));
@@ -191,9 +197,9 @@
                     }
                 }
 
-                brushing();
+                applyBrush();
 
-                function brushing() {
+                function updateBrush() {
                     var filter = self._filter[dim] = brush.extent();
                     var filterMin = isDate ? (new Date(filter[0])).getTime() : filter[0];
                     var filterMax = isDate ? (new Date(filter[1])).getTime() : filter[1];
@@ -214,7 +220,10 @@
                         sTxt.text(s);
                         eTxt.text(e);
                     }
+                }
 
+                function applyBrush() {
+                    updateBrush();
                     self._applyFilter(dim);
                 }
             },
@@ -237,7 +246,17 @@
                     }
                 });
 
-                this._chart.refresh();
+                if (REFRESH_DELAY < 0) {
+                    this._chart.refresh();
+                } else {
+                    if (this._refreshRequestId) {
+                        clearTimeout(this._refreshRequestId);
+                    }
+                    this._refreshRequestId = setTimeout(function () {
+                        this._refreshRequestId = null;
+                        this._chart.refresh();
+                    }.bind(this), REFRESH_DELAY);
+                }
             }
         };
     }

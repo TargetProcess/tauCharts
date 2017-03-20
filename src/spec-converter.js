@@ -1,4 +1,3 @@
-import {default as _} from 'underscore';
 import {utils} from './utils/utils';
 
 export class SpecConverter {
@@ -21,13 +20,15 @@ export class SpecConverter {
                 // jscs:disable disallowQuotedKeysInObjects
                 'x_null': {type: 'ordinal', source: '?'},
                 'y_null': {type: 'ordinal', source: '?'},
-                'size_null':  {type: 'size', source: '?', mid: 5},
-                'color_null': {type: 'color', source: '?', brewer: null},
+                'size_null':  {type: 'size', source: '?'},
+                'color_null': {type: 'color', source: '?'},
+                'split_null': {type: 'value', source: '?'},
 
                 'pos:default': {type: 'ordinal', source: '?'},
-                'size:default': {type: 'size', source: '?', mid: 5},
-                'text:default': {type: 'value', source: '?'},
-                'color:default': {type: 'color', source: '?', brewer: null}
+                'size:default': {type: 'size', source: '?'},
+                'label:default': {type: 'value', source: '?'},
+                'color:default': {type: 'color', source: '?'},
+                'split:default': {type: 'value', source: '?'}
                 // jscs:enable disallowQuotedKeysInObjects
             },
             settings: spec.settings
@@ -47,6 +48,8 @@ export class SpecConverter {
 
     ruleApplyDefaults(spec) {
 
+        var settings = spec.settings || {};
+
         var traverse = (node, iterator, parentNode) => {
             iterator(node, parentNode);
             (node.units || []).map((x) => traverse(x, iterator, node));
@@ -55,15 +58,21 @@ export class SpecConverter {
         var iterator = (childUnit, root) => {
 
             childUnit.namespace = 'chart';
+            childUnit.guide = utils.defaults(
+                (childUnit.guide || {}),
+                {
+                    animationSpeed: settings.animationSpeed || 0,
+                    utcTime: settings.utcTime || false
+                }
+            );
 
             // leaf elements should inherit coordinates properties
             if (root && !childUnit.hasOwnProperty('units')) {
-                childUnit = _.defaults(childUnit, _.pick(root, 'x', 'y'));
+                childUnit = utils.defaults(childUnit, {x: root.x, y: root.y});
 
-                var parentGuide = utils.clone(root.guide || {});
-                childUnit.guide = childUnit.guide || {};
-                childUnit.guide.x = _.defaults(childUnit.guide.x || {}, parentGuide.x);
-                childUnit.guide.y = _.defaults(childUnit.guide.y || {}, parentGuide.y);
+                var parentGuide = utils.clone(root.guide) || {};
+                childUnit.guide.x = utils.defaults(childUnit.guide.x || {}, parentGuide.x);
+                childUnit.guide.y = utils.defaults(childUnit.guide.y || {}, parentGuide.y);
 
                 childUnit.expression.inherit = root.expression.inherit;
             }
@@ -81,9 +90,9 @@ export class SpecConverter {
         var dims = gplSpec.sources['/'].dims;
 
         var reduceIterator = (row, key) => {
-
-            if (_.isObject(row[key]) && !_.isDate(row[key])) {
-                _.each(row[key], (v, k) => (row[key + '.' + k] = v));
+            let rowKey = row[key];
+            if (utils.isObject(rowKey) && !utils.isDate(rowKey)) {
+                Object.keys(rowKey).forEach((k) => (row[key + '.' + k] = rowKey[k]));
             }
 
             return row;
@@ -123,9 +132,9 @@ export class SpecConverter {
     ruleAssignStructure(srcSpec, gplSpec) {
 
         var walkStructure = (srcUnit) => {
-            var gplRoot = utils.clone(_.omit(srcUnit, 'unit'));
-            gplRoot.expression = this.ruleInferExpression(srcUnit);
+            var gplRoot = utils.clone(utils.omit(srcUnit, 'unit'));
             this.ruleCreateScales(srcUnit, gplRoot);
+            gplRoot.expression = this.ruleInferExpression(srcUnit);
 
             if (srcUnit.unit) {
                 gplRoot.units = srcUnit.unit.map(walkStructure);
@@ -142,7 +151,7 @@ export class SpecConverter {
     ruleCreateScales(srcUnit, gplRoot) {
 
         var guide = srcUnit.guide || {};
-        ['color', 'size', 'text', 'x', 'y'].forEach((p) => {
+        ['identity', 'color', 'size', 'label', 'x', 'y', 'split'].forEach((p) => {
             if (srcUnit.hasOwnProperty(p)) {
                 gplRoot[p] = this.scalesPool(p, srcUnit[p], guide[p] || {});
             }
@@ -199,22 +208,67 @@ export class SpecConverter {
             if (dims[dimName] && dims[dimName].hasOwnProperty('order')) {
                 item.order = dims[dimName].order;
             }
+
+            if (guide.hasOwnProperty('min')) {
+                item.min = guide.min;
+            }
+
+            if (guide.hasOwnProperty('max')) {
+                item.max = guide.max;
+            }
+
+            if (guide.hasOwnProperty('nice')) {
+                item.nice = guide.nice;
+            }
         }
 
         if (scaleType === 'size' && dimName !== null) {
             item = {
                 type: 'size',
                 source: '/',
-                dim: this.ruleInferDim(dimName, guide),
-                min: 2,
-                max: 10,
-                mid: 5
+                dim: this.ruleInferDim(dimName, guide)
+            };
+
+            if (guide.hasOwnProperty('func')) {
+                item.func = guide.func;
+            }
+
+            if (guide.hasOwnProperty('min')) {
+                item.min = guide.min;
+            }
+
+            if (guide.hasOwnProperty('max')) {
+                item.max = guide.max;
+            }
+
+            if (guide.hasOwnProperty('minSize')) {
+                item.minSize = guide.minSize;
+            }
+
+            if (guide.hasOwnProperty('maxSize')) {
+                item.maxSize = guide.maxSize;
+            }
+        }
+
+        if (scaleType === 'label' && dimName !== null) {
+            item = {
+                type: 'value',
+                source: '/',
+                dim: this.ruleInferDim(dimName, guide)
             };
         }
 
-        if (scaleType === 'text' && dimName !== null) {
+        if (scaleType === 'split' && dimName !== null) {
             item = {
                 type: 'value',
+                source: '/',
+                dim: this.ruleInferDim(dimName, guide)
+            };
+        }
+
+        if (scaleType === 'identity' && dimName !== null) {
+            item = {
+                type: 'identity',
                 source: '/',
                 dim: this.ruleInferDim(dimName, guide)
             };
@@ -245,8 +299,23 @@ export class SpecConverter {
                 item.autoScale = true;
             }
 
+            if (guide.hasOwnProperty('nice')) {
+                item.nice = guide.nice;
+            } else {
+                // #121763
+                // for backward compatibility with "autoScale" property
+                item.nice = item.autoScale;
+            }
+
+            if (guide.hasOwnProperty('niceInterval')) {
+                item.niceInterval = guide.niceInterval;
+            } else {
+                item.niceInterval = null;
+            }
+
             if (guide.hasOwnProperty('tickPeriod')) {
                 item.period = guide.tickPeriod;
+                item.type = 'period';
             }
 
             item.fitToFrameByDims = guide.fitToFrameByDims;
@@ -259,6 +328,11 @@ export class SpecConverter {
         return k;
     }
 
+    getScaleConfig(scaleType, dimName) {
+        var k = `${scaleType}_${dimName}`;
+        return this.dist.scales[k];
+    }
+
     ruleInferExpression(srcUnit) {
 
         var expr = {
@@ -269,6 +343,9 @@ export class SpecConverter {
         var g = srcUnit.guide || {};
         var gx = g.x || {};
         var gy = g.y || {};
+
+        var scaleX = this.getScaleConfig('x', srcUnit.x);
+        var scaleY = this.getScaleConfig('y', srcUnit.y);
 
         if (srcUnit.type.indexOf('ELEMENT.') === 0) {
 
@@ -287,14 +364,14 @@ export class SpecConverter {
 
                 // jshint ignore:start
                 // jscs:disable requireDotNotation
-                if (gx['tickPeriod'] || gy['tickPeriod']) {
+                if (scaleX.period || scaleY.period) {
                     expr = {
                         operator: 'cross_period',
                         params: [
                             this.ruleInferDim(srcUnit.x, gx),
                             this.ruleInferDim(srcUnit.y, gy),
-                            gx['tickPeriod'],
-                            gy['tickPeriod']
+                            scaleX.period,
+                            scaleY.period
                         ]
                     };
                 } else {
@@ -311,6 +388,6 @@ export class SpecConverter {
             }
         }
 
-        return _.extend({inherit: true, source: '/'}, expr);
+        return Object.assign({inherit: true, source: '/'}, expr);
     }
 }

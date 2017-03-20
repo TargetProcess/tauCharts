@@ -1,156 +1,360 @@
 import {CSS_PREFIX} from '../const';
-import {Element} from './element';
-import {default as _} from 'underscore';
-export class Point extends Element {
+import {GrammarRegistry} from '../grammar-registry';
+import {LayerLabels} from './decorators/layer-labels';
+import {d3_transition} from '../utils/d3-decorators';
+import {utils} from '../utils/utils';
+import {utilsDom} from '../utils/utils-dom';
+import {utilsDraw} from '../utils/utils-draw';
+import d3 from 'd3';
 
-    constructor(config) {
+const Point = {
 
-        super(config);
+    init(xConfig) {
 
-        this.config = config;
+        const config = Object.assign({}, xConfig);
 
-        this.config.guide = this.config.guide || {};
-
-        this.config.guide.x = this.config.guide.x || {};
-        this.config.guide.x = _.defaults(
-            this.config.guide.x,
+        config.guide = utils.defaults(
+            (config.guide || {}),
             {
-                tickFontHeight: 0,
-                density: 20
-            }
-        );
-
-        this.config.guide.y = this.config.guide.y || {};
-        this.config.guide.y = _.defaults(
-            this.config.guide.y,
-            {
-                tickFontHeight: 0,
-                density: 20
-            }
-        );
-
-        this.on('highlight', (sender, e) => this.highlight(e));
-    }
-
-    createScales(fnCreateScale) {
-
-        var config = this.config;
-
-        this.xScale = fnCreateScale('pos', config.x, [0, config.options.width]);
-        this.yScale = fnCreateScale('pos', config.y, [config.options.height, 0]);
-        this.color = fnCreateScale('color', config.color, {});
-
-        var fitSize = (w, h, maxRelLimit, srcSize, minimalSize) => {
-            var minRefPoint = Math.min(w, h);
-            var minSize = minRefPoint * maxRelLimit;
-            return Math.max(minimalSize, Math.min(srcSize, minSize));
-        };
-
-        var width = config.options.width;
-        var height = config.options.height;
-        var g = config.guide;
-        var minimalSize = 1;
-        var maxRelLimit = 0.035;
-        var isNotZero = (x) => x !== 0;
-        var minFontSize = _.min([g.x.tickFontHeight, g.y.tickFontHeight].filter(isNotZero)) * 0.5;
-        var minTickStep = _.min([g.x.density, g.y.density].filter(isNotZero)) * 0.5;
-
-        this.size = fnCreateScale(
-            'size',
-            config.size,
-            {
-                min: fitSize(width, height, maxRelLimit, 2, minimalSize),
-                max: fitSize(width, height, maxRelLimit, minTickStep, minimalSize),
-                mid: fitSize(width, height, maxRelLimit, minFontSize, minimalSize)
+                animationSpeed: 0,
+                avoidScalesOverflow: true,
+                enableColorToBarPosition: false,
+                maxHighlightDistance: 32
             });
 
-        return this
-            .regScale('x', this.xScale)
-            .regScale('y', this.yScale)
-            .regScale('size', this.size)
-            .regScale('color', this.color);
-    }
+        config.guide.size = (config.guide.size || {});
 
-    drawFrames(frames) {
+        config.guide.label = utils.defaults(
+            (config.guide.label || {}),
+            {
+                position: [
+                    'auto:avoid-label-label-overlap',
+                    'auto:avoid-label-anchor-overlap',
+                    'auto:adjust-on-label-overflow',
+                    'auto:hide-on-label-label-overlap',
+                    'auto:hide-on-label-anchor-overlap'
+                ]
+            });
 
-        var self = this;
+        const avoidScalesOverflow = config.guide.avoidScalesOverflow;
+        const enableColorPositioning = config.guide.enableColorToBarPosition;
 
-        var options = this.config.options;
+        config.transformRules = [
+            ((prevModel) => {
+                const bestBaseScale = [prevModel.scaleX, prevModel.scaleY]
+                    .sort((a, b) => {
+                        var discreteA = a.discrete ? 1 : 0;
+                        var discreteB = b.discrete ? 1 : 0;
+                        return (discreteB * b.domain().length) - (discreteA * a.domain().length);
+                    })
+                    [0];
+                const isHorizontal = (prevModel.scaleY === bestBaseScale);
+                return isHorizontal ?
+                    GrammarRegistry.get('flip')(prevModel) :
+                    GrammarRegistry.get('identity')(prevModel);
+            }),
+            config.stack && GrammarRegistry.get('stack'),
+            enableColorPositioning && GrammarRegistry.get('positioningByColor')
+        ]
+            .filter(x => x)
+            .concat(config.transformModel || []);
 
-        var prefix = `${CSS_PREFIX}dot dot i-role-element i-role-datum`;
+        config.adjustRules = [
+            (config.stack && GrammarRegistry.get('adjustYScale')),
+            ((prevModel, args) => {
+                const isEmptySize = prevModel.scaleSize.isEmptyScale();
+                const sizeCfg = utils.defaults(
+                    (config.guide.size),
+                    {
+                        defMinSize: 10,
+                        defMaxSize: isEmptySize ? 10 : 40,
+                        enableDistributeEvenly: !isEmptySize
+                    });
+                const params = Object.assign(
+                    {},
+                    args,
+                    {
+                        defMin: sizeCfg.defMinSize,
+                        defMax: sizeCfg.defMaxSize,
+                        minLimit: sizeCfg.minSize,
+                        maxLimit: sizeCfg.maxSize
+                    });
 
-        var xScale = this.xScale;
-        var yScale = this.yScale;
-        var cScale = this.color;
-        var sScale = this.size;
+                const method = (sizeCfg.enableDistributeEvenly ?
+                    GrammarRegistry.get('adjustSigmaSizeScale') :
+                    GrammarRegistry.get('adjustStaticSizeScale'));
 
-        var enter = function () {
-            return this
-                .attr({
-                    r: ({data:d}) => sScale(d[sScale.dim]),
-                    cx: ({data:d}) => xScale(d[xScale.dim]),
-                    cy: ({data:d}) => yScale(d[yScale.dim]),
-                    class: ({data:d}) => `${prefix} ${cScale(d[cScale.dim])}`
-                })
-                .transition()
-                .duration(500)
-                .attr('r', ({data:d}) => sScale(d[sScale.dim]));
-        };
-
-        var update = function () {
-            return this
-                .attr({
-                    r: ({data:d}) => sScale(d[sScale.dim]),
-                    cx: ({data:d}) => xScale(d[xScale.dim]),
-                    cy: ({data:d}) => yScale(d[yScale.dim]),
-                    class: ({data:d}) => `${prefix} ${cScale(d[cScale.dim])}`
+                return method(prevModel, params);
+            }),
+            (avoidScalesOverflow && ((prevModel, args) => {
+                const params = Object.assign({}, args, {
+                    sizeDirection: 'xy'
                 });
+                return GrammarRegistry.get('avoidScalesOverflow')(prevModel, params);
+            }))
+        ].filter(x => x);
+
+        return config;
+    },
+
+    addInteraction() {
+        const node = this.node();
+        const createFilter = ((data, falsy) => ((row) => row === data ? true : falsy));
+        node.on('highlight', (sender, filter) => this.highlight(filter));
+        node.on('data-hover', ((sender, e) => this.highlight(createFilter(e.data, null))));
+        node.on('data-click', ((sender, e) => this.highlight(createFilter(e.data, e.data ? false : null))));
+    },
+
+    draw() {
+
+        const node = this.node();
+        const config = node.config;
+        const options = config.options;
+        // TODO: hide it somewhere
+        options.container = options.slot(config.uid);
+
+        const transition = (sel) => {
+            return d3_transition(sel, config.guide.animationSpeed);
         };
 
-        var updateGroups = function () {
+        const prefix = `${CSS_PREFIX}dot dot i-role-element i-role-datum`;
+        const screenModel = node.screenModel;
+        const kRound = 10000;
 
-            this.attr('class', (f) => `frame-id-${options.uid} frame-${f.hash}`)
+        const circleAttrs = {
+            fill: ((d) => screenModel.color(d)),
+            class: ((d) => `${prefix} ${screenModel.class(d)}`)
+        };
+
+        const circleTransAttrs = {
+            r: ((d) => (Math.round(kRound * screenModel.size(d) / 2) / kRound)),
+            cx: ((d) => screenModel.x(d)),
+            cy: ((d) => screenModel.y(d))
+        };
+
+        const updateGroups = function () {
+
+            this.attr('class', 'frame')
                 .call(function () {
                     var dots = this
                         .selectAll('circle')
-                        .data(frame => frame.data.map(item => ({data: item, uid: options.uid})));
-                    dots.exit()
-                        .remove();
-                    dots.call(update);
-                    dots.enter()
-                        .append('circle')
-                        .call(enter);
+                        .data((fiber) => fiber, screenModel.id);
 
-                    self.subscribe(dots, ({data:d}) => d);
+                    transition(dots.enter().append('circle').attr(circleAttrs))
+                        .attr(circleTransAttrs);
+
+                    transition(dots.attr(circleAttrs))
+                        .attr(circleTransAttrs);
+
+                    transition(dots.exit())
+                        .attr({r: 0})
+                        .remove();
+
+                    node.subscribe(dots);
                 });
+
+            transition(this)
+                .attr('opacity', 1);
         };
 
-        var mapper = (f) => ({tags: f.key || {}, hash: f.hash(), data: f.part()});
+        const fibers = screenModel.toFibers();
+        this._getGroupOrder = (() => {
+            var map = fibers.reduce((map, f, i) => {
+                map.set(f, i);
+                return map;
+            }, new Map());
+            return ((g) => map.get(g));
+        })();
 
-        var frameGroups = options.container
-            .selectAll(`.frame-id-${options.uid}`)
-            .data(frames.map(mapper), (f) => f.hash);
-        frameGroups
-            .exit()
-            .remove();
-        frameGroups
-            .call(updateGroups);
+        const frameGroups = options
+            .container
+            .selectAll('.frame')
+            .data(fibers, (f) => screenModel.group(f[0]));
+
         frameGroups
             .enter()
             .append('g')
+            .attr('opacity', 0)
             .call(updateGroups);
 
-        return [];
-    }
+        frameGroups
+            .call(updateGroups);
+
+        // TODO: Render bars into single container, exclude removed elements from calculation.
+        this._boundsInfo = this._getBoundsInfo(frameGroups.selectAll('.dot').reduce((m, g) => m.concat(g), []));
+
+        transition(frameGroups.exit())
+            .attr('opacity', 0)
+            .remove()
+            .selectAll('circle')
+            .attr('r', 0);
+
+        node.subscribe(
+            new LayerLabels(
+                screenModel.model,
+                screenModel.flip,
+                config.guide.label,
+                options
+            ).draw(fibers)
+        );
+    },
+
+    _getBoundsInfo(dots) {
+        if (dots.length === 0) {
+            return null;
+        }
+
+        const screenModel = this.node().screenModel;
+
+        const items = dots
+            .map((node) => {
+                const data = d3.select(node).data()[0];
+                const x = screenModel.x(data);
+                const y = screenModel.y(data);
+                const r = screenModel.size(data) / 2;
+
+                return {node, data, x, y, r};
+            })
+            // TODO: Removed elements should not be passed to this function.
+            .filter((item) => !isNaN(item.x) && !isNaN(item.y));
+
+        const bounds = items.reduce(
+            (bounds, {x, y}) => {
+                bounds.left = Math.min(x, bounds.left);
+                bounds.right = Math.max(x, bounds.right);
+                bounds.top = Math.min(y, bounds.top);
+                bounds.bottom = Math.max(y, bounds.bottom);
+                return bounds;
+            }, {
+                left: Number.MAX_VALUE,
+                right: Number.MIN_VALUE,
+                top: Number.MAX_VALUE,
+                bottom: Number.MIN_VALUE
+            });
+
+        // NOTE: There can be multiple items at the same point, but
+        // D3 quad tree seems to ignore them.
+        const coordinates = items.reduce((coordinates, item) => {
+            const c = `${item.x},${item.y}`;
+            if (!coordinates[c]) {
+                coordinates[c] = [];
+            }
+            coordinates[c].push(item);
+            return coordinates;
+        }, {});
+
+        const tree = d3.geom.quadtree()
+            .x((d) => d[0].x)
+            .y((d) => d[0].y)
+            (Object.keys(coordinates).map((c) => coordinates[c]));
+
+        return {bounds, tree};
+    },
+
+    getClosestElement(_cursorX, _cursorY) {
+        if (!this._boundsInfo) {
+            return null;
+        }
+        const {bounds, tree} = this._boundsInfo;
+        const container = this.node().config.options.container;
+        const translate = utilsDraw.getDeepTransformTranslate(container.node());
+        const cursorX = (_cursorX - translate.x);
+        const cursorY = (_cursorY - translate.y);
+        const {maxHighlightDistance} = this.node().config.guide;
+        if ((cursorX < bounds.left - maxHighlightDistance) ||
+            (cursorX > bounds.right + maxHighlightDistance) ||
+            (cursorY < bounds.top - maxHighlightDistance) ||
+            (cursorY > bounds.bottom + maxHighlightDistance)
+        ) {
+            return null;
+        }
+
+        const items = (tree.find([cursorX, cursorY]) || [])
+            .map((item) => {
+                const distance = Math.sqrt(
+                    Math.pow(cursorX - item.x, 2) +
+                    Math.pow(cursorY - item.y, 2));
+                if (distance > maxHighlightDistance) {
+                    return null;
+                }
+                const secondaryDistance = (distance < item.r ? item.r - distance : distance);
+                return {
+                    node: item.node,
+                    data: item.data,
+                    x: item.x,
+                    y: item.y,
+                    distance,
+                    secondaryDistance
+                };
+            })
+            .filter((d) => d)
+            .sort((a, b) => (a.secondaryDistance - b.secondaryDistance));
+
+        const largerDistIndex = items.findIndex((d) => (
+            (d.distance !== items[0].distance) ||
+            (d.secondaryDistance !== items[0].secondaryDistance)
+        ));
+        const sameDistItems = (largerDistIndex < 0 ? items : items.slice(0, largerDistIndex));
+        if (sameDistItems.length === 1) {
+            return sameDistItems[0];
+        }
+        const mx = (sameDistItems.reduce((sum, item) => sum + item.x, 0) / sameDistItems.length);
+        const my = (sameDistItems.reduce((sum, item) => sum + item.y, 0) / sameDistItems.length);
+        const angle = (Math.atan2(my - cursorY, mx - cursorX) + Math.PI);
+        const closest = sameDistItems[Math.round((sameDistItems.length - 1) * angle / 2 / Math.PI)];
+        return closest;
+    },
 
     highlight(filter) {
-        this.config
-            .options
-            .container
+
+        const x = 'graphical-report__highlighted';
+        const _ = 'graphical-report__dimmed';
+
+        const container = this.node().config.options.container;
+        const classed = {
+            [x]: ((d) => filter(d) === true),
+            [_]: ((d) => filter(d) === false)
+        };
+
+        container
             .selectAll('.dot')
-            .classed({
-                'graphical-report__highlighted': (({data: d}) => filter(d) === true),
-                'graphical-report__dimmed': (({data: d}) => filter(d) === false)
+            .classed(classed);
+
+        container
+            .selectAll('.i-role-label')
+            .classed(classed);
+
+        this._sortElements(filter);
+    },
+
+    _sortElements(filter) {
+
+        const screenModel = this.node().screenModel;
+        const container = this.node().config.options.container;
+
+        // Sort frames
+        const filters = new Map();
+        const groups = new Map();
+        container
+            .selectAll('.frame')
+            .each(function (d) {
+                filters.set(this, d.some(filter));
+                groups.set(this, screenModel.group(d[0]));
             });
+        const compareFilterThenGroupId = utils.createMultiSorter(
+            (a, b) => (filters.get(a) - filters.get(b)),
+            (a, b) => (this._getGroupOrder(a) - this._getGroupOrder(b))
+        );
+        utilsDom.sortChildren(container.node(), (a, b) => {
+            if (a.tagName === 'g' && b.tagName === 'g') {
+                return compareFilterThenGroupId(a, b);
+            }
+            return a.tagName.localeCompare(b.tagName); // Note: raise <text> over <g>.
+        });
+
+        // Raise filtered dots over others
+        utilsDraw.raiseElements(container, '.dot', filter);
     }
-}
+};
+
+export {Point};

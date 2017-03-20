@@ -1,17 +1,29 @@
 import {default as d3} from 'd3';
-import {default as _} from 'underscore';
 import {Element} from './element';
+import {utilsDom} from '../utils/utils-dom';
 import {utilsDraw} from '../utils/utils-draw';
+import {utils} from '../utils/utils';
 import {CSS_PREFIX} from '../const';
 import {FormatterRegistry} from '../formatter-registry';
 import {
+    d3_transition as transition,
+    d3_selectAllImmediate as selectAllImmediate,
     d3_decorator_wrap_tick_label,
     d3_decorator_prettify_axis_label,
-    d3_decorator_fix_axis_bottom_line,
-    d3_decorator_fix_horizontal_axis_ticks_overflow,
+    d3_decorator_fix_axis_start_line,
+    d3_decorator_fixHorizontalAxisTicksOverflow,
+    d3_decorator_fixEdgeAxisTicksOverflow,
     d3_decorator_prettify_categorical_axis_ticks,
-    d3_decorator_avoid_labels_collisions
-    } from '../utils/d3-decorators';
+    d3_decorator_highlightZeroTick,
+    d3_decorator_avoidLabelsCollisions
+} from '../utils/d3-decorators';
+var selectOrAppend = utilsDom.selectOrAppend;
+
+const calcTicks = (distributionKoeff) => {
+    const limit = 20;
+    const factor = ((distributionKoeff <= limit) ? 1 : 0.75);
+    return Math.max(2, Math.round(distributionKoeff * factor));
+};
 
 export class Cartesian extends Element {
 
@@ -21,7 +33,7 @@ export class Cartesian extends Element {
 
         this.config = config;
 
-        this.config.guide = _.defaults(
+        this.config.guide = utils.defaults(
             this.config.guide || {},
             {
                 showGridLines: 'xy',
@@ -29,7 +41,7 @@ export class Cartesian extends Element {
             });
 
         this.config.guide.x = this.config.guide.x || {};
-        this.config.guide.x = _.defaults(
+        this.config.guide.x = utils.defaults(
             this.config.guide.x,
             {
                 cssClass: 'x axis',
@@ -44,13 +56,13 @@ export class Cartesian extends Element {
             }
         );
 
-        if (_.isString(this.config.guide.x.label)) {
+        if (typeof this.config.guide.x.label === 'string') {
             this.config.guide.x.label = {
                 text: this.config.guide.x.label
             };
         }
 
-        this.config.guide.x.label = _.defaults(
+        this.config.guide.x.label = utils.defaults(
             this.config.guide.x.label,
             {
                 text: 'X',
@@ -61,7 +73,7 @@ export class Cartesian extends Element {
         );
 
         this.config.guide.y = this.config.guide.y || {};
-        this.config.guide.y = _.defaults(
+        this.config.guide.y = utils.defaults(
             this.config.guide.y,
             {
                 cssClass: 'y axis',
@@ -75,13 +87,13 @@ export class Cartesian extends Element {
                 tickFormatWordWrapLimit: 100
             });
 
-        if (_.isString(this.config.guide.y.label)) {
+        if (typeof this.config.guide.y.label === 'string') {
             this.config.guide.y.label = {
                 text: this.config.guide.y.label
             };
         }
 
-        this.config.guide.y.label = _.defaults(
+        this.config.guide.y.label = utils.defaults(
             this.config.guide.y.label,
             {
                 text: 'Y',
@@ -99,38 +111,71 @@ export class Cartesian extends Element {
             guide.x.hide = (Math.floor(diff) > 0);
             guide.y.hide = (Math.floor(unit.options.left) > 0);
         }
+
+        var options = this.config.options;
+        var padding = this.config.guide.padding;
+
+        this.L = options.left + padding.l;
+        this.T = options.top + padding.t;
+        this.W = options.width - (padding.l + padding.r);
+        this.H = options.height - (padding.t + padding.b);
     }
 
-    createScales(fnCreateScale) {
-
-        var node = this.config;
-
-        var options = node.options;
-        var padding = node.guide.padding;
-
-        var innerWidth = options.width - (padding.l + padding.r);
-        var innerHeight = options.height - (padding.t + padding.b);
-
-        this.xScale = fnCreateScale('pos', node.x, [0, innerWidth]);
-        this.yScale = fnCreateScale('pos', node.y, [innerHeight, 0]);
-
-        this.W = innerWidth;
-        this.H = innerHeight;
-
-        return this
-            .regScale('x', this.xScale)
+    defineGrammarModel(fnCreateScale) {
+        const w = this.W;
+        const h = this.H;
+        this.xScale = fnCreateScale('pos', this.config.x, [0, w]);
+        this.yScale = fnCreateScale('pos', this.config.y, [h, 0]);
+        this.regScale('x', this.xScale)
             .regScale('y', this.yScale);
+        return {
+            scaleX: this.xScale,
+            scaleY: this.yScale,
+            xi: (() => w / 2),
+            yi: (() => h / 2),
+            sizeX: (() => w),
+            sizeY: (() => h)
+        };
     }
 
-    drawFrames(frames, continuation) {
+    getGrammarRules() {
+        return [
+            (prevModel) => {
+                var sx = prevModel.scaleX;
+                var sy = prevModel.scaleY;
+                return {
+                    xi: ((d) => (!d ? prevModel.xi(d) : sx(d[sx.dim]))),
+                    yi: ((d) => (!d ? prevModel.yi(d) : sy(d[sy.dim]))),
+                    sizeX: ((d) => (!d ? prevModel.sizeX(d) : sx.stepSize(d[sx.dim]))),
+                    sizeY: ((d) => (!d ? prevModel.sizeY(d) : sy.stepSize(d[sy.dim])))
+                };
+            }
+        ];
+    }
 
-        var node = _.extend({}, this.config);
+    createScreenModel(grammarModel) {
+        return grammarModel;
+    }
+
+    allocateRect(k) {
+        var model = this.screenModel;
+        return {
+            slot: ((uid) => this.config.options.container.selectAll(`.uid_${uid}`)),
+            left: (model.xi(k) - model.sizeX(k) / 2),
+            top: (model.yi(k) - model.sizeY(k) / 2),
+            width: (model.sizeX(k)),
+            height: (model.sizeY(k)),
+            // TODO: Fix autoLayout.. redundant properties
+            containerWidth: this.W,
+            containerHeight: this.H
+        };
+    }
+
+    drawFrames(frames) {
+
+        var node = Object.assign({}, this.config);
 
         var options = node.options;
-        var padding = node.guide.padding;
-
-        var innerLeft = options.left + padding.l;
-        var innerTop = options.top + padding.t;
 
         var innerWidth = this.W;
         var innerHeight = this.H;
@@ -147,13 +192,11 @@ export class Cartesian extends Element {
         node.x.guide.label.size = innerWidth;
         node.y.guide.label.size = innerHeight;
 
-        options
-            .container
-            .attr('transform', utilsDraw.translate(innerLeft, innerTop));
-
-        // take into account reposition during resize by orthogonal axis
-        var hashX = node.x.getHash() + innerHeight;
-        var hashY = node.y.getHash() + innerWidth;
+        // TODO: Should we modify transform of a container here or create own container?
+        (options.container.attr('transform') ?
+            transition(options.container, this.config.guide.animationSpeed, 'cartesianContainerTransform') :
+            options.container)
+            .attr('transform', utilsDraw.translate(this.L, this.T));
 
         if (!node.x.guide.hide) {
             var orientX = node.x.guide.scaleOrient;
@@ -161,14 +204,14 @@ export class Cartesian extends Element {
                 [0, 0 - node.guide.x.padding] :
                 [0, innerHeight + node.guide.x.padding]);
 
-            this._fnDrawDimAxis(
+            this._drawDimAxis(
                 options.container,
                 node.x,
                 positionX,
-                innerWidth,
-                (`${options.frameId}x`),
-                hashX
+                innerWidth
             );
+        } else {
+            this._removeDimAxis(options.container, node.x);
         }
 
         if (!node.y.guide.hide) {
@@ -177,103 +220,35 @@ export class Cartesian extends Element {
                 [innerWidth + node.guide.y.padding, 0] :
                 [0 - node.guide.y.padding, 0]);
 
-            this._fnDrawDimAxis(
+            this._drawDimAxis(
                 options.container,
                 node.y,
                 positionY,
-                innerHeight,
-                (`${options.frameId}y`),
-                hashY
+                innerHeight
             );
+        } else {
+            this._removeDimAxis(options.container, node.y);
         }
 
-        var updateCellLayers = (cellId, cell, frame) => {
+        var xdata = frames.reduce((memo, f) => {
+            return memo.concat((f.units || []).map((unit) => unit.uid));
+        }, []);
 
-            var mapper;
-            var frameId = frame.hash();
-            if (frame.key) {
-
-                var xKey = frame.key[node.x.dim];
-                var yKey = frame.key[node.y.dim];
-
-                var coordX = node.x(xKey);
-                var coordY = node.y(yKey);
-
-                var xPart = node.x.stepSize(xKey);
-                var yPart = node.y.stepSize(yKey);
-
-                mapper = (unit, i) => {
-                    unit.options = {
-                        uid: frameId + i,
-                        frameId: frameId,
-                        container: cell,
-                        containerWidth: innerWidth,
-                        containerHeight: innerHeight,
-                        left: coordX - xPart / 2,
-                        top: coordY - yPart / 2,
-                        width: xPart,
-                        height: yPart
-                    };
-                    return unit;
-                };
-            } else {
-                mapper = (unit, i) => {
-                    unit.options = {
-                        uid: frameId + i,
-                        frameId: frameId,
-                        container: cell,
-                        containerWidth: innerWidth,
-                        containerHeight: innerHeight,
-                        left: 0,
-                        top: 0,
-                        width: innerWidth,
-                        height: innerHeight
-                    };
-                    return unit;
-                };
-            }
-
-            var continueDrawUnit = function (unit) {
-                unit.options.container = d3.select(this);
-                continuation(unit, frame);
-            };
-
-            var layers = cell
-                .selectAll(`.layer_${cellId}`)
-                .data(frame.units.map(mapper), (unit) => (unit.options.uid + unit.type));
-            layers
-                .exit()
-                .remove();
-            layers
-                .each(continueDrawUnit);
-            layers
-                .enter()
-                .append('g')
-                .attr('class', `layer_${cellId}`)
-                .each(continueDrawUnit);
-        };
-
-        var cellFrameIterator = function (cellFrame) {
-            updateCellLayers(options.frameId, d3.select(this), cellFrame);
-        };
-
-        var cells = this
-            ._fnDrawGrid(options.container, node, innerHeight, innerWidth, options.frameId, hashX + hashY)
-            .selectAll(`.parent-frame-${options.frameId}`)
-            .data(frames, (f) => f.hash());
-        cells
-            .exit()
-            .remove();
-        cells
-            .each(cellFrameIterator);
-        cells
+        var grid = this._drawGrid(options.container, node, innerWidth, innerHeight, options);
+        var xcells = selectAllImmediate(grid, '.cell')
+            .data(xdata, x => x);
+        xcells
             .enter()
             .append('g')
-            .attr('class', (d) => (`${CSS_PREFIX}cell cell parent-frame-${options.frameId} frame-${d.hash()}`))
-            .each(cellFrameIterator);
+            .attr('class', (d) => `${CSS_PREFIX}cell cell uid_${d}`);
+        transition(xcells.classed('tau-active', true), this.config.guide.animationSpeed)
+            .attr('opacity', 1);
+        transition(xcells.exit().classed('tau-active', false), this.config.guide.animationSpeed)
+            .attr('opacity', 1e-6)
+            .remove();
     }
 
-    _fnDrawDimAxis(container, scale, position, size, frameId, uniqueHash) {
+    _drawDimAxis(container, scale, position, size) {
 
         var axisScale = d3.svg
             .axis()
@@ -282,68 +257,123 @@ export class Cartesian extends Element {
 
         var formatter = FormatterRegistry.get(scale.guide.tickFormat, scale.guide.tickFormatNullAlias);
         if (formatter !== null) {
-            axisScale.ticks(Math.round(size / scale.guide.density));
+            axisScale.ticks(calcTicks(size / scale.guide.density));
             axisScale.tickFormat(formatter);
         }
 
-        var axis = container
-            .selectAll('.axis_' + frameId)
-            .data([uniqueHash], (x) => x);
-        axis.exit()
-            .remove();
-        axis.enter()
-            .append('g')
-            .attr('class', scale.guide.cssClass + ' axis_' + frameId)
-            .attr('transform', utilsDraw.translate(...position))
-            .call(function (refAxisNode) {
-                if (!refAxisNode.empty()) {
+        var animationSpeed = this.config.guide.animationSpeed;
 
-                    axisScale.call(this, refAxisNode);
+        selectOrAppend(container, this._getAxisSelector(scale))
+            .classed('tau-active', true)
+            .classed(scale.guide.cssClass, true)
+            .call((axis) => {
 
-                    var isHorizontal = (utilsDraw.getOrientation(scale.guide.scaleOrient) === 'h');
-                    var prettifyTick = (scale.scaleType === 'ordinal' || scale.scaleType === 'period');
-                    if (prettifyTick) {
-                        d3_decorator_prettify_categorical_axis_ticks(refAxisNode, scale, isHorizontal);
-                    }
+                var transAxis = transition(axis, animationSpeed, 'axisTransition');
+                var prevAxisTranslate = axis.attr('transform');
+                var nextAxisTranslate = utilsDraw.translate(...position);
+                if (nextAxisTranslate !== prevAxisTranslate) {
+                    (prevAxisTranslate ? transAxis : axis).attr('transform', utilsDraw.translate(...position));
+                }
+                transAxis.call(axisScale);
+                transAxis.attr('opacity', 1);
 
-                    d3_decorator_wrap_tick_label(refAxisNode, scale.guide, isHorizontal);
+                var isHorizontal = (utilsDraw.getOrientation(scale.guide.scaleOrient) === 'h');
+                var prettifyTick = (scale.scaleType === 'ordinal' || scale.scaleType === 'period');
+                if (prettifyTick && !scale.guide.hideTicks) {
+                    d3_decorator_prettify_categorical_axis_ticks(
+                        transAxis,
+                        scale,
+                        isHorizontal,
+                        animationSpeed
+                    );
+                }
 
+                if (scale.scaleType === 'linear') {
+                    d3_decorator_highlightZeroTick(axis, scale.scaleObj);
+                }
+
+                d3_decorator_wrap_tick_label(axis, animationSpeed, scale.guide, isHorizontal, scale);
+
+                if (!scale.guide.label.hide) {
+                    d3_decorator_prettify_axis_label(
+                        axis,
+                        scale.guide.label,
+                        isHorizontal,
+                        size,
+                        animationSpeed
+                    );
+                }
+
+                if (scale.guide.hideTicks) {
+                    axis.selectAll('.tick').remove();
+                    axis.selectAll('.domain').remove();
+                    return;
+                }
+
+                var activeTicks = scale.scaleObj.ticks ? scale.scaleObj.ticks() : scale.scaleObj.domain();
+                var fixAxesCollision = () => {
                     if (prettifyTick && scale.guide.avoidCollisions) {
-                        d3_decorator_avoid_labels_collisions(refAxisNode, isHorizontal);
+                        d3_decorator_avoidLabelsCollisions(axis, isHorizontal, activeTicks);
                     }
-
-                    d3_decorator_prettify_axis_label(refAxisNode, scale.guide.label, isHorizontal);
 
                     if (isHorizontal && (scale.scaleType === 'time')) {
-                        d3_decorator_fix_horizontal_axis_ticks_overflow(refAxisNode);
+                        d3_decorator_fixHorizontalAxisTicksOverflow(axis, activeTicks);
                     }
+
+                    if (isHorizontal) {
+                        d3_decorator_fixEdgeAxisTicksOverflow(axis, activeTicks, animationSpeed, true);
+                    }
+                };
+                var fixTickTextOverflow = () => {
+                    if (isHorizontal) {
+                        d3_decorator_fixEdgeAxisTicksOverflow(axis, activeTicks, animationSpeed);
+                    }
+                };
+                var fixAxesTicks = function () {
+                    fixAxesCollision();
+                    fixTickTextOverflow();
+                };
+                fixAxesCollision();
+                // NOTE: As far as floating axes transition overrides current,
+                // transition `end` event cannot be used. So using `setTimeout`.
+                // transAxis.onTransitionEnd(fixAxesCollision);
+                var timeoutField = '_transitionEndTimeout_' + (isHorizontal ? 'h' : 'v');
+                clearTimeout(this[timeoutField]);
+                if (animationSpeed > 0) {
+                    this[timeoutField] = setTimeout(fixAxesTicks, animationSpeed * 1.5);
+                } else {
+                    fixTickTextOverflow();
                 }
             });
     }
 
-    _fnDrawGrid(container, node, height, width, frameId, uniqueHash) {
-
-        var grid = container
-            .selectAll('.grid_' + frameId)
-            .data([uniqueHash], (x) => x);
-        grid.exit()
+    _removeDimAxis(container, scale) {
+        var axis = selectAllImmediate(container, this._getAxisSelector(scale))
+            .classed('tau-active', false);
+        transition(axis, this.config.guide.animationSpeed, 'axisTransition')
+            .attr('opacity', 1e-6)
             .remove();
-        grid.enter()
-            .append('g')
-            .attr('class', 'grid grid_' + frameId)
+    }
+
+    _getAxisSelector(scale) {
+        var isHorizontal = (utilsDraw.getOrientation(scale.guide.scaleOrient) === 'h');
+        return `g.${isHorizontal ? 'x' : 'y'}.axis`;
+    }
+
+    _drawGrid(container, node, width, height) {
+
+        var grid = selectOrAppend(container, `g.grid`)
             .attr('transform', utilsDraw.translate(0, 0))
             .call((selection) => {
 
-                if (selection.empty()) {
-                    return;
-                }
-
                 var grid = selection;
+
+                var animationSpeed = this.config.guide.animationSpeed;
 
                 var linesOptions = (node.guide.showGridLines || '').toLowerCase();
                 if (linesOptions.length > 0) {
 
-                    var gridLines = grid.append('g').attr('class', 'grid-lines');
+                    var gridLines = selectOrAppend(grid, 'g.grid-lines');
 
                     if ((linesOptions.indexOf('x') > -1)) {
                         let xScale = node.x;
@@ -356,31 +386,42 @@ export class Cartesian extends Element {
 
                         let formatter = FormatterRegistry.get(xScale.guide.tickFormat);
                         if (formatter !== null) {
-                            xGridAxis.ticks(Math.round(width / xScale.guide.density));
+                            xGridAxis.ticks(calcTicks(width / xScale.guide.density));
                             xGridAxis.tickFormat(formatter);
                         }
 
-                        var xGridLines = gridLines
-                            .append('g')
-                            .attr('class', 'grid-lines-x')
+                        var xGridLines = selectOrAppend(gridLines, 'g.grid-lines-x');
+                        var xGridLinesTrans = transition(xGridLines, animationSpeed)
                             .call(xGridAxis);
 
                         let isHorizontal = (utilsDraw.getOrientation(xScale.guide.scaleOrient) === 'h');
                         let prettifyTick = (xScale.scaleType === 'ordinal' || xScale.scaleType === 'period');
                         if (prettifyTick) {
-                            d3_decorator_prettify_categorical_axis_ticks(xGridLines, xScale, isHorizontal);
+                            d3_decorator_prettify_categorical_axis_ticks(
+                                xGridLinesTrans,
+                                xScale,
+                                isHorizontal,
+                                animationSpeed
+                            );
                         }
 
-                        var firstXGridLine = xGridLines.select('g.tick');
-                        if (firstXGridLine.node() && firstXGridLine.attr('transform') !== 'translate(0,0)') {
-                            var zeroNode = firstXGridLine.node().cloneNode(true);
-                            gridLines.node().appendChild(zeroNode);
-                            d3.select(zeroNode)
-                                .attr('class', 'border')
-                                .attr('transform', utilsDraw.translate(0, 0))
-                                .select('line')
-                                .attr('x1', 0)
-                                .attr('x2', 0);
+                        if (xScale.scaleType === 'linear' && !xScale.guide.hideTicks) {
+                            d3_decorator_highlightZeroTick(xGridLines, xScale.scaleObj);
+                        }
+
+                        let extraGridLines = selectOrAppend(gridLines, 'g.tau-extraGridLines');
+                        d3_decorator_fix_axis_start_line(
+                            extraGridLines,
+                            isHorizontal,
+                            width,
+                            height,
+                            animationSpeed
+                        );
+
+                        if (xScale.guide.hideTicks) {
+                            xGridLines.selectAll('.tick')
+                                .filter(d => d != 0)
+                                .remove();
                         }
                     }
 
@@ -395,25 +436,46 @@ export class Cartesian extends Element {
 
                         let formatter = FormatterRegistry.get(yScale.guide.tickFormat);
                         if (formatter !== null) {
-                            yGridAxis.ticks(Math.round(height / yScale.guide.density));
+                            yGridAxis.ticks(calcTicks(height / yScale.guide.density));
                             yGridAxis.tickFormat(formatter);
                         }
 
-                        var yGridLines = gridLines
-                            .append('g')
-                            .attr('class', 'grid-lines-y')
+                        var yGridLines = selectOrAppend(gridLines, 'g.grid-lines-y');
+                        var yGridLinesTrans = transition(yGridLines, animationSpeed)
                             .call(yGridAxis);
 
                         let isHorizontal = (utilsDraw.getOrientation(yScale.guide.scaleOrient) === 'h');
                         let prettifyTick = (yScale.scaleType === 'ordinal' || yScale.scaleType === 'period');
                         if (prettifyTick) {
-                            d3_decorator_prettify_categorical_axis_ticks(yGridLines, yScale, isHorizontal);
+                            d3_decorator_prettify_categorical_axis_ticks(
+                                yGridLinesTrans,
+                                yScale,
+                                isHorizontal,
+                                animationSpeed
+                            );
+                        }
+
+                        if (yScale.scaleType === 'linear' && !yScale.guide.hideTicks) {
+                            d3_decorator_highlightZeroTick(yGridLines, yScale.scaleObj);
                         }
 
                         let fixLineScales = ['time', 'ordinal', 'period'];
-                        let fixBottomLine = _.contains(fixLineScales, yScale.scaleType);
+                        let fixBottomLine = fixLineScales.indexOf(yScale.scaleType) !== -1;
                         if (fixBottomLine) {
-                            d3_decorator_fix_axis_bottom_line(yGridLines, height, (yScale.scaleType === 'time'));
+                            let extraGridLines = selectOrAppend(gridLines, 'g.tau-extraGridLines');
+                            d3_decorator_fix_axis_start_line(
+                                extraGridLines,
+                                isHorizontal,
+                                width,
+                                height,
+                                animationSpeed
+                            );
+                        }
+
+                        if (yScale.guide.hideTicks) {
+                            yGridLines.selectAll('.tick')
+                                .filter(d => d != 0)
+                                .remove();
                         }
                     }
 

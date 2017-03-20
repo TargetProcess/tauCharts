@@ -30,6 +30,7 @@ define(function (require) {
 
         afterEach(function () {
             target.parentNode.removeChild(target);
+            testUtils.destroyCharts();
         });
 
         it('should throw if fill is specified without code', function () {
@@ -184,7 +185,6 @@ define(function (require) {
         it('should draw by lat-lon', function (done) {
 
             this.timeout(drawTimeout);
-            setTimeout(done, drawTimeout);
 
             var chart0 = new tauChart.Chart({
                 type: 'map',
@@ -206,7 +206,6 @@ define(function (require) {
         it('should draw by code', function (done) {
 
             this.timeout(drawTimeout);
-            setTimeout(done, drawTimeout);
 
             var chart1 = new tauChart.Chart({
                 type: 'map',
@@ -269,7 +268,6 @@ define(function (require) {
         it('should draw by code and lat-lon', function (done) {
 
             this.timeout(drawTimeout);
-            setTimeout(done, drawTimeout);
 
             var chart2 = new tauChart.Chart({
                 type: 'map',
@@ -363,7 +361,6 @@ define(function (require) {
         it('should draw UK map with places', function (done) {
 
             this.timeout(drawTimeout);
-            setTimeout(done, drawTimeout);
 
             var chart2 = new tauChart.Chart({
                 type: 'map',

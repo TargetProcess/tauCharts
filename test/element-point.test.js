@@ -22,8 +22,9 @@ define(function(require) {
         {
             unit: {
                 guide: {
-                    x: {autoScale: false},
-                    y: {autoScale: false}
+                    avoidScalesOverflow: false,
+                    x: {nice: false},
+                    y: {nice: false}
                 },
                 type: 'COORDS.RECT',
                 x: 'x',
@@ -75,8 +76,9 @@ define(function(require) {
                 x: 'x',
                 y: 'y',
                 guide: {
-                    x: {autoScale: false},
-                    y: {autoScale: false}
+                    avoidScalesOverflow: false,
+                    x: {nice: false},
+                    y: {nice: false}
                 },
                 unit: [
                     {
@@ -121,8 +123,8 @@ define(function(require) {
                 x: 'x',
                 y: 'y',
                 guide: {
-                    x: {autoScale: false},
-                    y: {autoScale: false}
+                    x: {nice: false},
+                    y: {nice: false}
                 },
                 unit: [
                     {
@@ -160,8 +162,8 @@ define(function(require) {
                 x: 'x',
                 y: 'y',
                 guide: {
-                    x: {autoScale: false},
-                    y: {autoScale: false}
+                    x: {nice: false},
+                    y: {nice: false}
                 },
                 unit: [
                     {
@@ -195,8 +197,8 @@ define(function(require) {
                 x: 'x',
                 y: 'y',
                 guide: {
-                    x: {autoScale: false},
-                    y: {autoScale: false}
+                    x: {nice: false},
+                    y: {nice: false}
                 },
                 unit: [
                     {
@@ -228,8 +230,9 @@ define(function(require) {
             x: 'x',
             y: 'y',
             guide: {
-                x: {autoScale: false},
-                y: {autoScale: false}
+                avoidScalesOverflow: false,
+                x: {nice: false},
+                y: {nice: false}
             },
             unit: [
                 {
@@ -246,54 +249,97 @@ define(function(require) {
         };
     };
 
-    var minimalRadius = 2;
+    var minimalRadius = 5;
 
     describePlot(
         "Point elements with large size domain",
         scatterplotSpec,
-        [{x: 0, y: 0, size: 8}, {x: 1, y: 1, size: 800}],
+        [
+            {x: 0, y: 0, size: 8},
+            {x: 1, y: 1, size: 800}
+        ],
         function() {
             it("should have sizes in large range", function() {
                 var sizes = getDots().map(getAttr('r')).map(parseFloat);
-                expect(sizes[0]).to.be.closeTo(3.3, 0); // ~ 100 * Math.pow(3.3 - 2, 2) == Math.pow(15 - 2, 2)
-                expect(sizes[1]).to.be.closeTo(15, 0);
+                expect(sizes[0]).to.be.closeTo(6.5, 0); // ~ 100 * Math.pow(3.3 - 2, 2) == Math.pow(15 - 2, 2)
+                expect(sizes[1]).to.be.closeTo(20, 0);
             });
         });
 
     describePlot(
         "Point element with small size domain",
         scatterplotSpec,
-        [{x: 0, y: 0, size: 8}, {x: 1, y: 1, size: 16}],
+        [
+            {x: 0, y: 0, size: 8},
+            {x: 1, y: 1, size: 16}
+        ],
         function() {
             it("should have sizes in small range", function() {
                 var sizes = getDots().map(getAttr('r')).map(parseFloat);
-                expect(sizes[0]).to.be.closeTo(11.1923, 0.0001);
-                expect(sizes[1]).to.be.closeTo(15, 0);
+                expect(sizes[0]).to.be.closeTo(15.6066, 0.0001);
+                expect(sizes[1]).to.be.closeTo(20, 0);
             });
         });
 
     describePlot(
         "Point elements with  size domain values in [0..1]",
         scatterplotSpec,
-        [{x: 0, y: 0, size: 0.08}, {x: 1, y: 1, size: 0.16}],
+        [
+            {x: 0, y: 0, size: 0.08},
+            {x: 1, y: 1, size: 0.16}
+        ],
         function() {
             it("should have proportional sizes", function() {
                 var sizes = getDots().map(getAttr('r')).map(parseFloat);
-                expect(sizes[0]).to.be.closeTo(11.1923, 0.0001);
-                expect(sizes[1]).to.be.closeTo(15, 0);
+                expect(sizes[0]).to.be.closeTo(15.6066, 0.0001);
+                expect(sizes[1]).to.be.closeTo(20, 0);
             });
         });
 
     describePlot(
         "Point elements with  size domain values including 0",
         scatterplotSpec,
-        [{x: 0, y: 0, size: 0}, {x: 1, y: 1, size: 4}, {x: 1, y: 1, size: 8}],
+        [
+            {x: 0, y: 0, size: 0},
+            {x: 1, y: 1, size: 4},
+            {x: 1, y: 1, size: 8}
+        ],
         function() {
             it("should have sizes in large range", function() {
                 var sizes = getDots().map(getAttr('r')).map(parseFloat);
                 expect(sizes[0]).to.be.closeTo(minimalRadius, 0);
-                expect(sizes[1]).to.be.closeTo(11.1924, 0.0001);
-                expect(sizes[2]).to.be.closeTo(15, 0);
+                expect(sizes[1]).to.be.closeTo(15.6066, 0.0001);
+                expect(sizes[2]).to.be.closeTo(20, 0);
+            });
+        });
+
+    describePlot(
+        "Scatterplot without overflow",
+        {
+            unit: Object.assign({}, scatterplotSpec.unit, {
+                guide: {
+                    avoidScalesOverflow: true,
+                    x: {nice: false},
+                    y: {nice: false}
+                }
+            })
+        },
+        [
+            {x: 0, y: 0, size: 4},
+            {x: 1, y: 1, size: 8}
+        ],
+        function() {
+            it("Should avoid points overflow", function() {
+                var dots = getDots();
+                expect(dots.length).to.equal(2);
+                var positions = dots.map(position);
+                expect(parseFloat(positions[0].x)).to.be.closeTo(15, 1);
+                expect(parseFloat(positions[0].y)).to.be.closeTo(785, 1);
+                expect(parseFloat(positions[1].x)).to.be.closeTo(781, 1);
+                expect(parseFloat(positions[1].y)).to.be.closeTo(19, 1);
+                var sizes = dots.map(getAttr('r')).map(parseFloat);
+                expect(sizes[0]).to.be.closeTo(15, 1);
+                expect(sizes[1]).to.be.closeTo(19, 1);
             });
         });
 
@@ -302,9 +348,10 @@ define(function(require) {
         scatterplotSpec,
         [{x: 0, y: 0, size: 0}, {x: 1, y: 1, size: 10}, {x: 1, y: 1, size: null}, {x: 1, y: 1, size: Infinity}],
         function() {
+
             it("should map Infinity to maximum size", function() {
                 var sizes = getDots().map(getAttr('r')).map(parseFloat);
-                expect(sizes[3]).to.be.equal(sizes[1]);
+                expect(sizes[3]).to.be.equal(20);
             });
 
             it("should map null to 0 size", function() {
@@ -312,4 +359,147 @@ define(function(require) {
                 expect(sizes[2]).to.be.equal(sizes[0]);
             });
         });
+
+    var describeChart = testUtils.describeChart;
+    describeChart("Scatterplot event API",
+        {
+            type: 'scatterplot',
+            x: 'y',
+            y: 'x',
+            label: 'y',
+            color: 'color'
+        },
+        [
+            {
+                x: 1,
+                y: "1",
+                color: 'yellow'
+
+            },
+            {
+                x: 2,
+                y: "2",
+                color: 'yellow'
+
+            },
+            {
+                x: 3,
+                y: "3",
+                color: 'yellow'
+            },
+            {
+                x: 3,
+                y: "4",
+                color: 'green'
+            }
+        ],
+        function (context) {
+
+            it("should support highlight event", function () {
+                var svg0 = context.chart.getSVG();
+                expect(svg0.querySelectorAll('.dot').length).to.equals(4);
+                expect(svg0.querySelectorAll('.i-role-label').length).to.equals(4);
+                expect(svg0.querySelectorAll('.graphical-report__highlighted').length).to.equals(0);
+                expect(svg0.querySelectorAll('.graphical-report__dimmed').length).to.equals(0);
+
+                var pointNode = context.chart.select((n) => n.config.type === 'ELEMENT.POINT')[0];
+                pointNode.fire('highlight', ((row) => (row.color === 'green')));
+
+                var svg1 = context.chart.getSVG();
+                expect(svg1.querySelectorAll('.dot').length).to.equals(4);
+                expect(svg1.querySelectorAll('.dot.graphical-report__highlighted').length).to.equals(1);
+                expect(svg1.querySelectorAll('.dot.graphical-report__dimmed').length).to.equals(3);
+
+                expect(svg1.querySelectorAll('.i-role-label.graphical-report__highlighted').length).to.equals(1);
+                expect(svg1.querySelectorAll('.i-role-label.graphical-report__dimmed').length).to.equals(3);
+
+                pointNode.fire('highlight', ((row) => null));
+
+                var svg2 = context.chart.getSVG();
+                expect(svg2.querySelectorAll('.dot').length).to.equals(4);
+                expect(svg2.querySelectorAll('.dot.graphical-report__highlighted').length).to.equals(0);
+                expect(svg2.querySelectorAll('.dot.graphical-report__dimmed').length).to.equals(0);
+
+                expect(svg2.querySelectorAll('.i-role-label').length).to.equals(4);
+                expect(svg2.querySelectorAll('.i-role-label.graphical-report__highlighted').length).to.equals(0);
+                expect(svg2.querySelectorAll('.i-role-label.graphical-report__dimmed').length).to.equals(0);
+            });
+
+            it("should react on mouseover / mouseout events", function () {
+                var svg0 = context.chart.getSVG();
+                expect(svg0.querySelectorAll('.dot').length).to.equals(4);
+                expect(svg0.querySelectorAll('.i-role-label').length).to.equals(4);
+                expect(svg0.querySelectorAll('.graphical-report__highlighted').length).to.equals(0);
+                expect(svg0.querySelectorAll('.graphical-report__dimmed').length).to.equals(0);
+
+                var pointNode = context.chart.select((n) => n.config.type === 'ELEMENT.POINT')[0];
+                pointNode.fire('data-hover', {data:context.chart.getData()[0]});
+
+                var svg1 = context.chart.getSVG();
+                expect(svg1.querySelectorAll('.dot').length).to.equals(4);
+                expect(svg1.querySelectorAll('.dot.graphical-report__highlighted').length).to.equals(1);
+                expect(svg1.querySelectorAll('.dot.graphical-report__dimmed').length).to.equals(0);
+
+                pointNode.fire('data-hover', {});
+
+                var svg2 = context.chart.getSVG();
+                expect(svg2.querySelectorAll('.dot').length).to.equals(4);
+                expect(svg2.querySelectorAll('.dot.graphical-report__highlighted').length).to.equals(0);
+                expect(svg2.querySelectorAll('.dot.graphical-report__dimmed').length).to.equals(0);
+            });
+        },
+        {
+            autoWidth: false
+        }
+    );
+    describeChart('Scatterplot points overlap',
+        {
+            type: 'scatterplot',
+            x: 'x',
+            y: 'y',
+            color: 'color',
+            guide: {
+                x: {nice: false},
+                y: {nice: false}
+            }
+        },
+        [
+            {
+                x: 1,
+                y: 1,
+                color: 'yellow'
+            },
+            {
+                x: 1,
+                y: 1,
+                color: 'yellow'
+            },
+            {
+                x: 1,
+                y: 1,
+                color: 'green'
+            }
+        ],
+        function (context) {
+
+            it('should raise highlighted point when overlap', function () {
+
+                var svg = context.chart.getSVG();
+                var rect = svg.getBoundingClientRect();
+                var cx = ((rect.left + rect.right) / 2);
+                var cy = ((rect.bottom + rect.top) / 2);
+                var points = svg.querySelectorAll('.dot');
+
+                testUtils.simulateEvent('mousemove', svg, cx, cy - 10);
+                var highlighted1 = d3.select('.graphical-report__highlighted');
+                expect(highlighted1.data()[0].color).to.equal('green');
+                expect(document.elementFromPoint(cx, cy)).to.equal(highlighted1.node());
+
+                testUtils.simulateEvent('mousemove', svg, cx, cy + 10);
+                var highlighted2 = d3.select('.graphical-report__highlighted');
+                expect(highlighted2.data()[0].color).to.equal('yellow');
+                expect(document.elementFromPoint(cx, cy)).to.equal(highlighted2.node());
+            });
+        }
+    );
 });

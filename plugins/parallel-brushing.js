@@ -1,21 +1,21 @@
 (function (factory) {
     if (typeof define === 'function' && define.amd) {
-        define(['tauCharts'], function (tauPlugins) {
+        define(['taucharts'], function (tauPlugins) {
             return factory(tauPlugins);
         });
     } else if (typeof module === 'object' && module.exports) {
-        var tauPlugins = require('tauCharts');
+        var tauPlugins = require('taucharts');
         module.exports = factory(tauPlugins);
     } else {
         factory(this.tauCharts);
     }
 })(function (tauCharts) {
 
-    var _ = tauCharts.api._;
+    var utils = tauCharts.api.utils;
 
     function ChartParallelBrushing(xSettings) {
 
-        var settings = _.defaults(
+        var settings = utils.defaults(
             xSettings || {},
             {
                 verbose: false,
@@ -126,7 +126,7 @@
                 });
             },
 
-            template: _.template('<div class="graphical-report__chart_brushing_panel"></div>')
+            template: utils.template('<div class="graphical-report__chart_brushing_panel"></div>')
         };
 
         return plugin;

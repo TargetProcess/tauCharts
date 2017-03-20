@@ -1,9 +1,8 @@
 import {utils} from '../utils/utils';
-import {default as _} from 'underscore';
 var convertAxis = (data) => (!data) ? null : data;
 
 var normalizeSettings = (axis, defaultValue = null) => {
-    return (!utils.isArray(axis)) ?
+    return (!Array.isArray(axis)) ?
         [axis] :
         (axis.length === 0) ? [defaultValue] : axis;
 };
@@ -13,14 +12,17 @@ var createElement = (type, config) => {
         type: type,
         x: config.x,
         y: config.y,
+        identity: config.identity,
+        size: config.size,
         color: config.color,
+        split: config.split,
+        label: config.label,
         guide: {
             color: config.colorGuide,
-            size: config.sizeGuide,
-            flip: config.flip
+            size: config.sizeGuide
         },
         flip: config.flip,
-        size: config.size
+        stack: config.stack
     };
 };
 
@@ -41,7 +43,7 @@ var strategyNormalizeAxis = {
         var axisName = config.axis;
         var index = config.indexMeasureAxis[0];
         var measure = axis[index];
-        var newAxis = _.without(axis, measure);
+        var newAxis = axis.filter(x => x !== measure);
         newAxis.push(measure);
 
         var measureGuide = guide[index][axisName] || {};
@@ -88,10 +90,13 @@ function normalizeConfig(config) {
 
     var maxDeep = Math.max(x.length, y.length);
 
-    var guide = normalizeSettings(config.guide, {});
+    var guide = normalizeSettings(config.guide || {}, {});
+    let gapsSize = maxDeep - guide.length;
 
     // feel the gaps if needed
-    _.times((maxDeep - guide.length), () => guide.push({}));
+    for (let i = 0; i < gapsSize; i++) {
+        guide.push({});
+    }
 
     // cut items
     guide = guide.slice(0, maxDeep);
@@ -101,7 +106,7 @@ function normalizeConfig(config) {
     x = strategyNormalizeAxis[validatedX.status](x, validatedX, guide);
     y = strategyNormalizeAxis[validatedY.status](y, validatedY, guide);
 
-    return _.extend(
+    return Object.assign(
         {},
         config,
         {
@@ -137,13 +142,17 @@ function transformConfig(type, config) {
             spec.unit.push(createElement(type, {
                 x: convertAxis(currentX),
                 y: convertAxis(currentY),
+                identity: config.identity,
+                split: config.split,
                 color: config.color,
+                label: config.label,
                 size: config.size,
                 flip: config.flip,
+                stack: config.stack,
                 colorGuide: currentGuide.color,
                 sizeGuide: currentGuide.size
             }));
-            spec.guide = _.defaults(
+            spec.guide = utils.defaults(
                 currentGuide,
                 {
                     x: {label: currentX},
@@ -155,7 +164,7 @@ function transformConfig(type, config) {
                 x: convertAxis(currentX),
                 y: convertAxis(currentY),
                 unit: [spec],
-                guide: _.defaults(
+                guide: utils.defaults(
                     currentGuide,
                     {
                         x: {label: currentX},

@@ -1,7 +1,7 @@
-window.samples.push({
+dev.spec({
 
     layoutEngine: 'DEFAULT',
-    data: rawData,
+    data: dev.dataset('userStories'),
     spec: {
         dimensions: {
             priority: {

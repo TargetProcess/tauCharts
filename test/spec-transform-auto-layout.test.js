@@ -4,7 +4,7 @@ define(function (require) {
     var SpecAutoLayout = require('src/spec-transform-auto-layout').SpecTransformAutoLayout;
     var SpecConverter = require('src/spec-converter').SpecConverter;
     var tauCharts = require('src/tau.charts');
-    var scalesRegistry = tauCharts.api.scalesRegistry;
+    var scalesRegistry = tauCharts.api.scalesRegistry.instance();
     var ScalesFactory = require('src/scales-factory').ScalesFactory;
 
     describe('Spec engine factory', function () {
@@ -54,6 +54,7 @@ define(function (require) {
 
             var specGPL = new SpecConverter({spec: specClone, data: data}).convert();
 
+            // BUG: This seems to override global settings and charts appear to have one spec engine.
             specGPL.settings = specGPL.settings || testUtils.chartSettings;
             specGPL.settings.fitSize = false;
             specGPL.settings.size = {width: 100, height: 100};
@@ -114,6 +115,7 @@ define(function (require) {
             var y = full.unit.guide.y;
 
             expect(x.autoScale).to.equal(true);
+            expect(x.nice).to.equal(true);
             expect(x.scaleOrient).to.equal('bottom');
             expect(x.padding).to.equal(0);
             expect(x.cssClass).to.equal('x axis');
@@ -126,6 +128,7 @@ define(function (require) {
             expect(x.tickFormatWordWrapLimit).to.equal(100);
 
             expect(y.autoScale).to.equal(true);
+            expect(y.nice).to.equal(true);
             expect(y.scaleOrient).to.equal('left');
             expect(y.padding).to.equal(0);
             expect(y.cssClass).to.equal('y axis');
@@ -150,16 +153,18 @@ define(function (require) {
             var y = full.unit.guide.y;
 
             expect(x.autoScale).to.equal(true);
+            expect(x.nice).to.equal(true);
             expect(x.scaleOrient).to.equal('bottom');
             expect(x.padding).to.equal(20);
             expect(x.cssClass).to.equal('x axis');
-            expect(x.rotate).to.equal(90);
-            expect(x.textAnchor).to.equal('start');
+            expect(x.rotate).to.equal(-90);
+            expect(x.textAnchor).to.equal('end');
             expect(x.tickFormat).to.equal(null);
             expect(x.label.text).to.equal('team');
             expect(x.tickFontHeight).to.equal(10);
 
             expect(y.autoScale).to.equal(true);
+            expect(y.nice).to.equal(true);
             expect(y.scaleOrient).to.equal('left');
             expect(y.padding).to.equal(20);
             expect(y.cssClass).to.equal('y axis');
@@ -174,14 +179,14 @@ define(function (require) {
             // 20 "Long" vertical string
             // 20 padding to X axis label
             // 15 width of label
-            expect(full.unit.guide.padding.b).to.equal(84);
+            expect(full.unit.guide.padding.b).to.equal(88);
 
             // 20 padding to Y axis line
             // 9  tick mark size
             // 25 "25.00" string length
             // 20 padding to Y axis label
             // 15 width of label
-            expect(full.unit.guide.padding.l).to.equal(94);
+            expect(full.unit.guide.padding.l).to.equal(79);
             expect(full.unit.guide.padding.r).to.equal(0);
             expect(full.unit.guide.padding.t).to.equal(0);
         });
@@ -198,6 +203,7 @@ define(function (require) {
             var y = full.unit.guide.y;
 
             expect(x.autoScale).to.equal(true);
+            expect(x.nice).to.equal(true);
             expect(x.scaleOrient).to.equal('bottom');
             expect(x.padding).to.equal(20);
             expect(x.cssClass).to.equal('x axis');
@@ -208,6 +214,7 @@ define(function (require) {
             expect(x.tickFontHeight).to.equal(10);
 
             expect(y.autoScale).to.equal(true);
+            expect(y.nice).to.equal(true);
             expect(y.scaleOrient).to.equal('left');
             expect(y.padding).to.equal(20);
             expect(y.cssClass).to.equal('y axis');
@@ -222,7 +229,7 @@ define(function (require) {
             // 10 "25" string length
             // 20 padding to X axis label
             // 15 width of label
-            expect(full.unit.guide.padding.b).to.equal(74);
+            expect(full.unit.guide.padding.b).to.equal(78);
 
             // 20 padding to Y axis line
             // 9  tick mark size
@@ -281,6 +288,7 @@ define(function (require) {
             expect(full.unit.guide.showGridLines).to.equal('');
 
             expect(x.autoScale).to.equal(true);
+            expect(x.nice).to.equal(true);
             expect(x.scaleOrient).to.equal('bottom');
             expect(x.padding).to.equal(0);
             expect(x.cssClass).to.equal('x axis facet-axis');
@@ -295,6 +303,7 @@ define(function (require) {
             expect(x.density).to.equal(measurer.getAxisTickLabelSize('Long').width + measurer.xDensityPadding * 2);
 
             expect(y.autoScale).to.equal(true);
+            expect(y.nice).to.equal(true);
             expect(y.scaleOrient).to.equal('left');
             expect(y.padding).to.equal(0);
             expect(y.cssClass).to.equal('y axis facet-axis');
@@ -302,22 +311,19 @@ define(function (require) {
             expect(y.textAnchor).to.equal('end');
             expect(y.tickFormat).to.equal(null);
             expect(typeof y.tickFormatNullAlias).to.equal('undefined');
-            // expect(y.label.text).to.equal('');
             expect(y.label.text).to.equal('count');
-            // expect(y.tickFontHeight).to.equal(0);
             expect(y.tickFontHeight).to.equal(10);
-            expect(y.density).to.equal(0 + measurer.yDensityPadding * 2); // empty axis
+            expect(y.density).to.equal(y.tickFontHeight + measurer.yDensityPadding * 2); // empty axis
 
             // 20 padding to X axis line
             // 9  tick mark size
             // 10 "25" string length
             // 20 padding to X axis label
             // 15 width of label
-            expect(full.unit.guide.padding.b).to.equal(54);
+            expect(full.unit.guide.padding.b).to.equal(58);
 
             // y is null axis
-            // expect(full.unit.guide.padding.l).to.equal(0);
-            expect(full.unit.guide.padding.l).to.equal(44);
+            expect(full.unit.guide.padding.l).to.equal(24);
             expect(full.unit.guide.padding.r).to.equal(0);
             expect(full.unit.guide.padding.t).to.equal(0);
 
@@ -438,6 +444,7 @@ define(function (require) {
             };
 
             var fullSpec = convSpec(spec, 'COMPACT');
+
             var testSpecEngine = new SpecAutoLayout(fullSpec);
             var full = testSpecEngine.transform(chartAPI(fullSpec));
             var measurer = full.settings;
@@ -448,6 +455,7 @@ define(function (require) {
             expect(full.unit.guide.showGridLines || '').to.equal('');
 
             expect(x.autoScale).to.equal(true);
+            expect(x.nice).to.equal(true);
             expect(x.scaleOrient).to.equal('bottom');
             expect(x.padding).to.equal(0);
             expect(x.cssClass).to.equal('x axis facet-axis compact');
@@ -463,6 +471,7 @@ define(function (require) {
             expect(x.density).to.equal(measurer.getAxisTickLabelSize('Long').width + measurer.xDensityPadding * 2);
 
             expect(y.autoScale).to.equal(true);
+            expect(y.nice).to.equal(true);
             expect(y.scaleOrient).to.equal('left');
             expect(y.padding).to.equal(0);
             expect(y.cssClass).to.equal('y axis facet-axis compact');
@@ -470,19 +479,16 @@ define(function (require) {
             expect(y.textAnchor).to.equal('middle');
             expect(y.tickFormat).to.equal(null);
             expect(typeof y.tickFormatNullAlias).to.equal('undefined');
-            // expect(y.label.text).to.equal('');
             expect(y.label.text).to.equal('count');
             expect(y.label.cssClass).to.equal('label');
             expect(y.label.dock).to.equal(null);
-            // expect(y.tickFontHeight).to.equal(0);
             expect(y.tickFontHeight).to.equal(10);
-            expect(y.density).to.equal(0 + measurer.yDensityPadding * 2); // empty axis
+            expect(y.density).to.equal(y.tickFontHeight + measurer.yDensityPadding * 2); // empty axis
 
-            expect(full.unit.guide.padding.b).to.equal(40);
+            expect(full.unit.guide.padding.b).to.equal(38);
 
             // y is null axis
-            // expect(full.unit.guide.padding.l).to.equal(0);
-            expect(full.unit.guide.padding.l).to.equal(19);
+            expect(full.unit.guide.padding.l).to.equal(15);
             expect(full.unit.guide.padding.r).to.equal(0);
             expect(full.unit.guide.padding.t).to.equal(0);
 

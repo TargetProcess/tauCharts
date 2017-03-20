@@ -1,16 +1,24 @@
-import {utilsDraw} from '../utils/utils-draw';
-import {default as _} from 'underscore';
+import {utils} from './utils';
+import {utilsDom} from './utils-dom';
+import {utilsDraw} from './utils-draw';
 import {default as d3} from 'd3';
+import interpolatePathPoints from './path/interpolators/path-points';
+import {getLineInterpolator, getInterpolatorSplineType} from './path/interpolators/interpolators-registry';
 
-var d3getComputedTextLength = _.memoize(
+var d3getComputedTextLength = () => utils.memoize(
     (d3Text) => d3Text.node().getComputedTextLength(),
     (d3Text) => d3Text.node().textContent.length);
 
-var cutText = (textString, widthLimit, getComputedTextLength) => {
+var cutText = (textString, getScaleStepSize, getComputedTextLength) => {
 
-    getComputedTextLength = getComputedTextLength || d3getComputedTextLength;
+    getComputedTextLength = getComputedTextLength || d3getComputedTextLength();
 
     textString.each(function () {
+
+        var tickNode = d3.select(this.parentNode);
+        var tickData = tickNode.data()[0];
+        var stepSize = getScaleStepSize(tickData);
+
         var textD3 = d3.select(this);
         var tokens = textD3.text().split(/\s+/);
 
@@ -23,10 +31,10 @@ var cutText = (textString, widthLimit, getComputedTextLength) => {
 
             var text = (i > 0) ? [memo, t].join(' ') : t;
             var len = getComputedTextLength(textD3.text(text));
-            if (len < widthLimit) {
+            if (len < stepSize) {
                 memo = text;
             } else {
-                var available = Math.floor(widthLimit / len * text.length);
+                var available = Math.floor(stepSize / len * text.length);
                 memo = text.substr(0, available - 4) + '...';
                 stop = true;
             }
@@ -39,9 +47,9 @@ var cutText = (textString, widthLimit, getComputedTextLength) => {
     });
 };
 
-var wrapText = (textNode, widthLimit, linesLimit, tickLabelFontHeight, isY, getComputedTextLength) => {
+var wrapText = (textNode, getScaleStepSize, linesLimit, tickLabelFontHeight, isY, getComputedTextLength) => {
 
-    getComputedTextLength = getComputedTextLength || d3getComputedTextLength;
+    getComputedTextLength = getComputedTextLength || d3getComputedTextLength();
 
     var addLine = (targetD3, text, lineHeight, x, y, dy, lineNumber) => {
         var dyNew = (lineNumber * lineHeight) + dy;
@@ -54,6 +62,11 @@ var wrapText = (textNode, widthLimit, linesLimit, tickLabelFontHeight, isY, getC
     };
 
     textNode.each(function () {
+
+        var tickNode = d3.select(this.parentNode);
+        var tickData = tickNode.data()[0];
+        var stepSize = getScaleStepSize(tickData);
+
         var textD3 = d3.select(this),
             tokens = textD3.text().split(/\s+/),
             lineHeight = 1.1, // ems
@@ -77,10 +90,10 @@ var wrapText = (textNode, widthLimit, linesLimit, tickLabelFontHeight, isY, getC
                 var last = memo[memo.length - 1];
                 var text = (last !== '') ? (last + ' ' + next) : next;
                 var tLen = getComputedTextLength(tempSpan.text(text));
-                var over = tLen > widthLimit;
+                var over = tLen > stepSize;
 
                 if (over && isLimit) {
-                    var available = Math.floor(widthLimit / tLen * text.length);
+                    var available = Math.floor(stepSize / tLen * text.length);
                     memo[memo.length - 1] = text.substr(0, available - 4) + '...';
                     stopReduce = true;
                 }
@@ -105,34 +118,52 @@ var wrapText = (textNode, widthLimit, linesLimit, tickLabelFontHeight, isY, getC
     });
 };
 
-var d3_decorator_prettify_categorical_axis_ticks = (nodeAxis, logicalScale, isHorizontal) => {
-
-    if (nodeAxis.selectAll('.tick line').empty()) {
-        return;
-    }
+/**
+ * Moves ticks from categories middle to categories top.
+ */
+var d3_decorator_prettify_categorical_axis_ticks = (nodeAxis, logicalScale, isHorizontal, animationSpeed) => {
 
     nodeAxis
-        .selectAll('.tick')[0]
-        .forEach((node) => {
+        .selectAll('.tick')
+        .each(function (tickData) {
+            // NOTE: Skip ticks removed by D3 axis call during transition.
+            if (logicalScale(tickData)) {
 
-            var tickNode = d3.select(node);
-            var tickData = tickNode.data()[0];
+                var tickNode = d3.select(this);
 
-            var coord = logicalScale(tickData);
-            var tx = (isHorizontal) ? coord : 0;
-            var ty = (isHorizontal) ? 0 : coord;
-            tickNode.attr('transform', `translate(${tx},${ty})`);
+                var setAttr = function (selection) {
+                    var tickCoord = logicalScale(tickData);
+                    var tx = isHorizontal ? tickCoord : 0;
+                    var ty = isHorizontal ? 0 : tickCoord;
+                    selection.attr('transform', `translate(${tx},${ty})`);
 
-            var offset = logicalScale.stepSize(tickData) * 0.5;
-            var key = (isHorizontal) ? 'x' : 'y';
-            var val = (isHorizontal) ? offset : (-offset);
-            tickNode.select('line').attr(key + '1', val).attr(key + '2', val);
+                    var offset = logicalScale.stepSize(tickData) * 0.5;
+                    var key = (isHorizontal) ? 'x' : 'y';
+                    var val = (isHorizontal) ? offset : (-offset);
+                    selection
+                        .select('line')
+                        .attr({[key + '1']: val, [key + '2']: val});
+                };
+
+                if (!tickNode.classed('tau-enter')) {
+                    tickNode.call(setAttr);
+                    tickNode.classed('tau-enter', true);
+                }
+
+                d3_transition(tickNode, animationSpeed).call(setAttr);
+            }
         });
 };
 
-var d3_decorator_fix_horizontal_axis_ticks_overflow = (axisNode) => {
+var d3_decorator_fixHorizontalAxisTicksOverflow = function (axisNode, activeTicks) {
 
-    var timeTicks = axisNode.selectAll('.tick')[0];
+    var isDate = activeTicks.length && activeTicks[0] instanceof Date;
+    if (isDate) {
+        activeTicks = activeTicks.map(d => Number(d));
+    }
+
+    var timeTicks = axisNode.selectAll('.tick')
+        .filter(d => activeTicks.indexOf(isDate ? Number(d) : d) >= 0)[0];
     if (timeTicks.length < 2) {
         return;
     }
@@ -144,7 +175,8 @@ var d3_decorator_fix_horizontal_axis_ticks_overflow = (axisNode) => {
 
     var maxTextLn = 0;
     var iMaxTexts = -1;
-    var timeTexts = axisNode.selectAll('.tick text')[0];
+    var timeTexts = axisNode.selectAll('.tick text')
+        .filter(d => activeTicks.indexOf(isDate ? Number(d) : d) >= 0)[0];
     timeTexts.forEach((textNode, i) => {
         var innerHTML = textNode.textContent || '';
         var textLength = innerHTML.length;
@@ -154,105 +186,199 @@ var d3_decorator_fix_horizontal_axis_ticks_overflow = (axisNode) => {
         }
     });
 
+    var hasOverflow = false;
     if (iMaxTexts >= 0) {
         var rect = timeTexts[iMaxTexts].getBoundingClientRect();
-        // 2px from each side
-        if ((tickStep - rect.width) < 8) {
-            axisNode.classed({'graphical-report__d3-time-overflown': true});
-        }
+        hasOverflow = (tickStep - rect.width) < 8; // 2px from each side
     }
+    axisNode.classed({'graphical-report__d3-time-overflown': hasOverflow});
 };
 
-var d3_decorator_fix_axis_bottom_line = (axisNode, size, isContinuesScale) => {
+var d3_decorator_fixEdgeAxisTicksOverflow = function (axisNode, activeTicks, animationSpeed, returnPhase) {
 
-    var selection = axisNode.selectAll('.tick line');
-    if (selection.empty()) {
+    activeTicks = activeTicks.map(d => Number(d));
+    var texts = axisNode
+        .selectAll('.tick text')
+        .filter(d => activeTicks.indexOf(Number(d)) >= 0)[0];
+    if (texts.length === 0) {
         return;
     }
 
-    var tickOffset = -1;
-
-    if (isContinuesScale) {
-        tickOffset = 0;
-    } else {
-        var sectorSize = size / selection[0].length;
-        var offsetSize = sectorSize / 2;
-        tickOffset = (-offsetSize);
+    var svg = axisNode.node();
+    while (svg.tagName !== 'svg') {
+        svg = svg.parentNode;
     }
+    var svgRect = svg.getBoundingClientRect();
 
-    var tickGroupClone = axisNode.select('.tick').node().cloneNode(true);
-    axisNode
-        .append(() => tickGroupClone)
-        .attr('transform', utilsDraw.translate(0, size - tickOffset));
+    if (returnPhase) {
+        texts
+            .sort((a, b) => d3.select(a).data() - d3.select(b).data())
+            .forEach((n, i) => {
+                if (i === 0 || i === texts.length - 1) {
+                    return;
+                }
+                var t = d3.select(n);
+                d3_transition(t, animationSpeed, 'fixEdgeAxisTicksOverflow');
+                t.attr('dx', 0);
+            });
+    } else {
+        var fixText = (node, dir) => {
+            var rect = node.getBoundingClientRect();
+            var side = (dir > 0 ? 'right' : 'left');
+
+            var d3Node = d3.select(node);
+            var currentDx = d3Node.attr('dx') || 0;
+            var diff = dir * (rect[side] - svgRect[side] + currentDx);
+            if (diff > 0) {
+                d3_transition(d3Node, animationSpeed, 'fixEdgeAxisTicksOverflow')
+                    .attr('dx', -dir * diff);
+            }
+        };
+        fixText(texts[0], -1);
+        fixText(texts[texts.length - 1], 1);
+    }
 };
 
-var d3_decorator_prettify_axis_label = (axisNode, guide, isHorizontal) => {
+/**
+ * Adds extra tick to axis container.
+ */
+var d3_decorator_fix_axis_start_line = (
+    axisNode,
+    isHorizontal,
+    width,
+    height,
+    animationSpeed
+) => {
+
+    var setTransform = (selection) => {
+        selection.attr('transform', utilsDraw.translate(0, isHorizontal ? height : 0));
+        return selection;
+    };
+
+    var setLineSize = (selection) => {
+        if (isHorizontal) {
+            selection.attr('x2', width);
+        } else {
+            selection.attr('y2', height);
+        }
+        return selection;
+    };
+
+    var tickClass = `tau-extra${isHorizontal ? 'Y' : 'X'}Tick`;
+    var extraTick = utilsDom.selectOrAppend(axisNode, `g.${tickClass}`);
+    var extraLine = utilsDom.selectOrAppend(extraTick, 'line');
+    if (!extraTick.node().hasAttribute('opacity')) {
+        extraTick.attr('opacity', 1e-6);
+    }
+    d3_transition(extraTick, animationSpeed).call(setTransform);
+    d3_transition(extraLine, animationSpeed).call(setLineSize);
+};
+
+var d3_decorator_prettify_axis_label = (
+    axisNode,
+    guide,
+    isHorizontal,
+    size,
+    animationSpeed
+) => {
 
     var koeff = (isHorizontal) ? 1 : -1;
-    var labelTextNode = axisNode
-        .append('text')
-        .attr('transform', utilsDraw.rotate(guide.rotate))
-        .attr('class', guide.cssClass)
+    var labelTextNode = utilsDom.selectOrAppend(axisNode, `text.label`)
+        .attr('class', utilsDom.classes('label', guide.cssClass))
+        .attr('transform', utilsDraw.rotate(guide.rotate));
+
+    var labelTextTrans = d3_transition(labelTextNode, animationSpeed)
         .attr('x', koeff * guide.size * 0.5)
         .attr('y', koeff * guide.padding)
         .style('text-anchor', guide.textAnchor);
 
     var delimiter = ' \u2192 ';
-    var tags = guide.text.split(delimiter);
-    var tLen = tags.length;
-    tags.forEach((token, i) => {
-
-        labelTextNode
-            .append('tspan')
-            .attr('class', 'label-token label-token-' + i)
-            .text(token);
-
-        if (i < (tLen - 1)) {
-            labelTextNode
-                .append('tspan')
-                .attr('class', 'label-token-delimiter label-token-delimiter-' + i)
-                .text(delimiter);
+    var texts = ((parts) => {
+        var result = [];
+        for (var i = 0; i < parts.length - 1; i++) {
+            result.push(parts[i], delimiter);
         }
-    });
+        result.push(parts[i]);
+        return result;
+    })(guide.text.split(delimiter));
 
-    if (guide.dock === 'right') {
-        let box = axisNode.selectAll('path.domain').node().getBBox();
-        labelTextNode.attr('x', isHorizontal ? (box.width) : 0);
-    } else if (guide.dock === 'left') {
-        let box = axisNode.selectAll('path.domain').node().getBBox();
-        labelTextNode.attr('x', isHorizontal ? 0 : (-box.height));
+    var tspans = labelTextNode.selectAll('tspan')
+        .data(texts);
+    tspans.enter()
+        .append('tspan')
+        .attr('class', (d, i) => i % 2 ?
+            ('label-token-delimiter label-token-delimiter-' + i) :
+            ('label-token label-token-' + i))
+        .text((d) => d);
+    tspans.exit().remove();
+
+    if (['left', 'right'].indexOf(guide.dock) >= 0) {
+        let labelX = {
+            left: [-size, 0],
+            right: [0, size]
+        };
+        labelTextTrans.attr('x', labelX[guide.dock][Number(isHorizontal)]);
     }
 };
 
-var d3_decorator_wrap_tick_label = (nodeScale, guide, isHorizontal) => {
+var d3_decorator_wrap_tick_label = function (
+    nodeScale,
+    animationSpeed,
+    guide,
+    isHorizontal,
+    logicalScale
+) {
 
-    var angle = guide.rotate;
+    var angle = utils.normalizeAngle(guide.rotate);
 
-    var ticks = nodeScale.selectAll('.tick text');
-    ticks
+    var tick = nodeScale.selectAll('.tick text')
         .attr('transform', utilsDraw.rotate(angle))
         .style('text-anchor', guide.textAnchor);
 
-    if (angle === 90) {
-        var dy = parseFloat(ticks.attr('dy')) / 2;
-        ticks.attr('x', 9).attr('y', 0).attr('dy', `${dy}em`);
+    // TODO: Improve indent calculation for ratated text.
+    var segment = Math.abs(angle / 90);
+    if ((segment % 2) > 0) {
+        let kRot = angle < 180 ? 1 : -1;
+        let k = isHorizontal ? 0.5 : -2;
+        let sign = (guide.scaleOrient === 'top' || guide.scaleOrient === 'left' ? -1 : 1);
+        let dy = (k * (guide.scaleOrient === 'bottom' || guide.scaleOrient === 'top' ?
+            (sign < 0 ? 0 : 0.71) :
+            0.32));
+
+        let texts = nodeScale.selectAll('.tick text');
+        let attrs = {
+            x: 9 * kRot,
+            y: 0,
+            dx: (isHorizontal) ? null : `${dy}em`,
+            dy: `${dy}em`
+        };
+
+        // NOTE: Override d3 axis transition.
+        texts.transition();
+        texts.attr(attrs);
+        d3_transition(texts, animationSpeed, 'axisTransition').attr(attrs);
     }
 
+    var limitFunc = (d) => Math.max(logicalScale.stepSize(d), guide.tickFormatWordWrapLimit);
+
     if (guide.tickFormatWordWrap) {
-        ticks.call(
+        tick.call(
             wrapText,
-            guide.tickFormatWordWrapLimit,
+            limitFunc,
             guide.tickFormatWordWrapLines,
-            guide.$maxTickTextH,
+            guide.tickFontHeight,
             !isHorizontal
         );
     } else {
-        ticks
-            .call(cutText, guide.tickFormatWordWrapLimit);
+        tick.call(cutText, limitFunc, d3getComputedTextLength());
     }
 };
 
-var d3_decorator_avoid_labels_collisions = (nodeScale, isHorizontal) => {
+var d3_decorator_avoidLabelsCollisions = function (nodeScale, isHorizontal, activeTicks) {
+    var isDate = activeTicks.length && activeTicks[0] instanceof Date;
+    if (isDate) {
+        activeTicks = activeTicks.map(d => Number(d));
+    }
     const textOffsetStep = 11;
     const refOffsetStart = isHorizontal ? -10 : 20;
     const translateParam = isHorizontal ? 0 : 1;
@@ -260,6 +386,7 @@ var d3_decorator_avoid_labels_collisions = (nodeScale, isHorizontal) => {
     var layoutModel = [];
     nodeScale
         .selectAll('.tick')
+        .filter(d => activeTicks.indexOf(isDate ? Number(d) : d) >= 0)
         .each(function () {
             var tick = d3.select(this);
 
@@ -268,7 +395,7 @@ var d3_decorator_avoid_labels_collisions = (nodeScale, isHorizontal) => {
                 .replace('translate(', '')
                 .replace(' ', ',') // IE specific
                 .split(',')
-                [translateParam];
+            [translateParam];
 
             var translateX = directionKoeff * parseFloat(translateXStr);
             var tNode = tick.selectAll('text');
@@ -323,12 +450,27 @@ var d3_decorator_avoid_labels_collisions = (nodeScale, isHorizontal) => {
                 text = text.replace(/([\.]*$)/gi, '') + '...';
             }
 
-            var oldY = parseFloat(curr.textRef.attr('y'));
-            var newY = oldY + (curr.l * textOffsetStep); // -1 | 0 | +1
+            var dy = (curr.l * textOffsetStep); // -1 | 0 | +1
+            var newY = parseFloat(curr.textRef.attr('y')) + dy;
+            let tx = isHorizontal ? 0 : dy;
+            let ty = isHorizontal ? dy : 0;
+            var tr = (function (transform) {
+                var rotate = 0;
+                if (!transform) {
+                    return rotate;
+                }
+                var rs = transform.indexOf('rotate(');
+                if (rs >= 0) {
+                    var re = transform.indexOf(')', rs + 7);
+                    var rotateStr = transform.substring(rs + 7, re);
+                    rotate = parseFloat(rotateStr.trim());
+                }
+                return rotate;
+            })(curr.textRef.attr('transform'));
 
             curr.textRef
                 .text((d, i) => i === 0 ? text : '')
-                .attr('y', newY);
+                .attr('transform', 'translate(' + tx + ',' + ty + ') rotate(' + tr + ')');
 
             var attrs = {
                 x1: 0,
@@ -341,23 +483,221 @@ var d3_decorator_avoid_labels_collisions = (nodeScale, isHorizontal) => {
                 attrs.transform = 'rotate(-90)';
             }
 
-            curr.tickRef
-                .append('line')
-                .attr('class', 'label-ref')
+            utilsDom.selectOrAppend(curr.tickRef, 'line.label-ref')
                 .attr(attrs);
+        } else {
+            curr.tickRef.selectAll('line.label-ref').remove();
         }
 
         return curr;
     });
 };
 
+var d3_decorator_highlightZeroTick = (axisNode, scale) => {
+    var ticks = scale.ticks();
+    var domain = scale.domain();
+    var last = (ticks.length - 1);
+    var shouldHighlightZero = (
+        (ticks.length > 1) &&
+        (domain[0] * domain[1] < 0) &&
+        (-domain[0] > (ticks[1] - ticks[0]) / 2) &&
+        (domain[1] > (ticks[last] - ticks[last - 1]) / 2)
+    );
+    axisNode.selectAll('.tick')
+        .classed('zero-tick', (d) => (
+            d === 0 &&
+            shouldHighlightZero
+        ));
+};
+
+var d3_transition = (selection, animationSpeed, nameSpace) => {
+    if (animationSpeed > 0) {
+        selection = selection.transition(nameSpace).duration(animationSpeed);
+        selection.attr = d3_transition_attr;
+    }
+    selection.onTransitionEnd = function (callback) {
+        d3_add_transition_end_listener(this, callback);
+        return this;
+    };
+    return selection;
+};
+
+// TODO: Getting attribute value may be possible in D3 v4:
+// http://stackoverflow.com/a/39024812/4137472
+// so it will be possible to get future attribute value.
+var d3_transition_attr = function (keyOrMap, value) {
+    var d3AttrResult = d3.transition.prototype.attr.apply(this, arguments);
+
+    if (arguments.length === 0) {
+        throw new Error('Unexpected `transition().attr()` arguments.');
+    }
+    var attrs;
+    if (arguments.length === 1) {
+        attrs = keyOrMap;
+    } else if (arguments.length > 1) {
+        attrs = {[keyOrMap]: value};
+    }
+
+    // Store transitioned attributes values
+    // until transition ends.
+    var store = '__transitionAttrs__';
+    var idStore = '__lastTransitions__';
+    var id = getTransitionAttrId();
+    this.each(function () {
+        var newAttrs = {};
+        for (var key in attrs) {
+            if (typeof attrs[key] === 'function') {
+                newAttrs[key] = attrs[key].apply(this, arguments);
+            } else {
+                newAttrs[key] = attrs[key];
+            }
+        }
+        this[store] = Object.assign(
+            this[store] || {},
+            newAttrs
+        );
+
+        // NOTE: As far as d3 `interrupt` event is called asynchronously,
+        // we have to store ID to prevent removing attribute value from store,
+        // when new transition is applied for the same attribute.
+        if (!this[store][idStore]) {
+            Object.defineProperty(this[store], idStore, {value: {}});
+        }
+        Object.keys(newAttrs).forEach((key) => this[store][idStore][key] = id);
+    });
+    var onTransitionEnd = function () {
+        if (this[store]) {
+            Object.keys(attrs)
+                .filter((k) => this[store][idStore][k] === id)
+                .forEach((k) => delete this[store][k]);
+            if (Object.keys(this[store]).length === 0) {
+                delete this[store];
+            }
+        }
+    };
+    this.each(`interrupt.${id}`, onTransitionEnd);
+    this.each(`end.${id}`, onTransitionEnd);
+
+    return d3AttrResult;
+};
+var transitionsCounter = 0;
+var getTransitionAttrId = function () {
+    return ++transitionsCounter;
+};
+
+var d3_add_transition_end_listener = (selection, callback) => {
+    if (!d3.transition.prototype.isPrototypeOf(selection) || selection.empty()) {
+        // If selection is not transition or empty,
+        // execute callback immediately.
+        callback.call(null, selection);
+        return;
+    }
+    var t = selection.size();
+    var onTransitionEnd = () => {
+        t--;
+        if (t === 0) {
+            callback.call(null, selection);
+        }
+    };
+    selection.each('interrupt.d3_on_transition_end', onTransitionEnd);
+    selection.each('end.d3_on_transition_end', onTransitionEnd);
+    return selection;
+};
+
+var d3_animationInterceptor = (speed, initAttrs, doneAttrs, afterUpdate) => {
+
+    const xAfterUpdate = afterUpdate || ((x) => x);
+    const afterUpdateIterator = function () {
+        xAfterUpdate(this);
+    };
+
+    return function () {
+
+        var flow = this;
+
+        if (initAttrs) {
+            flow = flow.attr(utils.defaults(initAttrs, doneAttrs));
+        }
+
+        flow = d3_transition(flow, speed);
+
+        flow = flow.attr(doneAttrs);
+
+        if (speed > 0) {
+            flow.each('end.d3_animationInterceptor', afterUpdateIterator);
+        } else {
+            flow.each(afterUpdateIterator);
+        }
+
+        return flow;
+    };
+};
+
+var d3_selectAllImmediate = (container, selector) => {
+    var node = container.node();
+    return container.selectAll(selector).filter(function () {
+        return this.parentNode === node;
+    });
+};
+
+var d3_createPathTween = (
+    attr,
+    pathStringBuilder,
+    pointConvertor,
+    idGetter,
+    interpolationType = 'linear'
+) => {
+    const pointStore = '__pathPoints__';
+
+    return function (data) {
+        if (!this[pointStore]) {
+            this[pointStore] = [];
+        }
+
+        var points = utils.unique(data, idGetter).map(pointConvertor);
+        var interpolateLine = getLineInterpolator(interpolationType) || getLineInterpolator('linear');
+        var pointsTo = interpolateLine(points);
+        var pointsFrom = this[pointStore];
+
+        var interpolate = interpolatePathPoints(
+            pointsFrom,
+            pointsTo,
+            getInterpolatorSplineType(interpolationType)
+        );
+
+        return (t) => {
+            if (t === 0) {
+                return pathStringBuilder(pointsFrom);
+            }
+            if (t === 1) {
+                this[pointStore] = pointsTo;
+                return pathStringBuilder(pointsTo);
+            }
+
+            var intermediate = interpolate(t);
+
+            // Save intermediate points to be able
+            // to continue transition after interrupt
+            this[pointStore] = intermediate;
+
+            return pathStringBuilder(intermediate);
+        };
+    };
+};
+
 export {
+    d3_animationInterceptor,
+    d3_createPathTween,
     d3_decorator_wrap_tick_label,
     d3_decorator_prettify_axis_label,
-    d3_decorator_fix_axis_bottom_line,
-    d3_decorator_fix_horizontal_axis_ticks_overflow,
+    d3_decorator_fix_axis_start_line,
+    d3_decorator_fixHorizontalAxisTicksOverflow,
+    d3_decorator_fixEdgeAxisTicksOverflow,
+    d3_decorator_highlightZeroTick,
     d3_decorator_prettify_categorical_axis_ticks,
-    d3_decorator_avoid_labels_collisions,
+    d3_decorator_avoidLabelsCollisions,
+    d3_transition,
+    d3_selectAllImmediate,
     wrapText,
     cutText
 };

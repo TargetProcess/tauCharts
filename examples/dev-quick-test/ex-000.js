@@ -1,12 +1,85 @@
 var now = new Date();
 
-window.samples.push({
+dev.spec({
+    type: 'bar',
+    flip: true,
+    stack: true,
+    x: 'count',
+    y: 'process',
+    color: 'stage',
+    size: 'ABS(count)',
+    data: [
+        {
+            process: 'sales',
+            stage: 'visit',
+            count: 100
+        },
+        {
+            process: 'sales',
+            stage: 'trial',
+            count: 50
+        },
+        {
+            process: 'sales',
+            stage: 'buy',
+            count: 15
+        },
+        {
+            process: 'sales',
+            stage: 'go away',
+            count: -7
+        }
+    ]
+        .map(function (row) {
+            row['ABS(count)'] = Math.abs(row.count);
+            row['z'] = Math.random() * 10;
+            return row;
+        })
+        .reverse(),
+    plugins: [
+        tauCharts.api.plugins.get('tooltip')(),
+        tauCharts.api.plugins.get('annotations')({
+            items: [
+                {
+                    dim: 'count',
+                    val: 7,
+                    text: 'one',
+                    color: '#636363'
+                },
+                {
+                    dim: 'count',
+                    val: [10, 25],
+                    text: 'two',
+                    color: '#636363'
+                },
+                {
+                    dim: 'count',
+                    val: 55,
+                    text: 'three',
+                    color: '#636363'
+                }
+            ]
+        })
+    ]
+});
+
+
+
+
+dev.spec({
 
     type: 'line',
     x: ['x'],
     y: ['y'],
+    label: 'y',
+    guide: {
+        anchorSize: 1.5,
+        label: {
+            tickFormat: '.4r'
+        }
+    },
 
-    data: _.times(100, _.identity)
+    data: utils.range(100)
         .reduce(function (memo, i) {
             var x = i * (Math.PI / 100);
             return memo.concat([
@@ -51,13 +124,13 @@ window.samples.push({
     ]
 });
 
-window.samples.push({
+dev.spec({
 
     type: 'line',
     x: ['x'],
     y: ['y'],
 
-    data: _.times(100, _.identity)
+    data: utils.range(100)
         .reduce(function (memo, i) {
             var x = i * (Math.PI / 100);
             return memo.concat([
@@ -104,33 +177,39 @@ window.samples.push({
     ]
 });
 
-window.samples.push({
+dev.spec({
 
-    type: 'area',
+    type: 'line',
     x: ['x'],
     y: ['y'],
     color: 'type',
+    size: 's',
 
     guide: [
         {
-            x: {autoScale: false},
-            y: {autoScale: false}
+            color: {
+                brewer: ['#ff0000', '#00ff00']
+            },
+            x: {nice: false},
+            y: {nice: false}
             // ,flip: true
         }
     ],
 
-    data: _.times(100, _.identity)
+    data: utils.range(100)
         .reduce(function (memo, i) {
             var x = i * (Math.PI / 100);
             return memo.concat([
                 {
                     x: x,
                     y: Math.sin(x),
+                    s: Math.random(),
                     type: 'sin'
                 },
                 {
                     x: x,
                     y: Math.cos(x),
+                    s: Math.random(),
                     type: 'cos'
                 }
             ]);
@@ -148,7 +227,7 @@ window.samples.push({
     ]
 });
 
-window.samples.push({
+dev.spec({
 
     sources: {
         '?': {

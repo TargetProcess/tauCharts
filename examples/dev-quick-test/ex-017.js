@@ -1,6 +1,6 @@
-window.samples.push({
+dev.spec({
 
-    "type": "bar",
+    "type": "stacked-bar",
     "color": "color",
     "size": null,
     "x": ["x1"],
@@ -15,7 +15,8 @@ window.samples.push({
                 "label": "Average Cycle Time"
             },
             "color": {
-                "label": "Entity Type Id"
+                "label": "Entity Type Id",
+                brewer: ['#eee', '#ff0000', 'green', 'blue']
             }
         }
     ],
@@ -50,9 +51,7 @@ window.samples.push({
         {x1: {id: 2, name: "Tau Product - Kanban #1"}, y1: 80, color: 1},
         {x1: {id: 2, name: "Tau Product - Kanban #1"}, y1: 90, color: 0},
         {x1: {id: 2, name: "Tau Product - Kanban #1"}, y1: 100, color: 10}
-    ].concat(_.times(10, function (x) {
-            return x;
-        }).map(function (i) {
+    ].concat(utils.range(10).map(function (i) {
             return {
                 x1: {id: 2, name: "Tau Product - Kanban #1"},
                 y1: 100 + i * 3,

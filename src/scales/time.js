@@ -1,8 +1,6 @@
 import {BaseScale} from './base';
-/* jshint ignore:start */
-import {default as _} from 'underscore';
-import {default as d3} from 'd3';
-/* jshint ignore:end */
+import d3 from 'd3';
+import {utils} from '../utils/utils';
 
 export class TimeScale extends BaseScale {
 
@@ -15,22 +13,55 @@ export class TimeScale extends BaseScale {
 
         var domain = d3.extent(vars).map((v) => new Date(v));
 
-        var min = (_.isNull(props.min) || _.isUndefined(props.min)) ? domain[0] : new Date(props.min).getTime();
-        var max = (_.isNull(props.max) || _.isUndefined(props.max)) ? domain[1] : new Date(props.max).getTime();
+        var min = (props.min === null || props.min === undefined) ? domain[0] : new Date(props.min).getTime();
+        var max = (props.max === null || props.max === undefined) ? domain[1] : new Date(props.max).getTime();
 
-        this.vars = [
+        vars = [
             new Date(Math.min(min, domain[0])),
             new Date(Math.max(max, domain[1]))
         ];
 
+        this.niceIntervalFn = null;
+        if (props.nice) {
+            var niceInterval = props.niceInterval;
+            var d3TimeInterval = (niceInterval && d3.time[niceInterval] ?
+                (props.utcTime ? d3.time[niceInterval].utc : d3.time[niceInterval]) :
+                null);
+            if (d3TimeInterval) {
+                this.niceIntervalFn = d3TimeInterval;
+            } else {
+                // TODO: show warning?
+                this.niceIntervalFn = null;
+            }
+
+            this.vars = utils.niceTimeDomain(vars, this.niceIntervalFn, {utc: props.utcTime});
+
+        } else {
+            this.vars = vars;
+        }
+
         this.addField('scaleType', 'time');
+    }
+
+    isInDomain(aTime) {
+        var x = new Date(aTime);
+        var domain = this.domain();
+        var min = domain[0];
+        var max = domain[domain.length - 1];
+        return (!Number.isNaN(min) && !Number.isNaN(max) && (x <= max) && (x >= min));
     }
 
     create(interval) {
 
         var varSet = this.vars;
+        var utcTime = this.scaleConfig.utcTime;
 
-        var d3Domain = d3.time.scale().domain(varSet);
+        var d3TimeScale = (utcTime ? d3.time.scale.utc : d3.time.scale);
+        var d3Domain = d3TimeScale().domain(
+            this.scaleConfig.nice ?
+                utils.niceTimeDomain(varSet, this.niceIntervalFn, {utc: utcTime}) :
+                varSet
+        );
 
         var d3Scale = d3Domain.range(interval);
 

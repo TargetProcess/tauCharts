@@ -1,4 +1,4 @@
-window.samples.push({
+dev.spec({
 
     type: 'map',
     code: 'state',
@@ -6,7 +6,7 @@ window.samples.push({
     guide: {
         code: {georole:'states'},
         fill: {
-//                brewer: _.times(9, function(i) {
+//                brewer: utils.range(9).map(function(i) {
 //                    return 'rgba(150, 218, 195, ' + (0.1 * i + 0.1) + ')';
 //                })
         },

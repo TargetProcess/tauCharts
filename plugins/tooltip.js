@@ -1,22 +1,34 @@
 (function (factory) {
     if (typeof define === 'function' && define.amd) {
-        define(['tauCharts'], function (tauPlugins) {
+        define(['taucharts'], function (tauPlugins) {
             return factory(tauPlugins);
         });
     } else if (typeof module === 'object' && module.exports) {
-        var tauPlugins = require('tauCharts');
+        var tauPlugins = require('taucharts');
         module.exports = factory(tauPlugins);
     } else {
         factory(this.tauCharts);
     }
 })(function (tauCharts) {
 
-    var _ = tauCharts.api._;
+    var d3 = tauCharts.api.d3;
+    var utils = tauCharts.api.utils;
     var pluginsSDK = tauCharts.api.pluginsSDK;
+    var TARGET_SVG_CLASS = 'graphical-report__tooltip-target';
+    var TARGET_STUCK_CLASS = 'graphical-report__tooltip-target-stuck';
+
+    var escapeHtml = function (x) {
+        return String(x)
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;')
+            .replace(/'/g, '&#039;');
+    };
 
     function Tooltip(xSettings) {
 
-        var settings = _.defaults(
+        var settings = utils.defaults(
             xSettings || {},
             {
                 // add default settings here
@@ -31,45 +43,20 @@
                 }
             });
 
-        function getOffsetRect(elem) {
-
-            var box = elem.getBoundingClientRect();
-
-            var body = document.body;
-            var docElem = document.documentElement;
-
-            var scrollTop = window.pageYOffset || docElem.scrollTop || body.scrollTop;
-            var scrollLeft = window.pageXOffset || docElem.scrollLeft || body.scrollLeft;
-
-            var clientTop = docElem.clientTop || body.clientTop || 0;
-            var clientLeft = docElem.clientLeft || body.clientLeft || 0;
-
-            var top  = box.top +  scrollTop - clientTop;
-            var left = box.left + scrollLeft - clientLeft;
-
-            return {
-                top: Math.round(top),
-                left: Math.round(left)
-            };
-        }
-
         var plugin = {
 
             init: function (chart) {
 
-                this._currentData = null;
-                this._currentUnit = null;
                 this._chart = chart;
-
                 this._metaInfo = {};
                 this._skipInfo = {};
 
-                // TODO: for compatibility with old TargetProcess implementation
-                _.extend(this, _.omit(settings, 'fields', 'getFields'));
+                // NOTE: for compatibility with old Tooltip implementation.
+                Object.assign(this, utils.omit(settings, 'fields', 'getFields'));
 
                 this._tooltip = this._chart.addBalloon(
                     {
-                        spacing: 3,
+                        spacing: 24,
                         auto: true,
                         effectClass: 'fade'
                     });
@@ -79,7 +66,8 @@
                         ('')
                 );
 
-                var template = _.template(this.template);
+                var template = utils.template(this.template);
+                var tooltipNode = this.getTooltipNode();
 
                 this._tooltip
                     .content(template({
@@ -87,84 +75,214 @@
                         excludeTemplate: this.templateExclude
                     }));
 
-                this._tooltip
-                    .getElement()
+                tooltipNode
                     .addEventListener('click', function (e) {
 
                         var target = e.target;
 
                         while (target !== e.currentTarget && target !== null) {
                             if (target.classList.contains('i-role-exclude')) {
-                                self._exclude();
+                                this._exclude();
+                                this.setState({
+                                    highlight: null,
+                                    isStuck: false
+                                });
                             }
 
                             if (target.classList.contains('i-role-reveal')) {
-                                self._reveal();
+                                this._reveal();
+                                this.setState({
+                                    highlight: null,
+                                    isStuck: false
+                                });
                             }
 
                             target = target.parentNode;
                         }
 
-                        self._tooltip.hide();
+                    }.bind(this), false);
 
-                    }, false);
+                this._scrollHandler = function () {
+                    this.setState({
+                        highlight: null,
+                        isStuck: false
+                    });
+                }.bind(this);
+                window.addEventListener('scroll', this._scrollHandler, true);
 
-                var self = this;
-                var timeoutHide;
-                this.showTooltip = function (data, pos) {
-
-                    clearTimeout(timeoutHide);
-
-                    self._currentData = data;
-
-                    var content = self._tooltip.getElement().querySelectorAll('.i-role-content');
-                    if (content[0]) {
-
-                        var fields = (
-                            settings.fields
-                            ||
-                            (_.isFunction(settings.getFields) && settings.getFields(self._chart))
-                            ||
-                            Object.keys(data)
-                        );
-
-                        content[0].innerHTML = this.render(data, fields);
+                this._outerClickHandler = function (e) {
+                    var tooltipRect = this.getTooltipNode().getBoundingClientRect();
+                    if ((e.clientX < tooltipRect.left) ||
+                        (e.clientX > tooltipRect.right) ||
+                        (e.clientY < tooltipRect.top) ||
+                        (e.clientY > tooltipRect.bottom)
+                    ) {
+                        this.setState({
+                            highlight: null,
+                            isStuck: false
+                        });
                     }
+                }.bind(this);
 
-                    self._tooltip
-                        .show(pos.x, pos.y)
-                        .updateSize();
-                };
+                // Handle initial state
+                this.setState(this.state);
 
-                this.hideTooltip = function (e) {
-                    timeoutHide = setTimeout(
-                        function () {
-                            self._tooltip.hide();
-                            self._removeFocus();
-                        },
-                        300);
-                };
+                this.afterInit(tooltipNode);
+            },
+
+            getTooltipNode: function () {
+                return this._tooltip.getElement();
+            },
+
+            state: {
+                highlight: null,
+                isStuck: false
+            },
+
+            setState: function (newState) {
+                var prev = this.state;
+                var state = this.state = Object.assign({}, prev, newState);
+                prev.highlight = prev.highlight || {data: null, cursor: null, unit: null};
+                state.highlight = state.highlight || {data: null, cursor: null, unit: null};
+
+                // If stuck, treat that data has not changed
+                if (state.isStuck && prev.highlight.data) {
+                    state.highlight = prev.highlight;
+                }
+
+                // Show/hide tooltip
+                if (state.highlight.data !== prev.highlight.data) {
+                    if (state.highlight.data) {
+                        this.hideTooltip();
+                        this.showTooltip(
+                            state.highlight.data,
+                            state.highlight.cursor
+                        );
+                        this._setTargetSvgClass(true);
+                        requestAnimationFrame(function () {
+                            this._setTargetSvgClass(true);
+                        }.bind(this));
+                    } else if (!state.isStuck && prev.highlight.data && !state.highlight.data) {
+                        this._removeFocus();
+                        this.hideTooltip();
+                        this._setTargetSvgClass(false);
+                    }
+                }
+
+                // Update tooltip position
+                if (state.highlight.data && (
+                    !prev.highlight.cursor ||
+                    state.highlight.cursor.x !== prev.highlight.cursor.x ||
+                    state.highlight.cursor.y !== prev.highlight.cursor.y
+                )) {
+                    this._tooltip.position(state.highlight.cursor.x, state.highlight.cursor.y);
+                }
+
+                // Stick/unstick tooltip
+                var tooltipNode = this.getTooltipNode();
+                if (state.isStuck !== prev.isStuck) {
+                    if (state.isStuck) {
+                        window.addEventListener('click', this._outerClickHandler, true);
+                        tooltipNode.classList.add('stuck');
+                        this._setTargetStuckClass(true);
+                        this._tooltip.updateSize();
+                    } else {
+                        window.removeEventListener('click', this._outerClickHandler, true);
+                        tooltipNode.classList.remove('stuck');
+                        // NOTE: Prevent showing tooltip immediately
+                        // after pointer events appear.
+                        requestAnimationFrame(function () {
+                            this._setTargetStuckClass(false);
+                        }.bind(this));
+                    }
+                }
+            },
+
+            showTooltip: function (data, cursor) {
+
+                var content = this.getTooltipNode().querySelectorAll('.i-role-content')[0];
+                if (content) {
+                    var fields = (
+                        settings.fields
+                        ||
+                        ((typeof settings.getFields === 'function') && settings.getFields(this._chart))
+                        ||
+                        Object.keys(data)
+                    );
+                    content.innerHTML = this.render(data, fields);
+                }
 
                 this._tooltip
-                    .getElement()
-                    .addEventListener('mouseover', function (e) {
-                        clearTimeout(timeoutHide);
-                        self._accentFocus();
-                    }, false);
+                    .position(cursor.x, cursor.y)
+                    .place('bottom-right')
+                    .show()
+                    .updateSize();
+            },
 
-                this._tooltip
-                    .getElement()
-                    .addEventListener('mouseleave', function (e) {
-                        self._tooltip.hide();
-                        self._removeFocus();
-                    }, false);
-
-                this.afterInit(this._tooltip.getElement());
+            hideTooltip: function (e) {
+                window.removeEventListener('click', this._outerClickHandler, true);
+                this._tooltip.hide();
             },
 
             destroy: function () {
-                this._removeFocus();
+                window.removeEventListener('scroll', this._scrollHandler, true);
+                this._setTargetSvgClass(false);
+                this.setState({
+                    highlight: null,
+                    isStuck: false
+                });
                 this._tooltip.destroy();
+            },
+
+            _subscribeToHover: function () {
+
+                var elementsToMatch = [
+                    'ELEMENT.LINE',
+                    'ELEMENT.AREA',
+                    'ELEMENT.PATH',
+                    'ELEMENT.INTERVAL',
+                    'ELEMENT.INTERVAL.STACKED',
+                    'ELEMENT.POINT'
+                ];
+
+                this._chart
+                    .select(function (node) {
+                        return (elementsToMatch.indexOf(node.config.type) >= 0);
+                    })
+                    .forEach(function (node) {
+
+                        node.on('data-hover', function (sender, e) {
+                            var bodyRect = document.body.getBoundingClientRect();
+                            this.setState({
+                                highlight: (e.data ? {
+                                    data: e.data,
+                                    cursor: {
+                                        x: (e.event.clientX - bodyRect.left),
+                                        y: (e.event.clientY - bodyRect.top)
+                                    },
+                                    unit: sender
+                                } : null)
+                            });
+                        }.bind(this));
+
+                        node.on('data-click', function (sender, e) {
+                            var bodyRect = document.body.getBoundingClientRect();
+                            this.setState(e.data ? {
+                                highlight: {
+                                    data: e.data,
+                                    cursor: {
+                                        x: (e.event.clientX - bodyRect.left),
+                                        y: (e.event.clientY - bodyRect.top)
+                                    },
+                                    unit: sender
+                                },
+                                isStuck: true
+                            } : {
+                                    highlight: null,
+                                    isStuck: null
+                                });
+                        }.bind(this));
+                    }, this);
             },
 
             afterInit: function (tooltipNode) {
@@ -189,13 +307,15 @@
 
             renderItem: function (label, formattedValue, fieldKey, fieldVal) {
                 return this.itemTemplate({
-                    label: label,
-                    value: formattedValue
+                    label: escapeHtml(label),
+                    value: escapeHtml(formattedValue)
                 });
             },
 
             _getFormat: function (k) {
-                var meta = this._metaInfo[k] || {format: _.identity};
+                var meta = this._metaInfo[k] || {format: function (x) {
+                    return String(x);
+                }};
                 return meta.format;
             },
 
@@ -204,51 +324,21 @@
                 return meta.label;
             },
 
-            _appendFocus: function (g, x, y) {
-
-                if (this.circle) {
-                    this.circle.remove();
-                }
-
-                this.circle = d3
-                    .select(g)
-                    .append('circle')
-                    .attr({
-                        r: 0,
-                        cx: x,
-                        cy: y
-                    });
-
-                return this.circle;
-            },
-
             _removeFocus: function () {
-                if (this.circle) {
-                    this.circle.remove();
-                }
-
-                if (this._currentUnit) {
-                    this._currentUnit.fire('highlight-data-points', function (row) {
-                        return false;
+                var filter = function () {
+                    return null;
+                };
+                this._chart
+                    .select(function () {
+                        return true;
+                    }).forEach(function (unit) {
+                        unit.fire('highlight', filter);
+                        unit.fire('highlight-data-points', filter);
                     });
-                }
-
-                return this;
-            },
-
-            _accentFocus: function () {
-                var self = this;
-                if (self._currentUnit && self._currentData) {
-                    self._currentUnit.fire('highlight-data-points', function (row) {
-                        return row === self._currentData;
-                    });
-                }
-
-                return this;
             },
 
             _reveal: function () {
-                var aggregatedRow = this._currentData;
+                var aggregatedRow = this.state.highlight.data;
                 var groupFields = (settings.aggregationGroupFields || []);
                 var descFilters = groupFields.reduce(function (memo, k) {
                     if (aggregatedRow.hasOwnProperty(k)) {
@@ -268,7 +358,7 @@
                             return function (row) {
                                 return JSON.stringify(row) !== JSON.stringify(element);
                             };
-                        }(this._currentData))
+                        }(this.state.highlight.data))
                     });
                 this._chart.refresh();
             },
@@ -280,6 +370,19 @@
                 this._skipInfo = info.skip;
 
                 this._subscribeToHover();
+
+                this.setState({
+                    highlight: null,
+                    isStuck: false
+                });
+            },
+
+            _setTargetSvgClass: function (isSet) {
+                d3.select(this._chart.getSVG()).classed(TARGET_SVG_CLASS, isSet);
+            },
+
+            _setTargetStuckClass: function (isSet) {
+                d3.select(this._chart.getLayout().layout).classed(TARGET_STUCK_CLASS, isSet);
             },
 
             templateRevealAggregation: [
@@ -305,83 +408,12 @@
                 '<%= excludeTemplate %>'
             ].join(''),
 
-            itemTemplate: _.template([
+            itemTemplate: utils.template([
                 '<div class="graphical-report__tooltip__list__item">',
                 '<div class="graphical-report__tooltip__list__elem"><%=label%></div>',
                 '<div class="graphical-report__tooltip__list__elem"><%=value%></div>',
                 '</div>'
             ].join('')),
-
-            _subscribeToHover: function () {
-                var self = this;
-
-                var elementsToMatch = [
-                    'ELEMENT.LINE',
-                    'ELEMENT.AREA',
-                    'ELEMENT.PATH',
-                    'ELEMENT.INTERVAL',
-                    'ELEMENT.INTERVAL.STACKED'
-                ];
-
-                var mouseOverHandler = function (sender, e) {
-                    var data = e.data;
-                    var coords = (settings.dockToData ?
-                        self._getNearestDataCoordinates(sender, e) :
-                        self._getMouseCoordinates(sender, e));
-
-                    self._currentUnit = sender;
-                    self.showTooltip(data, {x: coords.left, y: coords.top});
-                };
-
-                this._chart
-                    .select(function (node) {
-                        return true;
-                    })
-                    .forEach(function (node) {
-
-                        node.on('mouseout.chart', function (sender, e) {
-                            self.hideTooltip(e);
-                        });
-
-                        node.on('mouseover.chart', mouseOverHandler);
-
-                        if (elementsToMatch.indexOf(node.config.type) > -1) {
-                            node.on('mousemove.chart', mouseOverHandler);
-                        }
-                    });
-            },
-
-            _getNearestDataCoordinates: function (sender, e) {
-
-                var data = e.data;
-                var xLocal;
-                var yLocal;
-
-                var xScale = sender.getScale('x');
-                var yScale = sender.getScale('y');
-
-                if (sender.config.type === 'ELEMENT.INTERVAL.STACKED') {
-                    var view = e.event.chartElementViewModel;
-                    xLocal = xScale(view.x);
-                    yLocal = yScale(view.y);
-                } else {
-                    xLocal = xScale(data[xScale.dim]);
-                    yLocal = yScale(data[yScale.dim]);
-                }
-
-                var g = e.event.target.parentNode;
-                var c = this._appendFocus(g, xLocal, yLocal);
-
-                return getOffsetRect(c.node());
-            },
-
-            _getMouseCoordinates: function (sender, e) {
-
-                var xLocal = e.event.pageX;
-                var yLocal = e.event.pageY;
-
-                return {left: xLocal, top: yLocal};
-            },
 
             _getFormatters: function () {
 
@@ -398,13 +430,37 @@
                     }
                 });
 
+                var toLabelValuePair = function (x) {
+
+                    var res = {};
+
+                    if (typeof x === 'function' || typeof x === 'string') {
+                        res = {format: x};
+                    } else if (utils.isObject(x)) {
+                        res = utils.pick(x, 'label', 'format', 'nullAlias');
+                    }
+
+                    return res;
+                };
+
                 Object.keys(settings.formatters).forEach(function (k) {
-                    var fmt = settings.formatters[k];
-                    info[k] = info[k] || {label: k, nullAlias: ('No ' + k)};
-                    info[k].format = (_.isFunction(fmt) ?
-                            (fmt) :
-                            (tauCharts.api.tickFormat.get(fmt, info[k].nullAlias))
-                    );
+
+                    var fmt = toLabelValuePair(settings.formatters[k]);
+
+                    info[k] = Object.assign(
+                        ({label: k, nullAlias: ('No ' + k)}),
+                        (info[k] || {}),
+                        (utils.pick(fmt, 'label', 'nullAlias')));
+
+                    if (fmt.hasOwnProperty('format')) {
+                        info[k].format = (typeof fmt.format === 'function') ?
+                            (fmt.format) :
+                            (tauCharts.api.tickFormat.get(fmt.format, info[k].nullAlias));
+                    } else {
+                        info[k].format = (info[k].hasOwnProperty('format')) ?
+                            (info[k].format) :
+                            (tauCharts.api.tickFormat.get(null, info[k].nullAlias));
+                    }
                 });
 
                 return {

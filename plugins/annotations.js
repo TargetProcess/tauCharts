@@ -1,18 +1,19 @@
 (function (factory) {
     if (typeof define === 'function' && define.amd) {
-        define(['tauCharts'], function (tauPlugins) {
+        define(['taucharts'], function (tauPlugins) {
             return factory(tauPlugins);
         });
     } else if (typeof module === 'object' && module.exports) {
-        var tauPlugins = require('tauCharts');
+        var tauPlugins = require('taucharts');
         module.exports = factory(tauPlugins);
     } else {
         factory(this.tauCharts);
     }
 })(function (tauCharts) {
 
-    var _ = tauCharts.api._;
+    var utils = tauCharts.api.utils;
     var d3 = tauCharts.api.d3;
+    var pluginsSDK = tauCharts.api.pluginsSDK;
 
     var addToUnits = function (units, newUnit, position) {
         if (position === 'front') {
@@ -23,15 +24,163 @@
         }
     };
 
+    var stretchByOrdinalAxis = function (noteItem) {
+        return function (model) {
+            var res = {};
+            var seed = [
+                {
+                    dim: model.scaleX.dim,
+                    scale: model.scaleY,
+                    method: 'yi',
+                    k: -1
+                },
+                {
+                    dim: model.scaleY.dim,
+                    scale: model.scaleX,
+                    method: 'xi',
+                    k: 1
+                },
+                {
+                    dim: null,
+                    scale: null,
+                    method: null
+                }
+            ].find(function (a) {
+                return a.dim === noteItem.dim;
+            });
+
+            if (seed.method === null) {
+                return res;
+            }
+
+            var marker = '__pos__';
+            var kAxis = seed.k;
+            var koeff = {l: -0.5, r: 0.5};
+            var method = seed.method;
+            var scale = seed.scale;
+            res[method] = (function (row) {
+                var k = (koeff[row[marker]] || 0) * kAxis;
+                return (scale.discrete ?
+                    (model[method](row) + scale.stepSize(row[scale.dim]) * k) :
+                    (model[method](row)));
+            });
+            return res;
+        };
+    };
+
     function annotations(xSettings) {
 
-        var settings = _.defaults(xSettings || {}, {});
+        var settings = utils.defaults(xSettings || {}, {items: []});
         var textScaleName = 'annotation_text';
 
         return {
 
             init: function (chart) {
                 this._chart = chart;
+
+                var specRef = chart.getSpec();
+                specRef.scales[textScaleName] = {type: 'value', dim: 'text', source: '?'};
+                specRef.transformations = specRef.transformations || {};
+
+                specRef.transformations.dataRange = function (data, metaInfo) {
+
+                    var from = metaInfo.from;
+                    var to = metaInfo.to;
+
+                    var primaryScaleInfo = chart.getScaleInfo(metaInfo.primaryScale);
+
+                    if ((primaryScaleInfo.scaleType === 'period')) {
+                        var periodCaster = tauCharts.api.tickPeriod.get(primaryScaleInfo.period);
+                        from = periodCaster.cast(new Date(metaInfo.from));
+                        to = periodCaster.cast(new Date(metaInfo.to));
+                    }
+
+                    var isX0OutOfDomain = !primaryScaleInfo.isInDomain(from);
+                    var isX1OutOfDomain = !primaryScaleInfo.isInDomain(to);
+
+                    var isOutOfDomain = (primaryScaleInfo.discrete ?
+                        (isX0OutOfDomain || isX1OutOfDomain) :
+                        (isX0OutOfDomain && isX1OutOfDomain)
+                    );
+
+                    if (isOutOfDomain) {
+                        console.log('Annotation is out of domain');
+                        return [];
+                    }
+
+                    var secondaryScaleInfo = chart.getScaleInfo(metaInfo.secondaryScale);
+                    var secDomain = secondaryScaleInfo.domain();
+                    var boundaries = [secDomain[0], secDomain[secDomain.length - 1]];
+
+                    var a = primaryScaleInfo.dim;
+                    var b = secondaryScaleInfo.dim;
+                    var z = '__pos__';
+
+                    var leftBtm = {};
+                    var leftTop = {};
+                    var rghtTop = {};
+                    var rghtBtm = {};
+
+                    leftBtm[z] = 'l';
+                    leftBtm[a] = from;
+                    leftBtm[b] = boundaries[0];
+
+                    leftTop[z] = 'l';
+                    leftTop[a] = to;
+                    leftTop[b] = boundaries[0];
+
+                    rghtTop[z] = 'r';
+                    rghtTop[a] = to;
+                    rghtTop[b] = boundaries[1];
+
+                    rghtBtm[z] = 'r';
+                    rghtBtm[a] = from;
+                    rghtBtm[b] = boundaries[1];
+
+                    ((metaInfo.axis === 'y') ? rghtTop : rghtBtm).text = metaInfo.text;
+
+                    return [leftBtm, leftTop, rghtTop, rghtBtm];
+                };
+
+                specRef.transformations.dataLimit = function (data, metaInfo) {
+
+                    var primary = metaInfo.primaryScale;
+                    var secondary = metaInfo.secondaryScale;
+
+                    var primaryScaleInfo = chart.getScaleInfo(primary);
+                    var from = ((primaryScaleInfo.scaleType === 'period') ?
+                        tauCharts.api.tickPeriod.get(primaryScaleInfo.period).cast(new Date(metaInfo.from)) :
+                        metaInfo.from);
+                    var isOutOfDomain = (!primaryScaleInfo.isInDomain(from));
+
+                    if (isOutOfDomain) {
+                        console.log('Annotation is out of domain');
+                        return [];
+                    }
+
+                    var secondaryScaleInfo = chart.getScaleInfo(secondary);
+                    var secDomain = secondaryScaleInfo.domain();
+                    var boundaries = [secDomain[0], secDomain[secDomain.length - 1]];
+
+                    var src = {};
+                    var dst = {};
+
+                    var a = primaryScaleInfo.dim;
+                    var b = secondaryScaleInfo.dim;
+                    var z = '__pos__';
+
+                    src[a] = from;
+                    src[b] = boundaries[0];
+                    src[z] = 'l';
+
+                    dst[a] = from;
+                    dst[b] = boundaries[1];
+                    dst[z] = 'r';
+
+                    dst.text = metaInfo.text;
+
+                    return [src, dst];
+                };
             },
 
             addAreaNote: function (specRef, coordsUnit, noteItem) {
@@ -39,75 +188,53 @@
                 var xScale = specRef.scales[coordsUnit.x];
                 var yScale = specRef.scales[coordsUnit.y];
 
-                var axis = ((noteItem.dim === xScale.dim) ?
-                    ('x') :
+                var axes = ((noteItem.dim === xScale.dim) ?
+                    ['x', 'y'] :
                     ((noteItem.dim === yScale.dim) ?
-                        ('y') :
+                        ['y', 'x'] :
                         (null)));
 
-                if (axis === null) {
+                if (axes === null) {
                     console.log('Annotation doesn\'t match any data field');
                     return;
                 }
 
                 var from = noteItem.val[0];
                 var to = noteItem.val[1];
-                var primaryScaleInfo = this._chart.getScaleInfo(coordsUnit[axis]);
-                var domain = primaryScaleInfo.domain();
-                var min = domain[0];
-                var max = domain[domain.length - 1];
-
-                var isOutOfDomain = ((primaryScaleInfo.discrete) ?
-                    ((domain.indexOf(from) === -1) || (domain.indexOf(to) === -1)) :
-                    (isNaN(min) || isNaN(max) || (from > max) || (to < min)));
-
-                if (isOutOfDomain) {
-                    console.log('Annotation is out of domain');
-                    return;
-                }
-
-                var secAxis = ((axis === 'x') ? 'y' : 'x');
-                var secondaryScaleInfo = this._chart.getScaleInfo(coordsUnit[secAxis]);
-                var secDomain = secondaryScaleInfo.domain();
-                var boundaries = [secDomain[0], secDomain[secDomain.length - 1]];
 
                 var annotatedArea = {
                     type: 'ELEMENT.PATH',
                     namespace: 'annotations',
                     x: coordsUnit.x,
                     y: coordsUnit.y,
-                    color: 'color:default',
-                    text: textScaleName,
+                    color: noteItem.colorScaleName,
+                    label: textScaleName,
                     expression: {
                         inherit: false,
                         operator: 'none',
                         params: [],
                         source: '/'
                     },
+                    transformModel: [stretchByOrdinalAxis(noteItem)],
                     transformation: [
                         {
                             type: 'dataRange',
                             args: {
-                                axis: axis,
+                                axis: axes[0],
                                 text: noteItem.text,
                                 from: from,
                                 to: to,
-                                x: xScale.dim,
-                                y: yScale.dim,
-                                boundaries: boundaries
+                                primaryScale: coordsUnit[axes[0]],
+                                secondaryScale: coordsUnit[axes[1]]
                             }
                         }
                     ],
                     guide: {
-                        showAnchors: false,
+                        showAnchors: 'never',
                         cssClass: 'graphical-report__annotation-area',
-                        color: {
-                            fill: noteItem.color
-                        },
-                        text: {
+                        label: {
                             fontColor: noteItem.color,
-                            paddingX: ((axis === 'x') ? 5 : -5),
-                            paddingY: ((axis === 'x') ? 5 : 15)
+                            position: ['r', 'b', 'keep-in-box']
                         }
                     }
                 };
@@ -120,43 +247,28 @@
                 var xScale = specRef.scales[coordsUnit.x];
                 var yScale = specRef.scales[coordsUnit.y];
 
-                var axis = ((noteItem.dim === xScale.dim) ?
-                    ('x') :
+                var axes = ((noteItem.dim === xScale.dim) ?
+                    ['x', 'y'] :
                     ((noteItem.dim === yScale.dim) ?
-                        ('y') :
+                        ['y', 'x'] :
                         (null)));
 
-                if (axis === null) {
+                if (axes === null) {
                     console.log('Annotation doesn\'t match any field');
                     return;
                 }
 
                 var text = noteItem.text;
                 var from = noteItem.val;
-                var primaryScaleInfo = this._chart.getScaleInfo(coordsUnit[axis]);
-                var domain = primaryScaleInfo.domain();
-
-                var isOutOfDomain = ((primaryScaleInfo.discrete) ?
-                    (domain.indexOf(from) === -1) :
-                    ((from > domain[domain.length - 1]) || (from < domain[0])));
-
-                if (isOutOfDomain) {
-                    console.log('Annotation is out of domain');
-                    return;
-                }
-
-                var secAxis = ((axis === 'x') ? 'y' : 'x');
-                var secondaryScaleInfo = this._chart.getScaleInfo(coordsUnit[secAxis]);
-                var secDomain = secondaryScaleInfo.domain();
-                var boundaries = [secDomain[0], secDomain[secDomain.length - 1]];
 
                 var annotatedLine = {
                     type: 'ELEMENT.LINE',
                     namespace: 'annotations',
                     x: coordsUnit.x,
                     y: coordsUnit.y,
-                    text: textScaleName,
-                    color: 'color:default',
+                    label: textScaleName,
+                    color: noteItem.colorScaleName,
+                    transformModel: [stretchByOrdinalAxis(noteItem)],
                     expression: {
                         inherit: false,
                         operator: 'none',
@@ -167,26 +279,20 @@
                         {
                             type: 'dataLimit',
                             args: {
-                                axis: axis,
                                 from: from,
                                 text: text,
-                                x: xScale.dim,
-                                y: yScale.dim,
-                                boundaries: boundaries
+                                primaryScale: coordsUnit[axes[0]],
+                                secondaryScale: coordsUnit[axes[1]]
                             }
                         }
                     ],
                     guide: {
-                        showAnchors: false,
+                        showAnchors: 'never',
                         widthCssClass: 'graphical-report__line-width-2',
                         cssClass: 'graphical-report__annotation-line',
-                        color: {
-                            fill: noteItem.color
-                        },
-                        text: {
+                        label: {
                             fontColor: noteItem.color,
-                            paddingX: ((axis === 'x') ? 5 : -5),
-                            paddingY: ((axis === 'x') ? 5 : -5)
+                            position: ['r', 'b', 'keep-in-box']
                         }
                     }
                 };
@@ -197,57 +303,6 @@
             onSpecReady: function (chart, specRef) {
 
                 var self = this;
-                specRef.scales[textScaleName] = {type: 'value', dim: 'text', source: '?'};
-                specRef.transformations = specRef.transformations || {};
-
-                specRef.transformations.dataRange = function (data, metaInfo) {
-                    var a = ((metaInfo.axis === 'x') ? metaInfo.x : metaInfo.y);
-                    var b = ((metaInfo.axis === 'x') ? metaInfo.y : metaInfo.x);
-
-                    var leftBtm = {};
-                    var leftTop = {};
-                    var rghtTop = {};
-                    var rghtBtm = {};
-
-                    leftBtm[a] = metaInfo.from;
-                    leftBtm[b] = metaInfo.boundaries[0];
-
-                    leftTop[a] = metaInfo.from;
-                    leftTop[b] = metaInfo.boundaries[1];
-
-                    rghtTop[a] = metaInfo.to;
-                    rghtTop[b] = metaInfo.boundaries[1];
-
-                    rghtBtm[a] = metaInfo.to;
-                    rghtBtm[b] = metaInfo.boundaries[0];
-
-                    if (metaInfo.axis === 'x') {
-                        leftTop.text = metaInfo.text;
-                    } else {
-                        rghtTop.text = metaInfo.text;
-                    }
-
-                    return [leftBtm, leftTop, rghtTop, rghtBtm];
-                };
-
-                specRef.transformations.dataLimit = function (data, metaInfo) {
-                    var a = ((metaInfo.axis === 'x') ? metaInfo.x : metaInfo.y);
-                    var b = ((metaInfo.axis === 'x') ? metaInfo.y : metaInfo.x);
-
-                    var src = {};
-                    var dst = {};
-
-                    src[a] = metaInfo.from;
-                    src[b] = metaInfo.boundaries[0];
-
-                    dst[a] = metaInfo.from;
-                    dst[b] = metaInfo.boundaries[1];
-
-                    dst.text = metaInfo.text;
-
-                    return [src, dst];
-                };
-
                 var units = [];
                 chart.traverseSpec(specRef, function (unit) {
                     if (unit && (unit.type === 'COORDS.RECT') && (unit.units)) {
@@ -255,18 +310,45 @@
                     }
                 });
 
+                var specApi = pluginsSDK.spec(specRef);
+
                 units.forEach(function (coordsUnit) {
 
-                    settings.items.forEach(function (item) {
+                    settings.items
+                        .map(function (item, i) {
 
-                        item.color = item.color || '#BD10E0'; // #4300FF / #FFAB00
+                            var color = (item.color || '#BD10E0').toLowerCase();
+                            var rgbCode = d3.rgb(color).toString().toUpperCase();
+                            if ((color !== 'black') && (rgbCode === '#000000')) {
+                                rgbCode = null;
+                            }
+                            var colorStr = rgbCode || color;
 
-                        if (_.isArray(item.val)) {
-                            self.addAreaNote(specRef, coordsUnit, item);
-                        } else {
-                            self.addLineNote(specRef, coordsUnit, item);
-                        }
-                    });
+                            var colorScaleName = 'annotation_color_' + i;
+                            specApi.addScale(
+                                colorScaleName,
+                                {
+                                    type: 'color',
+                                    source: '?',
+                                    brewer: [colorStr]
+                                });
+
+                            return {
+                                dim: item.dim,
+                                val: item.val,
+                                text: item.text,
+                                color: colorStr,
+                                position: item.position,
+                                colorScaleName: colorScaleName
+                            };
+                        })
+                        .forEach(function (item) {
+                            if (Array.isArray(item.val)) {
+                                self.addAreaNote(specRef, coordsUnit, item);
+                            } else {
+                                self.addLineNote(specRef, coordsUnit, item);
+                            }
+                        });
                 });
             }
         };

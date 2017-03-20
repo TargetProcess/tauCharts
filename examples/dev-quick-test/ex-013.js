@@ -1,7 +1,7 @@
-window.samples.push({
+dev.spec({
 
     type: 'parallel',
-    data: cars,
+    data: dev.dataset('cars'),
     columns: [
         'economy (mpg)',
         'cylinders',
@@ -17,7 +17,8 @@ window.samples.push({
                 year: [80, 81]
             }
         }),
-        tauCharts.api.plugins.get('parallel-tooltip')(),
+        tauCharts.api.plugins.get('parallel-tooltip')()
+        ,
         tauCharts.api.plugins.get('geomap-legend')()
     ]
 

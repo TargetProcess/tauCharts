@@ -2,7 +2,7 @@ var now = new Date();
 
 var gendata = function (num) {
     var zzz = num || 100;
-    return _.times(zzz, _.identity)
+    return utils.range(zzz)
         .reduce(function (memo, i) {
             var x = i * (Math.PI / 100);
 
@@ -28,7 +28,7 @@ var gendata = function (num) {
         }, []);
 };
 
-window.samples.push({
+dev.spec({
 
     //dimensions: {
     //    x: {type: 'order', scale: 'period'},
@@ -47,7 +47,7 @@ window.samples.push({
         {
             // x: {tickPeriod: 'day'},
             y: {
-                autoScale: false,
+                nice: false,
                 min: -20,
                 max: 25,
                 label: 'Sinus'
@@ -66,7 +66,7 @@ window.samples.push({
                     type: 'area',
                     y: 'cos',
                     guide: {
-                        autoScale: false,
+                        nice: false,
                         label: 'Cosinus'
                     }
                 }
@@ -75,7 +75,7 @@ window.samples.push({
                     type: 'line',
                     y: 'r1',
                     guide: {
-                        autoScale: false,
+                        nice: false,
                         label: 'Random'
                     }
                 }

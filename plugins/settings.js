@@ -1,21 +1,21 @@
 (function (factory) {
     if (typeof define === 'function' && define.amd) {
-        define(['tauCharts'], function (tauPlugins) {
+        define(['taucharts'], function (tauPlugins) {
             return factory(tauPlugins);
         });
     } else if (typeof module === 'object' && module.exports) {
-        var tauPlugins = require('tauCharts');
+        var tauPlugins = require('taucharts');
         module.exports = factory(tauPlugins);
     } else {
         factory(this.tauCharts);
     }
 })(function (tauCharts) {
 
-    var _ = tauCharts.api._;
+    var utils = tauCharts.api.utils;
 
     function ChartSettings(xSettings) {
 
-        var pluginSettings = _.defaults(
+        var pluginSettings = utils.defaults(
             xSettings || {},
             {
                 show: true,
@@ -59,7 +59,7 @@
                 }
             },
 
-            template: _.template(
+            template: utils.template(
                 [
                     '<div class="graphical-report__chartsettingspanel">',
                         '<div>',

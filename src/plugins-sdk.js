@@ -1,4 +1,3 @@
-import {default as _} from 'underscore';
 import {FormatterRegistry} from './formatter-registry';
 import {Unit} from './plugins-sdk/unit';
 import {Spec} from './plugins-sdk/spec';
@@ -63,7 +62,7 @@ class PluginsSDK {
 
             var label = guide.label;
             var guideLabel = (guide.label || {});
-            memoRef[scale.dim].label.push(_.isString(label) ?
+            memoRef[scale.dim].label.push((typeof label === 'string') ?
                     (label) :
                     (guideLabel._original_text || guideLabel.text)
             );
@@ -100,20 +99,16 @@ class PluginsSDK {
                 fillSlot(memo, config, 'size');
             }
 
+            if (config.hasOwnProperty('label') && !isEmptyScale(config.label)) {
+                fillSlot(memo, config, 'label');
+            }
+
             return memo;
 
         }, {});
 
         var choiceRule = function (arr, defaultValue) {
-
-            var val = _(arr)
-                .chain()
-                .filter(_.identity)
-                .uniq()
-                .first()
-                .value();
-
-            return val || defaultValue;
+            return arr.filter((x) => x)[0] || defaultValue;
         };
 
         return Object
@@ -125,7 +120,9 @@ class PluginsSDK {
                 memo[k].tickLabel = choiceRule(memo[k].tickLabel, null);
 
                 // very special case for dates
-                var format = (memo[k].format === 'x-time-auto') ? 'day' : memo[k].format;
+                var format = (memo[k].format === 'x-time-auto') ?
+                    (spec.settings.utcTime ? 'day-utc' : 'day') :
+                    memo[k].format;
                 var nonVal = memo[k].nullAlias;
                 var fnForm = format ?
                     (FormatterRegistry.get(format, nonVal)) :

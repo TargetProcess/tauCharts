@@ -1,8 +1,6 @@
-import {Point}      from '../elements/element.point';
-import {Line}       from '../elements/element.line';
-import {Interval}   from '../elements/element.interval';
-import {StackedInterval} from '../elements/element.interval.stacked';
-import {default as _} from 'underscore';
+import {GenericCartesian}   from '../elements/element.generic.cartesian';
+import d3 from 'd3';
+
 var traverseJSON = (srcObject, byProperty, fnSelectorPredicates, funcTransformRules) => {
 
     var rootRef = funcTransformRules(fnSelectorPredicates(srcObject), srcObject);
@@ -259,36 +257,74 @@ var deepClone = (function () {
 
 })();
 var chartElement = [
-    Interval,
-    Point,
-    Line,
-    StackedInterval
+    GenericCartesian
 ];
+
+var testColorCode = ((x) => (/^(#|rgb\(|rgba\()/.test(x)));
+
+// TODO Remove this configs and its associated methods
+// which are just for templating in some plugins
+var noMatch = /(.)^/;
+
+let map = {
+    '&': '&amp;',
+    '<': '&lt;',
+    '>': '&gt;',
+    '"': '&quot;',
+    '\'': '&#x27;',
+    '`': '&#x60;'
+};
+let escapes = {
+    '\'': '\'',
+    '\\': '\\',
+    '\r': 'r',
+    '\n': 'n',
+    '\u2028': 'u2028',
+    '\u2029': 'u2029'
+};
+
+let escaper = /\\|'|\r|\n|\u2028|\u2029/g;
+
+let source = '(?:' + Object.keys(map).join('|') + ')';
+let testRegexp = RegExp(source);
+let replaceRegexp = RegExp(source, 'g');
+
+let templateSettings = {
+    evaluate: /<%([\s\S]+?)%>/g,
+    interpolate: /<%=([\s\S]+?)%>/g,
+    escape: /<%-([\s\S]+?)%>/g
+};
+// End of plugin configs
+
 var utils = {
     clone(obj) {
         return deepClone(obj);
     },
-    isArray(obj) {
-        return Array.isArray(obj);
+    isDate(obj) {
+        return obj instanceof Date && !isNaN(Number(obj));
+    },
+    isObject(obj) {
+        return obj != null && typeof obj === 'object';
     },
     isChartElement(element) {
         return chartElement.some(Element => element instanceof Element);
     },
-    isLineElement(element) {
-        return element instanceof Line;
-    },
-    autoScale(domain) {
+    niceZeroBased(domain) {
 
         var m = 10;
 
-        var low = Math.min.apply(null, domain);
-        var top = Math.max.apply(null, domain);
+        var low = parseFloat(Math.min(...domain).toFixed(15));
+        var top = parseFloat(Math.max(...domain).toFixed(15));
 
         if (low === top) {
             let k = (top >= 0) ? -1 : 1;
             let d = (top || 1);
             top = top - k * d / m;
         }
+
+        // include 0 by default
+        low = Math.min(0, low);
+        top = Math.max(0, top);
 
         var extent = [low, top];
         var span = extent[1] - extent[0];
@@ -319,19 +355,13 @@ var utils = {
 
         var limit = (step / 2);
 
-        if (low >= 0) {
-            // include 0 by default
-            extent[0] = 0;
-        } else {
-            var koeffLow = (deltaLow <= limit) ? step : 0;
+        if (low < 0) {
+            var koeffLow = (deltaLow >= limit) ? -deltaLow : 0;
             extent[0] = (extent[0] - koeffLow);
         }
 
-        if (top <= 0) {
-            // include 0 by default
-            extent[1] = 0;
-        } else {
-            var koeffTop = (deltaTop <= limit) ? step : 0;
+        if (top > 0) {
+            var koeffTop = (deltaTop >= limit) ? -deltaTop : 0;
             extent[1] = extent[1] + koeffTop;
         }
 
@@ -339,6 +369,37 @@ var utils = {
             parseFloat(extent[0].toFixed(15)),
             parseFloat(extent[1].toFixed(15))
         ];
+    },
+
+    niceTimeDomain(domain, niceIntervalFn, {utc} = {utc: false}) {
+
+        var [low, top] = d3.extent(domain);
+        var span = (top - low);
+        var d3TimeScale = (utc ? d3.time.scale.utc : d3.time.scale);
+
+        if (span === 0) {
+            var oneDay = 24 * 60 * 60 * 1000;
+            low = new Date(low.getTime() - oneDay);
+            top = new Date(top.getTime() + oneDay);
+            return d3TimeScale().domain([low, top]).nice(niceIntervalFn).domain();
+        }
+
+        var niceScale = d3TimeScale().domain([low, top]).nice(niceIntervalFn);
+        if (niceIntervalFn) {
+            return niceScale.domain();
+        }
+
+        var [niceLow, niceTop] = d3TimeScale().domain([low, top]).nice(niceIntervalFn).domain();
+        var ticks = niceScale.ticks();
+        var last = ticks.length - 1;
+        if ((low - niceLow) / (ticks[1] - niceLow) < 0.5) {
+            low = niceLow;
+        }
+        if ((niceTop - top) / (niceTop - ticks[last - 1]) < 0.5) {
+            top = niceTop;
+        }
+
+        return [low, top];
     },
 
     traverseJSON,
@@ -353,23 +414,21 @@ var utils = {
 
     generateRatioFunction: (dimPropName, paramsList, chartInstanceRef) => {
 
-        var unify = (v) => (v instanceof Date) ? v.getTime() : v;
+        var unify = (v) => utils.isDate(v) ? v.getTime() : v;
 
         var dataNewSnap = 0;
         var dataPrevRef = null;
-        var xHash = _.memoize(
+        var xHash = utils.memoize(
             (data, keys) => {
-                return _(data)
-                    .chain()
-                    .map((row) => (keys.reduce((r, k) => (r.concat(unify(row[k]))), [])))
-                    .uniq((t) => JSON.stringify(t))
+                return utils.unique(
+                    data.map((row) => (keys.reduce((r, k) => (r.concat(unify(row[k]))), []))),
+                    (t) => JSON.stringify(t))
                     .reduce((memo, t) => {
                         var k = t[0];
                         memo[k] = memo[k] || 0;
                         memo[k] += 1;
                         return memo;
-                    }, {})
-                    .value();
+                    }, {});
             },
             (data, keys) => {
                 let seed = (dataPrevRef === data) ? dataNewSnap : (++dataNewSnap);
@@ -396,7 +455,8 @@ var utils = {
             }
 
             var xTotal = (keys) => {
-                return _.values(xHash(data, keys)).reduce((sum, v) => (sum + v), 0);
+                var arr = xHash(data, keys);
+                return Object.keys(arr).reduce((sum, k) => (sum + arr[k]), 0);
             };
 
             var xPart = ((keys, k) => (xHash(data, keys)[k]));
@@ -437,6 +497,23 @@ var utils = {
 
     throttleLastEvent: function (last, eventType, handler, limitFromPrev = 0) {
 
+        if (limitFromPrev === 'requestAnimationFrame') {
+            var frameRequested = false;
+            return function (...args) {
+                if (!frameRequested) {
+                    requestAnimationFrame(() => {
+                        frameRequested = false;
+                    });
+                    // NOTE: Have to call sync cause
+                    // D3 event info disappears later.
+                    handler.apply(this, args);
+                    frameRequested = true;
+                }
+                last.e = eventType;
+                last.ts = new Date();
+            };
+        }
+
         return function (...args) {
             var curr = {e: eventType, ts: (new Date())};
             var diff = ((last.e && (last.e === curr.e)) ? (curr.ts - last.ts) : (limitFromPrev));
@@ -448,7 +525,220 @@ var utils = {
             last.e = curr.e;
             last.ts = curr.ts;
         };
+    },
+
+    splitEvenly: function (domain, parts) {
+        var min = domain[0];
+        var max = domain[1];
+        var segment = ((max - min) / (parts - 1));
+        var chunks = parts >= 2 ?
+            utils.range(parts - 2).map((n) => (min + segment * (n + 1)))
+            : [];
+        return [min, ...chunks, max];
+    },
+
+    extRGBColor: function (x) {
+        return (testColorCode(x) ? x : '');
+    },
+
+    extCSSClass: function (x) {
+        return (testColorCode(x) ? '' : x);
+    },
+
+    toRadian: function (degree) {
+        return (degree / 180) * Math.PI;
+    },
+
+    normalizeAngle: function (angle) {
+        if (Math.abs(angle) >= 360) {
+            angle = (angle % 360);
+        }
+
+        if (angle < 0) {
+            angle = (360 + angle);
+        }
+
+        return angle;
+    },
+
+    range: function (start, end) {
+        if (arguments.length ===  1) {
+            end = start;
+            start = 0;
+        }
+        let  arr = [];
+        for (let i = start; i < end; i++) {
+            arr.push(i);
+        }
+        return arr;
+    },
+
+    flatten: (array) => {
+        if (!Array.isArray(array)) {
+            return array;
+        }
+        return [].concat(...array.map(x => utils.flatten(x)));
+    },
+
+    unique: (array, func) => {
+        var hash = {};
+        var result = [];
+        var len = array.length;
+        var hasher = func || ((x) => String(x));
+        for (var i = 0; i < len; ++i) {
+            var item = array[i];
+            var key = hasher(item);
+            if (!hash.hasOwnProperty(key)) {
+                hash[key] = true;
+                result.push(item);
+            }
+        }
+        return result;
+    },
+
+    groupBy: (array, func) => {
+        return array.reduce((obj, v) => {
+            var group = func(v);
+            obj[group] = obj[group] || [];
+            obj[group].push(v);
+            return obj;
+        }, {});
+    },
+
+    union: (arr1, arr2) => utils.unique(arr1.concat(arr2)),
+
+    intersection: (arr1, arr2) => arr1.filter(x => arr2.indexOf(x) !== -1),
+
+    defaults: (obj, ...defaultObjs) => {
+        var length = defaultObjs.length;
+        if (length === 0 || !obj) {
+            return obj;
+        }
+        for (var index = 0; index < length; index++) {
+            var source = defaultObjs[index],
+                keys = utils.isObject(source) ? Object.keys(source) : [],
+                l = keys.length;
+            for (var i = 0; i < l; i++) {
+                var key = keys[i];
+                if (obj[key] === undefined) {
+                    obj[key] = source[key];
+                }
+            }
+        }
+        return obj;
+    },
+
+    omit: (obj, ...props) => {
+        let newObj = Object.assign({}, obj);
+        props.forEach((prop) => {
+            delete newObj[prop];
+        });
+        return newObj;
+    },
+
+    memoize: function(func, hasher) {
+        let memoize = function(key) {
+            let cache = memoize.cache;
+            let address = String(hasher ? hasher.apply(this, arguments) : key);
+            if (!cache.hasOwnProperty(address)) {
+                cache[address] = func.apply(this, arguments);
+            }
+            return cache[address];
+        };
+        memoize.cache = {};
+        return memoize;
+    },
+
+    createMultiSorter: function (...sorters) {
+        return (a, b) => {
+            var result = 0;
+            sorters.every((s) => {
+                result = s(a, b);
+                return (result === 0);
+            });
+            return result;
+        };
+    },
+
+    // TODO Remove this methods and its associated configs
+    // which are just for templating in some plugins
+    pick: (object, ...props) => {
+        var result = {};
+        if (object == null) {
+            return result;
+        }
+
+        return props.reduce((result, prop) => {
+            let value = object[prop];
+            if (value) {
+                result[prop] = value;
+            }
+            return result;
+        }, {});
+    },
+
+    escape: function(string) {
+        string = string == null ? '' : String(string);
+        return testRegexp.test(string) ? string.replace(replaceRegexp, match =>map[match]) : string;
+    },
+
+    template: (text, settings, oldSettings) => {
+        if (!settings && oldSettings){
+            settings = oldSettings;
+        }
+        settings = utils.defaults({}, settings, templateSettings);
+
+        var matcher = RegExp([
+            (settings.escape || noMatch).source,
+            (settings.interpolate || noMatch).source,
+            (settings.evaluate || noMatch).source
+        ].join('|') + '|$', 'g');
+
+        var index = 0;
+        var source = '__p+=\'';
+        text.replace(matcher, function(match, escape, interpolate, evaluate, offset) {
+            source += text.slice(index, offset).replace(escaper, match => '\\' + escapes[match]);
+            index = offset + match.length;
+
+            if (escape) {
+                source += '\'+\n((__t=(' + escape + '))==null?\'\':utils.escape(__t))+\n\'';
+            } else if (interpolate) {
+                source += '\'+\n((__t=(' + interpolate + '))==null?\'\':__t)+\n\'';
+            } else if (evaluate) {
+                source += '\';\n' + evaluate + '\n__p+=\'';
+            }
+
+            return match;
+        });
+        source += '\';\n';
+
+        if (!settings.variable) {
+            source = 'with(obj||{}){\n' + source + '}\n';
+        }
+
+        source = 'var __t,__p=\'\',__j=Array.prototype.join,' +
+            'print=function(){__p+=__j.call(arguments,\'\');};\n' +
+            source + 'return __p;\n';
+
+        try {
+            var render = new Function(settings.variable || 'obj', source);
+        } catch (e) {
+            e.source = source;
+            throw e;
+        }
+
+        var template = function(data) {
+            return render.call(this, data);
+        };
+
+        var argument = settings.variable || 'obj';
+        template.source = 'function(' + argument + '){\n' + source + '}';
+
+        return template;
     }
+
+    // End of plugins methods
+
 };
 
 export {utils};

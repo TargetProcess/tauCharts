@@ -1,7 +1,7 @@
 define(function (require) {
     var tauCharts = require('src/tau.charts'),
         $ = require('jquery'),
-        _ = require('underscore'),
+        utils = require('src/utils/utils').utils,
         d3 = require('d3');
 
     var testChartSettings = {
@@ -13,12 +13,12 @@ define(function (require) {
         },
 
         fitModel: null, // 'entire-view',
-        optimizeGuideBySize: false,
         layoutEngine: '', // 'EXTRACT'
         autoRatio: true,
+        syncPointerEvents: true,
 
-        getScrollBarWidth: function () {
-            return 10;
+        getScrollbarSize: function () {
+            return {width: 10, height: 10};
         },
 
         xAxisTickLabelLimit: 100,
@@ -36,6 +36,7 @@ define(function (require) {
         xAxisPadding: 20,
         yAxisPadding: 20,
 
+        xFontLabelDescenderLineHeight: 4,
         xFontLabelHeight: 15,
         yFontLabelHeight: 15,
 
@@ -80,7 +81,7 @@ define(function (require) {
     }
 
     function getGroupBar() {
-        return d3.selectAll('.i-role-bar-group')[0];
+        return [d3.select('.bar').node().parentNode];
     }
 
     function attrib(el, prop) {
@@ -139,7 +140,7 @@ define(function (require) {
     }
 
     function describeChart(name, config, data, fn, options) {
-        options = _.defaults(options || {}, {autoResize: false});
+        options = utils.defaults(options || {}, {autoResize: false});
         config.data = data;
         describe(name, function () {
             var context = {
@@ -182,8 +183,57 @@ define(function (require) {
         return originTimeout;
     }
 
+    // NOTE: To prevent layout jumps when content changes and scrollbar appears,
+    // currently padding is added as a placeholder for missing scrollbar.
+    var noScrollStyle = {
+        create: function () {
+            var style = document.getElementById('noScrollStyle');
+            if (!style) {
+                style = document.createElement('style');
+                style.id = 'noScrollStyle';
+                style.textContent = [
+                    '.graphical-report__layout__content, .graphical-report__layout__sidebar-right {',
+                    '  overflow: visible !important;',
+                    '  padding: 0 !important;',
+                    '}'
+                ].join('\n');
+                document.head.appendChild(style);
+            }
+        },
+        remove: function () {
+            var style = document.getElementById('noScrollStyle');
+            if (style) {
+                document.head.removeChild(style);
+            }
+        }
+    };
+
+    function destroyCharts() {
+        tauCharts.Chart.winAware
+            .slice(0)
+            .forEach(function (chart) {
+                chart.destroy();
+            });
+    }
+
+    function roundNumbersInString(str, fractionDigits) {
+        return str.replace(/-?\d+\.?\d*/g, function (match) {
+            return parseFloat(match).toFixed(fractionDigits);
+        });
+    }
+
+    function elementFromPoint(x, y) {
+        var scrollX = window.pageXOffset;
+        var scrollY = window.pageYOffset;
+        window.scrollTo(x, y);
+        var el = document.elementFromPoint(x - window.pageXOffset, y - window.pageYOffset);
+        window.scrollTo(scrollX, scrollY);
+        return el;
+    }
+
     return {
         toLocalDate: toLocalDate,
+        roundNumbersInString: roundNumbersInString,
         describePlot: describePlot,
         describeChart: describeChart,
         getDots: getDots,
@@ -196,11 +246,14 @@ define(function (require) {
         Deferred: $.Deferred,
         stubTimeout:stubTimeout,
         chartSettings: testChartSettings,
-        simulateEvent: function (name, element) {
+        simulateEvent: function (name, element, clientX = 0, clientY = 0) {
             var evt = document.createEvent("MouseEvents");
             evt.initMouseEvent(name, true, true, window,
-                0, 0, 0, 0, 0, false, false, false, false, 0, null);
+                0, 0, 0, clientX, clientY, false, false, false, false, 0, null);
             element.dispatchEvent(evt);
-        }
+        },
+        elementFromPoint,
+        noScrollStyle,
+        destroyCharts
     };
 });

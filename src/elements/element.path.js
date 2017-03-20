@@ -1,232 +1,97 @@
 import {CSS_PREFIX} from '../const';
-import {default as _} from 'underscore';
-import {Element} from './element';
-import {elementDecoratorShowText} from './decorators/show-text';
-import {elementDecoratorShowAnchors} from './decorators/show-anchors';
+import {GrammarRegistry} from '../grammar-registry';
+import {BasePath} from './element.path.base';
+import {utils} from '../utils/utils';
 import {getLineClassesByCount} from '../utils/css-class-map';
-import {default as d3} from 'd3';
-export class Path extends Element {
+import {d3_createPathTween} from '../utils/d3-decorators';
 
-    constructor(config) {
+const Path = {
 
-        super(config);
+    draw: BasePath.draw,
+    getClosestElement: BasePath.getClosestElement,
+    highlight: BasePath.highlight,
+    highlightDataPoints: BasePath.highlightDataPoints,
+    addInteraction: BasePath.addInteraction,
+    _getBoundsInfo: BasePath._getBoundsInfo,
+    _sortElements: BasePath._sortElements,
 
-        this.config = config;
-        this.config.guide = this.config.guide || {};
-        this.config.guide = _.defaults(
-            this.config.guide,
-            {
-                cssClass: '',
-                showAnchors: true,
-                anchorSize: 0.1,
-                color: {},
-                text: {}
-            }
-        );
+    init(xConfig) {
 
-        this.config.guide.text = _.defaults(
-            this.config.guide.text,
-            {
-                fontSize: 11,
-                paddingX: 0,
-                paddingY: 0
-            });
-        this.config.guide.color = _.defaults(this.config.guide.color || {}, {fill: null});
+        const config = BasePath.init(xConfig);
 
-        this.on('highlight', (sender, e) => this.highlight(e));
-        this.on('highlight-data-points', (sender, e) => this.highlightDataPoints(e));
+        config.transformRules = [
+            config.flip && GrammarRegistry.get('flip')
+        ].concat(config.transformModel || []);
 
-        if (this.config.guide.showAnchors) {
-            var activate = ((sender, e) => sender.fire('highlight-data-points', (row) => (row === e.data)));
-            var deactivate = ((sender) => sender.fire('highlight-data-points', () => (false)));
-            this.on('mouseover', activate);
-            this.on('mousemove', activate);
-            this.on('mouseout', deactivate);
-        }
-    }
-
-    createScales(fnCreateScale) {
-
-        var config = this.config;
-
-        this.xScale = fnCreateScale('pos', config.x, [0, config.options.width]);
-        this.yScale = fnCreateScale('pos', config.y, [config.options.height, 0]);
-        this.color = fnCreateScale('color', config.color, {});
-        this.size = fnCreateScale('size', config.size, {});
-        this.text = fnCreateScale('text', config.text, {});
-
-        return this
-            .regScale('x', this.xScale)
-            .regScale('y', this.yScale)
-            .regScale('size', this.size)
-            .regScale('color', this.color)
-            .regScale('text', this.text);
-    }
-
-    packFrameData(rows) {
-        return rows;
-    }
-
-    unpackFrameData(rows) {
-        return rows;
-    }
-
-    getDistance(mx, my, rx, ry) {
-        return Math.sqrt(Math.pow((mx - rx), 2) + Math.pow((my - ry), 2));
-    }
-
-    drawFrames(frames) {
-
-        var self = this;
-
-        var guide = this.config.guide;
-        var options = this.config.options;
-
-        var xScale = this.xScale;
-        var yScale = this.yScale;
-        var colorScale = this.color;
-        var textScale = this.text;
-
-        var countCss = getLineClassesByCount(frames.length);
-
-        const areaPref = `${CSS_PREFIX}area i-role-element area ${countCss} ${guide.cssClass} `;
-
-        var polygonPointsMapper = ((rows) => (rows
-            .map((d) => [xScale(d[xScale.dim]), yScale(d[yScale.dim])].join(','))
-            .join(' ')));
-
-        var updateArea = function () {
-
-            var path = this
-                .selectAll('polygon')
-                .data(({data: frame}) => [self.packFrameData(frame.data)]);
-            path.exit()
-                .remove();
-            path.attr('points', polygonPointsMapper);
-            path.enter()
-                .append('polygon')
-                .attr('points', polygonPointsMapper);
-
-            self.subscribe(path, function (rows) {
-
-                var m = d3.mouse(this);
-                var mx = m[0];
-                var my = m[1];
-
-                // d3.invert doesn't work for ordinal axes
-                var nearest = self
-                    .unpackFrameData(rows)
-                    .map((row) => {
-                        var rx = xScale(row[xScale.dim]);
-                        var ry = yScale(row[yScale.dim]);
-                        return {
-                            x: rx,
-                            y: ry,
-                            dist: self.getDistance(mx, my, rx, ry),
-                            data: row
-                        };
-                    })
-                    .sort((a, b) => (a.dist - b.dist)) // asc
-                    [0];
-
-                return nearest.data;
-            });
-
-            if (guide.showAnchors && !this.empty()) {
-
-                var anch = elementDecoratorShowAnchors({
-                    xScale,
-                    yScale,
-                    guide,
-                    container: this
-                });
-
-                self.subscribe(anch);
-            }
-
-            if (textScale.dim && !this.empty()) {
-                elementDecoratorShowText({
-                    guide,
-                    xScale,
-                    yScale,
-                    textScale,
-                    container: this
-                });
-            }
-        };
-
-        var updateGroups = (x) => {
-
-            return function () {
-
-                this.attr('class', ({data: f}) =>
-                    `${areaPref} ${colorScale(f.tags[colorScale.dim])} ${x} frame-${f.hash}`)
-                    .call(function () {
-
-                        if (guide.color.fill && !colorScale.dim) {
-                            this.style({
-                                fill: guide.color.fill,
-                                stroke: guide.color.fill
-                            });
-                        }
-
-                        updateArea.call(this);
+        config.adjustRules = [
+            ((prevModel, args) => {
+                const isEmptySize = prevModel.scaleSize.isEmptyScale();
+                const sizeCfg = utils.defaults(
+                    (config.guide.size || {}),
+                    {
+                        defMinSize: 2,
+                        defMaxSize: (isEmptySize ? 6 : 40)
                     });
-            };
+                const params = Object.assign(
+                    {},
+                    args,
+                    {
+                        defMin: sizeCfg.defMinSize,
+                        defMax: sizeCfg.defMaxSize,
+                        minLimit: sizeCfg.minSize,
+                        maxLimit: sizeCfg.maxSize
+                    });
+
+                return GrammarRegistry.get('adjustStaticSizeScale')(prevModel, params);
+            })
+        ];
+
+        return config;
+    },
+
+    buildModel(screenModel) {
+
+        const baseModel = BasePath.baseModel(screenModel);
+        const guide = this.node().config.guide;
+        const countCss = getLineClassesByCount(screenModel.model.scaleColor.domain().length);
+        const groupPref = `${CSS_PREFIX}area area i-role-path ${countCss} ${guide.cssClass} `;
+
+        baseModel.groupAttributes = {
+            class: (fiber) => `${groupPref} ${baseModel.class(fiber[0])} frame`
         };
 
-        var mapper = (f) => {
-            return {
-                data: {
-                    tags: f.key || {},
-                    hash: f.hash(),
-                    data: f.part()
-                },
-                uid: options.uid
-            };
+        baseModel.toPoint = (d) => ({
+            id: screenModel.id(d),
+            x: baseModel.x(d),
+            y: baseModel.y(d)
+        });
+
+        const pathPoints = (x, y) => {
+            return ((fiber) => (fiber.map((d) => [x(d), y(d)].join(',')).join(' ')));
         };
 
-        var drawFrame = (id) => {
-
-            var frameGroups = options.container
-                .selectAll(`.frame-${id}`)
-                .data(frames.map(mapper), ({data: f}) => f.hash);
-            frameGroups
-                .exit()
-                .remove();
-            frameGroups
-                .call(updateGroups(`frame-${id}`));
-            frameGroups
-                .enter()
-                .append('g')
-                .call(updateGroups(`frame-${id}`));
+        const pathAttributes = {
+            fill: (fiber) => baseModel.color(fiber[0]),
+            stroke: (fiber) => baseModel.color(fiber[0])
         };
 
-        drawFrame('area-' + options.uid);
-    }
+        baseModel.pathAttributesEnterInit = pathAttributes;
+        baseModel.pathAttributesUpdateDone = pathAttributes;
 
-    highlight(filter) {
+        baseModel.pathElement = 'polygon';
 
-        this.config
-            .options
-            .container
-            .selectAll('.area')
-            .classed({
-                'graphical-report__highlighted': (({data: d}) => filter(d.tags) === true),
-                'graphical-report__dimmed': (({data: d}) => filter(d.tags) === false)
-            });
-    }
+        baseModel.pathTween = {
+            attr: 'points',
+            fn: d3_createPathTween(
+                'points',
+                pathPoints(d => d.x, d => d.y),
+                baseModel.toPoint,
+                screenModel.id
+            )
+        };
 
-    highlightDataPoints(filter) {
-        var colorScale = this.color;
-        const cssClass = 'i-data-anchor';
-        this.config
-            .options
-            .container
-            .selectAll(`.${cssClass}`)
-            .attr({
-                r: (d) => (filter(d) ? 3 : this.config.guide.anchorSize),
-                class: (d) => (`${cssClass} ${colorScale(d[colorScale.dim])}`)
-            });
+        return baseModel;
     }
-}
+};
+
+export {Path};

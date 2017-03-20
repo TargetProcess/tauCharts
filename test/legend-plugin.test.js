@@ -5,13 +5,12 @@ define(function (require) {
     var legend = require('plugins/legend');
     var trendline = require('plugins/trendline');
     var exportTo = require('plugins/export');
-    var _ = require('underscore');
     var tauCharts = require('src/tau.charts');
     var chartTypes = tauCharts.api.chartTypesRegistry.getAllRegisteredTypes();
     var describeChart = testUtils.describeChart;
 
     function getText(node) {
-        return node.parentNode.parentNode.textContent;
+        return node.parentNode.parentNode.textContent.trim();
     }
 
     var expectLegend = function (expect, chart) {
@@ -98,10 +97,11 @@ define(function (require) {
     );
     var AssertToggleOnClick = function (context, expect) {
         var chart = context.chart;
-        var item1;
+        var item1, item2;
         var svg;
         var prefix = '.color20';
         var selector = '.graphical-report__legend__guide' + prefix + '-1';
+        var selector2 = '.graphical-report__legend__guide' + prefix + '-2';
 
         item1 = chart._layout.rightSidebar.querySelectorAll(selector)[0].parentNode.parentNode;
         svg = chart.getSVG();
@@ -111,13 +111,14 @@ define(function (require) {
         testUtils.simulateEvent('click', item1);
 
         svg = chart.getSVG();
-        expect(svg.querySelectorAll(prefix + '-1').length).to.be.equals(0);
-        expect(svg.querySelectorAll(prefix + '-2').length).to.be.equals(1);
+        expect(svg.querySelectorAll(prefix + '-1').length).to.be.equals(1);
+        expect(svg.querySelectorAll(prefix + '-2').length).to.be.equals(0);
+
+        item2 = chart._layout.rightSidebar.querySelectorAll(selector2)[0].parentNode.parentNode;
+        expect(item2.classList.contains('disabled')).to.be.ok;
+        expect(item2.querySelectorAll(prefix + '-2').length).to.be.equals(1);
 
         item1 = chart._layout.rightSidebar.querySelectorAll(selector)[0].parentNode.parentNode;
-        expect(item1.classList.contains('disabled')).to.be.ok;
-        expect(item1.querySelectorAll(prefix + '-1').length).to.be.equals(1);
-
         testUtils.simulateEvent('click', item1);
 
         svg = chart.getSVG();
@@ -136,7 +137,7 @@ define(function (require) {
 
         svg = chart.getSVG();
         var isHighlight = function (elements) {
-            return _.every(elements, function (element) {
+            return Array.from(elements).every(function (element) {
                 return testUtils.hasClass(element, 'graphical-report__highlighted');
             });
         };
@@ -284,6 +285,11 @@ define(function (require) {
             y: 'y',
             color: 'color',
             plugins: [legend()],
+            guide: {
+                color: {
+                    brewer: ['#ff0000', '#00ff00', '#0000ff', '#000000']
+                }
+            },
 
             dimensions: {
                 x: {type: 'measure'},
@@ -329,6 +335,11 @@ define(function (require) {
                 expect(getText(nodeList[1])).to.equal('B');
                 expect(getText(nodeList[2])).to.equal('No color');
                 expect(getText(nodeList[3])).to.equal('C');
+
+                expect(d3.rgb(nodeList[0].style.backgroundColor).toString()).to.equal(d3.rgb('#ff0000').toString());
+                expect(d3.rgb(nodeList[1].style.backgroundColor).toString()).to.equal(d3.rgb('#00ff00').toString());
+                expect(d3.rgb(nodeList[2].style.backgroundColor).toString()).to.equal(d3.rgb('#0000ff').toString());
+                expect(d3.rgb(nodeList[3].style.backgroundColor).toString()).to.equal(d3.rgb('#000000').toString());
             });
         },
         {
@@ -361,15 +372,13 @@ define(function (require) {
             it("should support size scale", function () {
                 var sidebar = context.chart._layout.rightSidebar;
                 var legendBlock = sidebar.querySelector('.graphical-report__legend');
-                var nodeList = legendBlock.querySelectorAll('.graphical-report__legend__guide');
+                var nodeList = legendBlock.querySelectorAll('.graphical-report__legend__size__item__circle');
+                var texts = legendBlock.querySelectorAll('.graphical-report__legend__size__item__label');
 
-                expect(nodeList.length).to.equal(5);
+                expect(nodeList.length).to.equal(2);
 
-                expect(getText(nodeList[0])).to.equal('123');
-                expect(getText(nodeList[1])).to.equal('77.8');
-                expect(getText(nodeList[2])).to.equal('55.2');
-                expect(getText(nodeList[3])).to.equal('32.6');
-                expect(getText(nodeList[4])).to.equal('10');
+                expect(texts[0].textContent).to.equal('123');
+                expect(texts[1].textContent).to.equal('10');
             });
         },
         {

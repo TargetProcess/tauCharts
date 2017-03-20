@@ -5,7 +5,7 @@
         position: absolute;
         top: 0;
         left: 0;
-        max-width: 500px;
+        max-width: none;
         z-index: 900;
 
         display: flex;
@@ -24,26 +24,50 @@
         }
         &.fade.in {
             opacity: 1;
-            transition-duration: 100ms;
+            transition-duration: 500ms;
+        }
+
+        &.top-right,
+        &.bottom-right {
+            margin-left: 8px;
+        }
+        &.top-left,
+        &.bottom-left {
+            margin-left: -8px;
+        }
+        &.top-right,
+        &.top-left {
+            margin-top: 8px;
         }
 
         &__content {
+            max-width: 500px;
             overflow: hidden;
             padding: 15px 15px 10px 15px;
             box-sizing: border-box;
-            max-width: ~"calc(100% - 26px)";
+        }
+
+        &.stuck &__exclude,
+        &.stuck &__vertical {
+            width: 26px;
         }
 
         &__vertical,
         &__exclude {
+            box-shadow: inset 2px 0 2px -2px fade(@shadow-color, 20%);
+            flex: 0 0 auto;
             color: fade(@exclude-font-color, 80%);
             cursor: pointer;
             min-height: 86px;
-            width: 26px;
+            overflow: hidden;
             position: relative;
-            box-shadow: inset 2px 0 2px -2px fade(@shadow-color, 20%);
+            transition: width 500ms;
+            width: 0;
 
             &__wrap {
+                // NOTE: While buttons are sliding out,
+                // stick right border to tooltip right.
+                left: ~"calc(100% - 26px)";
                 line-height: 26px;
                 padding: 0 15px;
                 transform: rotate(-90deg);
@@ -53,7 +77,6 @@
                 white-space: nowrap;
                 position: absolute;
                 top: 100%;
-                left: 0;
                 box-sizing: border-box;
             }
 
@@ -98,5 +121,23 @@
         &__gray-text {
             color: @font-gray-dark;
         }
+    }
+
+    &__tooltip-target {
+        cursor: pointer;
+    }
+    &__tooltip-target-stuck {
+        pointer-events: none;
+    }
+
+    &__tooltip-target &__dot&__highlighted,
+    &__tooltip-target &__bar&__highlighted,
+    &__tooltip-target .i-data-anchor&__highlighted {
+        stroke: @font-color;
+        stroke-width: 1;
+    }
+
+    &__tooltip-target &__bar&__highlighted {
+        shape-rendering: crispEdges;
     }
 }

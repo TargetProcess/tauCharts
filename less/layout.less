@@ -23,11 +23,13 @@
 
         &__header {
             .flex(@flex-shrink:0.1);
+            position: relative;
         }
 
         &__container {
             .flexbox;
             .flex(@flex-grow: 1);
+            height: 100%;
         }
 
         &__footer {
@@ -39,20 +41,21 @@
         }
 
         &__content {
-            .flex(@flex-grow: 1;@flex-shrink:0;);
-
-            div {
-                overflow: auto;
-            }
+            .flex(@flex-grow: 1;@flex-shrink: 1);
+            // TODO: Switch to `overflow:auto` after Chrome bug fixed:
+            // https://bugs.chromium.org/p/chromium/issues/detail?id=644450
+            // overflow: auto;
+            overflow: hidden;
         }
 
         &__sidebar-right {
             position: relative;
+            // overflow: auto;
+            overflow: hidden;
             .flex(@flex-shrink:0);
 
             &__wrap {
                 max-height: 100%;
-                overflow-y: auto;
                 box-sizing: border-box;
             }
         }
@@ -60,9 +63,50 @@
         text{
             fill: @font-color;
         }
+
+        &&_rendering-error {
+            opacity: 0.75;
+        }
+    }
+
+    &__rendering-timeout-warning {
+        align-items: center;
+        background: fadeout(@bg-color, 50%);
+        display: flex;
+        flex-direction: column;
+        height: 100%;
+        position: absolute;
+        top: 0;
+        width: 100%;
+
+        svg {
+            height: 100%;
+            max-width: 32em;
+            width: 100%;
+        }
+
+        text {
+            font-weight: 300;
+        }
+    }
+
+    &__progress {
+        height: 0.25em;
+        opacity: 0;
+        pointer-events: none;
+        position: absolute;
+        top: 0;
+        transition: opacity 1s 0.75s;
+        width: 100%;
+
+        &&_active {
+            opacity: 1;
+        }
+
+        &__value {
+            background: fadeout(@font-color, 75%);
+            height: 100%;
+            transition: width 0.75s;
+        }
     }
 }
-
-
-
-

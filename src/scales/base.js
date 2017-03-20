@@ -1,7 +1,4 @@
 import {utils} from '../utils/utils';
-/* jshint ignore:start */
-import {default as _} from 'underscore';
-/* jshint ignore:end */
 
 var map_value = (dimType) => {
     return (dimType === 'date') ?
@@ -18,7 +15,7 @@ export class BaseScale {
         this._fields = {};
 
         var data;
-        if (_.isArray(scaleConfig.fitToFrameByDims) && scaleConfig.fitToFrameByDims.length) {
+        if (Array.isArray(scaleConfig.fitToFrameByDims) && scaleConfig.fitToFrameByDims.length) {
 
             let leaveDimsInWhereArgsOrEx = (f) => {
                 var r = {};
@@ -48,21 +45,42 @@ export class BaseScale {
         var vars = this.getVarSet(data, scaleConfig);
 
         if (scaleConfig.order) {
-            vars = _.union(_.intersection(scaleConfig.order, vars), vars);
+            vars = utils.union(utils.intersection(scaleConfig.order, vars), vars);
         }
 
         this.vars = vars;
+        const originalSeries = vars.map((row) => (row));
         this.scaleConfig = scaleConfig;
+
+        // keep for backward compatibility with "autoScale"
+        this.scaleConfig.nice = ((this.scaleConfig.hasOwnProperty('nice')) ?
+            (this.scaleConfig.nice) :
+            (this.scaleConfig.autoScale));
 
         this.addField('dim', this.scaleConfig.dim)
             .addField('scaleDim', this.scaleConfig.dim)
             .addField('scaleType', this.scaleConfig.type)
             .addField('source', this.scaleConfig.source)
-            .addField('domain', (() => this.vars));
+            .addField('domain', (() => this.vars))
+            .addField('isInteger', originalSeries.every(Number.isInteger))
+            .addField('originalSeries', (() => originalSeries))
+            .addField('isContains', ((x) => this.isInDomain(x)))
+            .addField('isEmptyScale', ((x) => this.isEmpty(x)))
+            .addField('fixup', (fn) => {
+                var cfg = this.scaleConfig;
+                cfg.__fixup__ = cfg.__fixup__ || {};
+                cfg.__fixup__ = Object.assign(
+                    cfg.__fixup__,
+                    fn(Object.assign({}, cfg, cfg.__fixup__)));
+            })
+            .addField('commit', () => {
+                this.scaleConfig = Object.assign(this.scaleConfig, this.scaleConfig.__fixup__);
+                delete this.scaleConfig.__fixup__;
+            });
     }
 
-    domain() {
-        return this.vars;
+    isInDomain(val) {
+        return (this.domain().indexOf(val) >= 0);
     }
 
     addField(key, val) {
@@ -75,6 +93,10 @@ export class BaseScale {
         return this._fields[key];
     }
 
+    isEmpty() {
+        return !Boolean(this._fields.dim);
+    }
+
     toBaseScale(func, dynamicProps = null) {
 
         var scaleFn = Object
@@ -85,15 +107,17 @@ export class BaseScale {
             }, func);
 
         scaleFn.getHash = (() => generateHashFunction(this.vars, dynamicProps));
+        scaleFn.value = scaleFn;
 
         return scaleFn;
     }
 
     getVarSet(arr, scale) {
-        return _(arr)
-            .chain()
-            .pluck(scale.dim)
-            .uniq(map_value(scale.dimType))
-            .value();
+
+        var series = scale.hasOwnProperty('series') ?
+            scale.series :
+            arr.map((row) => row[scale.dim]);
+
+        return utils.unique(series, map_value(scale.dimType));
     }
 }

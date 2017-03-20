@@ -5,29 +5,45 @@ var $ = require('jquery');
 var expect = require('chai').expect;
 var testUtils = require('testUtils');
 var stubTimeout = testUtils.stubTimeout;
-var tauCharts = require('tauCharts');
+var tauCharts = require('taucharts');
 var tooltip = require('plugins/tooltip');
 var describeChart = testUtils.describeChart;
 
-var offsetHrs = new Date().getTimezoneOffset() / 60;
-var offsetISO = '0' + Math.abs(offsetHrs) + ':00';
 var iso = function (str) {
+    var offsetHrs = new Date(str).getTimezoneOffset() / 60;
+    var offsetISO = '0' + Math.abs(offsetHrs) + ':00';
     return (str + '+' + offsetISO);
 };
 
-var showTooltip = function (expect, chart, index, selectorClass) {
+var getElementPosition = (element) => {
+    var rect = element.getBoundingClientRect();
+    return {
+        x: ((rect.left + rect.right) / 2),
+        y: ((rect.top + rect.bottom) / 2)
+    };
+};
+
+var showTooltip = function (expect, chart, index, selectorClass, data) {
     var d = testUtils.Deferred();
-    var selectorCssClass = selectorClass || '.i-role-datum';
-    var datum = chart.getSVG().querySelectorAll(selectorCssClass)[index || 0];
-    testUtils.simulateEvent('mouseover', datum);
+    selectorClass = selectorClass || '.i-role-datum';
+    index = index || 0;
+    var element;
+    var elements = Array.prototype.slice.call(chart.getSVG().querySelectorAll(selectorClass), 0);
+    if (data) {
+        // NOTE: Elements order changes after hover.
+        data = data.filter(d => elements.filter(el => el.__data__ === d).length);
+        element = elements.filter(el => el.__data__ === data[index])[0];
+    } else {
+        element = elements[index];
+    }
+    var {x, y} = getElementPosition(element);
+    testUtils.simulateEvent('mousemove', element, x, y);
     return d.resolve(document.querySelectorAll('.graphical-report__tooltip'));
 };
 
-var hideTooltip = function (expect, chart, index, selectorClass) {
+var hideTooltip = function (expect, chart) {
     var d = testUtils.Deferred();
-    var selectorCssClass = selectorClass || '.i-role-datum';
-    var datum = chart.getSVG().querySelectorAll(selectorCssClass)[index || 0];
-    testUtils.simulateEvent('mouseout', datum);
+    testUtils.simulateEvent('mousemove', chart.getSVG(), 0, 0);
     return d.resolve(document.querySelectorAll('.graphical-report__tooltip__content'));
 };
 
@@ -39,6 +55,33 @@ var chartType = ['area', 'line', 'scatterplot', 'bar', 'horizontal-bar', 'stacke
 
 chartType.forEach(function (item) {
     var tooltipEl = null;
+    var data = [
+        {
+            x: 2,
+            y: 2,
+            color: 'yellow'
+        },
+        {
+            x: 4,
+            y: 2,
+            color: 'yellow'
+        },
+        {
+            x: 5,
+            y: 2,
+            color: 'yellow'
+        },
+        {
+            x: 2,
+            y: 10,
+            color: 'green'
+        },
+        {
+            x: 6,
+            y: 10,
+            color: 'green'
+        }
+    ];
     describeChart(
         "tooltip for " + item,
         {
@@ -52,38 +95,12 @@ chartType.forEach(function (item) {
                 })
             ]
         },
-        [
-            {
-                x: 2,
-                y: 2,
-                color: 'yellow'
-            },
-            {
-                x: 4,
-                y: 2,
-                color: 'yellow'
-            },
-            {
-                x: 5,
-                y: 2,
-                color: 'yellow'
-            },
-            {
-                x: 2,
-                y: 1,
-                color: 'green'
-            },
-            {
-                x: 6,
-                y: 1,
-                color: 'green'
-            }
-        ],
+        data,
         function (context) {
             it("should work", function (done) {
                 var originTimeout = stubTimeout();
                 this.timeout(5000);
-                showTooltip(expect, context.chart, 0, getSelectorByChartType(item))
+                showTooltip(expect, context.chart, 0, getSelectorByChartType(item), data)
                     .then(function (content) {
                         var items = content[0].querySelectorAll('.graphical-report__tooltip__list__item');
                         expect(items[0].textContent).to.be.equal('x2');
@@ -91,12 +108,12 @@ chartType.forEach(function (item) {
                         expect(items[2].textContent).to.be.equal('coloryellow');
                     })
                     .then(function () {
-                        return hideTooltip(expect, context.chart, 0, getSelectorByChartType(item));
+                        return hideTooltip(expect, context.chart, 0, getSelectorByChartType(item), data);
                     })
                     .then(function () {
                         var content = document.querySelectorAll('.graphical-report__tooltip__content');
                         expect(content.length).to.equal(0);
-                        return showTooltip(expect, context.chart, 0, getSelectorByChartType(item));
+                        return showTooltip(expect, context.chart, 0, getSelectorByChartType(item), data);
                     })
                     .then(function () {
                         var content = document.querySelectorAll('.graphical-report__tooltip__content');
@@ -107,13 +124,11 @@ chartType.forEach(function (item) {
                         content = document.querySelectorAll('.graphical-report__tooltip__content');
                         expect(content.length).to.equal(0);
                         var data = context.chart.getChartModelData();
-                        var expected = tauCharts.api._.sortBy(data, function (a) {
-                            return a.x;
-                        });
+                        var expected = data.sort((a1, a2) => a1.x - a2.x);
                         expect(expected).to.be.eql([
                             {
                                 x: 2,
-                                y: 1,
+                                y: 10,
                                 color: 'green'
                             },
                             {
@@ -128,7 +143,7 @@ chartType.forEach(function (item) {
                             },
                             {
                                 x: 6,
-                                y: 1,
+                                y: 10,
                                 color: 'green'
                             }
                         ]);
@@ -136,7 +151,7 @@ chartType.forEach(function (item) {
                         return d.resolve();
                     })
                     .then(function () {
-                        return showTooltip(expect, context.chart, 0, getSelectorByChartType(item));
+                        return showTooltip(expect, context.chart, 0, getSelectorByChartType(item), data);
                     })
                     .then(function () {
                         var content = document.querySelectorAll('.graphical-report__tooltip__content');
@@ -145,7 +160,7 @@ chartType.forEach(function (item) {
                         content = document.querySelectorAll('.graphical-report__tooltip__content');
                         expect(content.length).to.equal(0);
                         window.setTimeout = originTimeout;
-                        return hideTooltip(expect, context.chart, 0, getSelectorByChartType(item));
+                        return hideTooltip(expect, context.chart, 0, getSelectorByChartType(item), data);
                     })
                     .always(function () {
                         window.setTimeout = originTimeout;
@@ -175,21 +190,14 @@ describeChart(
         it("should work tooltip", function (done) {
             var originTimeout = stubTimeout();
             this.timeout(5000);
-            showTooltip(expect, context.chart)
+            showTooltip(expect, context.chart, 0, getSelectorByChartType('line'))
                 .then(function () {
                     var excluder = document.querySelectorAll('.i-role-exclude')[0];
                     testUtils.simulateEvent('click', excluder);
                     var d = testUtils.Deferred();
                     var data = context.chart.getChartModelData();
-                    var expected = tauCharts.api._.sortBy(data, function (a) {
-                        return a.x;
-                    });
-                    expect(expected).to.be.eql([
-                        {
-                            x: 4,
-                            y: 5
-                        }
-                    ]);
+                    var expected = data.sort((a1, a2) =>a1.x - a2.x);
+                    expect(expected).to.be.eql([{x: 4, y: 5}]);
                     return d.resolve();
                 })
                 .then(function () {
@@ -236,7 +244,7 @@ chartType.forEach(function (item) {
                     .then(function (content) {
                         expect(content.length).to.be.above(0);
                         var tooltipElements = content[0].querySelectorAll('.graphical-report__tooltip__list__elem');
-                        var texts = _.pluck(tooltipElements, 'textContent');
+                        var texts = Array.from(tooltipElements).map((x) => x.textContent);
                         expect(texts).to.be.eql(['x', '2', 'color', 'yellow']);
 
                         return hideTooltip(expect, context.chart, 0, elementSelector);
@@ -253,7 +261,7 @@ chartType.forEach(function (item) {
                     .then(function (content) {
                         expect(content.length).to.be.above(0);
                         var tooltipElements = content[0].querySelectorAll('.graphical-report__tooltip__list__elem');
-                        var texts = _.pluck(tooltipElements, 'textContent');
+                        var texts = Array.from(tooltipElements).map((x) => x.textContent);
                         expect(texts).to.be.eql(['y', '3']);
                         return hideTooltip(expect, context.chart, 0, elementSelector);
                     })
@@ -327,12 +335,16 @@ describeChart("tooltip formatting",
         },
         plugins: [
             tooltip({
-                fields: ['complex', 'date', 'simple', 'colorValue', 'sizeValue'],
+                fields: ['complex', 'date', 'simple', 'colorValue', 'sizeValue', '__blahblah', '__asisName', '__nullProp'],
                 formatters: {
                     colorValue: function (srcVal) {
                         return ['(', srcVal, ')'].join('');
                     },
-                    sizeValue: '%'
+                    sizeValue: '%',
+                    __blahblah: {label: 'ImportantField', format: '%'},
+                    __asisName: {label: 'SimpleName'},
+                    __nullProp: {label: 'NullProp', nullAlias: 'No such prop'},
+                    date: {"label": "Create Date Day"}
                 }
             })
         ]
@@ -346,14 +358,20 @@ describeChart("tooltip formatting",
             "date": new Date(iso("2015-01-08T00:00:00")),
             "simple": 0.1,
             "colorValue": "UserStory",
-            "sizeValue": 10
+            "sizeValue": 10,
+            "__blahblah": 2,
+            "__nullProp": null,
+            "__asisName": 22
         },
         {
             "complex": null,
             "date": new Date(iso("2015-01-09T00:00:00")),
             "simple": 0.9,
             "colorValue": "Bug",
-            "sizeValue": 20
+            "sizeValue": 20,
+            "__blahblah": 3,
+            "__nullProp": 'Hi',
+            "__asisName": 33
         }
     ],
     function (context) {
@@ -374,10 +392,13 @@ describeChart("tooltip formatting",
                 .then(function (content) {
                     var $content = $(content);
                     validateLabel($content, 'Project', 'No Project');
-                    validateLabel($content, 'Create Date By Day', '09-Jan');
+                    validateLabel($content, 'Create Date Day', '09-Jan');
                     validateLabel($content, 'Progress', '90%');
                     validateLabel($content, 'Entity Type', '(Bug)');
                     validateLabel($content, 'Effort', '2000%');
+                    validateLabel($content, 'ImportantField', '300%');
+                    validateLabel($content, 'SimpleName', '33');
+                    validateLabel($content, 'NullProp', 'Hi');
                     return hideTooltip(expect, context.chart, 0);
                 })
                 .then(function () {
@@ -386,10 +407,13 @@ describeChart("tooltip formatting",
                 .then(function (content) {
                     var $content = $(content);
                     validateLabel($content, 'Project', 'TP3');
-                    validateLabel($content, 'Create Date By Day', '08-Jan');
+                    validateLabel($content, 'Create Date Day', '08-Jan');
                     validateLabel($content, 'Effort', '1000%');
                     validateLabel($content, 'Entity Type', '(UserStory)');
                     validateLabel($content, 'Progress', '10%');
+                    validateLabel($content, 'ImportantField', '200%');
+                    validateLabel($content, 'SimpleName', '22');
+                    validateLabel($content, 'NullProp', 'No such prop');
                     return hideTooltip(expect, context.chart, 1);
                 })
                 .always(function () {
@@ -418,15 +442,16 @@ describeChart(
 
             var selectorCssClass = getSelectorByChartType('area');
             var datum = context.chart.getSVG().querySelectorAll(selectorCssClass)[0];
-            testUtils.simulateEvent('mousemove', datum);
+            var {x, y} = getElementPosition(datum)
+            testUtils.simulateEvent('mousemove', datum, x, y);
 
             var content = document.querySelectorAll('.graphical-report__tooltip');
 
             var tooltipElements = content[0].querySelectorAll('.graphical-report__tooltip__list__elem');
-            var texts = _.pluck(tooltipElements, 'textContent');
+            var texts = Array.from(tooltipElements).map((x) => x.textContent);
             expect(texts).to.be.eql(['x', '2', 'y', '2']);
 
-            testUtils.simulateEvent('mouseout', datum);
+            testUtils.simulateEvent('mousemove', context.chart.getSVG(), 0, 0);
 
             window.setTimeout = originTimeout;
             done();
@@ -461,12 +486,16 @@ describe('tooltip', function () {
             type: 'bar',
             x: 'x',
             y: 'count',
+            guide: {
+                sortByBarHeight: false,
+            },
             data: [
                 {x: 2, count: 2},
                 {x: 4, count: 5}
             ],
             plugins: [
                 tooltip({
+                    showTimeout: 0,
                     aggregationGroupFields: ['x'],
                     onRevealAggregation: function (filterDescriptor, data) {
                         expect(filterDescriptor).to.deep.equal({x: 2});

@@ -6,6 +6,7 @@ define(function (require) {
     var getArea = testUtils.getArea;
     var attrib = testUtils.attrib;
     var tauChart = require('src/tau.charts');
+    var MIN_ANCHOR_RADIUS = 4;
 
     describe('ELEMENT.PATH', function () {
 
@@ -29,8 +30,8 @@ define(function (require) {
                         x: 'x',
                         y: 'y',
                         guide: {
-                            x: {hide: true, autoScale: false},
-                            y: {hide: true, autoScale: false},
+                            x: {hide: true, nice: false},
+                            y: {hide: true, nice: false},
                             padding: {l: 0, r: 0, b: 0, t: 0}
                         },
                         unit: [
@@ -107,7 +108,7 @@ define(function (require) {
 
             var highlightedDots0 = d3.selectAll('.i-data-anchor').filter(function () {
                 var r = parseFloat(d3.select(this).attr('r'));
-                return r === 3;
+                return r === 4;
             });
 
             expect(highlightedDots0[0].length).to.equal(2, 'should highlight 2 data points');
@@ -116,18 +117,10 @@ define(function (require) {
 
             var highlightedDots1 = d3.selectAll('.i-data-anchor').filter(function () {
                 var r = parseFloat(d3.select(this).attr('r'));
-                return r === 3;
+                return r === 4;
             });
 
             expect(highlightedDots1[0].length).to.equal(0, 'should remove highlight from all points');
-
-            var actualData;
-            var polygons = d3.select('polygon')[0];
-            pathNode.on('click', ((sender, e) => (actualData = e.data)));
-            testUtils.simulateEvent('click', polygons[0]);
-            expect(actualData.x).to.equal(0);
-            expect(actualData.y).to.equal(0);
-            expect(actualData.color).to.equal('up');
         });
     });
 
@@ -153,20 +146,21 @@ define(function (require) {
                         x: 'x',
                         y: 'y',
                         guide: {
-                            x: {autoScale: false},
-                            y: {autoScale: false}
+                            x: {nice: false},
+                            y: {nice: false}
                         },
                         unit: [
                             {
                                 type: 'ELEMENT.PATH',
                                 x: 'x',
                                 y: 'y',
-                                text: 'letter',
+                                label: 'letter',
+                                color: 0,
                                 guide: {
                                     color: {
-                                        fill: '#abcdef' // rgb(171, 205, 239)
+                                        brewer: ['#abcdef'] // rgb(171, 205, 239)
                                     },
-                                    text: {
+                                    label: {
                                         fontColor: '#fedcba'
                                     }
                                 }
@@ -187,11 +181,12 @@ define(function (require) {
         it("should render polygon with text on each angle", function () {
             var area = d3.selectAll('.area');
             expect(area[0].length).to.be.equal(1);
-            expect(str(d3.rgb(area.style('fill'))))
+            var polygon = area.select('polygon');
+            expect(str(d3.rgb(polygon.attr('fill'))))
                 .to
                 .be
                 .equal(str(d3.rgb('rgb(171, 205, 239)')));
-            var labels = d3.selectAll('.caption');
+            var labels = d3.selectAll('.i-role-label');
             expect(labels[0].length).to.be.equal(4);
             expect(str(d3.rgb(labels.style('fill'))))
                 .to
