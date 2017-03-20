@@ -46,7 +46,8 @@ bower install taucharts
 ```bash
 npm install taucharts
 ```
-======
+
+___
 
 Below are some popular usage scenarios. For more examples, see our experimental [sample page](http://taucharts.com/taulab/index.html).
 
@@ -65,7 +66,7 @@ var chart = new tauCharts.Chart({
 
 See [scatter plot documentation](http://api.taucharts.com/basic/scatterplot.html)
 
-======
+___
 
 #### Line chart
 ```javascript
@@ -81,7 +82,7 @@ var chart = new tauCharts.Chart({
 
 See [line chart documentation](http://api.taucharts.com/basic/line.html)
 
-======
+___
 
 #### Bar chart
 ```javascript
@@ -97,7 +98,7 @@ var chart = new tauCharts.Chart({
 
 See [bar chart documentation](http://api.taucharts.com/basic/bar.html)
 
-======
+___
 
 #### Horizontal bar chart
 ```javascript
@@ -112,7 +113,7 @@ var chart = new tauCharts.Chart({
 
 See [horizontal bar chart documentation](http://api.taucharts.com/basic/horizontal-bar.html)
 
-======
+___
 
 #### Stacked bar chart
 ```javascript
@@ -128,7 +129,7 @@ var chart = new tauCharts.Chart({
 
 See [stacked bar chart documentation](http://api.taucharts.com/basic/stacked-bar.html)
 
-======
+___
 
 #### Horizontal stacked bar chart
 ```javascript
@@ -144,7 +145,7 @@ var chart = new tauCharts.Chart({
 
 See [horizontal stacked bar chart documentation](http://api.taucharts.com/basic/horizontal-stacked-bar.html)
 
-======
+___
 
 #### Facet chart
 ```javascript
@@ -160,7 +161,7 @@ var chart1 = new tauCharts.Chart({
 
 See [facet charts documentation](http://api.taucharts.com/basic/facet.html)
 
-======
+___
 
 #### Data Streaming
 ```javascript
@@ -178,14 +179,14 @@ This sample uses the [setData(..)] method to refresh the chart's data source.
 
 See [streaming sample online](http://jsfiddle.net/4o4z6fqn/6/)
 
-======
+___
 
 #### Complex Composable charts
 [![Composable Chart](https://dl.dropboxusercontent.com/u/96767946/taucharts.com/complex-composable-chart.png)](http://jsfiddle.net/6LzefLo4/4/)
 
 See [composable chart sample online](http://jsfiddle.net/6LzefLo4/4/)
 
-======
+___
 
 ## Taucharts examples / usage reviews
 
