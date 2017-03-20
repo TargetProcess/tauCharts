@@ -1,9 +1,10 @@
 export default class TaskRunner {
     constructor({
-        timeout,
-        syncInterval,
-        callbacks
-    }) {
+        src = null,
+        timeout = Number.MAX_SAFE_INTEGER,
+        syncInterval = Number.MAX_SAFE_INTEGER,
+        callbacks = {}
+    } = {}) {
 
         this.setTimeout(timeout);
         this.setSyncInterval(syncInterval);
@@ -11,7 +12,7 @@ export default class TaskRunner {
 
         this._running = false;
         this._queue = [];
-        this._result = null;
+        this._result = src;
         this._syncDuration = 0;
         this._asyncDuration = 0;
         this._lastCall = null;
@@ -22,21 +23,18 @@ export default class TaskRunner {
     }
 
     setTimeout(timeout) {
-        checkType(timeout, 'number');
+        TaskRunner.checkType(timeout, 'number', 'timeout');
         this._timeout = timeout;
     }
 
     setSyncInterval(syncInterval) {
-        checkType(syncInterval, 'number');
+        TaskRunner.checkType(syncInterval, 'number', 'syncInterval');
         this._syncInterval = syncInterval;
     }
 
     setCallbacks(callbacks) {
-        checkType(callbacks, 'object');
-        this._callbacks = Object.assign({}, callbacks);
-        checkType(callbacks.done, 'function');
-        checkType(callbacks.timeout, 'function');
-        checkType(callbacks.progress, 'function');
+        TaskRunner.checkType(callbacks, 'object', 'callbacks');
+        this._callbacks = Object.assign(this._callbacks || {}, callbacks);
     }
 
     addTask(fn) {
@@ -52,9 +50,6 @@ export default class TaskRunner {
     }
 
     run() {
-        if (this._requestedFrameId) {
-            throw new Error('Task Runner is waiting for the next frame');
-        }
         if (this._running) {
             throw new Error('Task Runner is already running');
         }
@@ -95,9 +90,11 @@ export default class TaskRunner {
             (this._queue.length > 0)
         ) {
             this.stop();
-            this._callbacks.timeout.call(null,
-                this._asyncDuration,
-                this);
+            if (this._callbacks.timeout) {
+                this._callbacks.timeout.call(null,
+                    this._asyncDuration,
+                    this);
+            }
         }
 
         if (
@@ -110,9 +107,11 @@ export default class TaskRunner {
 
         if (this._queue.length === 0) {
             this.stop();
-            this._callbacks.done.call(null,
-                this._result,
-                this);
+            if (this._callbacks.done) {
+                this._callbacks.done.call(null,
+                    this._result,
+                    this);
+            }
         }
     }
 
@@ -138,9 +137,11 @@ export default class TaskRunner {
         var end = performance.now();
         var duration = (end - start);
         this._finishedTasksCount++;
-        this._callbacks.progress.call(null,
-            (this._finishedTasksCount / this._tasksCount),
-            this);
+        if (this._callbacks.progress) {
+            this._callbacks.progress.call(null,
+                (this._finishedTasksCount / this._tasksCount),
+                this);
+        }
         return duration;
     }
 
@@ -165,12 +166,12 @@ export default class TaskRunner {
             this._requestedFrameId = null;
         }
     }
+
+    static checkType(x, t, name) {
+        if (typeof x !== t) {
+            throw new Error(`Task Runner "${name}" property is not "${t}"`);
+        }
+    }
 }
 
 TaskRunner.runnersInProgress = 0;
-
-function checkType(x, t) {
-    if (typeof x !== t) {
-        throw new Error('Unexpected Task Runner property type');
-    }
-}

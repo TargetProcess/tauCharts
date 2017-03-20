@@ -342,10 +342,10 @@ export class Plot extends Emitter {
     _setupTaskRunner() {
         this._resetTaskRunner();
         this._taskRunner = new TaskRunner({
-            timeout: (this._liveSpec.settings.renderingTimeout || Infinity),
+            timeout: (this._liveSpec.settings.renderingTimeout || Number.MAX_SAFE_INTEGER),
             syncInterval: (this._liveSpec.settings.asyncRendering ?
                 this._liveSpec.settings.syncRenderingInterval :
-                Infinity),
+                Number.MAX_SAFE_INTEGER),
             callbacks: {
                 done: () => {
                     this._completeRender();
@@ -356,7 +356,7 @@ export class Plot extends Emitter {
                         timeout,
                         proceed: () => {
                             this.disablePointerEvents();
-                            this._taskRunner.setTimeout(Infinity);
+                            this._taskRunner.setTimeout(Number.MAX_SAFE_INTEGER);
                             this._taskRunner.run();
                         },
                         cancel: () => {
@@ -467,7 +467,7 @@ export class Plot extends Emitter {
         this._setupTaskRunner();
 
         this._renderingPhase = 'spec';
-        xGpl.getDrawScenario({
+        xGpl.scheduleDrawScenario(this._taskRunner, {
             allocateRect: () => ({
                 slot: ((uid) => d3Target.selectAll(`.uid_${uid}`)),
                 frameId: 'root',
@@ -478,7 +478,7 @@ export class Plot extends Emitter {
                 height: newSize.height,
                 containerHeight: newSize.height
             })
-        }, this._taskRunner);
+        });
 
         this._taskRunner
             .addTask((scenario) => {
@@ -491,7 +491,7 @@ export class Plot extends Emitter {
             })
             .addTask((scenario) => {
                 this._cancelPointerAnimationFrame();
-                this._renderScenario(scenario);
+                this._scheduleRenderScenario(scenario);
             });
 
         this._taskRunner.run();
@@ -537,7 +537,7 @@ export class Plot extends Emitter {
             });
     }
 
-    _renderScenario(scenario) {
+    _scheduleRenderScenario(scenario) {
 
         scenario.forEach((item) => {
             this._taskRunner.addTask(() => {

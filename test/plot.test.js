@@ -815,6 +815,44 @@ define(function (require) {
             expect(TaskRunner.runnersInProgress).to.equal(1);
         });
 
+        it('should destroy async chart', function (done) {
+
+            this.timeout(4000);
+
+            var testDiv = document.getElementById('test-div');
+
+            var chart = new tauChart.Chart({
+                type: 'scatterplot',
+                data: range(20).map(function () {
+                    return {
+                        a: String.fromCharCode(Math.round(Math.random() * 26) + 97),
+                        b: String.fromCharCode(Math.round(Math.random() * 26) + 97),
+                        c: Math.random() * 10
+                    };
+                }),
+                x: ['c'],
+                y: ['a', 'b'],
+                dimensions: {
+                    'a': {type: 'categoty', scale: 'ordinal'},
+                    'b': {type: 'categoty', scale: 'ordinal'},
+                    'c': {type: 'measure', scale: 'linear'}
+                },
+                settings: {
+                    asyncRendering: true,
+                    syncRenderingInterval: 1
+                }
+            });
+
+            chart.renderTo(testDiv);
+            expect(TaskRunner.runnersInProgress).to.equal(1);
+            setTimeout(() => {
+                expect(TaskRunner.runnersInProgress).to.equal(1);
+                chart.destroy();
+                expect(TaskRunner.runnersInProgress).to.equal(0);
+                done();
+            }, 0);
+        });
+
         it('ticks should not overflow chart', function (done) {
 
             this.timeout(4000);

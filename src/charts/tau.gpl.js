@@ -92,7 +92,7 @@ export class GPL extends Emitter {
         return this.config;
     }
 
-    getDrawScenario(root, taskRunner) {
+    scheduleDrawScenario(taskRunner, root) {
         const grammarRules = this.grammarRules;
         this._flattenDrawScenario(root, (parentInstance, unit, rootFrame) => {
             // Rule to cancel parent frame inheritance

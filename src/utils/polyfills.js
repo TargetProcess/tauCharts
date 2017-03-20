@@ -52,6 +52,15 @@ if (!Number.isInteger) {
     });
 }
 
+if (!Number.MAX_SAFE_INTEGER) {
+    Object.defineProperty(Number, 'MAX_SAFE_INTEGER', {
+        value: 9007199254740991,
+        configurable: false,
+        enumerable: false,
+        writable: false
+    });
+}
+
 if (!Array.prototype.find) {
     Object.defineProperty(Array.prototype, 'find', {
         value: function (predicate) {
