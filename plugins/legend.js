@@ -911,9 +911,9 @@
                         }
                     });
                     // BUG: Render doesn't happen when no items to display, so have to manually disable color.
-                    if (!isTargetHidden) {
-                        target.querySelector('.graphical-report__legend__guide').style.backgroundColor = 'transparent';
-                    }
+                    target
+                        .querySelector('.graphical-report__legend__guide')
+                        .style.backgroundColor = (isTargetHidden ? '' : 'transparent');
                 } else if (mode === 'focus-single') {
                     var onlyTargetIsVisible = (!isTargetHidden && colorNodes.every(function (node) {
                         return (isTarget(node) || isColorHidden(getColorData(node).key));

@@ -43,12 +43,6 @@ export default class TaskRunner {
         return this;
     }
 
-    insertTask(fn) {
-        this._queue.unshift(fn);
-        this._tasksCount++;
-        return this;
-    }
-
     run() {
         if (this._running) {
             throw new Error('Task Runner is already running');

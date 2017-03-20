@@ -402,7 +402,6 @@ export class Plot extends Emitter {
 
     renderTo(target, xSize) {
         this.disablePointerEvents();
-        this._svg = null;
         this._target = target;
         this._defaultSize = Object.assign({}, xSize);
 
@@ -467,7 +466,7 @@ export class Plot extends Emitter {
         this._setupTaskRunner();
 
         this._renderingPhase = 'spec';
-        xGpl.scheduleDrawScenario(this._taskRunner, {
+        xGpl.getDrawScenarioQueue({
             allocateRect: () => ({
                 slot: ((uid) => d3Target.selectAll(`.uid_${uid}`)),
                 frameId: 'root',
@@ -478,21 +477,14 @@ export class Plot extends Emitter {
                 height: newSize.height,
                 containerHeight: newSize.height
             })
-        });
+        }).forEach((task) => this._taskRunner.addTask(task));
 
-        this._taskRunner
-            .addTask((scenario) => {
-                this._renderingPhase = 'draw';
-                return scenario;
-            })
-            .addTask((scenario) => {
-                this._renderRoot({scenario, d3Target, newSize});
-                return scenario;
-            })
-            .addTask((scenario) => {
-                this._cancelPointerAnimationFrame();
-                this._scheduleRenderScenario(scenario);
-            });
+        this._taskRunner.addTask((scenario) => {
+            this._renderingPhase = 'draw';
+            this._renderRoot({scenario, d3Target, newSize});
+            this._cancelPointerAnimationFrame();
+            this._scheduleRenderScenario(scenario);
+        });
 
         this._taskRunner.run();
     }

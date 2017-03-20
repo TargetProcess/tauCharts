@@ -24,14 +24,9 @@ define(function (require) {
                     };
                 })
                 .addTask((x, t) => {
-                    t.insertTask((x) => {
-                        return {
-                            d: ++x.c
-                        };
-                    });
                     t.addTask((x) => {
                         return {
-                            f: ++x.e
+                            e: ++x.d
                         };
                     });
                     return {
@@ -40,7 +35,7 @@ define(function (require) {
                 })
                 .addTask((x) => {
                     return {
-                        e: ++x.d
+                        d: ++x.c
                     };
                 })
                 .run();
@@ -76,16 +71,14 @@ define(function (require) {
                     };
                 })
                 .addTask((x, t) => {
-                    t.insertTask((x, t) => {
-                        t.stop();
-                        setTimeout(() => t.run(), 0);
-                        return {
-                            d: ++x.c
-                        };
-                    });
+                    t.stop();
+                    setTimeout(() => t.run(), 0);
+                    return {
+                        d: ++x.c
+                    };
                     t.addTask((x) => {
                         return {
-                            f: ++x.e
+                            e: ++x.d
                         };
                     });
                     return {
@@ -94,7 +87,7 @@ define(function (require) {
                 })
                 .addTask((x) => {
                     return {
-                        e: ++x.d
+                        d: ++x.c
                     };
                 })
                 .run();
@@ -138,7 +131,7 @@ define(function (require) {
 
             expect(() => {
                 var taskRunner = new TaskRunner({
-                    timeout: function(){}
+                    timeout: function () { }
                 });
             }).to.throw('Task Runner "timeout" property is not "number"');
 
