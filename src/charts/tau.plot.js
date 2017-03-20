@@ -10,7 +10,6 @@ import {scalesRegistry} from '../scales-registry';
 import {ScalesFactory} from '../scales-factory';
 import {DataProcessor} from '../data-processor';
 import WeakMap from 'core-js/library/fn/weak-map';
-import Set from 'core-js/library/fn/set';
 import {getLayout} from '../utils/layuot-template';
 import {SpecConverter} from '../spec-converter';
 import {SpecTransformAutoLayout} from '../spec-transform-auto-layout';
@@ -21,7 +20,8 @@ import {SpecTransformExtractAxes} from '../spec-transform-extract-axes';
 import {CSS_PREFIX} from '../const';
 
 import {GPL} from './tau.gpl';
-import {default as d3} from 'd3';
+import d3 from 'd3';
+import TaskRunner from './task-runner';
 var selectOrAppend = utilsDom.selectOrAppend;
 var selectImmediate = utilsDom.selectImmediate;
 
@@ -71,8 +71,9 @@ export class Plot extends Emitter {
         this._plugins = new Plugins(plugins, this);
 
         this._reportProgress = null;
-        this._renderingInProgress = false;
-        this._requestedAnimationFrames = new Set();
+        this._taskRunner = null;
+        this._renderingPhase = null;
+        this._pointerEnentsEnabled = true;
     }
 
     destroy() {
@@ -252,6 +253,16 @@ export class Plot extends Emitter {
             });
     }
 
+    disablePointerEvents() {
+        this._pointerEnentsEnabled = false;
+        this._layout.layout.style.pointerEvents = 'none';
+    }
+
+    enablePointerEvents() {
+        this._pointerEnentsEnabled = true;
+        this._layout.layout.style.pointerEvents = '';
+    }
+
     _handlePointerEvent(event) {
         // TODO: Highlight API seems not consistent.
         // Just predicate is not enough, also
@@ -292,20 +303,6 @@ export class Plot extends Emitter {
         items.forEach((item) => item.unit.fire(dataEvent, {event, data, node}));
     }
 
-    _requestAnimationFrame(fn) {
-        var id = requestAnimationFrame(() => {
-            this._requestedAnimationFrames.delete(id);
-            fn();
-        });
-        this._requestedAnimationFrames.add(id, fn);
-        return id;
-    }
-
-    _cancelAnimationFrame(id) {
-        cancelAnimationFrame(id);
-        this._requestedAnimationFrames.delete(id);
-    }
-
     _initPointerEvents() {
         if (!this._liveSpec.settings.syncPointerEvents) {
             this._pointerAnimationFrameId = null;
@@ -316,11 +313,10 @@ export class Plot extends Emitter {
             ((handler) => (() => {
                 var e = d3.event;
                 if (this._pointerAnimationFrameId && e.type !== 'mousemove') {
-                    this._cancelAnimationFrame(this._pointerAnimationFrameId);
-                    this._pointerAnimationFrameId = null;
+                    this._cancelPointerAnimationFrame();
                 }
                 if (!this._pointerAnimationFrameId) {
-                    this._pointerAnimationFrameId = this._requestAnimationFrame(() => {
+                    this._pointerAnimationFrameId = requestAnimationFrame(() => {
                         this._pointerAnimationFrameId = null;
                         handler(e);
                     });
@@ -338,8 +334,74 @@ export class Plot extends Emitter {
         }));
     }
 
+    _cancelPointerAnimationFrame() {
+        cancelAnimationFrame(this._pointerAnimationFrameId);
+        this._pointerAnimationFrameId = null;
+    }
+
+    _setupTaskRunner() {
+        this._resetTaskRunner();
+        this._taskRunner = new TaskRunner({
+            timeout: (this._liveSpec.settings.renderingTimeout || Number.MAX_SAFE_INTEGER),
+            syncInterval: (this._liveSpec.settings.asyncRendering ?
+                this._liveSpec.settings.syncRenderingInterval :
+                Number.MAX_SAFE_INTEGER),
+            callbacks: {
+                done: () => {
+                    this._completeRender();
+                    this._renderingPhase = null;
+                },
+                timeout: (timeout) => {
+                    this._displayTimeoutWarning({
+                        timeout,
+                        proceed: () => {
+                            this.disablePointerEvents();
+                            this._taskRunner.setTimeout(Number.MAX_SAFE_INTEGER);
+                            this._taskRunner.run();
+                        },
+                        cancel: () => {
+                            this._cancelRendering();
+                        }
+                    });
+                    this.enablePointerEvents();
+                    this.fire('renderingtimeout');
+                },
+                progress: (progress) => {
+                    var phases = {
+                        spec: 0,
+                        draw: 1
+                    };
+                    var p = (phases[this._renderingPhase] / 2 + progress / 2);
+                    this._reportProgress(p);
+                },
+                error: (this._liveSpec.settings.handleRenderingErrors ?
+                    ((err) => {
+                        this._cancelRendering();
+                        this._displayRenderingError(err);
+                        this.fire('renderingerror', err);
+                        if (this._liveSpec.settings.asyncRendering) {
+                            this._liveSpec.settings.log(
+                                `An arror occured during chart rendering: ${err.message}`,
+                                'ERROR'
+                            );
+                        } else {
+                            throw err;
+                        }
+                    }) :
+                    null)
+            }
+        });
+    }
+
+    _resetTaskRunner() {
+        if (this._taskRunner && this._taskRunner.isRunning()) {
+            this._taskRunner.stop();
+            this._taskRunner = null;
+        }
+    }
+
     renderTo(target, xSize) {
-        this._svg = null;
+        this.disablePointerEvents();
         this._target = target;
         this._defaultSize = Object.assign({}, xSize);
 
@@ -400,7 +462,11 @@ export class Plot extends Emitter {
         var newSize = xGpl.config.settings.size;
         var d3Target = d3.select(content);
 
-        var scenario = xGpl.getDrawScenario({
+        this._resetProgressLayout();
+        this._setupTaskRunner();
+
+        this._renderingPhase = 'spec';
+        xGpl.getDrawScenarioQueue({
             allocateRect: () => ({
                 slot: ((uid) => d3Target.selectAll(`.uid_${uid}`)),
                 frameId: 'root',
@@ -411,8 +477,25 @@ export class Plot extends Emitter {
                 height: newSize.height,
                 containerHeight: newSize.height
             })
+        }).forEach((task) => this._taskRunner.addTask(task));
+
+        this._taskRunner.addTask((scenario) => {
+            this._renderingPhase = 'draw';
+            this._renderRoot({scenario, d3Target, newSize});
+            this._cancelPointerAnimationFrame();
+            this._scheduleRenderScenario(scenario);
         });
 
+        this._taskRunner.run();
+    }
+
+    _resetProgressLayout() {
+        this._createProgressBar();
+        this._clearRenderingError();
+        this._clearTimeoutWarning();
+    }
+
+    _renderRoot({scenario, d3Target, newSize}) {
         var frameRootId = scenario[0].config.uid;
         var svg = selectOrAppend(d3Target, `svg`).attr({
             width: Math.floor(newSize.width),
@@ -444,114 +527,34 @@ export class Plot extends Emitter {
                     .attr('opacity', 1e-6)
                     .remove();
             });
-
-        this._cancelRendering();
-        this._renderScenario(scenario);
     }
 
-    _renderScenario(scenario) {
+    _scheduleRenderScenario(scenario) {
 
-        var duration = 0;
-        var syncDuration = 0;
-        var timeout = this._liveSpec.settings.renderingTimeout || Infinity;
-        var i = 0;
-        this._renderingInProgress = true;
-        Plot.renderingsInProgress++;
-        var safe = (fn) => () => {
-            try {
-                fn();
-            } catch (err) {
-                this._cancelRendering();
-                this._displayRenderingError(err);
-                this.fire('renderingerror', err);
-                if (this._liveSpec.settings.asyncRendering) {
-                    this._liveSpec.settings.log(`An arror occured while rendering: ${err.message}`, 'ERROR');
-                } else {
-                    throw err;
-                }
-            }
-        };
-        this._createProgressBar();
-        this._clearRenderingError();
-        this._clearTimeoutWarning();
-
-        var drawScenario = () => {
-            var item = scenario[i];
-
-            var start = Date.now();
-            item.draw();
-            this.onUnitDraw(item.node());
-            this._renderedItems.push(item);
-            var end = Date.now();
-            duration += end - start;
-            syncDuration += end - start;
-
-            i++;
-            this._reportProgress(i / scenario.length);
-            if (i === scenario.length) {
-                done();
-            } else if (duration > timeout) {
-                timeoutReached();
-            } else {
-                next();
-            }
-        };
-
-        var timeoutReached = () => {
-            this._displayTimeoutWarning({
-                timeout: timeout,
-                proceed: () => {
-                    timeout = Infinity;
-                    next();
-                },
-                cancel: () => {
-                    this._cancelRendering();
-                }
+        scenario.forEach((item) => {
+            this._taskRunner.addTask(() => {
+                item.draw();
+                this.onUnitDraw(item.node());
+                this._renderedItems.push(item);
             });
-            this.fire('renderingtimeout');
-        };
+        });
+    }
 
-        var done = () => {
-            this._renderingInProgress = false;
-            Plot.renderingsInProgress--;
+    _completeRender() {
+        // TODO: Render panels before chart, to
+        // prevent chart size shrink. Use some other event.
+        utilsDom.setScrollPadding(this._layout.contentContainer);
+        this._layout.rightSidebar.style.maxHeight = (`${this._liveSpec.settings.size.height}px`);
+        this.enablePointerEvents();
+        this.fire('render', this._svg);
 
-            // TODO: Render panels before chart, to
-            // prevent chart size shrink. Use some other event.
-            utilsDom.setScrollPadding(this._layout.contentContainer);
-            this._layout.rightSidebar.style.maxHeight = (`${this._liveSpec.settings.size.height}px`);
-            this.fire('render', this._svg);
-
-            // NOTE: After plugins have rendered, the panel scrollbar may appear, so need to handle it again.
-            utilsDom.setScrollPadding(this._layout.rightSidebarContainer, 'vertical');
-        };
-
-        var nextSync = () => drawScenario();
-        var nextAsync = () => {
-            this._requestAnimationFrame(safe(() => drawScenario()));
-        };
-
-        var next = () => {
-            if (
-                this._liveSpec.settings.asyncRendering &&
-                syncDuration >= this._liveSpec.settings.syncRenderingDuration / Plot.renderingsInProgress
-            ) {
-                syncDuration = 0;
-                nextAsync();
-            } else {
-                nextSync();
-            }
-        };
-
-        safe(next)();
+        // NOTE: After plugins have rendered, the panel scrollbar may appear, so need to handle it again.
+        utilsDom.setScrollPadding(this._layout.rightSidebarContainer, 'vertical');
     }
 
     _cancelRendering() {
-        if (this._renderingInProgress) {
-            this._renderingInProgress = false;
-            Plot.renderingsInProgress--;
-        }
-        this._requestedAnimationFrames.forEach((fn, id) => this._cancelAnimationFrame(id));
-        this._pointerAnimationFrameId = null;
+        this._resetTaskRunner();
+        this._cancelPointerAnimationFrame();
     }
 
     _createProgressBar() {
@@ -562,8 +565,10 @@ export class Plot extends Emitter {
             .classed(`${CSS_PREFIX}progress__value`, true)
             .style('width', 0);
         this._reportProgress = function (value) {
-            progressBar.classed(`${CSS_PREFIX}progress_active`, value < 1);
-            progressValue.style('width', (value * 100) + '%');
+            requestAnimationFrame(() => {
+                progressBar.classed(`${CSS_PREFIX}progress_active`, value < 1);
+                progressValue.style('width', `${value * 100}%`);
+            });
         };
     }
 
@@ -775,5 +780,3 @@ export class Plot extends Emitter {
         }
     }
 }
-
-Plot.renderingsInProgress = 0;

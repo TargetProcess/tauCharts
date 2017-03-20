@@ -91,15 +91,17 @@
     }
 
     &__progress {
+        box-sizing: border-box;
         height: 0.25em;
         opacity: 0;
+        overflow: hidden;
         pointer-events: none;
         position: absolute;
         top: 0;
         transition: opacity 1s 0.75s;
         width: 100%;
 
-        &&_active {
+        &_active {
             opacity: 1;
         }
 

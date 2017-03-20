@@ -11,6 +11,7 @@
         'specs/': [
             fileRange('ex-', range(0, 3), 5, range(9, 15)),
             'bar-labels',
+            'big-data',
             'category-labels-overflow',
             'horizontal-scroll',
             'legend-flip',
@@ -651,5 +652,101 @@
         });
         return obj;
     }
+
+    /**
+     * Returns random number or one of arguments.
+     * @param n Max number or list of arguments.
+     */
+    function random(n) {
+        if (arguments.length === 1 && typeof n === 'number') {
+            return Math.min(
+                Math.floor(Math.random() * n),
+                n - 1
+            );
+        }
+        var items = (arguments.length === 1 && Array.isArray(arguments[0]) ? arguments[0] : arguments);
+        var index = Math.min(
+            Math.floor(Math.random() * items.length),
+            items.length - 1
+        );
+        return items[index];
+    }
+
+    /**
+     * Returns random word.
+     * @param n Word length.
+     */
+    var randomWord = (function () {
+
+        var sample = [
+            'TauCharts is a javascript graph library.',
+            'It is based on D3 framework.',
+            'So, why do you need it?',
+            'There are number of similar libraries, but TauCharts has some unique features.',
+            'Many charting libraries look really ugly.',
+            'They were created by programmers, and not all programmers have deep knowledge of design and information visualization.',
+            'TauCharts is designed with passion by professional designers and information visualization experts.',
+            'We put significant effort into the design of our charts and think a lot about clarity, ink-to-data ratio, integrity, and usability.',
+            'TauCharts has a nice framework and great extensibility options.',
+            'Its plugins infrastructure is flexible and allows you to easily write your own plugins.',
+            'Most charting libraries only provide a set of charts you can create.',
+            'That is okay, but in many cases you need more sophisticated visualizations.',
+            'TauCharts is based on Grammar of Graphics and can draw some really complex and interactive visualizations.'
+        ].join(' ');
+
+        var lettersUsage = {};
+        var beginnings = [];
+        for (var i = 0, c, s; i < sample.length; i++) {
+            if (!sample.charAt(i).match(/[a-z]/i)) {
+                continue;
+            }
+
+            c = sample.charAt(i).toLowerCase();
+            if ((i === 0) || (!sample.charAt(i - 1).match(/[a-z]/i) && beginnings.indexOf(c) < 0)) {
+                beginnings.push(c);
+            }
+
+            if ((i === sample.length - 2) || !sample.substr(i + 1, 2).match(/[a-z]{2}/i)) {
+                continue;
+            }
+            lettersUsage[c] = lettersUsage[c] || [];
+            s = sample.substr(i + 1, 2).toLowerCase();
+            if (lettersUsage[c].indexOf(s) < 0) {
+                lettersUsage[c].push(s);
+            }
+
+            if ((i === sample.length - 3) || !sample.substr(i + 1, 3).match(/[a-z]{3}/i)) {
+                continue;
+            }
+            lettersUsage[c] = lettersUsage[c] || [];
+            s = sample.substr(i + 1, 3).toLowerCase();
+            if (lettersUsage[c].indexOf(s) < 0) {
+                lettersUsage[c].push(s);
+            }
+        }
+
+        return function randomWord(n) {
+
+            if (n === 0) {
+                return '';
+            }
+
+            var word = random(beginnings).toUpperCase();
+            for (var j = 1, s, c = word.charAt(0).toLowerCase(), next; j < n; j += s.length) {
+                next = lettersUsage[c];
+                s = random(next);
+                if (!s) {
+                    break;
+                }
+                word += s;
+                c = s.charAt(s.length - 1);
+            }
+
+            return word.substring(0, n);
+        };
+    })();
+
+    DevApp.prototype.random = random;
+    DevApp.prototype.randomWord = randomWord;
 
 })();

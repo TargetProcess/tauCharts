@@ -69,9 +69,13 @@ export class GPL extends Emitter {
 
     static traverseSpec(spec, enter, exit, rootNode = null, rootFrame = null) {
 
+        var queue = [];
+
         var traverse = (node, enter, exit, parentNode, currFrame) => {
 
-            enter(node, parentNode, currFrame);
+            queue.push(() => {
+                enter(node, parentNode, currFrame);
+            });
 
             if (node.frames) {
                 node.frames.forEach((frame) => {
@@ -79,10 +83,12 @@ export class GPL extends Emitter {
                 });
             }
 
-            exit(node, parentNode, currFrame);
+            queue.push(() => exit(node, parentNode, currFrame));
         };
 
         traverse(spec.unit, enter, exit, rootNode, rootFrame);
+
+        return queue;
     }
 
     unfoldStructure() {
@@ -90,9 +96,9 @@ export class GPL extends Emitter {
         return this.config;
     }
 
-    getDrawScenario(root) {
+    getDrawScenarioQueue(root) {
         const grammarRules = this.grammarRules;
-        this._flattenDrawScenario(root, (parentInstance, unit, rootFrame) => {
+        var scaleInfoQueue = this._flattenDrawScenario(root, (parentInstance, unit, rootFrame) => {
             // Rule to cancel parent frame inheritance
             const frame = (unit.expression.inherit === false) ? null : rootFrame;
             const scalesFactoryMethod = this._createFrameScalesFactoryMethod(frame);
@@ -112,11 +118,13 @@ export class GPL extends Emitter {
             return instance;
         });
 
-        Object
-            .keys(this.scales)
-            .forEach((k) => this.scalesHub.createScaleInfo(this.scales[k]).commit());
+        var createScales = (() => {
+            Object
+                .keys(this.scales)
+                .forEach((k) => this.scalesHub.createScaleInfo(this.scales[k]).commit());
+        });
 
-        return this._flattenDrawScenario(root, (parentInstance, unit, rootFrame) => {
+        var updateScalesQueue = this._flattenDrawScenario(root, (parentInstance, unit, rootFrame) => {
             const frame = (unit.expression.inherit === false) ? null : rootFrame;
             const scalesFactoryMethod = this._createFrameScalesFactoryMethod(frame);
             const instance = this.unitSet.create(
@@ -135,6 +143,10 @@ export class GPL extends Emitter {
 
             return instance;
         });
+
+        return scaleInfoQueue
+            .concat(createScales)
+            .concat(updateScalesQueue);
     }
 
     _flattenDrawScenario(root, iterator) {
@@ -148,7 +160,7 @@ export class GPL extends Emitter {
         var pop = (() => stack.shift());
         var top = (() => stack[0]);
 
-        GPL.traverseSpec(
+        var queue = GPL.traverseSpec(
             {unit: this.root},
             // enter
             (unit, parentUnit, currFrame) => {
@@ -189,7 +201,9 @@ export class GPL extends Emitter {
                 pipe: []
             }));
 
-        return scenario;
+        queue.push(() => scenario);
+
+        return queue;
     }
 
     _expandUnitsStructure(root, parentPipe = []) {

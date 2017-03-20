@@ -4,6 +4,7 @@ define(function (require) {
     var modernizer = require('bower_components/modernizer/modernizr');
     var CSS_PREFIX = require('src/const').CSS_PREFIX;
     var tauChart = require('src/tau.charts');
+    var TaskRunner = require('src/charts/task-runner').default;
     var utils = require('testUtils');
     var range = require('src/utils/utils').utils.range;
 
@@ -712,13 +713,13 @@ define(function (require) {
                 settings: {
                     asyncRendering: true,
                     renderingTimeout: 0.1,
-                    syncRenderingDuration: 1
+                    syncRenderingInterval: 1
                 }
             });
             var timeoutCount = 0;
             chart.on('renderingtimeout', function () {
                 timeoutCount++;
-                expect(tauChart.Plot.renderingsInProgress).to.equal(1);
+                expect(TaskRunner.runnersInProgress).to.equal(0);
                 var svg = chart.getLayout().content.querySelector('.' + CSS_PREFIX + 'rendering-timeout-warning');
                 expect(svg).to.be.instanceof(Element);
 
@@ -733,7 +734,7 @@ define(function (require) {
                         // Click "Cancel"
                         utils.simulateEvent('click',
                             svg.querySelector('.' + CSS_PREFIX + 'rendering-timeout-cancel-btn'));
-                        expect(tauChart.Plot.renderingsInProgress).to.equal(0);
+                        expect(TaskRunner.runnersInProgress).to.equal(0);
                         chart.refresh();
                         break;
                     case 3:
@@ -747,7 +748,7 @@ define(function (require) {
                 if (timeoutCount !== 3) {
                     done(new Error('Not all rendering timeouts were reached.'));
                 }
-                expect(tauChart.Plot.renderingsInProgress).to.equal(0);
+                expect(TaskRunner.runnersInProgress).to.equal(0);
                 done();
             });
             chart.renderTo(testDiv);
@@ -777,7 +778,7 @@ define(function (require) {
                 },
                 settings: {
                     asyncRendering: true,
-                    syncRenderingDuration: 1
+                    syncRenderingInterval: 1
                 }
             });
 
@@ -785,18 +786,18 @@ define(function (require) {
             chart.on('renderingerror', function (chart, err) {
                 threwError = true;
                 expect(err.message).to.equal('Test rendering error.');
-                expect(tauChart.Plot.renderingsInProgress).to.equal(0);
+                expect(TaskRunner.runnersInProgress).to.equal(0);
 
                 chart.onUnitDraw = srcOnUnitDraw;
                 chart.refresh();
-                expect(tauChart.Plot.renderingsInProgress).to.equal(1);
+                expect(TaskRunner.runnersInProgress).to.equal(1);
             });
 
             chart.on('render', function () {
                 if (!threwError) {
                     done(new Error('Error was not thrown.'));
                 }
-                expect(tauChart.Plot.renderingsInProgress).to.equal(0);
+                expect(TaskRunner.runnersInProgress).to.equal(0);
                 done();
             });
 
@@ -811,7 +812,45 @@ define(function (require) {
             };
 
             chart.renderTo(testDiv);
-            expect(tauChart.Plot.renderingsInProgress).to.equal(1);
+            expect(TaskRunner.runnersInProgress).to.equal(1);
+        });
+
+        it('should destroy async chart', function (done) {
+
+            this.timeout(4000);
+
+            var testDiv = document.getElementById('test-div');
+
+            var chart = new tauChart.Chart({
+                type: 'scatterplot',
+                data: range(20).map(function () {
+                    return {
+                        a: String.fromCharCode(Math.round(Math.random() * 26) + 97),
+                        b: String.fromCharCode(Math.round(Math.random() * 26) + 97),
+                        c: Math.random() * 10
+                    };
+                }),
+                x: ['c'],
+                y: ['a', 'b'],
+                dimensions: {
+                    'a': {type: 'categoty', scale: 'ordinal'},
+                    'b': {type: 'categoty', scale: 'ordinal'},
+                    'c': {type: 'measure', scale: 'linear'}
+                },
+                settings: {
+                    asyncRendering: true,
+                    syncRenderingInterval: 1
+                }
+            });
+
+            chart.renderTo(testDiv);
+            expect(TaskRunner.runnersInProgress).to.equal(1);
+            setTimeout(() => {
+                expect(TaskRunner.runnersInProgress).to.equal(1);
+                chart.destroy();
+                expect(TaskRunner.runnersInProgress).to.equal(0);
+                done();
+            }, 0);
         });
 
         it('ticks should not overflow chart', function (done) {

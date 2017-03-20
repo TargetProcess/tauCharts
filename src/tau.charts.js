@@ -95,8 +95,9 @@ var api = {
         animationSpeed: 750,
         renderingTimeout: 10000,
         asyncRendering: false,
-        syncRenderingDuration: 50,
+        syncRenderingInterval: 50,
         syncPointerEvents: false,
+        handleRenderingErrors: true,
 
         defaultNiceColor: true,
 
