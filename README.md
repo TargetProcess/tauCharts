@@ -1,26 +1,27 @@
-Taucharts [![Build Status](https://travis-ci.org/TargetProcess/tauCharts.png?branch=master)](https://travis-ci.org/TargetProcess/tauCharts) [![Coverage Status](https://img.shields.io/coveralls/TargetProcess/tauCharts.svg)](https://coveralls.io/r/TargetProcess/tauCharts) [![Code Climate](https://codeclimate.com/github/TargetProcess/tauCharts/badges/gpa.svg)](https://codeclimate.com/github/TargetProcess/tauCharts) [![Slack Status](http://slack.taucharts.com/badge.svg)](http://slack.taucharts.com/)
-=========
+Taucharts [![Build Status](https://travis-ci.org/TargetProcess/tauCharts.png?branch=master)](https://travis-ci.org/TargetProcess/tauCharts) [![Coverage Status](https://img.shields.io/coveralls/TargetProcess/tauCharts.svg)](https://coveralls.io/r/TargetProcess/tauCharts) [![Code Climate](https://codeclimate.com/github/TargetProcess/tauCharts/badges/gpa.svg)](https://codeclimate.com/github/TargetProcess/tauCharts)
+[![Slack Status](http://slack.taucharts.com/badge.svg)](http://slack.taucharts.com/)
+======
 
 Taucharts is a [data-focused javascript charting library](http://blog.taucharts.com/taucharts-data-focused-charting-library/) based on D3 and designed with passion.
 
-#####Official website: [www.taucharts.com](http://www.taucharts.com)
-#####Documentation: [api.taucharts.com](http://api.taucharts.com)
-#####Project blog: [blog.taucharts.com](http://blog.taucharts.com)
+##### Official website: [www.taucharts.com](http://www.taucharts.com)
+##### Documentation: [api.taucharts.com](http://api.taucharts.com)
+##### Project blog: [blog.taucharts.com](http://blog.taucharts.com)
 
-##Why use Taucharts?
-####Simplicity
+## Why use Taucharts?
+#### Simplicity
 Data plays a key role in Taucharts. The library provides a declarative interface for fast mapping of data fields to visual properties.
-####Flexibility
+#### Flexibility
 The library's architecture allows you to build [facets](http://api.taucharts.com/basic/facet.html) and extend chart behaviour with reusable plugins.
-####Design
+#### Design
 The Taucharts team is passionate about beautiful design.
-####...
+#### ...
 Dive into the high-level [Taucharts concepts](http://blog.taucharts.com/taucharts-data-focused-charting-library/) and [usage reviews](#taucharts-examples--usage-reviews).
 If you want to contribute - see [how to run the project locally](#how-to-run-the-project-locally)
 
-##How to use Taucharts
+## How to use Taucharts
 
-####Using Taucharts with a CDN
+#### Using Taucharts with a CDN
 
 Load javascript dependencies
 
@@ -35,22 +36,23 @@ Include a CSS file, as well
 <link rel="stylesheet" type="text/css" href="//cdn.jsdelivr.net/taucharts/latest/tauCharts.min.css">
 ```
 
-####Downloading Taucharts using Bower
+#### Downloading Taucharts using Bower
 
 ```bash
 bower install taucharts
 ```
 
-####Downloading Taucharts using npm
+#### Downloading Taucharts using npm
 
 ```bash
 npm install taucharts
 ```
-=========
+
+___
 
 Below are some popular usage scenarios. For more examples, see our experimental [sample page](http://taucharts.com/taulab/index.html).
 
-####Scatter plot
+#### Scatter plot
 ```javascript
 var chart = new tauCharts.Chart({
     "type" : "scatterplot",
@@ -65,9 +67,9 @@ var chart = new tauCharts.Chart({
 
 See [scatter plot documentation](http://api.taucharts.com/basic/scatterplot.html)
 
-=========
+___
 
-####Line chart
+#### Line chart
 ```javascript
 var chart = new tauCharts.Chart({
     "type" : "line",
@@ -81,9 +83,9 @@ var chart = new tauCharts.Chart({
 
 See [line chart documentation](http://api.taucharts.com/basic/line.html)
 
-=========
+___
 
-####Bar chart
+#### Bar chart
 ```javascript
 var chart = new tauCharts.Chart({
     type : 'bar',
@@ -97,9 +99,9 @@ var chart = new tauCharts.Chart({
 
 See [bar chart documentation](http://api.taucharts.com/basic/bar.html)
 
-=========
+___
 
-####Horizontal bar chart
+#### Horizontal bar chart
 ```javascript
 var chart = new tauCharts.Chart({
     type : 'horizontal-bar',
@@ -112,9 +114,9 @@ var chart = new tauCharts.Chart({
 
 See [horizontal bar chart documentation](http://api.taucharts.com/basic/horizontal-bar.html)
 
-=========
+___
 
-####Stacked bar chart
+#### Stacked bar chart
 ```javascript
 var chart = new tauCharts.Chart({
     type : 'stacked-bar',
@@ -128,9 +130,9 @@ var chart = new tauCharts.Chart({
 
 See [stacked bar chart documentation](http://api.taucharts.com/basic/stacked-bar.html)
 
-=========
+___
 
-####Horizontal stacked bar chart
+#### Horizontal stacked bar chart
 ```javascript
 var chart = new tauCharts.Chart({
     type : 'horizontal-stacked-bar',
@@ -144,9 +146,9 @@ var chart = new tauCharts.Chart({
 
 See [horizontal stacked bar chart documentation](http://api.taucharts.com/basic/horizontal-stacked-bar.html)
 
-=========
+___
 
-####Facet chart
+#### Facet chart
 ```javascript
 var chart1 = new tauCharts.Chart({
   type : 'scatterplot',
@@ -160,9 +162,9 @@ var chart1 = new tauCharts.Chart({
 
 See [facet charts documentation](http://api.taucharts.com/basic/facet.html)
 
-=========
+___
 
-####Data Streaming
+#### Data Streaming
 ```javascript
 var chart1 = new tauCharts.Chart({
     type : 'line',
@@ -178,16 +180,16 @@ This sample uses the [setData(..)] method to refresh the chart's data source.
 
 See [streaming sample online](//jsfiddle.net/taucharts/qdn76nab/)
 
-=========
+___
 
-####Complex Composable charts
+#### Complex Composable charts
 [![Composable Chart](https://dl.dropboxusercontent.com/u/96767946/taucharts.com/complex-composable-chart.png)](http://jsfiddle.net/6LzefLo4/4/)
 
 See [composable chart sample online](http://jsfiddle.net/6LzefLo4/4/)
 
-=========
+___
 
-##How to run the project locally
+## How to run the project locally
 
 Clone (forked) repository:
 ```
@@ -225,7 +227,7 @@ npm run build
 ```
 This command creates development and production assemblies in a *[./build]* folder.
 
-##Taucharts examples / usage reviews
+## Taucharts examples / usage reviews
 
 [R Wrapper](http://www.buildingwidgets.com/blog/2015/8/5/week-31-taucharts)
 
@@ -241,7 +243,7 @@ This command creates development and production assemblies in a *[./build]* fold
 
 [GeoTremor mobile app](http://geotremor.tangentapps.com)
 
-##License
+## License
 
 Licensing: [Apache License, Version 2.0](http://www.apache.org/licenses/LICENSE-2.0)
 
