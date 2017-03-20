@@ -551,33 +551,11 @@
         );
     }
 
-    var WeakMap = window.WeakMap || (function () {
-        var counter = 0;
-        function WeakMap() {
-            this.id = 'WeakMap' + counter++;
-        }
-        WeakMap.prototype.has = function (key) {
-            return this.id in key;
-        };
-        WeakMap.prototype.get = function (key) {
-            return key[this.id];
-        };
-        WeakMap.prototype.set = function (key, value) {
-            Object.defineProperty(key, this.id, {
-                configurable: true, value: value
-            });
-        };
-        WeakMap.prototype.delete = function (key) {
-            delete key[this.id];
-        };
-        return WeakMap;
-    })();
-
     function deepClone(src, refs) {
         if (typeof src !== 'object' || src === null) {
             return src;
         }
-        refs = refs || new WeakMap();
+        refs = refs || new Map();
         if (refs.has(src)) {
             return refs.get(src);
         }

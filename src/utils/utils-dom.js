@@ -1,10 +1,9 @@
 /**
  * Internal method to return CSS value for given element and property
  */
-import {default as d3} from 'd3';
+import d3 from 'd3';
 var tempDiv = document.createElement('div');
 import {utils} from './utils';
-import WeakMap from 'core-js/library/fn/weak-map';
 var scrollbarSizes = new WeakMap();
 
 var utilsDom = {

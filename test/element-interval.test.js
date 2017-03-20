@@ -10,7 +10,6 @@ define(function (require) {
     var ScalesFactory = require('src/scales-factory').ScalesFactory;
     var utils = require('src/utils/utils').utils;
     var testUtils = require('testUtils');
-    var WeakMap = require('core-js/library/fn/weak-map');
 
     var iref = 0;
     var scalesRegistry = tauCharts.api.scalesRegistry.instance({
