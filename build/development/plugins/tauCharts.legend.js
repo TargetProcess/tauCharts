@@ -330,17 +330,6 @@
                                 this._highlightToggle(currentTarget, false);
                             }.bind(this)
                         );
-
-                        _delegateEvent(
-                            this._container,
-                            'click',
-                            COLOR_ITEM_SELECTOR,
-                            function (e, currentTarget) {
-                                this._toggleLegendItem(
-                                    currentTarget,
-                                    (e.ctrlKey || e.target.matches(COLOR_TOGGLE_SELECTOR))
-                                );
-                            }.bind(this));
                     }
                 }
             },
@@ -922,9 +911,9 @@
                         }
                     });
                     // BUG: Render doesn't happen when no items to display, so have to manually disable color.
-                    if (!isTargetHidden) {
-                        target.querySelector('.graphical-report__legend__guide').style.backgroundColor = 'transparent';
-                    }
+                    target
+                        .querySelector('.graphical-report__legend__guide')
+                        .style.backgroundColor = (isTargetHidden ? '' : 'transparent');
                 } else if (mode === 'focus-single') {
                     var onlyTargetIsVisible = (!isTargetHidden && colorNodes.every(function (node) {
                         return (isTarget(node) || isColorHidden(getColorData(node).key));

@@ -116,9 +116,6 @@
 .graphical-report__tooltip-target {
   cursor: pointer;
 }
-.graphical-report__tooltip-target-stuck {
-  pointer-events: none;
-}
 .graphical-report__tooltip-target .graphical-report__dot.graphical-report__highlighted,
 .graphical-report__tooltip-target .graphical-report__bar.graphical-report__highlighted,
 .graphical-report__tooltip-target .i-data-anchor.graphical-report__highlighted {

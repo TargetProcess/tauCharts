@@ -35,6 +35,7 @@
 .graphical-report__layout__header {
   -ms-flex: 0 0.1 auto;
   flex: 0 0.1 auto;
+  position: relative;
 }
 .graphical-report__layout__container {
   display: -webkit-flexbox;
@@ -95,15 +96,17 @@
   font-weight: 300;
 }
 .graphical-report__progress {
+  box-sizing: border-box;
   height: 0.25em;
   opacity: 0;
+  overflow: hidden;
   pointer-events: none;
   position: absolute;
   top: 0;
   transition: opacity 1s 0.75s;
   width: 100%;
 }
-.graphical-report__progress.graphical-report__progress_active {
+.graphical-report__progress_active {
   opacity: 1;
 }
 .graphical-report__progress__value {

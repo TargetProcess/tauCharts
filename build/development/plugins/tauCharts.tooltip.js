@@ -15,7 +15,6 @@
     var utils = tauCharts.api.utils;
     var pluginsSDK = tauCharts.api.pluginsSDK;
     var TARGET_SVG_CLASS = 'graphical-report__tooltip-target';
-    var TARGET_STUCK_CLASS = 'graphical-report__tooltip-target-stuck';
 
     var escapeHtml = function (x) {
         return String(x)
@@ -184,7 +183,7 @@
                     if (state.isStuck) {
                         window.addEventListener('click', this._outerClickHandler, true);
                         tooltipNode.classList.add('stuck');
-                        this._setTargetStuckClass(true);
+                        this._setTargetEventsEnabled(false);
                         this._tooltip.updateSize();
                     } else {
                         window.removeEventListener('click', this._outerClickHandler, true);
@@ -192,7 +191,7 @@
                         // NOTE: Prevent showing tooltip immediately
                         // after pointer events appear.
                         requestAnimationFrame(function () {
-                            this._setTargetStuckClass(false);
+                            this._setTargetEventsEnabled(true);
                         }.bind(this));
                     }
                 }
@@ -381,8 +380,12 @@
                 d3.select(this._chart.getSVG()).classed(TARGET_SVG_CLASS, isSet);
             },
 
-            _setTargetStuckClass: function (isSet) {
-                d3.select(this._chart.getLayout().layout).classed(TARGET_STUCK_CLASS, isSet);
+            _setTargetEventsEnabled: function (isSet) {
+                if (isSet) {
+                    this._chart.enablePointerEvents();
+                } else {
+                    this._chart.disablePointerEvents();
+                }
             },
 
             templateRevealAggregation: [
