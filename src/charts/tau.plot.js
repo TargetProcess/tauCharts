@@ -9,7 +9,6 @@ import {unitsRegistry} from '../units-registry';
 import {scalesRegistry} from '../scales-registry';
 import {ScalesFactory} from '../scales-factory';
 import {DataProcessor} from '../data-processor';
-import WeakMap from 'core-js/library/fn/weak-map';
 import {getLayout} from '../utils/layuot-template';
 import {SpecConverter} from '../spec-converter';
 import {SpecTransformAutoLayout} from '../spec-transform-auto-layout';
