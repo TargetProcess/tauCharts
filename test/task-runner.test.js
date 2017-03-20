@@ -12,7 +12,7 @@ define(function (require) {
                 },
                 callbacks: {
                     done: (result) => {
-                        expect(result.f).to.equal(10);
+                        expect(result.e).to.equal(9);
                     }
                 }
             });
@@ -58,7 +58,7 @@ define(function (require) {
                         t.run();
                     },
                     done: (result) => {
-                        expect(result.f).to.equal(10);
+                        expect(result.e).to.equal(9);
                         done();
                     }
                 }
@@ -73,9 +73,6 @@ define(function (require) {
                 .addTask((x, t) => {
                     t.stop();
                     setTimeout(() => t.run(), 0);
-                    return {
-                        d: ++x.c
-                    };
                     t.addTask((x) => {
                         return {
                             e: ++x.d
