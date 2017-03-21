@@ -45,6 +45,7 @@ define(function (require) {
             chart.renderTo(element, {width: 800, height: 800});
         });
         afterEach(function () {
+            chart.destroy();
             element.parentNode.removeChild(element);
         });
 
@@ -91,6 +92,7 @@ define(function (require) {
             chart.renderTo(element, {width: 800, height: 800});
         });
         afterEach(function () {
+            chart.destroy();
             element.parentNode.removeChild(element);
         });
 
@@ -137,6 +139,16 @@ define(function (require) {
         var chart;
 
         var str = ((obj) => JSON.stringify(obj));
+
+        // Note: Prevent annealing simulator from not being fully called. 
+        var oldRandom = Math.random;
+        beforeEach(function () {
+            var randomIndex = 0;
+            Math.random = (() => ((randomIndex = ((randomIndex + 1) & 7)) / 8));
+        });
+        afterEach(function () {
+            Math.random = oldRandom;
+        });
 
         it("should render line with text on each dot", function () {
 
@@ -189,6 +201,7 @@ define(function (require) {
                 .be
                 .equal(str(d3.rgb('#fedcba')));
 
+            chart.destroy();
             element.parentNode.removeChild(element);
         });
 
@@ -223,6 +236,7 @@ define(function (require) {
             expect(texts.indexOf('Manchester') >= 0).to.be.true;
             expect(texts.indexOf('Chelsea') >= 0).to.be.true;
 
+            chart.destroy();
             element.parentNode.removeChild(element);
         });
 
@@ -261,6 +275,7 @@ define(function (require) {
         });
 
         afterEach(function () {
+            chart.destroy();
             element.parentNode.removeChild(element);
         });
 
@@ -315,6 +330,7 @@ define(function (require) {
         });
 
         afterEach(function () {
+            chart.destroy();
             element.parentNode.removeChild(element);
         });
 
