@@ -777,6 +777,7 @@ define(function (require) {
                     'c': {type: 'measure', scale: 'linear'}
                 },
                 settings: {
+                    handleRenderingErrors: true,
                     asyncRendering: true,
                     syncRenderingInterval: 1
                 }

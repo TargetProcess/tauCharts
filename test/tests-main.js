@@ -6,6 +6,7 @@ tauCharts.api.globalSettings.renderingTimeout = 0;
 tauCharts.api.globalSettings.asyncRendering = false;
 tauCharts.api.globalSettings.avoidScrollAtRatio = 1;
 tauCharts.api.globalSettings.syncPointerEvents = true;
+tauCharts.api.globalSettings.handleRenderingErrors = false;
 
 var testsContext = require.context('.', true, /test\.js$/);
 testsContext.keys().forEach(testsContext);

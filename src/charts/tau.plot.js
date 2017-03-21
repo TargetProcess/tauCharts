@@ -335,25 +335,25 @@ export class Plot extends Emitter {
         this._pointerAnimationFrameId = null;
     }
 
-    _setupTaskRunner() {
+    _setupTaskRunner(liveSpec) {
         this._resetTaskRunner();
         this._taskRunner = new TaskRunner({
-            timeout: (this._liveSpec.settings.renderingTimeout || Number.MAX_SAFE_INTEGER),
-            syncInterval: (this._liveSpec.settings.asyncRendering ?
-                this._liveSpec.settings.syncRenderingInterval :
+            timeout: (liveSpec.settings.renderingTimeout || Number.MAX_SAFE_INTEGER),
+            syncInterval: (liveSpec.settings.asyncRendering ?
+                liveSpec.settings.syncRenderingInterval :
                 Number.MAX_SAFE_INTEGER),
             callbacks: {
                 done: () => {
                     this._completeRendering();
                     this._renderingPhase = null;
                 },
-                timeout: (timeout) => {
+                timeout: (timeout, taskRunner) => {
                     this._displayTimeoutWarning({
                         timeout,
                         proceed: () => {
                             this.disablePointerEvents();
-                            this._taskRunner.setTimeout(Number.MAX_SAFE_INTEGER);
-                            this._taskRunner.run();
+                            taskRunner.setTimeout(Number.MAX_SAFE_INTEGER);
+                            taskRunner.run();
                         },
                         cancel: () => {
                             this._cancelRendering();
@@ -370,12 +370,12 @@ export class Plot extends Emitter {
                     var p = (phases[this._renderingPhase] / 2 + progress / 2);
                     this._reportProgress(p);
                 },
-                error: (this._liveSpec.settings.handleRenderingErrors ?
+                error: (liveSpec.settings.handleRenderingErrors ?
                     ((err) => {
                         this._cancelRendering();
                         this._displayRenderingError(err);
                         this.fire('renderingerror', err);
-                        this._liveSpec.settings.log([
+                        liveSpec.settings.log([
                             `An error occured during chart rendering.`,
                             `Set "handleRenderingErrors: false" in chart settings to debug.`,
                             `Error message: ${err.message}`
@@ -384,6 +384,7 @@ export class Plot extends Emitter {
                     null)
             }
         });
+        return this._taskRunner;
     }
 
     _resetTaskRunner() {
@@ -394,24 +395,23 @@ export class Plot extends Emitter {
     }
 
     renderTo(target, xSize) {
-        this._setupTaskRunner();
 
-        this._taskRunner.addTask(() => {
-            this._renderingPhase = 'spec';
-            this._resetProgressLayout();
-            var liveSpec = this._createLiveSpec(target, xSize);
-            if (!liveSpec) {
-                this._svg = null;
-                this._layout.content.innerHTML = this._emptyContainer;
-                this._renderingPhase = 'draw';
-                return;
-            }
-            var gpl = this._createGPL();
-            this._scheduleDrawScenario(gpl);
-            this._scheduleDrawing(gpl);
-        });
+        this._resetProgressLayout();
 
-        this._taskRunner.run();
+        var liveSpec = this._createLiveSpec(target, xSize);
+        if (!liveSpec) {
+            this._svg = null;
+            this._layout.content.innerHTML = this._emptyContainer;
+            this.enablePointerEvents();
+            return;
+        }
+
+        var gpl = this._createGPL(liveSpec);
+
+        var taskRunner = this._setupTaskRunner(liveSpec);
+        this._scheduleDrawScenario(taskRunner, gpl);
+        this._scheduleDrawing(taskRunner, gpl);
+        taskRunner.run();
     }
 
     _createLiveSpec(target, xSize) {
@@ -470,18 +470,18 @@ export class Plot extends Emitter {
         return this._liveSpec;
     }
 
-    _createGPL() {
-        var xGpl = new GPL(this._liveSpec, this.getScaleFactory(), unitsRegistry, GrammarRegistry);
-        var structure = xGpl.unfoldStructure();
-
+    _createGPL(liveSpec) {
+        var gpl = new GPL(liveSpec, this.getScaleFactory(), unitsRegistry, GrammarRegistry);
+        var structure = gpl.unfoldStructure();
         this.onUnitsStructureExpanded(structure);
 
-        return xGpl;
+        return gpl;
     }
 
-    _scheduleDrawScenario(gpl) {
+    _scheduleDrawScenario(taskRunner, gpl) {
         const d3Target = d3.select(this._layout.content);
         const newSize = gpl.config.settings.size;
+        taskRunner.addTask(() => this._renderingPhase = 'spec');
         gpl.getDrawScenarioQueue({
             allocateRect: () => ({
                 slot: ((uid) => d3Target.selectAll(`.uid_${uid}`)),
@@ -493,12 +493,12 @@ export class Plot extends Emitter {
                 height: newSize.height,
                 containerHeight: newSize.height
             })
-        }).forEach((task) => this._taskRunner.addTask(task));
+        }).forEach((task) => taskRunner.addTask(task));
     }
 
-    _scheduleDrawing(gpl) {
+    _scheduleDrawing(taskRunner, gpl) {
         const newSize = gpl.config.settings.size;
-        this._taskRunner.addTask((scenario) => {
+        taskRunner.addTask((scenario) => {
             this._renderingPhase = 'draw';
             this._renderRoot({scenario, newSize});
             this._cancelPointerAnimationFrame();
