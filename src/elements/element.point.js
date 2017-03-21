@@ -329,7 +329,6 @@ const Point = {
 
     _sortElements(filter) {
 
-        const screenModel = this.node().screenModel;
         const container = this.node().config.options.container;
 
         // Sort frames
@@ -339,11 +338,11 @@ const Point = {
             .selectAll('.frame')
             .each(function (d) {
                 filters.set(this, d.some(filter));
-                groups.set(this, screenModel.group(d[0]));
+                groups.set(this, d);
             });
         const compareFilterThenGroupId = utils.createMultiSorter(
             (a, b) => (filters.get(a) - filters.get(b)),
-            (a, b) => (this._getGroupOrder(a) - this._getGroupOrder(b))
+            (a, b) => (this._getGroupOrder(groups.get(a)) - this._getGroupOrder(groups.get(b)))
         );
         utilsDom.sortChildren(container.node(), (a, b) => {
             if (a.tagName === 'g' && b.tagName === 'g') {
