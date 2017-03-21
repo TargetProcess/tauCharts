@@ -16,7 +16,7 @@ define(function (require) {
         layoutEngine: '', // 'EXTRACT'
         autoRatio: true,
         syncPointerEvents: true,
-        handleRenderingErrors: true,
+        handleRenderingErrors: false,
 
         getScrollbarSize: function () {
             return {width: 10, height: 10};

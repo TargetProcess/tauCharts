@@ -13,6 +13,13 @@ define(function (require) {
         var spec;
         var div;
         beforeEach(function () {
+            if (TaskRunner.runnersInProgress !== 0) {
+                // TODO: Find out what chart is not destroyed or had silent error during rendering.
+                tauChart.Chart.winAware.slice().forEach(c => c.destroy());
+                if (TaskRunner.runnersInProgress !== 0) {
+                    TaskRunner.runnersInProgress = 0;
+                }
+            }
             div = document.createElement('div');
             div.innerHTML = '<div id="test-div" style="width: 800px; height: 600px"></div>';
             document.body.appendChild(div);
@@ -777,6 +784,7 @@ define(function (require) {
                     'c': {type: 'measure', scale: 'linear'}
                 },
                 settings: {
+                    handleRenderingErrors: true,
                     asyncRendering: true,
                     syncRenderingInterval: 1
                 }

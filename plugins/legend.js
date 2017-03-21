@@ -900,9 +900,15 @@
                 };
                 var isTargetHidden = (target ? isColorHidden(getColorData(target).key) : false);
 
+                var setGuideBackground = function (node, visible) {
+                    node.querySelector('.graphical-report__legend__guide')
+                        .style.backgroundColor = (visible ? '' : 'transparent');
+                };
+
                 if (mode === 'reset') {
                     colorNodes.forEach(function (node) {
                         toggleColor(node, true);
+                        setGuideBackground(node, true);
                     });
                 } else if (mode === 'leave-others') {
                     colorNodes.forEach(function (node) {
@@ -910,10 +916,7 @@
                             toggleColor(node, isTargetHidden);
                         }
                     });
-                    // BUG: Render doesn't happen when no items to display, so have to manually disable color.
-                    target
-                        .querySelector('.graphical-report__legend__guide')
-                        .style.backgroundColor = (isTargetHidden ? '' : 'transparent');
+                    setGuideBackground(target, isTargetHidden);
                 } else if (mode === 'focus-single') {
                     var onlyTargetIsVisible = (!isTargetHidden && colorNodes.every(function (node) {
                         return (isTarget(node) || isColorHidden(getColorData(node).key));
@@ -922,6 +925,9 @@
                         var show = (isTarget(node) || onlyTargetIsVisible);
                         toggleColor(node, show);
                     });
+                    if (isTargetHidden) {
+                        setGuideBackground(target, true);
+                    }
                 }
 
                 this._chart.refresh();

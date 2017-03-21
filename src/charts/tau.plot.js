@@ -72,7 +72,6 @@ export class Plot extends Emitter {
         this._reportProgress = null;
         this._taskRunner = null;
         this._renderingPhase = null;
-        this._pointerEnentsEnabled = true;
     }
 
     destroy() {
@@ -253,12 +252,10 @@ export class Plot extends Emitter {
     }
 
     disablePointerEvents() {
-        this._pointerEnentsEnabled = false;
         this._layout.layout.style.pointerEvents = 'none';
     }
 
     enablePointerEvents() {
-        this._pointerEnentsEnabled = true;
         this._layout.layout.style.pointerEvents = '';
     }
 
@@ -338,25 +335,25 @@ export class Plot extends Emitter {
         this._pointerAnimationFrameId = null;
     }
 
-    _setupTaskRunner() {
+    _setupTaskRunner(liveSpec) {
         this._resetTaskRunner();
         this._taskRunner = new TaskRunner({
-            timeout: (this._liveSpec.settings.renderingTimeout || Number.MAX_SAFE_INTEGER),
-            syncInterval: (this._liveSpec.settings.asyncRendering ?
-                this._liveSpec.settings.syncRenderingInterval :
+            timeout: (liveSpec.settings.renderingTimeout || Number.MAX_SAFE_INTEGER),
+            syncInterval: (liveSpec.settings.asyncRendering ?
+                liveSpec.settings.syncRenderingInterval :
                 Number.MAX_SAFE_INTEGER),
             callbacks: {
                 done: () => {
-                    this._completeRender();
+                    this._completeRendering();
                     this._renderingPhase = null;
                 },
-                timeout: (timeout) => {
+                timeout: (timeout, taskRunner) => {
                     this._displayTimeoutWarning({
                         timeout,
                         proceed: () => {
                             this.disablePointerEvents();
-                            this._taskRunner.setTimeout(Number.MAX_SAFE_INTEGER);
-                            this._taskRunner.run();
+                            taskRunner.setTimeout(Number.MAX_SAFE_INTEGER);
+                            taskRunner.run();
                         },
                         cancel: () => {
                             this._cancelRendering();
@@ -373,23 +370,21 @@ export class Plot extends Emitter {
                     var p = (phases[this._renderingPhase] / 2 + progress / 2);
                     this._reportProgress(p);
                 },
-                error: (this._liveSpec.settings.handleRenderingErrors ?
+                error: (liveSpec.settings.handleRenderingErrors ?
                     ((err) => {
                         this._cancelRendering();
                         this._displayRenderingError(err);
                         this.fire('renderingerror', err);
-                        if (this._liveSpec.settings.asyncRendering) {
-                            this._liveSpec.settings.log(
-                                `An arror occured during chart rendering: ${err.message}`,
-                                'ERROR'
-                            );
-                        } else {
-                            throw err;
-                        }
+                        liveSpec.settings.log([
+                            `An error occured during chart rendering.`,
+                            `Set "handleRenderingErrors: false" in chart settings to debug.`,
+                            `Error message: ${err.message}`
+                        ].join(' '), 'ERROR');
                     }) :
                     null)
             }
         });
+        return this._taskRunner;
     }
 
     _resetTaskRunner() {
@@ -400,6 +395,26 @@ export class Plot extends Emitter {
     }
 
     renderTo(target, xSize) {
+
+        this._resetProgressLayout();
+
+        var liveSpec = this._createLiveSpec(target, xSize);
+        if (!liveSpec) {
+            this._svg = null;
+            this._layout.content.innerHTML = this._emptyContainer;
+            this.enablePointerEvents();
+            return;
+        }
+
+        var gpl = this._createGPL(liveSpec);
+
+        var taskRunner = this._setupTaskRunner(liveSpec);
+        this._scheduleDrawScenario(taskRunner, gpl);
+        this._scheduleDrawing(taskRunner, gpl);
+        taskRunner.run();
+    }
+
+    _createLiveSpec(target, xSize) {
         this.disablePointerEvents();
         this._target = target;
         this._defaultSize = Object.assign({}, xSize);
@@ -441,8 +456,7 @@ export class Plot extends Emitter {
         this._liveSpec.settings = this.configGPL.settings;
 
         if (this.isEmptySources(this._liveSpec.sources)) {
-            content.innerHTML = this._emptyContainer;
-            return;
+            return null;
         }
 
         this._liveSpec = this
@@ -453,19 +467,22 @@ export class Plot extends Emitter {
 
         this.fire('specready', this._liveSpec);
 
-        var xGpl = new GPL(this._liveSpec, this.getScaleFactory(), unitsRegistry, GrammarRegistry);
-        var structure = xGpl.unfoldStructure();
+        return this._liveSpec;
+    }
 
+    _createGPL(liveSpec) {
+        var gpl = new GPL(liveSpec, this.getScaleFactory(), unitsRegistry, GrammarRegistry);
+        var structure = gpl.unfoldStructure();
         this.onUnitsStructureExpanded(structure);
 
-        var newSize = xGpl.config.settings.size;
-        var d3Target = d3.select(content);
+        return gpl;
+    }
 
-        this._resetProgressLayout();
-        this._setupTaskRunner();
-
-        this._renderingPhase = 'spec';
-        xGpl.getDrawScenarioQueue({
+    _scheduleDrawScenario(taskRunner, gpl) {
+        const d3Target = d3.select(this._layout.content);
+        const newSize = gpl.config.settings.size;
+        taskRunner.addTask(() => this._renderingPhase = 'spec');
+        gpl.getDrawScenarioQueue({
             allocateRect: () => ({
                 slot: ((uid) => d3Target.selectAll(`.uid_${uid}`)),
                 frameId: 'root',
@@ -476,16 +493,17 @@ export class Plot extends Emitter {
                 height: newSize.height,
                 containerHeight: newSize.height
             })
-        }).forEach((task) => this._taskRunner.addTask(task));
+        }).forEach((task) => taskRunner.addTask(task));
+    }
 
-        this._taskRunner.addTask((scenario) => {
+    _scheduleDrawing(taskRunner, gpl) {
+        const newSize = gpl.config.settings.size;
+        taskRunner.addTask((scenario) => {
             this._renderingPhase = 'draw';
-            this._renderRoot({scenario, d3Target, newSize});
+            this._renderRoot({scenario, newSize});
             this._cancelPointerAnimationFrame();
             this._scheduleRenderScenario(scenario);
         });
-
-        this._taskRunner.run();
     }
 
     _resetProgressLayout() {
@@ -494,7 +512,8 @@ export class Plot extends Emitter {
         this._clearTimeoutWarning();
     }
 
-    _renderRoot({scenario, d3Target, newSize}) {
+    _renderRoot({scenario, newSize}) {
+        const d3Target = d3.select(this._layout.content);
         var frameRootId = scenario[0].config.uid;
         var svg = selectOrAppend(d3Target, `svg`).attr({
             width: Math.floor(newSize.width),
@@ -539,19 +558,22 @@ export class Plot extends Emitter {
         });
     }
 
-    _completeRender() {
+    _completeRendering() {
         // TODO: Render panels before chart, to
         // prevent chart size shrink. Use some other event.
         utilsDom.setScrollPadding(this._layout.contentContainer);
         this._layout.rightSidebar.style.maxHeight = (`${this._liveSpec.settings.size.height}px`);
         this.enablePointerEvents();
-        this.fire('render', this._svg);
+        if (this._svg) {
+            this.fire('render', this._svg);
+        }
 
         // NOTE: After plugins have rendered, the panel scrollbar may appear, so need to handle it again.
         utilsDom.setScrollPadding(this._layout.rightSidebarContainer, 'vertical');
     }
 
     _cancelRendering() {
+        this.enablePointerEvents();
         this._resetTaskRunner();
         this._cancelPointerAnimationFrame();
     }
