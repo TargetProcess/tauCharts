@@ -329,7 +329,6 @@ const Point = {
 
     _sortElements(filter) {
 
-        const screenModel = this.node().screenModel;
         const container = this.node().config.options.container;
 
         // Sort frames
