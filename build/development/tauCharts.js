@@ -1,4 +1,4 @@
-/*! taucharts - v0.10.0-beta.21 - 2017-03-20
+/*! taucharts - v0.10.0-beta.22 - 2017-03-22
 * https://github.com/TargetProcess/tauCharts
 * Copyright (c) 2017 Taucraft Limited; Licensed Apache License 2.0 */
 (function webpackUniversalModuleDefinition(root, factory) {
@@ -349,7 +349,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	}]));
 
 	/* global VERSION:false */
-	var version = ("0.10.0-beta.21");
+	var version = ("0.10.0-beta.22");
 	exports.GPL = _tau.GPL;
 	exports.Plot = _tau2.Plot;
 	exports.Chart = _tau3.Chart;
@@ -5439,7 +5439,6 @@ return /******/ (function(modules) { // webpackBootstrap
 	        _this._reportProgress = null;
 	        _this._taskRunner = null;
 	        _this._renderingPhase = null;
-	        _this._pointerEnentsEnabled = true;
 	        return _this;
 	    }
 
@@ -5564,13 +5563,11 @@ return /******/ (function(modules) { // webpackBootstrap
 	    }, {
 	        key: 'disablePointerEvents',
 	        value: function disablePointerEvents() {
-	            this._pointerEnentsEnabled = false;
 	            this._layout.layout.style.pointerEvents = 'none';
 	        }
 	    }, {
 	        key: 'enablePointerEvents',
 	        value: function enablePointerEvents() {
-	            this._pointerEnentsEnabled = true;
 	            this._layout.layout.style.pointerEvents = '';
 	        }
 	    }, {
@@ -5670,25 +5667,25 @@ return /******/ (function(modules) { // webpackBootstrap
 	        }
 	    }, {
 	        key: '_setupTaskRunner',
-	        value: function _setupTaskRunner() {
+	        value: function _setupTaskRunner(liveSpec) {
 	            var _this5 = this;
 
 	            this._resetTaskRunner();
 	            this._taskRunner = new _taskRunner2.default({
-	                timeout: this._liveSpec.settings.renderingTimeout || Number.MAX_SAFE_INTEGER,
-	                syncInterval: this._liveSpec.settings.asyncRendering ? this._liveSpec.settings.syncRenderingInterval : Number.MAX_SAFE_INTEGER,
+	                timeout: liveSpec.settings.renderingTimeout || Number.MAX_SAFE_INTEGER,
+	                syncInterval: liveSpec.settings.asyncRendering ? liveSpec.settings.syncRenderingInterval : Number.MAX_SAFE_INTEGER,
 	                callbacks: {
 	                    done: function done() {
-	                        _this5._completeRender();
+	                        _this5._completeRendering();
 	                        _this5._renderingPhase = null;
 	                    },
-	                    timeout: function timeout(_timeout) {
+	                    timeout: function timeout(_timeout, taskRunner) {
 	                        _this5._displayTimeoutWarning({
 	                            timeout: _timeout,
 	                            proceed: function proceed() {
 	                                _this5.disablePointerEvents();
-	                                _this5._taskRunner.setTimeout(Number.MAX_SAFE_INTEGER);
-	                                _this5._taskRunner.run();
+	                                taskRunner.setTimeout(Number.MAX_SAFE_INTEGER);
+	                                taskRunner.run();
 	                            },
 	                            cancel: function cancel() {
 	                                _this5._cancelRendering();
@@ -5705,18 +5702,15 @@ return /******/ (function(modules) { // webpackBootstrap
 	                        var p = phases[_this5._renderingPhase] / 2 + _progress / 2;
 	                        _this5._reportProgress(p);
 	                    },
-	                    error: this._liveSpec.settings.handleRenderingErrors ? function (err) {
+	                    error: liveSpec.settings.handleRenderingErrors ? function (err) {
 	                        _this5._cancelRendering();
 	                        _this5._displayRenderingError(err);
 	                        _this5.fire('renderingerror', err);
-	                        if (_this5._liveSpec.settings.asyncRendering) {
-	                            _this5._liveSpec.settings.log('An arror occured during chart rendering: ' + err.message, 'ERROR');
-	                        } else {
-	                            throw err;
-	                        }
+	                        liveSpec.settings.log(['An error occured during chart rendering.', 'Set "handleRenderingErrors: false" in chart settings to debug.', 'Error message: ' + err.message].join(' '), 'ERROR');
 	                    } : null
 	                }
 	            });
+	            return this._taskRunner;
 	        }
 	    }, {
 	        key: '_resetTaskRunner',
@@ -5729,6 +5723,27 @@ return /******/ (function(modules) { // webpackBootstrap
 	    }, {
 	        key: 'renderTo',
 	        value: function renderTo(target, xSize) {
+
+	            this._resetProgressLayout();
+
+	            var liveSpec = this._createLiveSpec(target, xSize);
+	            if (!liveSpec) {
+	                this._svg = null;
+	                this._layout.content.innerHTML = this._emptyContainer;
+	                this.enablePointerEvents();
+	                return;
+	            }
+
+	            var gpl = this._createGPL(liveSpec);
+
+	            var taskRunner = this._setupTaskRunner(liveSpec);
+	            this._scheduleDrawScenario(taskRunner, gpl);
+	            this._scheduleDrawing(taskRunner, gpl);
+	            taskRunner.run();
+	        }
+	    }, {
+	        key: '_createLiveSpec',
+	        value: function _createLiveSpec(target, xSize) {
 	            var _this6 = this;
 
 	            this.disablePointerEvents();
@@ -5775,8 +5790,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	            this._liveSpec.settings = this.configGPL.settings;
 
 	            if (this.isEmptySources(this._liveSpec.sources)) {
-	                content.innerHTML = this._emptyContainer;
-	                return;
+	                return null;
 	            }
 
 	            this._liveSpec = this.transformers.reduce(function (memo, TransformClass) {
@@ -5787,19 +5801,28 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	            this.fire('specready', this._liveSpec);
 
-	            var xGpl = new _tau.GPL(this._liveSpec, this.getScaleFactory(), _unitsRegistry.unitsRegistry, _grammarRegistry.GrammarRegistry);
-	            var structure = xGpl.unfoldStructure();
-
+	            return this._liveSpec;
+	        }
+	    }, {
+	        key: '_createGPL',
+	        value: function _createGPL(liveSpec) {
+	            var gpl = new _tau.GPL(liveSpec, this.getScaleFactory(), _unitsRegistry.unitsRegistry, _grammarRegistry.GrammarRegistry);
+	            var structure = gpl.unfoldStructure();
 	            this.onUnitsStructureExpanded(structure);
 
-	            var newSize = xGpl.config.settings.size;
-	            var d3Target = _d2.default.select(content);
+	            return gpl;
+	        }
+	    }, {
+	        key: '_scheduleDrawScenario',
+	        value: function _scheduleDrawScenario(taskRunner, gpl) {
+	            var _this7 = this;
 
-	            this._resetProgressLayout();
-	            this._setupTaskRunner();
-
-	            this._renderingPhase = 'spec';
-	            xGpl.getDrawScenarioQueue({
+	            var d3Target = _d2.default.select(this._layout.content);
+	            var newSize = gpl.config.settings.size;
+	            taskRunner.addTask(function () {
+	                return _this7._renderingPhase = 'spec';
+	            });
+	            gpl.getDrawScenarioQueue({
 	                allocateRect: function allocateRect() {
 	                    return {
 	                        slot: function slot(uid) {
@@ -5815,17 +5838,21 @@ return /******/ (function(modules) { // webpackBootstrap
 	                    };
 	                }
 	            }).forEach(function (task) {
-	                return _this6._taskRunner.addTask(task);
+	                return taskRunner.addTask(task);
 	            });
+	        }
+	    }, {
+	        key: '_scheduleDrawing',
+	        value: function _scheduleDrawing(taskRunner, gpl) {
+	            var _this8 = this;
 
-	            this._taskRunner.addTask(function (scenario) {
-	                _this6._renderingPhase = 'draw';
-	                _this6._renderRoot({ scenario: scenario, d3Target: d3Target, newSize: newSize });
-	                _this6._cancelPointerAnimationFrame();
-	                _this6._scheduleRenderScenario(scenario);
+	            var newSize = gpl.config.settings.size;
+	            taskRunner.addTask(function (scenario) {
+	                _this8._renderingPhase = 'draw';
+	                _this8._renderRoot({ scenario: scenario, newSize: newSize });
+	                _this8._cancelPointerAnimationFrame();
+	                _this8._scheduleRenderScenario(scenario);
 	            });
-
-	            this._taskRunner.run();
 	        }
 	    }, {
 	        key: '_resetProgressLayout',
@@ -5837,12 +5864,12 @@ return /******/ (function(modules) { // webpackBootstrap
 	    }, {
 	        key: '_renderRoot',
 	        value: function _renderRoot(_ref) {
-	            var _this7 = this;
+	            var _this9 = this;
 
 	            var scenario = _ref.scenario,
-	                d3Target = _ref.d3Target,
 	                newSize = _ref.newSize;
 
+	            var d3Target = _d2.default.select(this._layout.content);
 	            var frameRootId = scenario[0].config.uid;
 	            var svg = selectOrAppend(d3Target, 'svg').attr({
 	                width: Math.floor(newSize.width),
@@ -5862,35 +5889,37 @@ return /******/ (function(modules) { // webpackBootstrap
 	            roots.enter().append('g').classed(_const.CSS_PREFIX + 'cell cell frame-root uid_' + frameRootId, true);
 	            roots.call(function (selection) {
 	                selection.classed('tau-active', true);
-	                (0, _d3Decorators.d3_transition)(selection, _this7.configGPL.settings.animationSpeed, 'frameRootToggle').attr('opacity', 1);
+	                (0, _d3Decorators.d3_transition)(selection, _this9.configGPL.settings.animationSpeed, 'frameRootToggle').attr('opacity', 1);
 	            });
 	            roots.exit().call(function (selection) {
 	                selection.classed('tau-active', false);
-	                (0, _d3Decorators.d3_transition)(selection, _this7.configGPL.settings.animationSpeed, 'frameRootToggle').attr('opacity', 1e-6).remove();
+	                (0, _d3Decorators.d3_transition)(selection, _this9.configGPL.settings.animationSpeed, 'frameRootToggle').attr('opacity', 1e-6).remove();
 	            });
 	        }
 	    }, {
 	        key: '_scheduleRenderScenario',
 	        value: function _scheduleRenderScenario(scenario) {
-	            var _this8 = this;
+	            var _this10 = this;
 
 	            scenario.forEach(function (item) {
-	                _this8._taskRunner.addTask(function () {
+	                _this10._taskRunner.addTask(function () {
 	                    item.draw();
-	                    _this8.onUnitDraw(item.node());
-	                    _this8._renderedItems.push(item);
+	                    _this10.onUnitDraw(item.node());
+	                    _this10._renderedItems.push(item);
 	                });
 	            });
 	        }
 	    }, {
-	        key: '_completeRender',
-	        value: function _completeRender() {
+	        key: '_completeRendering',
+	        value: function _completeRendering() {
 	            // TODO: Render panels before chart, to
 	            // prevent chart size shrink. Use some other event.
 	            _utilsDom.utilsDom.setScrollPadding(this._layout.contentContainer);
 	            this._layout.rightSidebar.style.maxHeight = this._liveSpec.settings.size.height + 'px';
 	            this.enablePointerEvents();
-	            this.fire('render', this._svg);
+	            if (this._svg) {
+	                this.fire('render', this._svg);
+	            }
 
 	            // NOTE: After plugins have rendered, the panel scrollbar may appear, so need to handle it again.
 	            _utilsDom.utilsDom.setScrollPadding(this._layout.rightSidebarContainer, 'vertical');
@@ -5898,6 +5927,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    }, {
 	        key: '_cancelRendering',
 	        value: function _cancelRendering() {
+	            this.enablePointerEvents();
 	            this._resetTaskRunner();
 	            this._cancelPointerAnimationFrame();
 	        }
@@ -5942,10 +5972,10 @@ return /******/ (function(modules) { // webpackBootstrap
 	    }, {
 	        key: 'getSourceFiltersIterator',
 	        value: function getSourceFiltersIterator(rejectFiltersPredicate) {
-	            var _this9 = this;
+	            var _this11 = this;
 
 	            var filters = _utils.utils.flatten(Object.keys(this._filtersStore.filters).map(function (key) {
-	                return _this9._filtersStore.filters[key];
+	                return _this11._filtersStore.filters[key];
 	            })).filter(function (f) {
 	                return !rejectFiltersPredicate(f);
 	            }).map(function (x) {
@@ -5961,7 +5991,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    }, {
 	        key: 'getDataSources',
 	        value: function getDataSources() {
-	            var _this10 = this;
+	            var _this12 = this;
 
 	            var param = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
 
@@ -5977,7 +6007,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	                return k !== '?';
 	            }).reduce(function (memo, k) {
 	                var item = chartDataModel[k];
-	                var filterIterator = _this10.getSourceFiltersIterator(excludeFiltersByTagAndSource(k));
+	                var filterIterator = _this12.getSourceFiltersIterator(excludeFiltersByTagAndSource(k));
 	                memo[k] = {
 	                    dims: item.dims,
 	                    data: item.data.filter(filterIterator)
@@ -6047,10 +6077,10 @@ return /******/ (function(modules) { // webpackBootstrap
 	    }, {
 	        key: 'removeFilter',
 	        value: function removeFilter(id) {
-	            var _this11 = this;
+	            var _this13 = this;
 
 	            Object.keys(this._filtersStore.filters).map(function (key) {
-	                _this11._filtersStore.filters[key] = _this11._filtersStore.filters[key].filter(function (item) {
+	                _this13._filtersStore.filters[key] = _this13._filtersStore.filters[key].filter(function (item) {
 	                    return item.id !== id;
 	                });
 	            });
@@ -6114,7 +6144,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    }, {
 	        key: '_displayTimeoutWarning',
 	        value: function _displayTimeoutWarning(_ref2) {
-	            var _this12 = this;
+	            var _this14 = this;
 
 	            var proceed = _ref2.proceed,
 	                cancel = _ref2.cancel,
@@ -6132,12 +6162,12 @@ return /******/ (function(modules) { // webpackBootstrap
 	            this._layout.content.style.height = '100%';
 	            this._layout.content.insertAdjacentHTML('beforeend', '\n            <div class="' + _const.CSS_PREFIX + 'rendering-timeout-warning">\n            <svg\n                viewBox="0 0 ' + width + ' ' + height + '">\n                <text\n                    text-anchor="middle"\n                    font-size="' + fontSize + '">\n                    <tspan x="' + midX + '" y="' + getY(1) + '">Rendering took more than ' + Math.round(timeout) / 1000 + 's</tspan>\n                    <tspan x="' + midX + '" y="' + getY(2) + '">Would you like to continue?</tspan>\n                </text>\n                <text\n                    class="' + _const.CSS_PREFIX + 'rendering-timeout-continue-btn"\n                    text-anchor="end"\n                    font-size="' + fontSize + '"\n                    cursor="pointer"\n                    text-decoration="underline"\n                    x="' + (midX - fontSize / 3) + '"\n                    y="' + getY(3) + '">\n                    Continue\n                </text>\n                <text\n                    class="' + _const.CSS_PREFIX + 'rendering-timeout-cancel-btn"\n                    text-anchor="start"\n                    font-size="' + fontSize + '"\n                    cursor="pointer"\n                    text-decoration="underline"\n                    x="' + (midX + fontSize / 3) + '"\n                    y="' + getY(3) + '">\n                    Cancel\n                </text>\n            </svg>\n            </div>\n        ');
 	            this._layout.content.querySelector('.' + _const.CSS_PREFIX + 'rendering-timeout-continue-btn').addEventListener('click', function () {
-	                _this12._clearTimeoutWarning();
-	                proceed.call(_this12);
+	                _this14._clearTimeoutWarning();
+	                proceed.call(_this14);
 	            });
 	            this._layout.content.querySelector('.' + _const.CSS_PREFIX + 'rendering-timeout-cancel-btn').addEventListener('click', function () {
-	                _this12._clearTimeoutWarning();
-	                cancel.call(_this12);
+	                _this14._clearTimeoutWarning();
+	                cancel.call(_this14);
 	            });
 	        }
 	    }, {
@@ -12266,7 +12296,6 @@ return /******/ (function(modules) { // webpackBootstrap
 	    _sortElements: function _sortElements(filter) {
 	        var _this2 = this;
 
-	        var screenModel = this.node().screenModel;
 	        var container = this.node().config.options.container;
 
 	        // Sort frames
@@ -12274,12 +12303,12 @@ return /******/ (function(modules) { // webpackBootstrap
 	        var groups = new Map();
 	        container.selectAll('.frame').each(function (d) {
 	            filters.set(this, d.some(filter));
-	            groups.set(this, screenModel.group(d[0]));
+	            groups.set(this, d);
 	        });
 	        var compareFilterThenGroupId = _utils.utils.createMultiSorter(function (a, b) {
 	            return filters.get(a) - filters.get(b);
 	        }, function (a, b) {
-	            return _this2._getGroupOrder(a) - _this2._getGroupOrder(b);
+	            return _this2._getGroupOrder(groups.get(a)) - _this2._getGroupOrder(groups.get(b));
 	        });
 	        _utilsDom.utilsDom.sortChildren(container.node(), function (a, b) {
 	            if (a.tagName === 'g' && b.tagName === 'g') {
@@ -14893,29 +14922,46 @@ return /******/ (function(modules) { // webpackBootstrap
 	        var sortByWidthThenY = function sortByWidthThenY(a, b) {
 	            var dataA = d3Data(a);
 	            var dataB = d3Data(b);
-	            if (d3Attrs.width(dataA) === d3Attrs.width(dataB)) {
-	                return d3Attrs.y(dataA) - d3Attrs.y(dataB);
+	            var widthA = d3Attrs.width(dataA);
+	            var widthB = d3Attrs.width(dataB);
+	            if (widthA === widthB) {
+	                var yA = d3Attrs.y(dataA);
+	                var yB = d3Attrs.y(dataB);
+	                if (yA === yB) {
+	                    return sortByOrder(a, b);
+	                }
+	                return yA - yB;
 	            }
-	            return d3Attrs.width(dataB) - d3Attrs.width(dataA);
+	            return widthB - widthA;
 	        };
 	        var sortByHeightThenX = function sortByHeightThenX(a, b) {
 	            var dataA = d3Data(a);
 	            var dataB = d3Data(b);
-	            if (d3Attrs.height(dataA) === d3Attrs.height(dataB)) {
-	                return d3Attrs.x(dataA) - d3Attrs.x(dataB);
+	            var heightA = d3Attrs.height(dataA);
+	            var heightB = d3Attrs.height(dataB);
+	            if (heightA === heightB) {
+	                var xA = d3Attrs.x(dataA);
+	                var xB = d3Attrs.x(dataB);
+	                if (xA === xB) {
+	                    return sortByOrder(a, b);
+	                }
+	                return xA - xB;
 	            }
-	            return d3Attrs.height(dataB) - d3Attrs.height(dataA);
+	            return heightB - heightA;
 	        };
-
-	        this._barsSorter = config.guide.sortByBarHeight ? config.flip ? sortByWidthThenY : sortByHeightThenX : function () {
-	            var ids = data.reduce(function (obj, d, i) {
-	                obj[screenModel.model.id(d)] = i;
-	                return obj;
-	            }, {});
+	        var sortByOrder = function () {
+	            var order = data.reduce(function (map, d, i) {
+	                map.set(d, i + 1);
+	                return map;
+	            }, new Map());
 	            return function (a, b) {
-	                return ids[screenModel.model.id(d3Data(a))] - ids[screenModel.model.id(d3Data(b))];
+	                var orderA = order.get(d3Data(a)) || -1;
+	                var orderB = order.get(d3Data(b)) || -1;
+	                return orderA - orderB;
 	            };
 	        }();
+
+	        this._barsSorter = config.guide.sortByBarHeight ? config.flip ? sortByWidthThenY : sortByHeightThenX : sortByOrder;
 
 	        var elementsOrder = {
 	            rect: 0,
