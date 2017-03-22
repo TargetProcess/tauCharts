@@ -196,36 +196,52 @@ const Interval = {
             .draw(fibers));
 
         const sortByWidthThenY = ((a, b) => {
-            var dataA = d3Data(a);
-            var dataB = d3Data(b);
-            if (d3Attrs.width(dataA) === d3Attrs.width(dataB)) {
-                return (d3Attrs.y(dataA) - d3Attrs.y(dataB));
+            const dataA = d3Data(a);
+            const dataB = d3Data(b);
+            const widthA = d3Attrs.width(dataA);
+            const widthB = d3Attrs.width(dataB);
+            if (widthA === widthB) {
+                const yA = d3Attrs.y(dataA);
+                const yB = d3Attrs.y(dataB);
+                if (yA === yB) {
+                    return sortByOrder(a, b);
+                }
+                return (yA - yB);
             }
-            return (d3Attrs.width(dataB) - d3Attrs.width(dataA));
+            return (widthB - widthA);
         });
         const sortByHeightThenX = ((a, b) => {
-            var dataA = d3Data(a);
-            var dataB = d3Data(b);
-            if (d3Attrs.height(dataA) === d3Attrs.height(dataB)) {
-                return (d3Attrs.x(dataA) - d3Attrs.x(dataB));
+            const dataA = d3Data(a);
+            const dataB = d3Data(b);
+            const heightA = d3Attrs.height(dataA);
+            const heightB = d3Attrs.height(dataB);
+            if (heightA === heightB) {
+                const xA = d3Attrs.x(dataA);
+                const xB = d3Attrs.x(dataB);
+                if (xA === xB) {
+                    return sortByOrder(a, b);
+                }
+                return (xA - xB);
             }
-            return (d3Attrs.height(dataB) - d3Attrs.height(dataA));
+            return (heightB - heightA);
         });
+        const sortByOrder = (() => {
+            const order = data.reduce((map, d, i) => {
+                map.set(d, i + 1);
+                return map;
+            }, new Map());
+            return (a, b) => {
+                const orderA = (order.get(d3Data(a)) || -1);
+                const orderB = (order.get(d3Data(b)) || -1);
+                return (orderA - orderB);
+            };
+        })();
 
         this._barsSorter = (config.guide.sortByBarHeight ?
             (config.flip ?
                 sortByWidthThenY :
                 sortByHeightThenX) :
-            (() => {
-                var ids = data.reduce((obj, d, i) => {
-                    obj[screenModel.model.id(d)] = i;
-                    return obj;
-                }, {});
-                return (a, b) => (
-                    ids[screenModel.model.id(d3Data(a))] -
-                    ids[screenModel.model.id(d3Data(b))]
-                );
-            })()
+            sortByOrder
         );
 
         const elementsOrder = {

@@ -1354,4 +1354,68 @@ define(function (require) {
                 ], '-height', 'x');
         });
     });
+    
+    describeChart('Bars sorted by height',
+        {
+            type: 'bar',
+            x: 'x',
+            y: 'y',
+            id: 'id',
+            color: 'c',
+            settings: {specEngine: 'none'}
+        },
+        [
+            {id: 1, x: 1, y: 1, c: 'a'},
+            {id: 2, x: 1, y: 2, c: 'b'},
+            {id: 3, x: 1, y: 2, c: 'c'},
+
+            {id: 4, x: 2, y: 2, c: 'c'},
+            {id: 5, x: 2, y: 2, c: 'b'},
+            {id: 6, x: 2, y: 2, c: 'a'}
+        ],
+        function (context) {
+
+            it('should sort bars by height (desc), then by X, then by data order', function () {
+                var svg = context.chart.getSVG();
+                var bars = d3.select(svg).selectAll('.bar');
+                var ids = bars.data().map((d) => d.id).join('');
+                expect(ids).to.equal('236541');
+            });
+        },
+        {
+            autoWidth: false
+        }
+    );
+    
+    describeChart('Horizontal bars sorted by width',
+        {
+            type: 'horizontal-bar',
+            x: 'x',
+            y: 'y',
+            id: 'id',
+            color: 'c',
+            settings: {specEngine: 'none'}
+        },
+        [
+            {id: 1, x: 1, y: 1, c: 'a'},
+            {id: 2, x: 2, y: 1, c: 'b'},
+            {id: 3, x: 1, y: 1, c: 'c'},
+
+            {id: 4, x: 2, y: 2, c: 'c'},
+            {id: 5, x: 2, y: 2, c: 'b'},
+            {id: 6, x: 3, y: 2, c: 'a'}
+        ],
+        function (context) {
+
+            it('should horizontal sort bars by width (desc), then by Y, then by data order', function () {
+                var svg = context.chart.getSVG();
+                var bars = d3.select(svg).selectAll('.bar');
+                var ids = bars.data().map((d) => d.id).join('');
+                expect(ids).to.equal('654213');
+            });
+        },
+        {
+            autoWidth: false
+        }
+    );
 });
