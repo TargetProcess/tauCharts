@@ -210,7 +210,7 @@ var d3_decorator_fixEdgeAxisTicksOverflow = function (axisNode, activeTicks) {
     }
     var svgRect = svg.getBoundingClientRect();
 
-    texts.forEach((n, i) => {
+    texts.forEach((n) => {
         var t = d3.select(n);
         t.attr('dx', 0);
     });
