@@ -98,7 +98,7 @@ var api = {
         syncRenderingInterval: 50,
         syncPointerEvents: false,
         handleRenderingErrors: true,
-        experimentalShouldAnimate: (sources, settings) => {
+        experimentalShouldAnimate: (spec) => {
             const div = document.createElement('div');
             div.style.position = 'absolute';
             div.style.visibility = 'hidden';
@@ -128,7 +128,7 @@ var api = {
             }
             const duration = (performance.now() - start);
             document.body.removeChild(div);
-            return (sources['/'].data.length * duration < 500);
+            return (spec.sources['/'].data.length * duration < 500);
         },
 
         defaultNiceColor: true,
