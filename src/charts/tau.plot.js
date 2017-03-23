@@ -455,6 +455,23 @@ export class Plot extends Emitter {
         this._liveSpec.sources = this.getDataSources();
         this._liveSpec.settings = this.configGPL.settings;
 
+        // Determine if it's better to draw chart without animation
+        this._liveSpec.settings.initialAnimationSpeed = (
+            this._liveSpec.settings.initialAnimationSpeed ||
+            this._liveSpec.settings.animationSpeed);
+        const animationSpeed = (this._liveSpec.settings.experimentalShouldAnimate(
+            this._liveSpec.sources,
+            this._liveSpec.settings
+        ) ? this._liveSpec.settings.initialAnimationSpeed : 0);
+        this._liveSpec.settings.animationSpeed = animationSpeed;
+        const setUnitAnimation = (u) => {
+            u.guide.animationSpeed = animationSpeed;
+            if (u.units) {
+                u.units.forEach(setUnitAnimation);
+            }
+        };
+        setUnitAnimation(this._liveSpec.unit);
+
         if (this.isEmptySources(this._liveSpec.sources)) {
             return null;
         }
