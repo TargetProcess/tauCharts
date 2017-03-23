@@ -127,7 +127,6 @@ var api = {
                 }
             }
             const duration = (performance.now() - start);
-            console.log(duration);
             document.body.removeChild(div);
             return (spec.sources['/'].data.length * duration < 500);
         },
