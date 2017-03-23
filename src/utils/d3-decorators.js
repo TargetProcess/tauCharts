@@ -194,7 +194,7 @@ var d3_decorator_fixHorizontalAxisTicksOverflow = function (axisNode, activeTick
     axisNode.classed({'graphical-report__d3-time-overflown': hasOverflow});
 };
 
-var d3_decorator_fixEdgeAxisTicksOverflow = function (axisNode, activeTicks, animationSpeed, returnPhase) {
+var d3_decorator_fixEdgeAxisTicksOverflow = function (axisNode, activeTicks) {
 
     activeTicks = activeTicks.map(d => Number(d));
     var texts = axisNode
@@ -210,33 +210,20 @@ var d3_decorator_fixEdgeAxisTicksOverflow = function (axisNode, activeTicks, ani
     }
     var svgRect = svg.getBoundingClientRect();
 
-    if (returnPhase) {
-        texts
-            .sort((a, b) => d3.select(a).data() - d3.select(b).data())
-            .forEach((n, i) => {
-                if (i === 0 || i === texts.length - 1) {
-                    return;
-                }
-                var t = d3.select(n);
-                d3_transition(t, animationSpeed, 'fixEdgeAxisTicksOverflow');
-                t.attr('dx', 0);
-            });
-    } else {
-        var fixText = (node, dir) => {
-            var rect = node.getBoundingClientRect();
-            var side = (dir > 0 ? 'right' : 'left');
+    texts.forEach((n) => {
+        var t = d3.select(n);
+        t.attr('dx', 0);
+    });
 
-            var d3Node = d3.select(node);
-            var currentDx = d3Node.attr('dx') || 0;
-            var diff = dir * (rect[side] - svgRect[side] + currentDx);
-            if (diff > 0) {
-                d3_transition(d3Node, animationSpeed, 'fixEdgeAxisTicksOverflow')
-                    .attr('dx', -dir * diff);
-            }
-        };
-        fixText(texts[0], -1);
-        fixText(texts[texts.length - 1], 1);
-    }
+    var fixText = (node, dir) => {
+        var d3Node = d3.select(node);
+        var rect = node.getBoundingClientRect();
+        var side = (dir > 0 ? 'right' : 'left');
+        var diff = dir * (rect[side] - svgRect[side]);
+        d3Node.attr('dx', (diff > 0 ? -dir * diff : 0));
+    };
+    fixText(texts[0], -1);
+    fixText(texts[texts.length - 1], 1);
 };
 
 /**
