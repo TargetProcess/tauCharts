@@ -11,6 +11,7 @@ define(function (require) {
                 height: 10
             };
         },
+        experimentalShouldAnimate: () => true,
 
         fitModel: null, // 'entire-view',
         layoutEngine: '', // 'EXTRACT'

@@ -43,7 +43,7 @@ import {d3_animationInterceptor} from './utils/d3-decorators';
 import {errorCodes} from './error';
 import {PluginsSDK} from './plugins-sdk';
 
-import {default as d3} from 'd3';
+import d3 from 'd3';
 
 import './utils/polyfills';
 
@@ -98,6 +98,38 @@ var api = {
         syncRenderingInterval: 50,
         syncPointerEvents: false,
         handleRenderingErrors: true,
+        experimentalShouldAnimate: (spec) => {
+            const createSvg = (tag, attrs) => {
+                var el = document.createElementNS('http://www.w3.org/2000/svg', tag);
+                Object.keys(attrs).forEach((k) => el.setAttribute(k, String(attrs[k])));
+                return el;
+            };
+            const div = document.createElement('div');
+            div.style.position = 'absolute';
+            div.style.visibility = 'hidden';
+            document.body.appendChild(div);
+            const svg = createSvg('svg', {
+                width: 100,
+                height: 100
+            });
+            div.appendChild(svg);
+            const start = performance.now();
+            var i, j, c;
+            for (i = 0, j, c; i < 10; i++) {
+                for (j = 0; j < 10; j++) {
+                    c = createSvg('circle', {
+                        fill: 'black',
+                        r: 5,
+                        cx: i * 10,
+                        cy: j * 10
+                    });
+                    svg.appendChild(c);
+                }
+            }
+            const duration = (performance.now() - start);
+            document.body.removeChild(div);
+            return (spec.sources['/'].data.length * duration < 500);
+        },
 
         defaultNiceColor: true,
 
