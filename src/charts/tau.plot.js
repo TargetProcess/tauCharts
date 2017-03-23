@@ -477,7 +477,8 @@ export class Plot extends Emitter {
         spec.settings.initialAnimationSpeed = (
             spec.settings.initialAnimationSpeed ||
             spec.settings.animationSpeed);
-        const animationSpeed = (spec.settings.experimentalShouldAnimate(spec) ? spec.settings.initialAnimationSpeed : 0);
+        const animationSpeed = (spec.settings.experimentalShouldAnimate(spec) ?
+            spec.settings.initialAnimationSpeed : 0);
         spec.settings.animationSpeed = animationSpeed;
         const setUnitAnimation = (u) => {
             u.guide = (u.guide || {});
