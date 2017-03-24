@@ -541,6 +541,8 @@
                         trend.guide.showAnchors = 'never';
                         trend.guide.cssClass      = 'graphical-report__trendline';
                         trend.guide.widthCssClass = 'graphical-report__line-width-1';
+                        delete trend.guide.label;
+                        delete trend.label;
 
                         parentUnit.units.push(trend);
                     });

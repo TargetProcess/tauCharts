@@ -1,4 +1,4 @@
-/*! taucharts - v0.10.0-beta.22 - 2017-03-22
+/*! taucharts - v0.10.0-beta.23 - 2017-03-24
 * https://github.com/TargetProcess/tauCharts
 * Copyright (c) 2017 Taucraft Limited; Licensed Apache License 2.0 */
 (function webpackUniversalModuleDefinition(root, factory) {
@@ -205,6 +205,40 @@ return /******/ (function(modules) { // webpackBootstrap
 	        syncRenderingInterval: 50,
 	        syncPointerEvents: false,
 	        handleRenderingErrors: true,
+	        experimentalShouldAnimate: function experimentalShouldAnimate(spec) {
+	            var createSvg = function createSvg(tag, attrs) {
+	                var el = document.createElementNS('http://www.w3.org/2000/svg', tag);
+	                Object.keys(attrs).forEach(function (k) {
+	                    return el.setAttribute(k, String(attrs[k]));
+	                });
+	                return el;
+	            };
+	            var div = document.createElement('div');
+	            div.style.position = 'absolute';
+	            div.style.visibility = 'hidden';
+	            document.body.appendChild(div);
+	            var svg = createSvg('svg', {
+	                width: 100,
+	                height: 100
+	            });
+	            div.appendChild(svg);
+	            var start = performance.now();
+	            var i, j, c;
+	            for (i = 0, j, c; i < 10; i++) {
+	                for (j = 0; j < 10; j++) {
+	                    c = createSvg('circle', {
+	                        fill: 'black',
+	                        r: 5,
+	                        cx: i * 10,
+	                        cy: j * 10
+	                    });
+	                    svg.appendChild(c);
+	                }
+	            }
+	            var duration = performance.now() - start;
+	            document.body.removeChild(div);
+	            return spec.sources['/'].data.length * duration < 500;
+	        },
 
 	        defaultNiceColor: true,
 
@@ -349,7 +383,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	}]));
 
 	/* global VERSION:false */
-	var version = ("0.10.0-beta.22");
+	var version = ("0.10.0-beta.23");
 	exports.GPL = _tau.GPL;
 	exports.Plot = _tau2.Plot;
 	exports.Chart = _tau3.Chart;
@@ -2967,7 +3001,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    axisNode.classed({ 'graphical-report__d3-time-overflown': hasOverflow });
 	};
 
-	var d3_decorator_fixEdgeAxisTicksOverflow = function d3_decorator_fixEdgeAxisTicksOverflow(axisNode, activeTicks, animationSpeed, returnPhase) {
+	var d3_decorator_fixEdgeAxisTicksOverflow = function d3_decorator_fixEdgeAxisTicksOverflow(axisNode, activeTicks) {
 
 	    activeTicks = activeTicks.map(function (d) {
 	        return Number(d);
@@ -2985,32 +3019,20 @@ return /******/ (function(modules) { // webpackBootstrap
 	    }
 	    var svgRect = svg.getBoundingClientRect();
 
-	    if (returnPhase) {
-	        texts.sort(function (a, b) {
-	            return _d2.default.select(a).data() - _d2.default.select(b).data();
-	        }).forEach(function (n, i) {
-	            if (i === 0 || i === texts.length - 1) {
-	                return;
-	            }
-	            var t = _d2.default.select(n);
-	            d3_transition(t, animationSpeed, 'fixEdgeAxisTicksOverflow');
-	            t.attr('dx', 0);
-	        });
-	    } else {
-	        var fixText = function fixText(node, dir) {
-	            var rect = node.getBoundingClientRect();
-	            var side = dir > 0 ? 'right' : 'left';
+	    texts.forEach(function (n) {
+	        var t = _d2.default.select(n);
+	        t.attr('dx', 0);
+	    });
 
-	            var d3Node = _d2.default.select(node);
-	            var currentDx = d3Node.attr('dx') || 0;
-	            var diff = dir * (rect[side] - svgRect[side] + currentDx);
-	            if (diff > 0) {
-	                d3_transition(d3Node, animationSpeed, 'fixEdgeAxisTicksOverflow').attr('dx', -dir * diff);
-	            }
-	        };
-	        fixText(texts[0], -1);
-	        fixText(texts[texts.length - 1], 1);
-	    }
+	    var fixText = function fixText(node, dir) {
+	        var d3Node = _d2.default.select(node);
+	        var rect = node.getBoundingClientRect();
+	        var side = dir > 0 ? 'right' : 'left';
+	        var diff = dir * (rect[side] - svgRect[side]);
+	        d3Node.attr('dx', diff > 0 ? -dir * diff : 0);
+	    };
+	    fixText(texts[0], -1);
+	    fixText(texts[texts.length - 1], 1);
 	};
 
 	/**
@@ -5789,6 +5811,8 @@ return /******/ (function(modules) { // webpackBootstrap
 	            this._liveSpec.sources = this.getDataSources();
 	            this._liveSpec.settings = this.configGPL.settings;
 
+	            this._experimentalSetupAnimationSpeed(this._liveSpec);
+
 	            if (this.isEmptySources(this._liveSpec.sources)) {
 	                return null;
 	            }
@@ -5802,6 +5826,22 @@ return /******/ (function(modules) { // webpackBootstrap
 	            this.fire('specready', this._liveSpec);
 
 	            return this._liveSpec;
+	        }
+	    }, {
+	        key: '_experimentalSetupAnimationSpeed',
+	        value: function _experimentalSetupAnimationSpeed(spec) {
+	            // Determine if it's better to draw chart without animation
+	            spec.settings.initialAnimationSpeed = spec.settings.initialAnimationSpeed || spec.settings.animationSpeed;
+	            var animationSpeed = spec.settings.experimentalShouldAnimate(spec) ? spec.settings.initialAnimationSpeed : 0;
+	            spec.settings.animationSpeed = animationSpeed;
+	            var setUnitAnimation = function setUnitAnimation(u) {
+	                u.guide = u.guide || {};
+	                u.guide.animationSpeed = animationSpeed;
+	                if (u.units) {
+	                    u.units.forEach(setUnitAnimation);
+	                }
+	            };
+	            setUnitAnimation(spec.unit);
 	        }
 	    }, {
 	        key: '_createGPL',
@@ -10095,14 +10135,10 @@ return /******/ (function(modules) { // webpackBootstrap
 	                    if (isHorizontal && scale.scaleType === 'time') {
 	                        (0, _d3Decorators.d3_decorator_fixHorizontalAxisTicksOverflow)(axis, activeTicks);
 	                    }
-
-	                    if (isHorizontal) {
-	                        (0, _d3Decorators.d3_decorator_fixEdgeAxisTicksOverflow)(axis, activeTicks, animationSpeed, true);
-	                    }
 	                };
 	                var fixTickTextOverflow = function fixTickTextOverflow() {
-	                    if (isHorizontal) {
-	                        (0, _d3Decorators.d3_decorator_fixEdgeAxisTicksOverflow)(axis, activeTicks, animationSpeed);
+	                    if (isHorizontal && (scale.scaleType === 'time' || scale.scaleType === 'linear')) {
+	                        (0, _d3Decorators.d3_decorator_fixEdgeAxisTicksOverflow)(axis, activeTicks);
 	                    }
 	                };
 	                var fixAxesTicks = function fixAxesTicks() {
