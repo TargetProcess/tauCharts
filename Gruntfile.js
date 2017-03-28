@@ -206,7 +206,10 @@ module.exports = function (grunt) {
         },
         'webpack-dev-server': {
             options: {
-                webpack: webpackConfig.chartBuild,
+                webpack: [
+                    webpackConfig.chartBuild,
+                    webpackConfig.exportBuild
+                ],
                 publicPath: '/'
             },
             start: {
