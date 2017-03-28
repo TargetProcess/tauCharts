@@ -150,7 +150,6 @@ const BasePath = {
         node.on('highlight-data-points', (sender, filter) => this.highlightDataPoints(filter));
         if (config.guide.showAnchors !== 'never') {
             node.on('data-hover', ((sender, e) => this.highlightDataPoints(createFilter(e.data, null))));
-            node.on('data-click', ((sender, e) => this.highlight(createFilter(e.data, e.data ? false : null))));
         }
     },
 

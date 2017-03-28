@@ -120,7 +120,6 @@ const Interval = {
         const createFilter = ((data, falsy) => ((row) => row === data ? true : falsy));
         node.on('highlight', (sender, filter) => this.highlight(filter));
         node.on('data-hover', ((sender, e) => this.highlight(createFilter(e.data, null))));
-        node.on('data-click', ((sender, e) => this.highlight(createFilter(e.data, e.data ? false : null))));
     },
 
     draw() {
