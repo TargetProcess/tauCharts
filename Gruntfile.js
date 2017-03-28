@@ -206,13 +206,17 @@ module.exports = function (grunt) {
         },
         'webpack-dev-server': {
             options: {
-                webpack: webpackConfig.chartBuild,
+                webpack: [
+                    webpackConfig.chartBuild,
+                    webpackConfig.exportBuild
+                ],
                 publicPath: '/'
             },
             start: {
                 host: '0.0.0.0',
                 port: 9000,
                 keepAlive: true,
+                inline: true,
                 webpack: {
                     devtool: 'eval',
                     debug: true
