@@ -216,6 +216,7 @@ module.exports = function (grunt) {
                 host: '0.0.0.0',
                 port: 9000,
                 keepAlive: true,
+                inline: true,
                 webpack: {
                     devtool: 'eval',
                     debug: true
