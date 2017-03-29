@@ -479,6 +479,8 @@ define(function (require) {
                 x: 'x',
                 y: 'y',
                 guide: {
+                    x: {hide: true},
+                    y: {hide: true},
                     interpolate: 'smooth-keep-extremum'
                 }
             });
@@ -489,7 +491,7 @@ define(function (require) {
             var coords = Array.from(pathValue.match(/\d+\.?\d+,\d+\.?\d+/g))
                 .map((c) => {
                     var pt = c.split(',').map(parseFloat).map(Math.round);
-                    return {x: Math.round(pt[0]), y: Math.round(pt[1])};
+                    return {x: pt[0], y: pt[1]};
                 });
             expect(coords).to.deep.equal([
                 {'x': 242, 'y': 272},
