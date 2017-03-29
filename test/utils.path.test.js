@@ -461,6 +461,52 @@ define(function (require) {
             var pathValue = document.querySelector('.line path').getAttribute('d');
             expect(pathValue.split(' ').length).to.equal(13);
         });
+
+        it('should render interpolated area', function () {
+
+            var testDiv = document.createElement('div');
+            testDiv.style.width = '800px';
+            testDiv.style.height = '600px';
+            document.body.appendChild(testDiv);
+
+            var chart = new tauCharts.Chart({
+                type: 'area',
+                data: [
+                    {x: 10, y: 4},
+                    {x: 20, y: 2},
+                    {x: 30, y: 8}
+                ],
+                x: 'x',
+                y: 'y',
+                guide: {
+                    interpolate: 'smooth-keep-extremum'
+                }
+            });
+
+            chart.renderTo(testDiv);
+
+            var pathValue = document.querySelector('.area path').getAttribute('d');
+            var coords = Array.from(pathValue.match(/\d+\.?\d+,\d+\.?\d+/g))
+                .map((c) => {
+                    var pt = c.split(',').map(parseFloat).map(Math.round);
+                    return {x: Math.round(pt[0]), y: Math.round(pt[1])};
+                });
+            expect(coords).to.deep.equal([
+                {'x': 242, 'y': 272},
+                {'x': 323, 'y': 363},
+                {'x': 404, 'y': 408},
+                {'x': 485, 'y': 408},
+                {'x': 565, 'y': 408},
+                {'x': 646, 'y': 272},
+                {'x': 727, 'y': 544},
+                {'x': 646, 'y': 544},
+                {'x': 565, 'y': 544},
+                {'x': 485, 'y': 544},
+                {'x': 404, 'y': 544},
+                {'x': 323, 'y': 544},
+                {'x': 242, 'y': 544}
+            ]);
+        });
     });
 
     describe('brush-line-builder', function () {
