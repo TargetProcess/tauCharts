@@ -184,6 +184,7 @@
                         window.addEventListener('click', this._outerClickHandler, true);
                         tooltipNode.classList.add('stuck');
                         this._setTargetEventsEnabled(false);
+                        this._accentFocus(state.highlight.data);
                         this._tooltip.updateSize();
                     } else {
                         window.removeEventListener('click', this._outerClickHandler, true);
@@ -321,6 +322,18 @@
             _getLabel: function (k) {
                 var meta = this._metaInfo[k] || {label: k};
                 return meta.label;
+            },
+
+            _accentFocus: function (data) {
+                var filter = function (d) {
+                    return (d === data);
+                };
+                this._chart
+                    .select(function () {
+                        return true;
+                    }).forEach(function (unit) {
+                        unit.fire('highlight', filter);
+                    });
             },
 
             _removeFocus: function () {

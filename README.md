@@ -2,7 +2,7 @@ Taucharts [![Build Status](https://travis-ci.org/TargetProcess/tauCharts.png?bra
 [![Slack Status](http://slack.taucharts.com/badge.svg)](http://slack.taucharts.com/)
 ======
 
-Taucharts is a [data-focused javascript charting library](http://blog.taucharts.com/taucharts-data-focused-charting-library/) based on D3 and designed with passion.
+Taucharts is a [data-focused JavaScript charting library](http://blog.taucharts.com/taucharts-data-focused-charting-library/) based on D3 and designed with passion.
 
 ##### Official website: [www.taucharts.com](http://www.taucharts.com)
 ##### Documentation: [api.taucharts.com](http://api.taucharts.com)
@@ -23,7 +23,7 @@ If you want to contribute - see [how to run the project locally](#how-to-run-the
 
 #### Using Taucharts with a CDN
 
-Load javascript dependencies
+Load JavaScript dependencies
 
 ```html
 <script src="//cdn.jsdelivr.net/d3js/latest/d3.min.js" charset="utf-8"></script>
@@ -50,7 +50,7 @@ npm install taucharts
 
 ___
 
-Below are some popular usage scenarios. For more examples, see our experimental [sample page](http://taucharts.com/taulab/index.html).
+Below are some popular usage scenarios. For more examples, see our experimental [sample page](https://demo.taucharts.com/).
 
 #### Scatter plot
 ```javascript
@@ -63,7 +63,7 @@ var chart = new tauCharts.Chart({
     "data" : [{"eccentricity": 0, "period": 4.95, "name": "exoplanet", "mass": 38.0952}, ...]
 });
 ```
-[![Scatterplot](https://dl.dropboxusercontent.com/u/96767946/taucharts.com/scatter-plot.png)](http://api.taucharts.com/basic/scatterplot.html)
+[![Scatterplot](examples/screenshots/Taucharts_Scatterplot.png)](http://api.taucharts.com/basic/scatterplot.html)
 
 See [scatter plot documentation](http://api.taucharts.com/basic/scatterplot.html)
 
@@ -79,7 +79,7 @@ var chart = new tauCharts.Chart({
     "data" : [{ "Sport": "Swimming", "Age": 23, "SUM(Total Medals)": 72 }, ...]
 });
 ```
-[![Line Chart](https://dl.dropboxusercontent.com/u/96767946/taucharts.com/line-chart.png)](http://api.taucharts.com/basic/line.html)
+[![Line Chart](examples/screenshots/Taucharts_Line.png)](http://api.taucharts.com/basic/line.html)
 
 See [line chart documentation](http://api.taucharts.com/basic/line.html)
 
@@ -95,7 +95,7 @@ var chart = new tauCharts.Chart({
     data : [{"team": "d", "cycleTime": 1, "effort": 1, "count": 1, "priority": "low"}, ...]
 });
 ```
-[![Bar Chart](https://dl.dropboxusercontent.com/u/96767946/taucharts.com/bar-chart.png)](http://api.taucharts.com/basic/bar.html)
+[![Bar Chart](examples/screenshots/Taucharts_Bar.png)](http://api.taucharts.com/basic/bar.html)
 
 See [bar chart documentation](http://api.taucharts.com/basic/bar.html)
 
@@ -110,7 +110,7 @@ var chart = new tauCharts.Chart({
     data : [{"team": "alpha", "count": 8}, ...]
 });
 ```
-[![Horizontal Bar Chart](https://dl.dropboxusercontent.com/u/96767946/taucharts.com/horizontal-bar-chart.png)](http://api.taucharts.com/basic/horizontal-bar.html)
+[![Horizontal Bar Chart](examples/screenshots/Taucharts_Horizontal-bar.png)](http://api.taucharts.com/basic/horizontal-bar.html)
 
 See [horizontal bar chart documentation](http://api.taucharts.com/basic/horizontal-bar.html)
 
@@ -126,7 +126,7 @@ var chart = new tauCharts.Chart({
     data : [{process: 'sales', stage: 'visit', count: 100}, ...]
 });
 ```
-[![Stacked Bar Chart](https://dl.dropboxusercontent.com/u/96767946/taucharts.com/stacked-bar-chart.png)](http://api.taucharts.com/basic/stacked-bar.html)
+[![Stacked Bar Chart](examples/screenshots/Taucharts_Stacked-bar.png)](http://api.taucharts.com/basic/stacked-bar.html)
 
 See [stacked bar chart documentation](http://api.taucharts.com/basic/stacked-bar.html)
 
@@ -142,7 +142,7 @@ var chart = new tauCharts.Chart({
     data : [{process: 'sales', stage: 'visit', count: 100}, ...]
 });
 ```
-[![Horizontal Stacked Bar Chart](https://dl.dropboxusercontent.com/u/96767946/taucharts.com/horizontal-stacked-bar-chart.png)](http://api.taucharts.com/basic/horizontal-stacked-bar.html)
+[![Horizontal Stacked Bar Chart](examples/screenshots/Taucharts_Horizontal-stacked-bar.png)](http://api.taucharts.com/basic/horizontal-stacked-bar.html)
 
 See [horizontal stacked bar chart documentation](http://api.taucharts.com/basic/horizontal-stacked-bar.html)
 
@@ -158,7 +158,7 @@ var chart1 = new tauCharts.Chart({
   data : [{class: "C", milespergallon: 41.26, price: 24509.74, vehicle: "Prius1"}, ...]
 });
 ```
-[![Facet scatterplot chart](https://dl.dropboxusercontent.com/u/96767946/taucharts.com/facet.png)](http://api.taucharts.com/basic/facet.html)
+[![Facet scatterplot chart](examples/screenshots/Taucharts_Facet.png)](http://api.taucharts.com/basic/facet.html)
 
 See [facet charts documentation](http://api.taucharts.com/basic/facet.html)
 
@@ -174,7 +174,7 @@ var chart1 = new tauCharts.Chart({
     ...
 });
 ```
-[![Streaming Data Chart](https://dl.dropboxusercontent.com/u/96767946/taucharts.com/data-streaming.gif)](//jsfiddle.net/taucharts/qdn76nab/)
+[![Streaming Data Chart](examples/screenshots/Taucharts_Stream.gif)](//jsfiddle.net/taucharts/qdn76nab/)
 
 This sample uses the [setData(..)] method to refresh the chart's data source.
 
@@ -183,7 +183,7 @@ See [streaming sample online](//jsfiddle.net/taucharts/qdn76nab/)
 ___
 
 #### Complex Composable charts
-[![Composable Chart](https://dl.dropboxusercontent.com/u/96767946/taucharts.com/complex-composable-chart.png)](http://jsfiddle.net/6LzefLo4/4/)
+[![Composable Chart](examples/screenshots/Taucharts_Composable.png)](http://jsfiddle.net/6LzefLo4/4/)
 
 See [composable chart sample online](http://jsfiddle.net/6LzefLo4/4/)
 

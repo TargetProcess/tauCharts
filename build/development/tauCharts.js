@@ -1,4 +1,4 @@
-/*! taucharts - v0.10.0-beta.23 - 2017-03-24
+/*! taucharts - v0.10.0-beta.24 - 2017-03-29
 * https://github.com/TargetProcess/tauCharts
 * Copyright (c) 2017 Taucraft Limited; Licensed Apache License 2.0 */
 (function webpackUniversalModuleDefinition(root, factory) {
@@ -383,7 +383,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	}]));
 
 	/* global VERSION:false */
-	var version = ("0.10.0-beta.23");
+	var version = ("0.10.0-beta.24");
 	exports.GPL = _tau.GPL;
 	exports.Plot = _tau2.Plot;
 	exports.Chart = _tau3.Chart;
@@ -672,119 +672,115 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	    sortChildren: function sortChildren(parent, sorter) {
 	        if (parent.childElementCount > 0) {
+
+	            // Note: move DOM elements with
+	            // minimal number of iterations
+	            // and affected nodes to prevent
+	            // unneccessary repaints.
+
+	            // Get from/to index pairs.
+	            var unsorted = Array.prototype.filter.call(parent.childNodes, function (el) {
+	                return el.nodeType === Node.ELEMENT_NODE;
+	            });
+	            var sorted = unsorted.slice().sort(sorter);
+	            var unsortedIndices = unsorted.reduce(function (map, el, i) {
+	                map.set(el, i);
+	                return map;
+	            }, new Map());
+
+	            // Get groups (sequences of elements with unchanged order)
 	            var currGroup;
 	            var currDiff;
-
-	            (function () {
-
-	                // Note: move DOM elements with
-	                // minimal number of iterations
-	                // and affected nodes to prevent
-	                // unneccessary repaints.
-
-	                // Get from/to index pairs.
-	                var unsorted = Array.prototype.filter.call(parent.childNodes, function (el) {
-	                    return el.nodeType === Node.ELEMENT_NODE;
-	                });
-	                var sorted = unsorted.slice().sort(sorter);
-	                var unsortedIndices = unsorted.reduce(function (map, el, i) {
-	                    map.set(el, i);
-	                    return map;
-	                }, new Map());
-
-	                // Get groups (sequences of elements with unchanged order)
-
-	                var groups = sorted.reduce(function (groupsInfo, el, to) {
-	                    var from = unsortedIndices.get(el);
-	                    var diff = to - from;
-	                    if (diff !== currDiff) {
-	                        if (currGroup) {
-	                            groupsInfo.push(currGroup);
-	                        }
-	                        currDiff = diff;
-	                        currGroup = {
-	                            from: from,
-	                            to: to,
-	                            elements: []
-	                        };
-	                    }
-	                    currGroup.elements.push(el);
-	                    if (to === sorted.length - 1) {
+	            var groups = sorted.reduce(function (groupsInfo, el, to) {
+	                var from = unsortedIndices.get(el);
+	                var diff = to - from;
+	                if (diff !== currDiff) {
+	                    if (currGroup) {
 	                        groupsInfo.push(currGroup);
 	                    }
-	                    return groupsInfo;
-	                }, []);
-	                var unsortedGroups = groups.slice().sort(function (a, b) {
-	                    return a.from - b.from;
-	                });
-	                var unsortedGroupsIndices = unsortedGroups.reduce(function (map, g, i) {
-	                    map.set(g, i);
-	                    return map;
-	                }, new Map());
+	                    currDiff = diff;
+	                    currGroup = {
+	                        from: from,
+	                        to: to,
+	                        elements: []
+	                    };
+	                }
+	                currGroup.elements.push(el);
+	                if (to === sorted.length - 1) {
+	                    groupsInfo.push(currGroup);
+	                }
+	                return groupsInfo;
+	            }, []);
+	            var unsortedGroups = groups.slice().sort(function (a, b) {
+	                return a.from - b.from;
+	            });
+	            var unsortedGroupsIndices = unsortedGroups.reduce(function (map, g, i) {
+	                map.set(g, i);
+	                return map;
+	            }, new Map());
 
-	                // Get required iterations
-	                var createIterations = function createIterations(forward) {
-	                    var iterations = groups.map(function (g, i) {
-	                        return {
-	                            elements: g.elements,
-	                            from: unsortedGroupsIndices.get(g),
-	                            to: i
-	                        };
-	                    }).sort(_utils.utils.createMultiSorter(function (a, b) {
-	                        return a.elements.length - b.elements.length;
-	                    }, forward ? function (a, b) {
-	                        return b.to - a.to;
-	                    } : function (a, b) {
-	                        return a.to - b.to;
-	                    }));
-	                    for (var i = 0, j, g, h; i < iterations.length; i++) {
-	                        g = iterations[i];
-	                        if (g.from > g.to) {
-	                            for (j = i + 1; j < iterations.length; j++) {
-	                                h = iterations[j];
-	                                if (h.from >= g.to && h.from < g.from) {
-	                                    h.from++;
-	                                }
-	                            }
-	                        }
-	                        if (g.from < g.to) {
-	                            for (j = i + 1; j < iterations.length; j++) {
-	                                h = iterations[j];
-	                                if (h.from > g.from && h.from <= g.to) {
-	                                    h.from--;
-	                                }
+	            // Get required iterations
+	            var createIterations = function createIterations(forward) {
+	                var iterations = groups.map(function (g, i) {
+	                    return {
+	                        elements: g.elements,
+	                        from: unsortedGroupsIndices.get(g),
+	                        to: i
+	                    };
+	                }).sort(_utils.utils.createMultiSorter(function (a, b) {
+	                    return a.elements.length - b.elements.length;
+	                }, forward ? function (a, b) {
+	                    return b.to - a.to;
+	                } : function (a, b) {
+	                    return a.to - b.to;
+	                }));
+	                for (var i = 0, j, g, h; i < iterations.length; i++) {
+	                    g = iterations[i];
+	                    if (g.from > g.to) {
+	                        for (j = i + 1; j < iterations.length; j++) {
+	                            h = iterations[j];
+	                            if (h.from >= g.to && h.from < g.from) {
+	                                h.from++;
 	                            }
 	                        }
 	                    }
-	                    return iterations.filter(function (g) {
-	                        return g.from !== g.to;
+	                    if (g.from < g.to) {
+	                        for (j = i + 1; j < iterations.length; j++) {
+	                            h = iterations[j];
+	                            if (h.from > g.from && h.from <= g.to) {
+	                                h.from--;
+	                            }
+	                        }
+	                    }
+	                }
+	                return iterations.filter(function (g) {
+	                    return g.from !== g.to;
+	                });
+	            };
+	            var forwardIterations = createIterations(true);
+	            var backwardIterations = createIterations(false);
+	            var iterations = forwardIterations.length < backwardIterations.length ? forwardIterations : backwardIterations;
+
+	            // Finally sort DOM nodes
+	            var mirror = unsortedGroups.map(function (g) {
+	                return g.elements;
+	            });
+	            iterations.forEach(function (g) {
+	                var targetGroup = mirror.splice(g.from, 1)[0];
+	                var groupAfter = mirror[g.to];
+	                var siblingAfter = groupAfter ? groupAfter[0] : null;
+	                var targetNode;
+	                if (g.elements.length === 1) {
+	                    targetNode = targetGroup[0];
+	                } else {
+	                    targetNode = document.createDocumentFragment();
+	                    targetGroup.forEach(function (el) {
+	                        targetNode.appendChild(el);
 	                    });
-	                };
-	                var forwardIterations = createIterations(true);
-	                var backwardIterations = createIterations(false);
-	                var iterations = forwardIterations.length < backwardIterations.length ? forwardIterations : backwardIterations;
-
-	                // Finally sort DOM nodes
-	                var mirror = unsortedGroups.map(function (g) {
-	                    return g.elements;
-	                });
-	                iterations.forEach(function (g) {
-	                    var targetGroup = mirror.splice(g.from, 1)[0];
-	                    var groupAfter = mirror[g.to];
-	                    var siblingAfter = groupAfter ? groupAfter[0] : null;
-	                    var targetNode;
-	                    if (g.elements.length === 1) {
-	                        targetNode = targetGroup[0];
-	                    } else {
-	                        targetNode = document.createDocumentFragment();
-	                        targetGroup.forEach(function (el) {
-	                            targetNode.appendChild(el);
-	                        });
-	                    }
-	                    parent.insertBefore(targetNode, siblingAfter);
-	                    mirror.splice(g.to, 0, targetGroup);
-	                });
-	            })();
+	                }
+	                parent.insertBefore(targetNode, siblingAfter);
+	                mirror.splice(g.to, 0, targetGroup);
+	            });
 	        }
 	    },
 
@@ -3530,17 +3526,15 @@ return /******/ (function(modules) { // webpackBootstrap
 	        })[0];
 	        var lastUntargeted = untargeted[untargeted.length - 1];
 	        if (lastUntargeted) {
-	            (function () {
-	                var untargetedIndex = Array.prototype.indexOf.call(lastUntargeted.parentNode.childNodes, lastUntargeted);
-	                var nextSibling = lastUntargeted.nextSibling;
-	                highlighted.each(function () {
-	                    var index = Array.prototype.indexOf.call(this.parentNode.childNodes, this);
-	                    if (index > untargetedIndex) {
-	                        return;
-	                    }
-	                    this.parentNode.insertBefore(this, nextSibling);
-	                });
-	            })();
+	            var untargetedIndex = Array.prototype.indexOf.call(lastUntargeted.parentNode.childNodes, lastUntargeted);
+	            var nextSibling = lastUntargeted.nextSibling;
+	            highlighted.each(function () {
+	                var index = Array.prototype.indexOf.call(this.parentNode.childNodes, this);
+	                if (index > untargetedIndex) {
+	                    return;
+	                }
+	                this.parentNode.insertBefore(this, nextSibling);
+	            });
 	        }
 	    }
 	};
@@ -8766,8 +8760,6 @@ return /******/ (function(modules) { // webpackBootstrap
 	});
 	exports.SpecTransformCalcSize = undefined;
 
-	var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
-
 	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
 	var _utils = __webpack_require__(3);
@@ -9021,23 +9013,13 @@ return /******/ (function(modules) { // webpackBootstrap
 	                var resScaleSize = prop === 'x' ? guide.padding.l + guide.padding.r : guide.padding.b + guide.padding.t;
 
 	                if (root.units[0].type === 'ELEMENT.INTERVAL' && prop === 'y' === Boolean(root.units[0].flip) && root.units[0].label && !chart.getScaleInfo(root.units[0].label, frame).isEmpty()) {
-	                    var rowsTotal;
-	                    var scaleSize;
 
-	                    var _ret = function () {
-
-	                        var labelFontSize = guide.label && guide.label.fontSize ? guide.label.fontSize : 10;
-	                        rowsTotal = root.frames.reduce(function (sum, f) {
-	                            return f.full().length * labelFontSize;
-	                        }, 0);
-	                        scaleSize = calcScaleSize(chart.getScaleInfo(xCfg, frame), xSize);
-
-	                        return {
-	                            v: resScaleSize + Math.max(rowsTotal, scaleSize)
-	                        };
-	                    }();
-
-	                    if ((typeof _ret === 'undefined' ? 'undefined' : _typeof(_ret)) === "object") return _ret.v;
+	                    var labelFontSize = guide.label && guide.label.fontSize ? guide.label.fontSize : 10;
+	                    var rowsTotal = root.frames.reduce(function (sum, f) {
+	                        return f.full().length * labelFontSize;
+	                    }, 0);
+	                    var scaleSize = calcScaleSize(chart.getScaleInfo(xCfg, frame), xSize);
+	                    return resScaleSize + Math.max(rowsTotal, scaleSize);
 	                } else if (root.units[0].type !== 'COORDS.RECT') {
 
 	                    var xScale = chart.getScaleInfo(xCfg, frame);
@@ -9302,23 +9284,21 @@ return /******/ (function(modules) { // webpackBootstrap
 	            if ([realXs.length, realYs.length].some(function (l) {
 	                return l === xyProd;
 	            })) {
-	                (function () {
-	                    var exDim = function exDim(s) {
-	                        return s.dim;
-	                    };
-	                    var scalesIterator = function scalesIterator(s, i, list) {
-	                        return s.fitToFrameByDims = list.slice(0, i).map(exDim);
-	                    };
-	                    var tryApplyRatioToScales = function tryApplyRatioToScales(axis, scalesRef) {
-	                        if (scalesRef.filter(isOrdinalScale).length === xyProd) {
-	                            scalesRef.forEach(scalesIterator);
-	                            scalesRef[0].ratio = _utils.utils.generateRatioFunction(axis, scalesRef.map(exDim), chartInstance);
-	                        }
-	                    };
+	                var exDim = function exDim(s) {
+	                    return s.dim;
+	                };
+	                var scalesIterator = function scalesIterator(s, i, list) {
+	                    return s.fitToFrameByDims = list.slice(0, i).map(exDim);
+	                };
+	                var tryApplyRatioToScales = function tryApplyRatioToScales(axis, scalesRef) {
+	                    if (scalesRef.filter(isOrdinalScale).length === xyProd) {
+	                        scalesRef.forEach(scalesIterator);
+	                        scalesRef[0].ratio = _utils.utils.generateRatioFunction(axis, scalesRef.map(exDim), chartInstance);
+	                    }
+	                };
 
-	                    tryApplyRatioToScales('x', realXs);
-	                    tryApplyRatioToScales('y', realYs);
-	                })();
+	                tryApplyRatioToScales('x', realXs);
+	                tryApplyRatioToScales('y', realYs);
 	            }
 	        }
 	    }]);
@@ -12110,9 +12090,6 @@ return /******/ (function(modules) { // webpackBootstrap
 	        node.on('data-hover', function (sender, e) {
 	            return _this.highlight(createFilter(e.data, null));
 	        });
-	        node.on('data-click', function (sender, e) {
-	            return _this.highlight(createFilter(e.data, e.data ? false : null));
-	        });
 	    },
 	    draw: function draw() {
 
@@ -13866,9 +13843,6 @@ return /******/ (function(modules) { // webpackBootstrap
 	            node.on('data-hover', function (sender, e) {
 	                return _this.highlightDataPoints(createFilter(e.data, null));
 	            });
-	            node.on('data-click', function (sender, e) {
-	                return _this.highlight(createFilter(e.data, e.data ? false : null));
-	            });
 	        }
 	    },
 	    draw: function draw() {
@@ -14901,9 +14875,6 @@ return /******/ (function(modules) { // webpackBootstrap
 	        node.on('data-hover', function (sender, e) {
 	            return _this.highlight(createFilter(e.data, null));
 	        });
-	        node.on('data-click', function (sender, e) {
-	            return _this.highlight(createFilter(e.data, e.data ? false : null));
-	        });
 	    },
 	    draw: function draw() {
 	        var _createUpdateFunc, _createUpdateFunc2;
@@ -15033,83 +15004,79 @@ return /******/ (function(modules) { // webpackBootstrap
 	            return d[screenModel.model.scaleY.dim];
 	        };
 	        if (screenModel.flip) {
-	            (function () {
-	                var barHeight = function barHeight(d) {
-	                    return Math.abs(screenModel.x(d) - screenModel.x0(d));
-	                };
-	                model = {
-	                    y: function y(d) {
-	                        return screenModel.y(d) - barSize(d) * 0.5;
-	                    },
-	                    x: function x(d) {
-	                        var x = Math.min(screenModel.x0(d), screenModel.x(d));
-	                        if (prettify) {
-	                            // decorate for better visual look & feel
-	                            var h = barHeight(d);
-	                            var dx = value(d);
-	                            var offset = 0;
-
-	                            if (dx === 0) {
-	                                offset = 0;
-	                            }
-	                            if (dx > 0) {
-	                                offset = h;
-	                            }
-	                            if (dx < 0) {
-	                                offset = 0 - minBarH;
-	                            }
-
-	                            var isTooSmall = h < minBarH;
-	                            return isTooSmall ? x + offset : x;
-	                        } else {
-	                            return x;
-	                        }
-	                    },
-	                    height: function height(d) {
-	                        return barSize(d);
-	                    },
-	                    width: function width(d) {
+	            var barHeight = function barHeight(d) {
+	                return Math.abs(screenModel.x(d) - screenModel.x0(d));
+	            };
+	            model = {
+	                y: function y(d) {
+	                    return screenModel.y(d) - barSize(d) * 0.5;
+	                },
+	                x: function x(d) {
+	                    var x = Math.min(screenModel.x0(d), screenModel.x(d));
+	                    if (prettify) {
+	                        // decorate for better visual look & feel
 	                        var h = barHeight(d);
-	                        if (prettify) {
-	                            // decorate for better visual look & feel
-	                            return value(d) === 0 ? h : Math.max(minBarH, h);
+	                        var dx = value(d);
+	                        var offset = 0;
+
+	                        if (dx === 0) {
+	                            offset = 0;
 	                        }
-	                        return h;
+	                        if (dx > 0) {
+	                            offset = h;
+	                        }
+	                        if (dx < 0) {
+	                            offset = 0 - minBarH;
+	                        }
+
+	                        var isTooSmall = h < minBarH;
+	                        return isTooSmall ? x + offset : x;
+	                    } else {
+	                        return x;
 	                    }
-	                };
-	            })();
+	                },
+	                height: function height(d) {
+	                    return barSize(d);
+	                },
+	                width: function width(d) {
+	                    var h = barHeight(d);
+	                    if (prettify) {
+	                        // decorate for better visual look & feel
+	                        return value(d) === 0 ? h : Math.max(minBarH, h);
+	                    }
+	                    return h;
+	                }
+	            };
 	        } else {
-	            (function () {
-	                var barHeight = function barHeight(d) {
-	                    return Math.abs(screenModel.y(d) - screenModel.y0(d));
-	                };
-	                model = {
-	                    x: function x(d) {
-	                        return screenModel.x(d) - barSize(d) * 0.5;
-	                    },
-	                    y: function y(d) {
-	                        var y = Math.min(screenModel.y0(d), screenModel.y(d));
-	                        if (prettify) {
-	                            // decorate for better visual look & feel
-	                            var h = barHeight(d);
-	                            var isTooSmall = h < minBarH;
-	                            y = isTooSmall && value(d) > 0 ? y - minBarH : y;
-	                        }
-	                        return y;
-	                    },
-	                    width: function width(d) {
-	                        return barSize(d);
-	                    },
-	                    height: function height(d) {
-	                        var h = barHeight(d);
-	                        if (prettify) {
-	                            // decorate for better visual look & feel
-	                            h = value(d) === 0 ? h : Math.max(minBarH, h);
-	                        }
-	                        return h;
+	            var _barHeight = function _barHeight(d) {
+	                return Math.abs(screenModel.y(d) - screenModel.y0(d));
+	            };
+	            model = {
+	                x: function x(d) {
+	                    return screenModel.x(d) - barSize(d) * 0.5;
+	                },
+	                y: function y(d) {
+	                    var y = Math.min(screenModel.y0(d), screenModel.y(d));
+	                    if (prettify) {
+	                        // decorate for better visual look & feel
+	                        var h = _barHeight(d);
+	                        var isTooSmall = h < minBarH;
+	                        y = isTooSmall && value(d) > 0 ? y - minBarH : y;
 	                    }
-	                };
-	            })();
+	                    return y;
+	                },
+	                width: function width(d) {
+	                    return barSize(d);
+	                },
+	                height: function height(d) {
+	                    var h = _barHeight(d);
+	                    if (prettify) {
+	                        // decorate for better visual look & feel
+	                        h = value(d) === 0 ? h : Math.max(minBarH, h);
+	                    }
+	                    return h;
+	                }
+	            };
 	        }
 	        return Object.assign(model, {
 	            class: function _class(d) {

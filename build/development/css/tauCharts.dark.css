@@ -517,6 +517,7 @@
   transition: stroke-opacity 0.2s ease;
 }
 .graphical-report__bar {
+  opacity: 0.7;
   shape-rendering: geometricPrecision;
   stroke-opacity: 0.5;
   stroke-width: 1;
