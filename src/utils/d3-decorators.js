@@ -630,7 +630,7 @@ var d3_selectAllImmediate = (container, selector) => {
 var d3_createPathTween = (
     attr,
     pathStringBuilder,
-    pointConvertor,
+    pointConvertors,
     idGetter,
     interpolationType = 'linear'
 ) => {
@@ -638,36 +638,49 @@ var d3_createPathTween = (
 
     return function (data) {
         if (!this[pointStore]) {
-            this[pointStore] = [];
+            this[pointStore] = pointConvertors.map(() => []);
         }
 
-        var points = utils.unique(data, idGetter).map(pointConvertor);
-        var interpolateLine = getLineInterpolator(interpolationType) || getLineInterpolator('linear');
-        var pointsTo = interpolateLine(points);
-        var pointsFrom = this[pointStore];
+        const frames = pointConvertors.map((convertor, i) => {
+            const points = utils.unique(data, idGetter).map(convertor);
+            const interpolateLine = (
+                getLineInterpolator(interpolationType) ||
+                getLineInterpolator('linear')
+            );
+            const pointsTo = interpolateLine(points);
+            const pointsFrom = this[pointStore][i];
 
-        var interpolate = interpolatePathPoints(
-            pointsFrom,
-            pointsTo,
-            getInterpolatorSplineType(interpolationType)
-        );
+            const interpolate = interpolatePathPoints(
+                pointsFrom,
+                pointsTo,
+                getInterpolatorSplineType(interpolationType)
+            );
+
+            return {
+                pointsFrom,
+                pointsTo,
+                interpolate
+            };
+        });
 
         return (t) => {
             if (t === 0) {
-                return pathStringBuilder(pointsFrom);
+                let pointsFrom = frames.map((f) => f.pointsFrom);
+                return pathStringBuilder(...pointsFrom);
             }
             if (t === 1) {
+                let pointsTo = frames.map((f) => f.pointsTo);
                 this[pointStore] = pointsTo;
-                return pathStringBuilder(pointsTo);
+                return pathStringBuilder(...pointsTo);
             }
 
-            var intermediate = interpolate(t);
+            const intermediate = frames.map((f) => f.interpolate(t));
 
             // Save intermediate points to be able
             // to continue transition after interrupt
             this[pointStore] = intermediate;
 
-            return pathStringBuilder(intermediate);
+            return pathStringBuilder(...intermediate);
         };
     };
 };

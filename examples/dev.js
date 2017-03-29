@@ -10,6 +10,7 @@
     var PATHS = {
         'specs/': [
             fileRange('ex-', range(0, 3), 5, range(9, 15)),
+            'area-interpolation',
             'bar-labels',
             'big-data',
             'category-labels-overflow',
