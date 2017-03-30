@@ -487,9 +487,31 @@ define(function (require) {
 
             chart.renderTo(testDiv);
 
-            var pathValue = document.querySelector('.area path').getAttribute('d');
-            var rounded = testUtils.roundNumbersInString(pathValue);
-            expect(rounded).to.equal('M260,290 C340,390 430,440 510,440 C600,440 680,290 770,0 L770,580 C680,580 600,580 510,580 C430,580 340,580 260,580 Z');
+            const pathValue = document.querySelector('.area path').getAttribute('d');
+            const coords = Array.from(pathValue.match(/\d+\.?\d+,\d+\.?\d+/g))
+                .map((c) => {
+                    const pt = c.split(',').map(parseFloat);
+                    return {x: pt[0], y: pt[1]};
+                });
+            const expected = [
+                {'x': 255, 'y': 292},
+                {'x': 340, 'y': 389},
+                {'x': 426, 'y': 437},
+                {'x': 511, 'y': 437},
+                {'x': 596, 'y': 437},
+                {'x': 681, 'y': 292},
+                {'x': 766, 'y': 583},
+                {'x': 681, 'y': 583},
+                {'x': 596, 'y': 583},
+                {'x': 511, 'y': 583},
+                {'x': 426, 'y': 583},
+                {'x': 340, 'y': 583},
+                {'x': 255, 'y': 583}
+            ];
+            coords.forEach((p, i) => {
+                expect(p.x).to.be.closeTo(expected[i].x, 5);
+                expect(p.y).to.be.closeTo(expected[i].y, 5);
+            });
         });
     });
 

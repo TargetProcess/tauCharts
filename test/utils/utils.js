@@ -219,14 +219,9 @@ define(function (require) {
     }
 
     function roundNumbersInString(str, fractionDigits) {
-        const replacer = (fractionDigits < 0 ?
-            ((match) => {
-                const d = Math.pow(10, -fractionDigits);
-                return String(Math.round(parseFloat(match) / d) * d);
-            }) :
-            ((match) => parseFloat(match).toFixed(fractionDigits))
-        );
-        return str.replace(/-?\d+\.?\d*/g, replacer);
+        return str.replace(/-?\d+\.?\d*/g, function (match) {
+            return parseFloat(match).toFixed(fractionDigits);
+        });
     }
 
     function elementFromPoint(x, y) {
@@ -240,7 +235,7 @@ define(function (require) {
 
     return {
         toLocalDate: toLocalDate,
-        roundNumbersInString,
+        roundNumbersInString: roundNumbersInString,
         describePlot: describePlot,
         describeChart: describeChart,
         getDots: getDots,
