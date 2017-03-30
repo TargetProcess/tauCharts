@@ -1,19 +1,35 @@
-export default function getAreaPath(points) {
-    const ways = points
-        .reduce((memo, d) => {
-            memo.dir.push(`${d.x},${d.y}`);
-            memo.rev.unshift(`${d.x0},${d.y0}`);
-            return memo;
-        },
-        {
-            dir: [],
-            rev: []
-        });
+export function getAreaPolygon(dirPoints, revPoints) {
 
-    if (points.length < 2) {
+    if (dirPoints.length < 2) {
         return '';
     }
-    var path = `${ways.dir.join(' ')} ${ways.rev.join(' ')}`;
+
+    const path = String.prototype.concat.apply('',
+        dirPoints
+            .concat(revPoints.slice().reverse())
+            .map((d, i) => `${i === 0 ? '' : ' '}${d.x},${d.y}`)
+    );
+
+    return path;
+}
+
+export function getSmoothAreaPath(dirPoints, revPoints) {
+
+    if (dirPoints.length < 2) {
+        return '';
+    }
+
+    const getPath = (points) => {
+        const items = points.map((d, i) => {
+            const command = ((i - 1) % 3 === 0 ? 'C' : '');
+            return `${command}${d.x},${d.y} `;
+        });
+        return String.prototype.concat.apply('', items);
+    };
+
+    const dirPath = getPath(dirPoints);
+    const revPath = getPath(revPoints.slice().reverse());
+    const path = `M${dirPath}L${revPath}Z`;
 
     return path;
 }

@@ -101,7 +101,7 @@ const Line = {
 
         const baseModel = BasePath.baseModel(screenModel);
 
-        baseModel.toPoint = isEmptySize ?
+        const toPoint = isEmptySize ?
             (d) => ({
                 id: screenModel.id(d),
                 x: baseModel.x(d),
@@ -126,7 +126,7 @@ const Line = {
             fn: d3_createPathTween(
                 'd',
                 d3LineBuilder,
-                baseModel.toPoint,
+                [toPoint],
                 screenModel.id,
                 guide.interpolate
             )

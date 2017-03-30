@@ -60,7 +60,7 @@ const Path = {
             class: (fiber) => `${groupPref} ${baseModel.class(fiber[0])} frame`
         };
 
-        baseModel.toPoint = (d) => ({
+        const toPoint = (d) => ({
             id: screenModel.id(d),
             x: baseModel.x(d),
             y: baseModel.y(d)
@@ -85,7 +85,7 @@ const Path = {
             fn: d3_createPathTween(
                 'points',
                 pathPoints(d => d.x, d => d.y),
-                baseModel.toPoint,
+                [toPoint],
                 screenModel.id
             )
         };

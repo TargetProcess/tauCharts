@@ -4,6 +4,7 @@ define(function (require) {
     var createInterpolator = require('src/utils/path/interpolators/path-points').default;
     var getBrushLine = require('src/utils/path/svg/brush-line').getBrushLine;
     var getBrushCurve = require('src/utils/path/svg/brush-line').getBrushCurve;
+    var {getAreaPolygon, getSmoothAreaPath} = require('src/utils/path/svg/area-path');
     var toCurve = require('src/utils/path/interpolators/smooth').getCurveKeepingExtremums;
     var getLineInterpolator = require('src/utils/path/interpolators/interpolators-registry').getLineInterpolator;
     var lines = require('src/utils/path/svg/line');
@@ -126,6 +127,52 @@ define(function (require) {
             ].join(' '));
             expect(lines.getPolyline([])).to.equal('');
             expect(lines.getCurve([])).to.equal('');
+        });
+
+        it('should return SVG area path value', function () {
+            var polyDir = [
+                {x: 0, y: 20},
+                {x: 30, y: 0},
+                {x: 60, y: 20}
+            ];
+            var polyRev = [
+                {x: 0, y: 60},
+                {x: 30, y: 20},
+                {x: 60, y: 40}
+            ];
+            var curveDir = [
+                {x: 0, y: 0},
+                {x: 30, y: 0},
+                {x: 60, y: 20},
+                {x: 90, y: 20}
+            ];
+            var curveRev = [
+                {x: 0, y: 20},
+                {x: 30, y: 20},
+                {x: 60, y: 80},
+                {x: 90, y: 80}
+            ];
+            expect(getAreaPolygon([], [])).to.equal('');
+            expect(getAreaPolygon(polyDir, polyRev)).to.equal([
+                '0,20',
+                '30,0',
+                '60,20',
+                '60,40',
+                '30,20',
+                '0,60'
+            ].join(' '));
+            expect(getSmoothAreaPath([], [])).to.equal('');
+            expect(getSmoothAreaPath(curveDir, curveRev)).to.equal([
+                'M0,0',
+                'C30,0',
+                '60,20',
+                '90,20',
+                'L90,80',
+                'C60,80',
+                '30,20',
+                '0,20',
+                'Z'
+            ].join(' '));
         });
 
         it('should interpolate path points', function() {
@@ -460,6 +507,58 @@ define(function (require) {
 
             var pathValue = document.querySelector('.line path').getAttribute('d');
             expect(pathValue.split(' ').length).to.equal(13);
+        });
+
+        it('should render interpolated area', function () {
+
+            var testDiv = document.createElement('div');
+            testDiv.style.width = '800px';
+            testDiv.style.height = '600px';
+            document.body.appendChild(testDiv);
+
+            var chart = new tauCharts.Chart({
+                type: 'area',
+                data: [
+                    {x: 10, y: 4},
+                    {x: 20, y: 2},
+                    {x: 30, y: 8}
+                ],
+                x: 'x',
+                y: 'y',
+                guide: {
+                    x: {hide: true},
+                    y: {hide: true},
+                    interpolate: 'smooth-keep-extremum'
+                }
+            });
+
+            chart.renderTo(testDiv);
+
+            const pathValue = document.querySelector('.area path').getAttribute('d');
+            const coords = Array.from(pathValue.match(/\d+\.?\d+,\d+\.?\d+/g))
+                .map((c) => {
+                    const pt = c.split(',').map(parseFloat);
+                    return {x: pt[0], y: pt[1]};
+                });
+            const expected = [
+                {'x': 255, 'y': 292},
+                {'x': 340, 'y': 389},
+                {'x': 426, 'y': 437},
+                {'x': 511, 'y': 437},
+                {'x': 596, 'y': 437},
+                {'x': 681, 'y': 292},
+                {'x': 766, 'y': 583},
+                {'x': 681, 'y': 583},
+                {'x': 596, 'y': 583},
+                {'x': 511, 'y': 583},
+                {'x': 426, 'y': 583},
+                {'x': 340, 'y': 583},
+                {'x': 255, 'y': 583}
+            ];
+            coords.forEach((p, i) => {
+                expect(p.x).to.be.closeTo(expected[i].x, 5);
+                expect(p.y).to.be.closeTo(expected[i].y, 5);
+            });
         });
     });
 

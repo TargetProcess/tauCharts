@@ -5,7 +5,8 @@ import {BasePath} from './element.path.base';
 import {getLineClassesByCount} from '../utils/css-class-map';
 import {GrammarRegistry} from '../grammar-registry';
 import {d3_createPathTween} from '../utils/d3-decorators';
-import getAreaPath from '../utils/path/svg/area-path';
+import {getInterpolatorSplineType} from '../utils/path/interpolators/interpolators-registry';
+import {getAreaPolygon, getSmoothAreaPath} from '../utils/path/svg/area-path';
 
 const Area = {
 
@@ -67,12 +68,16 @@ const Area = {
             class: (fiber) => `${groupPref} ${baseModel.class(fiber[0])} frame`
         };
 
-        baseModel.toPoint = (d) => ({
+        const toDirPoint = (d) => ({
             id: screenModel.id(d),
-            x0: baseModel.x0(d),
             x: baseModel.x(d),
-            y0: baseModel.y0(d),
             y: baseModel.y(d)
+        });
+
+        const toRevPoint = (d) => ({
+            id: screenModel.id(d),
+            x: baseModel.x0(d),
+            y: baseModel.y0(d)
         });
 
         const pathAttributes = {
@@ -89,15 +94,17 @@ const Area = {
         baseModel.pathAttributesEnterInit = pathAttributes;
         baseModel.pathAttributesUpdateDone = pathAttributes;
 
-        baseModel.pathElement = 'polygon';
+        const isPolygon = (getInterpolatorSplineType(guide.interpolate) === 'polyline');
+        baseModel.pathElement = (isPolygon ? 'polygon' : 'path');
 
         baseModel.pathTween = {
-            attr: 'points',
+            attr: (isPolygon ? 'points' : 'd'),
             fn: d3_createPathTween(
-                'points',
-                getAreaPath,
-                baseModel.toPoint,
-                screenModel.id
+                (isPolygon ? 'points' : 'd'),
+                (isPolygon ? getAreaPolygon : getSmoothAreaPath),
+                [toDirPoint, toRevPoint],
+                screenModel.id,
+                guide.interpolate
             )
         };
 
