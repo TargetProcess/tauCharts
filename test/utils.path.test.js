@@ -4,6 +4,7 @@ define(function (require) {
     var createInterpolator = require('src/utils/path/interpolators/path-points').default;
     var getBrushLine = require('src/utils/path/svg/brush-line').getBrushLine;
     var getBrushCurve = require('src/utils/path/svg/brush-line').getBrushCurve;
+    var {getAreaPolygon, getSmoothAreaPath} = require('src/utils/path/svg/area-path');
     var toCurve = require('src/utils/path/interpolators/smooth').getCurveKeepingExtremums;
     var getLineInterpolator = require('src/utils/path/interpolators/interpolators-registry').getLineInterpolator;
     var lines = require('src/utils/path/svg/line');
@@ -126,6 +127,52 @@ define(function (require) {
             ].join(' '));
             expect(lines.getPolyline([])).to.equal('');
             expect(lines.getCurve([])).to.equal('');
+        });
+
+        it('should return SVG area path value', function () {
+            var polyDir = [
+                {x: 0, y: 20},
+                {x: 30, y: 0},
+                {x: 60, y: 20}
+            ];
+            var polyRev = [
+                {x: 0, y: 60},
+                {x: 30, y: 20},
+                {x: 60, y: 40}
+            ];
+            var curveDir = [
+                {x: 0, y: 0},
+                {x: 30, y: 0},
+                {x: 60, y: 20},
+                {x: 90, y: 20}
+            ];
+            var curveRev = [
+                {x: 0, y: 20},
+                {x: 30, y: 20},
+                {x: 60, y: 80},
+                {x: 90, y: 80}
+            ];
+            expect(getAreaPolygon([], [])).to.equal('');
+            expect(getAreaPolygon(polyDir, polyRev)).to.equal([
+                '0,20',
+                '30,0',
+                '60,20',
+                '60,40',
+                '30,20',
+                '0,60'
+            ].join(' '));
+            expect(getSmoothAreaPath([], [])).to.equal('');
+            expect(getSmoothAreaPath(curveDir, curveRev)).to.equal([
+                'M0,0',
+                'C30,0',
+                '60,20',
+                '90,20',
+                'L90,80',
+                'C60,80',
+                '30,20',
+                '0,20',
+                'Z'
+            ].join(' '));
         });
 
         it('should interpolate path points', function() {
