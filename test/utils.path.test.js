@@ -489,7 +489,7 @@ define(function (require) {
 
             var pathValue = document.querySelector('.area path').getAttribute('d');
             var rounded = testUtils.roundNumbersInString(pathValue);
-            expect(rounded).to.equal('M255,292 C340,389 426,437 511,437 C596,437 681,292 766,0 L766,583 C681,583 596,583 511,583 C426,583 340,583 255,583 Z');
+            expect(rounded).to.equal('M260,290 C340,390 430,440 510,440 C600,440 680,290 770,0 L770,580 C680,580 600,580 510,580 C430,580 340,580 260,580 Z');
         });
     });
 
