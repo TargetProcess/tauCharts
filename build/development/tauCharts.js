@@ -1,4 +1,4 @@
-/*! taucharts - v0.10.0-beta.24 - 2017-03-29
+/*! taucharts - v0.10.0-beta.25 - 2017-03-30
 * https://github.com/TargetProcess/tauCharts
 * Copyright (c) 2017 Taucraft Limited; Licensed Apache License 2.0 */
 (function webpackUniversalModuleDefinition(root, factory) {
@@ -383,7 +383,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	}]));
 
 	/* global VERSION:false */
-	var version = ("0.10.0-beta.24");
+	var version = ("0.10.0-beta.25");
 	exports.GPL = _tau.GPL;
 	exports.Plot = _tau2.Plot;
 	exports.Chart = _tau3.Chart;
@@ -2804,6 +2804,8 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
+	function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr2 = Array(arr.length); i < arr.length; i++) { arr2[i] = arr[i]; } return arr2; } else { return Array.from(arr); } }
+
 	function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
 
 	var d3getComputedTextLength = function d3getComputedTextLength() {
@@ -3393,7 +3395,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    });
 	};
 
-	var d3_createPathTween = function d3_createPathTween(attr, pathStringBuilder, pointConvertor, idGetter) {
+	var d3_createPathTween = function d3_createPathTween(attr, pathStringBuilder, pointConvertors, idGetter) {
 	    var interpolationType = arguments.length > 4 && arguments[4] !== undefined ? arguments[4] : 'linear';
 
 	    var pointStore = '__pathPoints__';
@@ -3402,32 +3404,50 @@ return /******/ (function(modules) { // webpackBootstrap
 	        var _this3 = this;
 
 	        if (!this[pointStore]) {
-	            this[pointStore] = [];
+	            this[pointStore] = pointConvertors.map(function () {
+	                return [];
+	            });
 	        }
 
-	        var points = _utils.utils.unique(data, idGetter).map(pointConvertor);
-	        var interpolateLine = (0, _interpolatorsRegistry.getLineInterpolator)(interpolationType) || (0, _interpolatorsRegistry.getLineInterpolator)('linear');
-	        var pointsTo = interpolateLine(points);
-	        var pointsFrom = this[pointStore];
+	        var frames = pointConvertors.map(function (convertor, i) {
+	            var points = _utils.utils.unique(data, idGetter).map(convertor);
+	            var interpolateLine = (0, _interpolatorsRegistry.getLineInterpolator)(interpolationType) || (0, _interpolatorsRegistry.getLineInterpolator)('linear');
+	            var pointsTo = interpolateLine(points);
+	            var pointsFrom = _this3[pointStore][i];
 
-	        var interpolate = (0, _pathPoints2.default)(pointsFrom, pointsTo, (0, _interpolatorsRegistry.getInterpolatorSplineType)(interpolationType));
+	            var interpolate = (0, _pathPoints2.default)(pointsFrom, pointsTo, (0, _interpolatorsRegistry.getInterpolatorSplineType)(interpolationType));
+
+	            return {
+	                pointsFrom: pointsFrom,
+	                pointsTo: pointsTo,
+	                interpolate: interpolate
+	            };
+	        });
 
 	        return function (t) {
 	            if (t === 0) {
-	                return pathStringBuilder(pointsFrom);
+	                var pointsFrom = frames.map(function (f) {
+	                    return f.pointsFrom;
+	                });
+	                return pathStringBuilder.apply(undefined, _toConsumableArray(pointsFrom));
 	            }
 	            if (t === 1) {
+	                var pointsTo = frames.map(function (f) {
+	                    return f.pointsTo;
+	                });
 	                _this3[pointStore] = pointsTo;
-	                return pathStringBuilder(pointsTo);
+	                return pathStringBuilder.apply(undefined, _toConsumableArray(pointsTo));
 	            }
 
-	            var intermediate = interpolate(t);
+	            var intermediate = frames.map(function (f) {
+	                return f.interpolate(t);
+	            });
 
 	            // Save intermediate points to be able
 	            // to continue transition after interrupt
 	            _this3[pointStore] = intermediate;
 
-	            return pathStringBuilder(intermediate);
+	            return pathStringBuilder.apply(undefined, _toConsumableArray(intermediate));
 	        };
 	    };
 	};
@@ -13544,9 +13564,9 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	var _d3Decorators = __webpack_require__(9);
 
-	var _areaPath = __webpack_require__(54);
+	var _interpolatorsRegistry = __webpack_require__(13);
 
-	var _areaPath2 = _interopRequireDefault(_areaPath);
+	var _areaPath = __webpack_require__(54);
 
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
@@ -13599,13 +13619,19 @@ return /******/ (function(modules) { // webpackBootstrap
 	            }
 	        };
 
-	        baseModel.toPoint = function (d) {
+	        var toDirPoint = function toDirPoint(d) {
 	            return {
 	                id: screenModel.id(d),
-	                x0: baseModel.x0(d),
 	                x: baseModel.x(d),
-	                y0: baseModel.y0(d),
 	                y: baseModel.y(d)
+	            };
+	        };
+
+	        var toRevPoint = function toRevPoint(d) {
+	            return {
+	                id: screenModel.id(d),
+	                x: baseModel.x0(d),
+	                y: baseModel.y0(d)
 	            };
 	        };
 
@@ -13625,11 +13651,12 @@ return /******/ (function(modules) { // webpackBootstrap
 	        baseModel.pathAttributesEnterInit = pathAttributes;
 	        baseModel.pathAttributesUpdateDone = pathAttributes;
 
-	        baseModel.pathElement = 'polygon';
+	        var isPolygon = (0, _interpolatorsRegistry.getInterpolatorSplineType)(guide.interpolate) === 'polyline';
+	        baseModel.pathElement = isPolygon ? 'polygon' : 'path';
 
 	        baseModel.pathTween = {
-	            attr: 'points',
-	            fn: (0, _d3Decorators.d3_createPathTween)('points', _areaPath2.default, baseModel.toPoint, screenModel.id)
+	            attr: isPolygon ? 'points' : 'd',
+	            fn: (0, _d3Decorators.d3_createPathTween)(isPolygon ? 'points' : 'd', isPolygon ? _areaPath.getAreaPolygon : _areaPath.getSmoothAreaPath, [toDirPoint, toRevPoint], screenModel.id, guide.interpolate)
 	        };
 
 	        return baseModel;
@@ -14277,21 +14304,38 @@ return /******/ (function(modules) { // webpackBootstrap
 	Object.defineProperty(exports, "__esModule", {
 	    value: true
 	});
-	exports.default = getAreaPath;
-	function getAreaPath(points) {
-	    var ways = points.reduce(function (memo, d) {
-	        memo.dir.push(d.x + ',' + d.y);
-	        memo.rev.unshift(d.x0 + ',' + d.y0);
-	        return memo;
-	    }, {
-	        dir: [],
-	        rev: []
-	    });
+	exports.getAreaPolygon = getAreaPolygon;
+	exports.getSmoothAreaPath = getSmoothAreaPath;
+	function getAreaPolygon(dirPoints, revPoints) {
 
-	    if (points.length < 2) {
+	    if (dirPoints.length < 2) {
 	        return '';
 	    }
-	    var path = ways.dir.join(' ') + ' ' + ways.rev.join(' ');
+
+	    var path = String.prototype.concat.apply('', dirPoints.concat(revPoints.slice().reverse()).map(function (d, i) {
+	        return '' + (i === 0 ? '' : ' ') + d.x + ',' + d.y;
+	    }));
+
+	    return path;
+	}
+
+	function getSmoothAreaPath(dirPoints, revPoints) {
+
+	    if (dirPoints.length < 2) {
+	        return '';
+	    }
+
+	    var getPath = function getPath(points) {
+	        var items = points.map(function (d, i) {
+	            var command = (i - 1) % 3 === 0 ? 'C' : '';
+	            return '' + command + d.x + ',' + d.y + ' ';
+	        });
+	        return String.prototype.concat.apply('', items);
+	    };
+
+	    var dirPath = getPath(dirPoints);
+	    var revPath = getPath(revPoints.slice().reverse());
+	    var path = 'M' + dirPath + 'L' + revPath + 'Z';
 
 	    return path;
 	}
@@ -14366,7 +14410,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	            }
 	        };
 
-	        baseModel.toPoint = function (d) {
+	        var toPoint = function toPoint(d) {
 	            return {
 	                id: screenModel.id(d),
 	                x: baseModel.x(d),
@@ -14402,7 +14446,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	                return d.x;
 	            }, function (d) {
 	                return d.y;
-	            }), baseModel.toPoint, screenModel.id)
+	            }), [toPoint], screenModel.id)
 	        };
 
 	        return baseModel;
@@ -14521,7 +14565,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	        var baseModel = _elementPath.BasePath.baseModel(screenModel);
 
-	        baseModel.toPoint = isEmptySize ? function (d) {
+	        var toPoint = isEmptySize ? function (d) {
 	            return {
 	                id: screenModel.id(d),
 	                x: baseModel.x(d),
@@ -14547,7 +14591,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	        baseModel.pathAttributesUpdateDone = pathAttributes;
 	        baseModel.pathTween = {
 	            attr: 'd',
-	            fn: (0, _d3Decorators.d3_createPathTween)('d', d3LineBuilder, baseModel.toPoint, screenModel.id, guide.interpolate)
+	            fn: (0, _d3Decorators.d3_createPathTween)('d', d3LineBuilder, [toPoint], screenModel.id, guide.interpolate)
 	        };
 
 	        return baseModel;
