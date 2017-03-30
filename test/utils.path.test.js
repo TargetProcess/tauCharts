@@ -488,26 +488,8 @@ define(function (require) {
             chart.renderTo(testDiv);
 
             var pathValue = document.querySelector('.area path').getAttribute('d');
-            var coords = Array.from(pathValue.match(/\d+\.?\d+,\d+\.?\d+/g))
-                .map((c) => {
-                    var pt = c.split(',').map(parseFloat).map(Math.round);
-                    return {x: pt[0], y: pt[1]};
-                });
-            expect(coords).to.deep.equal([
-                {'x': 255, 'y': 292},
-                {'x': 340, 'y': 389},
-                {'x': 426, 'y': 437},
-                {'x': 511, 'y': 437},
-                {'x': 596, 'y': 437},
-                {'x': 681, 'y': 292},
-                {'x': 766, 'y': 583},
-                {'x': 681, 'y': 583},
-                {'x': 596, 'y': 583},
-                {'x': 511, 'y': 583},
-                {'x': 426, 'y': 583},
-                {'x': 340, 'y': 583},
-                {'x': 255, 'y': 583}
-            ]);
+            var rounded = testUtils.roundNumbersInString(pathValue);
+            expect(rounded).to.equal('M255,292 C340,389 426,437 511,437 C596,437 681,292 766,0 L766,583 C681,583 596,583 511,583 C426,583 340,583 255,583 Z');
         });
     });
 
