@@ -7,17 +7,17 @@ dev.spec({
         interpolate: 'smooth'
     },
     data: [
-        {team: 'Alpha', date: '2015-07-15', effort: 400},
-        {team: 'Alpha', date: '2015-07-16', effort: 200},
-        {team: 'Alpha', date: '2015-07-17', effort: 300},
-        {team: 'Alpha', date: '2015-07-18', effort: 500},
-        {team: 'Beta', date: '2015-07-15', effort: 100},
-        {team: 'Beta', date: '2015-07-16', effort: 200},
-        {team: 'Beta', date: '2015-07-17', effort: 300},
-        {team: 'Beta', date: '2015-07-18', effort: 100},
-        {team: 'Gamma', date: '2015-07-15', effort: 300},
-        {team: 'Gamma', date: '2015-07-16', effort: 100},
-        {team: 'Gamma', date: '2015-07-17', effort: 100},
-        {team: 'Gamma', date: '2015-07-18', effort: 200}
+        {team: 'Alpha', date: '2015-07-15', effort: 400, phase: 'dev'},
+        {team: 'Alpha', date: '2015-07-16', effort: 200, phase: 'dev'},
+        {team: 'Alpha', date: '2015-07-17', effort: 300, phase: 'release'},
+        {team: 'Alpha', date: '2015-07-18', effort: 500, phase: 'release'},
+        {team: 'Beta',  date: '2015-07-15', effort: 100, phase: 'dev'},
+        {team: 'Beta',  date: '2015-07-16', effort: 200, phase: 'dev'},
+        {team: 'Beta',  date: '2015-07-17', effort: 300, phase: 'release'},
+        {team: 'Beta',  date: '2015-07-18', effort: 100, phase: 'release'},
+        {team: 'Gamma', date: '2015-07-15', effort: 300, phase: 'dev'},
+        {team: 'Gamma', date: '2015-07-16', effort: 100, phase: 'dev'},
+        {team: 'Gamma', date: '2015-07-17', effort: 100, phase: 'release'},
+        {team: 'Gamma', date: '2015-07-18', effort: 200, phase: 'release'}
     ]
 });

@@ -55,12 +55,16 @@ Below are some popular usage scenarios. For more examples, see our experimental 
 #### Scatter plot
 ```javascript
 var chart = new tauCharts.Chart({
-    "type" : "scatterplot",
-    "x"    : "eccentricity",
-    "y"    : "period",
-    "color": "name",
-    "size" : "mass",
-    "data" : [{"eccentricity": 0, "period": 4.95, "name": "exoplanet", "mass": 38.0952}, ...]
+    'type' : 'scatterplot',
+    'x'    : 'Cycle Time',
+    'y'    : 'SUM(Bugs Count)',
+    'color': 'Team',
+    'size' : 'Sum(User Stories Count)',
+    'data' : [{'Cycle Time': 186, 'SUM(Bugs Count)': 34, 'Team': 'HDP'...}, ...],
+    'plugins': [
+        tauCharts.api.plugins.get('legend'),
+        tauCharts.api.plugins.get('tooltip')
+    ]
 });
 ```
 [![Scatterplot](examples/screenshots/Taucharts_Scatterplot.png)](http://api.taucharts.com/basic/scatterplot.html)
@@ -72,11 +76,13 @@ ___
 #### Line chart
 ```javascript
 var chart = new tauCharts.Chart({
-    "type" : "line",
-    "y"    : "SUM(Total Medals)",
-    "x"    : "Age",
-    "color": "Sport",
-    "data" : [{ "Sport": "Swimming", "Age": 23, "SUM(Total Medals)": 72 }, ...]
+    'type' : 'line',
+    'y'    : 'Y Scale',
+    'x'    : 'X Scale',
+    'color': 'Team',
+    'size' : 'Effort',
+    'label': 'Effort',
+    'data' : [{'Team': 'Alpha', 'Effort': 40, 'Y Scale': 23, 'X Scale': 72 }, ...]
 });
 ```
 [![Line Chart](examples/screenshots/Taucharts_Line.png)](http://api.taucharts.com/basic/line.html)
@@ -91,8 +97,8 @@ var chart = new tauCharts.Chart({
     type : 'bar',
     x    : 'team',
     y    : 'effort',
-    color:'priority',
-    data : [{"team": "d", "cycleTime": 1, "effort": 1, "count": 1, "priority": "low"}, ...]
+    color: 'priority',
+    data : [{'team': 'd', 'effort': 1, 'count': 1, 'priority': 'low'}, ...]
 });
 ```
 [![Bar Chart](examples/screenshots/Taucharts_Bar.png)](http://api.taucharts.com/basic/bar.html)
@@ -107,7 +113,8 @@ var chart = new tauCharts.Chart({
     type : 'horizontal-bar',
     x    : 'count',
     y    : 'team',
-    data : [{"team": "alpha", "count": 8}, ...]
+    color: 'priority',
+    data : [{'team': 'alpha', 'effort': 8, 'priority': 'major'}, ...]
 });
 ```
 [![Horizontal Bar Chart](examples/screenshots/Taucharts_Horizontal-bar.png)](http://api.taucharts.com/basic/horizontal-bar.html)
@@ -120,10 +127,10 @@ ___
 ```javascript
 var chart = new tauCharts.Chart({
     type : 'stacked-bar',
-    x    : 'process',
-    y    : 'count',
-    color: 'stage',
-    data : [{process: 'sales', stage: 'visit', count: 100}, ...]
+    x    : 'age',
+    y    : ['count', 'sport'],
+    color: 'country',
+    data : [{country: 'Canada', sport: 'Biathlon', medals: 20, age: 22}, ...]
 });
 ```
 [![Stacked Bar Chart](examples/screenshots/Taucharts_Stacked-bar.png)](http://api.taucharts.com/basic/stacked-bar.html)
@@ -145,6 +152,25 @@ var chart = new tauCharts.Chart({
 [![Horizontal Stacked Bar Chart](examples/screenshots/Taucharts_Horizontal-stacked-bar.png)](http://api.taucharts.com/basic/horizontal-stacked-bar.html)
 
 See [horizontal stacked bar chart documentation](http://api.taucharts.com/basic/horizontal-stacked-bar.html)
+
+___
+
+#### Stacked area chart
+```javascript
+var chart = new tauCharts.Chart({
+    type : 'stacked-area',
+    y    : 'effort',
+    x    : 'date',
+    color: 'team',
+    guide: {
+        interpolate: 'smooth'
+    },
+    data : [{date: '2015-07-15', effort: 400, team: 'Alpha'}, ...]
+});
+```
+[![Horizontal Stacked Bar Chart](examples/screenshots/Taucharts_Stacked-area.png)](http://api.taucharts.com/basic/stacked-area.html)
+
+See [stacked area chart documentation](http://api.taucharts.com/basic/stacked-area.html)
 
 ___
 
