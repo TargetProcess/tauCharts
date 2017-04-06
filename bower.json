@@ -1,6 +1,6 @@
 {
   "name": "taucharts",
-  "version": "0.10.0-beta.25",
+  "version": "1.0.0",
   "homepage": "https://github.com/TargetProcess/tauCharts",
   "description": "D3 based data-focused charting library",
   "keywords": [
@@ -19,7 +19,7 @@
     "!license.txt"
   ],
   "dependencies": {
-    "d3": "~3.5.5"
+    "d3": "~3.5.17"
   },
   "devDependencies": {
     "modernizer": "2.8.2",
