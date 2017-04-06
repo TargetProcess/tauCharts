@@ -1,6 +1,7 @@
 /.idea
 /css
 /build
+/dist
 .grunt
 libs
 /tau_modules

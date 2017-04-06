@@ -324,5 +324,4 @@ api.chartTypesRegistry = chartTypesRegistry
 
 /* global VERSION:false */
 var version = VERSION;
-export {GPL, Plot, Chart, __api__, api, version};
 export default {GPL, Plot, Chart, __api__, api, version};
