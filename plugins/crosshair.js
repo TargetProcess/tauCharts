@@ -61,12 +61,14 @@
                 var gx = this._element.select('.tau-crosshair__group.x');
                 gx.select('.tau-crosshair__line')
                     .attr('class', 'tau-crosshair__line ' + colorData.cls)
+                    .attr('stroke', colorData.color)
                     .attr('x1', xData.value)
                     .attr('x2', xData.value)
                     .attr('y1', yData.value)
                     .attr('y2', yData.start);
                 gx.select('.tau-crosshair__label')
                     .attr('class', 'tau-crosshair__label ' + colorData.cls)
+                    .attr('fill', colorData.color)
                     .attr('x', xData.value + settings.labelXPadding)
                     .attr('y', yData.start - settings.labelYPadding)
                     .text(xData.label);
@@ -74,12 +76,14 @@
                 var gy = this._element.select('.tau-crosshair__group.y');
                 gy.select('.tau-crosshair__line')
                     .attr('class', 'tau-crosshair__line ' + colorData.cls)
+                    .attr('stroke', colorData.color)
                     .attr('x1', xData.start)
                     .attr('x2', xData.value)
                     .attr('y1', yData.value)
                     .attr('y2', yData.value);
                 gy.select('.tau-crosshair__label')
                     .attr('class', 'tau-crosshair__label ' + colorData.cls)
+                    .attr('fill', colorData.color)
                     .attr('x', xData.start + settings.labelXPadding)
                     .attr('y', yData.value - settings.labelYPadding)
                     .text(yData.label);
@@ -92,6 +96,7 @@
                 var scaleX = unit.getScale('x');
                 var scaleY = unit.getScale('y');
                 var scaleColor = unit.getScale('color');
+                var color = scaleColor(e.data[scaleColor.dim]);
                 this._setValues(
                     {
                         label: this._getFormat(scaleX.dim)(e.data[scaleX.dim]),
@@ -104,7 +109,8 @@
                         value: scaleY(e.data[scaleY.dim])
                     },
                     {
-                        cls: scaleColor(e.data[scaleColor.dim])
+                        cls: (scaleColor.toColor(color) ? '' : color),
+                        color: (scaleColor.toColor(color) ? color : '')
                     }
                 );
             },
@@ -138,7 +144,6 @@
                     .forEach(function (node) {
 
                         node.on('data-hover', function (unit, e) {
-                            // console.log('hover', unit, e);
                             if (!e.data) {
                                 this._hideCrosshair();
                                 return;
@@ -177,7 +182,7 @@
                     var res = {};
 
                     if (typeof x === 'function' || typeof x === 'string') {
-                        res = { format: x };
+                        res = {format: x};
                     } else if (utils.isObject(x)) {
                         res = utils.pick(x, 'label', 'format', 'nullAlias');
                     }
@@ -190,7 +195,7 @@
                     var fmt = toLabelValuePair(settings.formatters[k]);
 
                     info[k] = Object.assign(
-                        ({ label: k, nullAlias: ('No ' + k) }),
+                        ({label: k, nullAlias: ('No ' + k)}),
                         (info[k] || {}),
                         (utils.pick(fmt, 'label', 'nullAlias')));
 
