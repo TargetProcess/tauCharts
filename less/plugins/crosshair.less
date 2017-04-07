@@ -1,0 +1,27 @@
+@import "../variable";
+
+.graphical-report__layout .tau-crosshair {
+    &__line {
+        shape-rendering: crispEdges;
+        stroke-width: 1px;
+    }
+    &__label {
+        font-size: @font-size-s;
+    }
+}
+
+.generate-crosshair-colors(@n; @i: 1) when (@i =< @n) {
+
+    .graphical-report__layout .tau-crosshair__line.color@{n}-@{i} {
+        stroke: extract(@category-colors, @i);
+    }
+
+    .graphical-report__layout .tau-crosshair__label.color@{n}-@{i} {
+        fill: extract(@category-colors, @i);
+        stroke: none;
+    }
+
+    .generate-crosshair-colors(@n; (@i + 1));
+}
+
+.generate-crosshair-colors(@list_category-colors);
