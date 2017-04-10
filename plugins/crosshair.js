@@ -114,16 +114,43 @@
                 var scaleY = unit.getScale('y');
                 var scaleColor = unit.getScale('color');
                 var color = scaleColor(e.data[scaleColor.dim]);
+                var xValue = e.data[scaleX.dim];
+                var yValue = e.data[scaleY.dim];
+                if (unit.config.stack) {
+                    if (unit.config.flip) {
+                        xValue = unit.data()
+                            .filter(function (d) {
+                                var dy = d[scaleY.dim];
+                                return (
+                                    ((dy === yValue) || (dy - yValue === 0)) &&
+                                    (unit.screenModel.x(d) <= unit.screenModel.x(e.data))
+                                );
+                            }).reduce(function (total, d) {
+                                return (total + d[scaleX.dim]);
+                            }, 0);
+                    } else {
+                        yValue = unit.data()
+                            .filter(function (d) {
+                                var dx = d[scaleX.dim];
+                                return (
+                                    ((dx === xValue) || (dx - xValue === 0)) &&
+                                    (unit.screenModel.y(d) >= unit.screenModel.y(e.data))
+                                );
+                            }).reduce(function (total, d) {
+                                return (total + d[scaleY.dim]);
+                            }, 0);
+                    }
+                }
                 this._setValues(
                     {
-                        label: this._getFormat(scaleX.dim)(e.data[scaleX.dim]),
+                        label: this._getFormat(scaleX.dim)(xValue),
                         start: scaleX(scaleX.domain()[0]),
-                        value: scaleX(e.data[scaleX.dim])
+                        value: scaleX(xValue)
                     },
                     {
-                        label: this._getFormat(scaleY.dim)(e.data[scaleY.dim]),
+                        label: this._getFormat(scaleY.dim)(yValue),
                         start: scaleY(scaleY.domain()[0]),
-                        value: scaleY(e.data[scaleY.dim])
+                        value: scaleY(yValue)
                     },
                     {
                         cls: (scaleColor.toColor(color) ? '' : color),
