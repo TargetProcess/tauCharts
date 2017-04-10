@@ -165,7 +165,9 @@
                                 this._hideCrosshair();
                                 return;
                             }
-                            this._showCrosshair(unit, e);
+                            if (unit.data().indexOf(e.data) >= 0) {
+                                this._showCrosshair(unit, e);
+                            }
                         }.bind(this));
                     }, this);
             },
