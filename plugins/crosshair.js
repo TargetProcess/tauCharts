@@ -44,7 +44,9 @@
                     .attr('class', 'tau-crosshair');
                 var createAxisNode = function (dir) {
                     var g = node.append('g').attr('class', 'tau-crosshair__group ' + dir);
+                    g.append('line').attr('class', 'tau-crosshair__line-bg');
                     g.append('line').attr('class', 'tau-crosshair__line');
+                    g.append('text').attr('class', 'tau-crosshair__label-bg');
                     g.append('text').attr('class', 'tau-crosshair__label');
                 };
                 if (settings.xAxis) {
@@ -58,40 +60,55 @@
 
             _setValues: function (xData, yData, colorData) {
 
-                var gx = this._element.select('.tau-crosshair__group.x');
-                gx.select('.tau-crosshair__line')
-                    .attr('class', 'tau-crosshair__line ' + colorData.cls)
-                    .attr('stroke', colorData.color)
-                    .attr('x1', xData.value)
-                    .attr('x2', xData.value)
-                    .attr('y1', yData.value)
-                    .attr('y2', yData.start);
-                gx.select('.tau-crosshair__label')
-                    .attr('class', 'tau-crosshair__label ' + colorData.cls)
-                    .attr('fill', colorData.color)
-                    .attr('x', xData.value + settings.labelXPadding)
-                    .attr('y', yData.start - settings.labelYPadding)
-                    .text(xData.label);
+                var setCrosshairGroupValues = function (data) {
 
-                var gy = this._element.select('.tau-crosshair__group.y');
-                gy.select('.tau-crosshair__line')
-                    .attr('class', 'tau-crosshair__line ' + colorData.cls)
-                    .attr('stroke', colorData.color)
-                    .attr('x1', xData.start)
-                    .attr('x2', xData.value)
-                    .attr('y1', yData.value)
-                    .attr('y2', yData.value);
-                gy.select('.tau-crosshair__label')
-                    .attr('class', 'tau-crosshair__label ' + colorData.cls)
-                    .attr('fill', colorData.color)
-                    .attr('x', xData.start + settings.labelXPadding)
-                    .attr('y', yData.value - settings.labelYPadding)
-                    .text(yData.label);
+                    var g = this._element.select('.tau-crosshair__group.' + data.dir);
+
+                    g.select('.tau-crosshair__line')
+                        .attr('class', 'tau-crosshair__line ' + colorData.cls)
+                        .attr('stroke', colorData.color);
+                    g.selectAll('.tau-crosshair__line, .tau-crosshair__line-bg')
+                        .attr('x1', data.lineX1)
+                        .attr('x2', data.lineX2)
+                        .attr('y1', data.lineY1)
+                        .attr('y2', data.lineY2);
+
+                    g.select('.tau-crosshair__label')
+                        .attr('class', 'tau-crosshair__label ' + colorData.cls)
+                        .attr('fill', colorData.color)
+                    g.selectAll('.tau-crosshair__label, .tau-crosshair__label-bg')
+                        .attr('x', data.textX + settings.labelXPadding)
+                        .attr('y', data.textY - settings.labelYPadding)
+                        .text(data.label);
+
+                }.bind(this);
+
+                setCrosshairGroupValues({
+                    dir: 'x',
+                    lineX1: xData.value,
+                    lineX2: xData.value,
+                    lineY1: yData.value,
+                    lineY2: yData.start,
+                    label: xData.label,
+                    textX: xData.value,
+                    textY: yData.start
+                });
+
+                setCrosshairGroupValues({
+                    dir: 'y',
+                    lineX1: xData.start,
+                    lineX2: xData.value,
+                    lineY1: yData.value,
+                    lineY2: yData.value,
+                    label: yData.label,
+                    textX: xData.start,
+                    textY: yData.value
+                });
             },
 
             _showCrosshair: function (unit, e) {
                 var node = unit.config.options.container.node();
-                node.insertBefore(this._element.node(), node.firstChild);
+                node.parentNode.appendChild(this._element.node());
 
                 var scaleX = unit.getScale('x');
                 var scaleY = unit.getScale('y');

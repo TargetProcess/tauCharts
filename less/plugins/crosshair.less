@@ -1,12 +1,28 @@
 @import "../variable";
 
 .graphical-report__layout .tau-crosshair {
-    &__line {
+
+    &__line,
+    &__line-bg {
         shape-rendering: crispEdges;
         stroke-width: 1px;
     }
-    &__label {
+    &__label,
+    &__label-bg {
         font-size: @font-size-s;
+    }
+
+    &__line-bg,
+    &__label-bg {
+        stroke: @bg-color;
+    }
+    &__line-bg {
+        opacity: 0.5;
+        transform: translate(1px, 1px);
+    }
+    &__label-bg {
+        stroke-linejoin: round;
+        stroke-width: 3px;
     }
 }
 
