@@ -11,6 +11,7 @@
         var loadDevJS = loadJS.bind(null, 'dev');
         var loadDevPlugins = loadJS.bind(null, [
             '../plugins/tooltip',
+            '../plugins/crosshair',
             '../plugins/tauCharts.export',
             '../plugins/layers',
             '../plugins/legend',
@@ -30,6 +31,7 @@
             '../css/export.default',
             '../css/legend.default',
             '../css/tooltip.default',
+            '../css/crosshair.default',
             '../css/trendline.default',
             '../css/annotations.default',
             '../css/quick-filter.default'
@@ -45,6 +47,7 @@
         var loadBuildTaucharts = loadJS.bind(null, '../build/development/tauCharts');
         var loadBuildPlugins = loadJS.bind(null, [
             '../build/development/plugins/tauCharts.tooltip',
+            '../build/development/plugins/tauCharts.crosshair',
             '../build/development/plugins/tauCharts.export',
             '../build/development/plugins/tauCharts.layers',
             '../build/development/plugins/tauCharts.legend',
