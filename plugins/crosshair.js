@@ -87,7 +87,7 @@
                     dir: 'x',
                     lineX1: xData.value,
                     lineX2: xData.value,
-                    lineY1: yData.value,
+                    lineY1: yData.value + yData.crossPadding,
                     lineY2: yData.start,
                     label: xData.label,
                     textX: xData.value,
@@ -97,7 +97,7 @@
                 setCrosshairGroupValues({
                     dir: 'y',
                     lineX1: xData.start,
-                    lineX2: xData.value,
+                    lineX2: xData.value + xData.crossPadding,
                     lineY1: yData.value,
                     lineY2: yData.value,
                     label: yData.label,
@@ -123,7 +123,8 @@
                                 var dy = d[scaleY.dim];
                                 return (
                                     ((dy === yValue) || (dy - yValue === 0)) &&
-                                    (unit.screenModel.x(d) <= unit.screenModel.x(e.data))
+                                    (unit.screenModel.x(d) <= unit.screenModel.x(e.data)) &&
+                                    (xValue * d[scaleX.dim] > 0)
                                 );
                             }).reduce(function (total, d) {
                                 return (total + d[scaleX.dim]);
@@ -134,23 +135,42 @@
                                 var dx = d[scaleX.dim];
                                 return (
                                     ((dx === xValue) || (dx - xValue === 0)) &&
-                                    (unit.screenModel.y(d) >= unit.screenModel.y(e.data))
+                                    (unit.screenModel.y(d) >= unit.screenModel.y(e.data)) &&
+                                    (yValue * d[scaleY.dim] > 0)
                                 );
                             }).reduce(function (total, d) {
                                 return (total + d[scaleY.dim]);
                             }, 0);
                     }
                 }
+
+                var box = e.node.getBBox();
+                var pad = (function getCrossPadding() {
+                    if (unit.config.type === 'ELEMENT.INTERVAL' ||
+                        unit.config.type === 'ELEMENT.INTERVAL.STACKED') {
+                        return {
+                            x: (-box.width * (unit.config.flip ? xValue > 0 ? 1 : 0 : 0.5)),
+                            y: (box.height * (unit.config.flip ? 0.5 : yValue > 0 ? 1 : 0))
+                        };
+                    }
+                    return {
+                        x: (-box.width / 2),
+                        y: (box.height / 2)
+                    };
+                })();
+
                 this._setValues(
                     {
                         label: this._getFormat(scaleX.dim)(xValue),
-                        start: scaleX(scaleX.domain()[0]),
-                        value: scaleX(xValue)
+                        start: 0,
+                        value: scaleX(xValue),
+                        crossPadding: pad.x
                     },
                     {
                         label: this._getFormat(scaleY.dim)(yValue),
-                        start: scaleY(scaleY.domain()[0]),
-                        value: scaleY(yValue)
+                        start: unit.config.options.height,
+                        value: scaleY(yValue),
+                        crossPadding: pad.y
                     },
                     {
                         cls: (scaleColor.toColor(color) ? '' : color),
