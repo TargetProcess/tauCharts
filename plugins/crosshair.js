@@ -75,7 +75,7 @@
 
                     g.select('.tau-crosshair__label')
                         .attr('class', 'tau-crosshair__label ' + colorData.cls)
-                        .attr('fill', colorData.color)
+                        .attr('fill', colorData.color);
                     g.selectAll('.tau-crosshair__label, .tau-crosshair__label-bg')
                         .attr('x', data.textX + settings.labelXPadding)
                         .attr('y', data.textY - settings.labelYPadding)
