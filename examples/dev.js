@@ -69,6 +69,7 @@
     var PLUGINS = [
         'annotations',
         'box-whiskers',
+        'crosshair',
         'exportTo',
         'floating-axes',
         'layers',

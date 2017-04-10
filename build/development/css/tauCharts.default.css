@@ -456,7 +456,7 @@
 .graphical-report__svg .grid path.domain {
   fill: none;
 }
-.graphical-report__svg .grid line {
+.graphical-report__svg .grid .tick > line {
   fill: none;
   stroke: rgba(189, 195, 205, 0.4);
   stroke-width: 1px;
