@@ -1,5 +1,5 @@
 function utcDate(year, month, day, hours, minutes) {
-    return new Date(Date.UTC(year, month, day, hours, minutes));
+    return new Date(Date.UTC.apply(null, arguments));
 }
 
 dev.spec({
@@ -44,5 +44,17 @@ dev.spec({
         {x: utcDate(2017, 1, 11, 21, 0), y: 20},
         {x: utcDate(2017, 1, 12, 0, 0), y: 10},
         {x: utcDate(2017, 1, 12, 3, 0), y: 20}
+    ],
+    plugins: [
+        tauCharts.api.plugins.get('annotations')({
+            items: [
+                {
+                    dim: 'x',
+                    val: utcDate(2017, 1, 11),
+                    text: 'one',
+                    color: '#636363'
+                }
+            ]
+        })
     ]
 });
