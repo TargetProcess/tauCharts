@@ -141,6 +141,10 @@ module.exports = function (grunt) {
                         dest: 'build/development/plugins/tauCharts.tooltip.js'
                     },
                     {
+                        src: 'plugins/crosshair.js',
+                        dest: 'build/development/plugins/tauCharts.crosshair.js'
+                    },
+                    {
                         src: 'plugins/legend.js',
                         dest: 'build/development/plugins/tauCharts.legend.js'
                     },

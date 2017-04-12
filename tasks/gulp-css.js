@@ -4,16 +4,17 @@ const eventStream = require('event-stream');
 
 const main = 'tauCharts';
 const plugins = [
-    'tooltip',
+    'annotations',
+    'crosshair',
     'export',
     'legend',
+    'tooltip',
     'trendline',
-    'annotations',
     'quick-filter'
 ];
 const themes = [
-    'default',
-    'dark'
+    'dark',
+    'default'
 ];
 
 module.exports = (gulp) => {
