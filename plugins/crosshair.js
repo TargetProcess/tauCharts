@@ -13,6 +13,7 @@
 
     var d3 = tauCharts.api.d3;
     var utils = tauCharts.api.utils;
+    var svgUtils = tauCharts.api.svgUtils;
     var pluginsSDK = tauCharts.api.pluginsSDK;
 
     function labelBox(options) {
@@ -161,7 +162,7 @@
                 var root = d3.select(
                     document.createElementNS(d3.ns.prefix.svg, 'g'))
                     .attr('class', 'tau-crosshair');
-                this._labels = { x: null, y: null };
+                this._labels = {x: null, y: null};
                 var createAxisNode = function (dir) {
                     var g = root.append('g').attr('class', 'tau-crosshair__group ' + dir);
                     g.append('line').attr('class', 'tau-crosshair__line-shadow');
@@ -254,8 +255,11 @@
             },
 
             _showCrosshair: function (e, unit, parentUnit) {
-                var node = unit.config.options.container.node();
-                node.parentNode.appendChild(this._element.node());
+                var svg = this._chart.getSVG();
+                var target = unit.config.options.container.node();
+                var translate = svgUtils.getDeepTransformTranslate(target);
+                this._element.attr('transform', svgUtils.translate(translate.x, translate.y));
+                svg.appendChild(this._element.node());
 
                 var scaleX = unit.getScale('x');
                 var scaleY = unit.getScale('y');

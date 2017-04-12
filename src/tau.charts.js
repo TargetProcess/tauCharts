@@ -1,5 +1,6 @@
 import {utilsDom} from './utils/utils-dom';
 import {utils} from './utils/utils';
+import {utilsDraw} from './utils/utils-draw';
 import {GPL} from './charts/tau.gpl';
 import {Plot} from './charts/tau.plot';
 import {Chart} from './charts/tau.chart';
@@ -63,6 +64,7 @@ var api = {
     isChartElement: utils.isChartElement,
     d3: d3,
     utils: utils,
+    svgUtils: utilsDraw,
     tickPeriod: UnitDomainPeriodGenerator,
     colorBrewers: {
         add: function (name, brewer) {
