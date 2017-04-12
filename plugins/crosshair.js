@@ -34,6 +34,8 @@
             var color = args.color;
             var colorCls = args.colorCls;
 
+            g.attr('class', 'tau-crosshair__label ' + colorCls);
+
             var halign = options.halign;
             var valign = options.valign;
             var hpad = options.hpad;
@@ -51,7 +53,6 @@
             }[halign]);
 
             var t = g.select('.tau-crosshair__label__text')
-                .attr('class', 'tau-crosshair__label__text ' + colorCls)
                 .attr('fill', color);
             var tAndBg = g.selectAll('.tau-crosshair__label__text, .tau-crosshair__label__text-shadow')
                 .attr('text-anchor', textAnchor)
@@ -81,7 +82,6 @@
             }[valign]);
 
             g.select('.tau-crosshair__label__box')
-                .attr('class', 'tau-crosshair__label__box ' + colorCls)
                 .attr('fill', color)
                 .attr('x', x + boxDx)
                 .attr('y', y + boxDy)
@@ -226,7 +226,7 @@
                     dir: 'x',
                     startPt: {
                         x: xData.value,
-                        y: yData.start + settings.axisVPadding
+                        y: yData.start + (xData.minMode ? 0 : settings.axisVPadding)
                     },
                     valuePt: {
                         x: xData.value,
@@ -240,7 +240,7 @@
                 setCrosshairGroupValues({
                     dir: 'y',
                     startPt: {
-                        x: xData.start - settings.axisHPadding,
+                        x: xData.start - (yData.minMode ? 0 : settings.axisHPadding),
                         y: yData.value
                     },
                     valuePt: {
@@ -253,7 +253,7 @@
                 });
             },
 
-            _showCrosshair: function (unit, e) {
+            _showCrosshair: function (e, unit, parentUnit) {
                 var node = unit.config.options.container.node();
                 node.parentNode.appendChild(this._element.node());
 
@@ -311,13 +311,15 @@
                         label: this._getFormat(scaleX.dim)(xValue),
                         start: 0,
                         value: scaleX(xValue),
-                        crossPadding: pad.x
+                        crossPadding: pad.x,
+                        minMode: (parentUnit && parentUnit.guide.x.hide)
                     },
                     {
                         label: this._getFormat(scaleY.dim)(yValue),
                         start: unit.config.options.height,
                         value: scaleY(yValue),
-                        crossPadding: pad.y
+                        crossPadding: pad.y,
+                        minMode: (parentUnit && parentUnit.guide.y.hide)
                     },
                     {
                         cls: (scaleColor.toColor(color) ? '' : color),
@@ -360,7 +362,8 @@
                                 return;
                             }
                             if (unit.data().indexOf(e.data) >= 0) {
-                                this._showCrosshair(unit, e);
+                                var parentUnit = pluginsSDK.getParentUnit(this._chart.getSpec(), unit.config);
+                                this._showCrosshair(e, unit, parentUnit);
                             }
                         }.bind(this));
                     }, this);

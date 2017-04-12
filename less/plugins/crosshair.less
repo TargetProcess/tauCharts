@@ -4,6 +4,7 @@
 
     &__line {
         shape-rendering: crispEdges;
+        stroke-opacity: 0.75;
         stroke-width: 1px;
     }
 
@@ -25,13 +26,12 @@
         stroke-width: 3px;
     }
     &__label__text-shadow {
-        display: none;
-        stroke: @bg-color;
         stroke-linejoin: round;
         stroke-width: 3px;
     }
 
     &__label__box {
+        fill-opacity: 0.75;
         rx: 3px;
         ry: 3px;
         stroke: none;
@@ -40,17 +40,17 @@
 
 .generate-crosshair-colors(@n; @i: 1) when (@i =< @n) {
 
-    .graphical-report__layout .tau-crosshair__label.color@{n}-@{i} {
-        fill: @bg-color;
-    }
-
     .graphical-report__layout .tau-crosshair__line.color@{n}-@{i} {
         stroke: extract(@category-colors, @i);
     }
 
-    .graphical-report__layout .tau-crosshair__label__box.color@{n}-@{i} {
-        fill: extract(@category-colors, @i);
-        stroke: none;
+    .graphical-report__layout .tau-crosshair__label.color@{n}-@{i} {
+        .tau-crosshair__label__text-shadow {
+            stroke: extract(@category-colors, @i);
+        }
+        .tau-crosshair__label__box {
+            fill: extract(@category-colors, @i);
+        }
     }
 
     .generate-crosshair-colors(@n; (@i + 1));
