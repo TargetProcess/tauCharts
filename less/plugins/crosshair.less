@@ -2,36 +2,53 @@
 
 .graphical-report__layout .tau-crosshair {
 
-    &__line,
-    &__line-bg {
+    &__line {
         shape-rendering: crispEdges;
         stroke-width: 1px;
     }
-    &__label,
-    &__label-bg {
-        font-size: @font-size-s;
+
+    &__label__text {
+        fill: @bg-color;
+        stroke: none;
     }
 
-    &__line-bg,
-    &__label-bg {
+    &__label__text,
+    &__label__text-shadow {
+        font-size: @font-size-s;
+        font-weight: normal;
+    }
+
+    &__line-shadow {
+        shape-rendering: crispEdges;
         stroke: @bg-color;
+        stroke-opacity: 0.5;
+        stroke-width: 3px;
     }
-    &__line-bg {
-        transform: translate(1px, 1px);
-    }
-    &__label-bg {
+    &__label__text-shadow {
+        display: none;
+        stroke: @bg-color;
         stroke-linejoin: round;
         stroke-width: 3px;
+    }
+
+    &__label__box {
+        rx: 3px;
+        ry: 3px;
+        stroke: none;
     }
 }
 
 .generate-crosshair-colors(@n; @i: 1) when (@i =< @n) {
 
+    .graphical-report__layout .tau-crosshair__label.color@{n}-@{i} {
+        fill: @bg-color;
+    }
+
     .graphical-report__layout .tau-crosshair__line.color@{n}-@{i} {
         stroke: extract(@category-colors, @i);
     }
 
-    .graphical-report__layout .tau-crosshair__label.color@{n}-@{i} {
+    .graphical-report__layout .tau-crosshair__label__box.color@{n}-@{i} {
         fill: extract(@category-colors, @i);
         stroke: none;
     }
