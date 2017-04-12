@@ -4,163 +4,213 @@
 /* endregion */
 /* region variables for plugins */
 /* endregion */
-.graphical-report__layout .tau-crosshair__line,
-.graphical-report__layout .tau-crosshair__line-bg {
+.graphical-report__layout .tau-crosshair__line {
   shape-rendering: crispEdges;
+  stroke-opacity: 0.85;
   stroke-width: 1px;
 }
-.graphical-report__layout .tau-crosshair__label,
-.graphical-report__layout .tau-crosshair__label-bg {
+.graphical-report__layout .tau-crosshair__label__text {
+  fill: #000;
+  stroke: none;
+}
+.graphical-report__layout .tau-crosshair__label__text,
+.graphical-report__layout .tau-crosshair__label__text-shadow {
   font-size: 12px;
+  font-weight: normal;
 }
-.graphical-report__layout .tau-crosshair__line-bg,
-.graphical-report__layout .tau-crosshair__label-bg {
+.graphical-report__layout .tau-crosshair__line-shadow {
+  shape-rendering: crispEdges;
   stroke: #000;
+  stroke-opacity: 0.5;
+  stroke-width: 3px;
 }
-.graphical-report__layout .tau-crosshair__line-bg {
-  transform: translate(1px, 1px);
-}
-.graphical-report__layout .tau-crosshair__label-bg {
+.graphical-report__layout .tau-crosshair__label__text-shadow {
   stroke-linejoin: round;
   stroke-width: 3px;
+}
+.graphical-report__layout .tau-crosshair__label__box {
+  fill-opacity: 0.85;
+  rx: 3px;
+  ry: 3px;
+  stroke: none;
 }
 .graphical-report__layout .tau-crosshair__line.color20-1 {
   stroke: #6FA1D9;
 }
-.graphical-report__layout .tau-crosshair__label.color20-1 {
+.graphical-report__layout .tau-crosshair__label.color20-1 .tau-crosshair__label__text-shadow {
+  stroke: #6FA1D9;
+}
+.graphical-report__layout .tau-crosshair__label.color20-1 .tau-crosshair__label__box {
   fill: #6FA1D9;
-  stroke: none;
 }
 .graphical-report__layout .tau-crosshair__line.color20-2 {
   stroke: #DF2B59;
 }
-.graphical-report__layout .tau-crosshair__label.color20-2 {
+.graphical-report__layout .tau-crosshair__label.color20-2 .tau-crosshair__label__text-shadow {
+  stroke: #DF2B59;
+}
+.graphical-report__layout .tau-crosshair__label.color20-2 .tau-crosshair__label__box {
   fill: #DF2B59;
-  stroke: none;
 }
 .graphical-report__layout .tau-crosshair__line.color20-3 {
   stroke: #66DA26;
 }
-.graphical-report__layout .tau-crosshair__label.color20-3 {
+.graphical-report__layout .tau-crosshair__label.color20-3 .tau-crosshair__label__text-shadow {
+  stroke: #66DA26;
+}
+.graphical-report__layout .tau-crosshair__label.color20-3 .tau-crosshair__label__box {
   fill: #66DA26;
-  stroke: none;
 }
 .graphical-report__layout .tau-crosshair__line.color20-4 {
   stroke: #755797;
 }
-.graphical-report__layout .tau-crosshair__label.color20-4 {
+.graphical-report__layout .tau-crosshair__label.color20-4 .tau-crosshair__label__text-shadow {
+  stroke: #755797;
+}
+.graphical-report__layout .tau-crosshair__label.color20-4 .tau-crosshair__label__box {
   fill: #755797;
-  stroke: none;
 }
 .graphical-report__layout .tau-crosshair__line.color20-5 {
   stroke: #E5B011;
 }
-.graphical-report__layout .tau-crosshair__label.color20-5 {
+.graphical-report__layout .tau-crosshair__label.color20-5 .tau-crosshair__label__text-shadow {
+  stroke: #E5B011;
+}
+.graphical-report__layout .tau-crosshair__label.color20-5 .tau-crosshair__label__box {
   fill: #E5B011;
-  stroke: none;
 }
 .graphical-report__layout .tau-crosshair__line.color20-6 {
   stroke: #746650;
 }
-.graphical-report__layout .tau-crosshair__label.color20-6 {
+.graphical-report__layout .tau-crosshair__label.color20-6 .tau-crosshair__label__text-shadow {
+  stroke: #746650;
+}
+.graphical-report__layout .tau-crosshair__label.color20-6 .tau-crosshair__label__box {
   fill: #746650;
-  stroke: none;
 }
 .graphical-report__layout .tau-crosshair__line.color20-7 {
   stroke: #CB461A;
 }
-.graphical-report__layout .tau-crosshair__label.color20-7 {
+.graphical-report__layout .tau-crosshair__label.color20-7 .tau-crosshair__label__text-shadow {
+  stroke: #CB461A;
+}
+.graphical-report__layout .tau-crosshair__label.color20-7 .tau-crosshair__label__box {
   fill: #CB461A;
-  stroke: none;
 }
 .graphical-report__layout .tau-crosshair__line.color20-8 {
   stroke: #C7CE23;
 }
-.graphical-report__layout .tau-crosshair__label.color20-8 {
+.graphical-report__layout .tau-crosshair__label.color20-8 .tau-crosshair__label__text-shadow {
+  stroke: #C7CE23;
+}
+.graphical-report__layout .tau-crosshair__label.color20-8 .tau-crosshair__label__box {
   fill: #C7CE23;
-  stroke: none;
 }
 .graphical-report__layout .tau-crosshair__line.color20-9 {
   stroke: #7FCDC2;
 }
-.graphical-report__layout .tau-crosshair__label.color20-9 {
+.graphical-report__layout .tau-crosshair__label.color20-9 .tau-crosshair__label__text-shadow {
+  stroke: #7FCDC2;
+}
+.graphical-report__layout .tau-crosshair__label.color20-9 .tau-crosshair__label__box {
   fill: #7FCDC2;
-  stroke: none;
 }
 .graphical-report__layout .tau-crosshair__line.color20-10 {
   stroke: #CCA1C8;
 }
-.graphical-report__layout .tau-crosshair__label.color20-10 {
+.graphical-report__layout .tau-crosshair__label.color20-10 .tau-crosshair__label__text-shadow {
+  stroke: #CCA1C8;
+}
+.graphical-report__layout .tau-crosshair__label.color20-10 .tau-crosshair__label__box {
   fill: #CCA1C8;
-  stroke: none;
 }
 .graphical-report__layout .tau-crosshair__line.color20-11 {
   stroke: #C84CCE;
 }
-.graphical-report__layout .tau-crosshair__label.color20-11 {
+.graphical-report__layout .tau-crosshair__label.color20-11 .tau-crosshair__label__text-shadow {
+  stroke: #C84CCE;
+}
+.graphical-report__layout .tau-crosshair__label.color20-11 .tau-crosshair__label__box {
   fill: #C84CCE;
-  stroke: none;
 }
 .graphical-report__layout .tau-crosshair__line.color20-12 {
   stroke: #54762E;
 }
-.graphical-report__layout .tau-crosshair__label.color20-12 {
+.graphical-report__layout .tau-crosshair__label.color20-12 .tau-crosshair__label__text-shadow {
+  stroke: #54762E;
+}
+.graphical-report__layout .tau-crosshair__label.color20-12 .tau-crosshair__label__box {
   fill: #54762E;
-  stroke: none;
 }
 .graphical-report__layout .tau-crosshair__line.color20-13 {
   stroke: #746BC9;
 }
-.graphical-report__layout .tau-crosshair__label.color20-13 {
+.graphical-report__layout .tau-crosshair__label.color20-13 .tau-crosshair__label__text-shadow {
+  stroke: #746BC9;
+}
+.graphical-report__layout .tau-crosshair__label.color20-13 .tau-crosshair__label__box {
   fill: #746BC9;
-  stroke: none;
 }
 .graphical-report__layout .tau-crosshair__line.color20-14 {
   stroke: #A43B49;
 }
-.graphical-report__layout .tau-crosshair__label.color20-14 {
+.graphical-report__layout .tau-crosshair__label.color20-14 .tau-crosshair__label__text-shadow {
+  stroke: #A43B49;
+}
+.graphical-report__layout .tau-crosshair__label.color20-14 .tau-crosshair__label__box {
   fill: #A43B49;
-  stroke: none;
 }
 .graphical-report__layout .tau-crosshair__line.color20-15 {
   stroke: #5C7A76;
 }
-.graphical-report__layout .tau-crosshair__label.color20-15 {
+.graphical-report__layout .tau-crosshair__label.color20-15 .tau-crosshair__label__text-shadow {
+  stroke: #5C7A76;
+}
+.graphical-report__layout .tau-crosshair__label.color20-15 .tau-crosshair__label__box {
   fill: #5C7A76;
-  stroke: none;
 }
 .graphical-report__layout .tau-crosshair__line.color20-16 {
   stroke: #C8BF87;
 }
-.graphical-report__layout .tau-crosshair__label.color20-16 {
+.graphical-report__layout .tau-crosshair__label.color20-16 .tau-crosshair__label__text-shadow {
+  stroke: #C8BF87;
+}
+.graphical-report__layout .tau-crosshair__label.color20-16 .tau-crosshair__label__box {
   fill: #C8BF87;
-  stroke: none;
 }
 .graphical-report__layout .tau-crosshair__line.color20-17 {
   stroke: #BFC1C3;
 }
-.graphical-report__layout .tau-crosshair__label.color20-17 {
+.graphical-report__layout .tau-crosshair__label.color20-17 .tau-crosshair__label__text-shadow {
+  stroke: #BFC1C3;
+}
+.graphical-report__layout .tau-crosshair__label.color20-17 .tau-crosshair__label__box {
   fill: #BFC1C3;
-  stroke: none;
 }
 .graphical-report__layout .tau-crosshair__line.color20-18 {
   stroke: #AA7243;
 }
-.graphical-report__layout .tau-crosshair__label.color20-18 {
+.graphical-report__layout .tau-crosshair__label.color20-18 .tau-crosshair__label__text-shadow {
+  stroke: #AA7243;
+}
+.graphical-report__layout .tau-crosshair__label.color20-18 .tau-crosshair__label__box {
   fill: #AA7243;
-  stroke: none;
 }
 .graphical-report__layout .tau-crosshair__line.color20-19 {
   stroke: #71CE7B;
 }
-.graphical-report__layout .tau-crosshair__label.color20-19 {
+.graphical-report__layout .tau-crosshair__label.color20-19 .tau-crosshair__label__text-shadow {
+  stroke: #71CE7B;
+}
+.graphical-report__layout .tau-crosshair__label.color20-19 .tau-crosshair__label__box {
   fill: #71CE7B;
-  stroke: none;
 }
 .graphical-report__layout .tau-crosshair__line.color20-20 {
   stroke: #BE478B;
 }
-.graphical-report__layout .tau-crosshair__label.color20-20 {
+.graphical-report__layout .tau-crosshair__label.color20-20 .tau-crosshair__label__text-shadow {
+  stroke: #BE478B;
+}
+.graphical-report__layout .tau-crosshair__label.color20-20 .tau-crosshair__label__box {
   fill: #BE478B;
-  stroke: none;
 }

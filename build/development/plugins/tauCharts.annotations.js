@@ -90,7 +90,8 @@
                     var primaryScaleInfo = chart.getScaleInfo(metaInfo.primaryScale);
 
                     if ((primaryScaleInfo.scaleType === 'period')) {
-                        var periodCaster = tauCharts.api.tickPeriod.get(primaryScaleInfo.period);
+                        var periodCaster = tauCharts.api.tickPeriod.get(primaryScaleInfo.period,
+                            {utc: specRef.settings.utcTime});
                         from = periodCaster.cast(new Date(metaInfo.from));
                         to = periodCaster.cast(new Date(metaInfo.to));
                     }
@@ -149,7 +150,8 @@
 
                     var primaryScaleInfo = chart.getScaleInfo(primary);
                     var from = ((primaryScaleInfo.scaleType === 'period') ?
-                        tauCharts.api.tickPeriod.get(primaryScaleInfo.period).cast(new Date(metaInfo.from)) :
+                        tauCharts.api.tickPeriod.get(primaryScaleInfo.period, {utc: specRef.settings.utcTime})
+                            .cast(new Date(metaInfo.from)) :
                         metaInfo.from);
                     var isOutOfDomain = (!primaryScaleInfo.isInDomain(from));
 

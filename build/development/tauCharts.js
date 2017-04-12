@@ -1,4 +1,4 @@
-/*! taucharts - v1.1.0 - 2017-04-10
+/*! taucharts - v1.1.1 - 2017-04-12
 * https://github.com/TargetProcess/tauCharts
 * Copyright (c) 2017 Taucraft Limited; Licensed Apache License 2.0 */
 (function webpackUniversalModuleDefinition(root, factory) {
@@ -67,6 +67,8 @@ return /******/ (function(modules) { // webpackBootstrap
 	var _utilsDom = __webpack_require__(1);
 
 	var _utils = __webpack_require__(3);
+
+	var _utilsDraw = __webpack_require__(10);
 
 	var _tau = __webpack_require__(16);
 
@@ -170,6 +172,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    isChartElement: _utils.utils.isChartElement,
 	    d3: _d2.default,
 	    utils: _utils.utils,
+	    svgUtils: _utilsDraw.utilsDraw,
 	    tickPeriod: _unitDomainPeriodGenerator.UnitDomainPeriodGenerator,
 	    colorBrewers: {
 	        add: function add(name, brewer) {
@@ -383,7 +386,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	}]));
 
 	/* global VERSION:false */
-	var version = ("1.1.0");
+	var version = ("1.1.1");
 	exports.GPL = _tau.GPL;
 	exports.Plot = _tau2.Plot;
 	exports.Chart = _tau3.Chart;
@@ -17510,6 +17513,38 @@ return /******/ (function(modules) { // webpackBootstrap
 	                    return customTokens[key] || key;
 	                }
 	            };
+	        }
+	    }, {
+	        key: 'getParentUnit',
+	        value: function getParentUnit(spec, unit) {
+
+	            var parent = null;
+
+	            var traverse = function traverse(node, parentNode) {
+
+	                if (node.uid === unit.uid) {
+	                    parent = parentNode;
+	                    return true;
+	                }
+
+	                if (node.frames) {
+	                    node.frames.some(function (frame) {
+	                        return (frame.units || []).some(function (x) {
+	                            return traverse(x, node);
+	                        });
+	                    });
+	                } else {
+	                    (node.units || []).some(function (x) {
+	                        return traverse(x, node);
+	                    });
+	                }
+
+	                return false;
+	            };
+
+	            traverse(spec.unit, null);
+
+	            return parent;
 	        }
 	    }]);
 
