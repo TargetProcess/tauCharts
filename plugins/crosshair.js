@@ -270,8 +270,8 @@
                                 var dy = d[scaleY.dim];
                                 return (
                                     ((dy === yValue) || (dy - yValue === 0)) &&
-                                    (unit.screenModel.x(d) <= unit.screenModel.x(e.data)) &&
-                                    (xValue * d[scaleX.dim] > 0)
+                                    ((unit.screenModel.x(e.data) - unit.screenModel.x(d)) *
+                                        d[scaleX.dim] >= 0)
                                 );
                             }).reduce(function (total, d) {
                                 return (total + d[scaleX.dim]);
@@ -282,8 +282,8 @@
                                 var dx = d[scaleX.dim];
                                 return (
                                     ((dx === xValue) || (dx - xValue === 0)) &&
-                                    (unit.screenModel.y(d) >= unit.screenModel.y(e.data)) &&
-                                    (yValue * d[scaleY.dim] > 0)
+                                    ((unit.screenModel.y(d) - unit.screenModel.y(e.data)) *
+                                        d[scaleY.dim] >= 0)
                                 );
                             }).reduce(function (total, d) {
                                 return (total + d[scaleY.dim]);
