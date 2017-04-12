@@ -164,6 +164,33 @@ class PluginsSDK {
             }
         };
     }
+
+    static getParentUnit(spec, unit) {
+
+        var parent = null;
+
+        const traverse = (node, parentNode) => {
+
+            if (node.uid === unit.uid) {
+                parent = parentNode;
+                return true;
+            }
+
+            if (node.frames) {
+                node.frames.some((frame) => {
+                    return (frame.units || []).some((x) => traverse(x, node));
+                });
+            } else {
+                (node.units || []).some((x) => traverse(x, node));
+            }
+
+            return false;
+        };
+
+        traverse(spec.unit, null);
+
+        return parent;
+    }
 }
 
 export {PluginsSDK};
