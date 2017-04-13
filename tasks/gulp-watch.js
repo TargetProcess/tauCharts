@@ -2,7 +2,11 @@ const rollup = require('rollup');
 
 module.exports = (gulp, { connect }) => {
     gulp.task('watch',
-        ['build-js', 'build-css'],
+        [
+            'build-js',
+            'build-plugins-js',
+            'build-css'
+        ],
         () => {
             var server = connect.server({
                 host: '0.0.0.0',
@@ -12,5 +16,6 @@ module.exports = (gulp, { connect }) => {
             });
             gulp.watch('src/**/*.js', ['build-js']);
             gulp.watch('less/**/*.less', ['build-css']);
+            gulp.watch('plugins/**/*.js', ['build-plugins-js']);
         });
 };

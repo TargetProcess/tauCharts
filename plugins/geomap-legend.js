@@ -1,15 +1,6 @@
-(function (factory) {
-    if (typeof define === 'function' && define.amd) {
-        define(['taucharts'], function (tauPlugins) {
-            return factory(tauPlugins);
-        });
-    } else if (typeof module === 'object' && module.exports) {
-        var tauPlugins = require('taucharts');
-        module.exports = factory(tauPlugins);
-    } else {
-        factory(this.tauCharts);
-    }
-})(function (tauCharts) {
+import tauCharts from 'taucharts';
+
+{
 
     var utils = tauCharts.api.utils;
 
@@ -325,6 +316,4 @@
     }
 
     tauCharts.api.plugins.add('geomap-legend', ChartGeoMapLegend);
-
-    return ChartGeoMapLegend;
-});
+}
