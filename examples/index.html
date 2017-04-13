@@ -6,8 +6,11 @@
 
     <script>
         // Load development JS and CSS
-        var loadLocalD3 = loadJS.bind(null, '../node_modules/d3/d3');
-        var loadDevTaucharts = loadJS.bind(null, '../tauCharts');
+        var loadLocalD3 = loadJS.bind(null, [
+            '../node_modules/d3/d3',
+            '../node_modules/topojson/build/topojson'
+        ]);
+        var loadDevTaucharts = loadJS.bind(null, '../dist/tauCharts');
         var loadDevJS = loadJS.bind(null, 'dev');
         var loadDevPlugins = loadJS.bind(null, [
             '../plugins/tooltip',
@@ -27,14 +30,14 @@
             '../plugins/box-whiskers'
         ]);
         var loadDevCSS = loadCSS.bind(null, [
-            '../css/tauCharts.default',
-            '../css/export.default',
-            '../css/legend.default',
-            '../css/tooltip.default',
-            '../css/crosshair.default',
-            '../css/trendline.default',
-            '../css/annotations.default',
-            '../css/quick-filter.default'
+            '../dist/tauCharts',
+            '../dist/plugins/tauCharts.export',
+            '../dist/plugins/tauCharts.legend',
+            '../dist/plugins/tauCharts.tooltip',
+            '../dist/plugins/tauCharts.crosshair',
+            '../dist/plugins/tauCharts.trendline',
+            '../dist/plugins/tauCharts.annotations',
+            '../dist/plugins/tauCharts.quick-filter'
         ]);
         var loadDevPluginsAndCSS = function (callbacks) {
             loadDevPlugins();
@@ -43,7 +46,10 @@
         };
 
         // Load build JS and CSS
-        var loadCloudD3 = loadJS.bind(null, 'http://cdnjs.cloudflare.com/ajax/libs/d3/3.5.17/d3');
+        var loadCloudD3 = loadJS.bind(null, [
+            'http://cdnjs.cloudflare.com/ajax/libs/d3/3.5.17/d3',
+            'http://cdnjs.cloudflare.com/ajax/libs/topojson/3.0.0/topojson'
+        ]);
         var loadBuildTaucharts = loadJS.bind(null, '../build/development/tauCharts');
         var loadBuildPlugins = loadJS.bind(null, [
             '../build/development/plugins/tauCharts.tooltip',

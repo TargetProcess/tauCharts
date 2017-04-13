@@ -17,7 +17,7 @@ const themes = [
     'default'
 ];
 
-module.exports = (gulp) => {
+module.exports = (gulp, { connect }) => {
 
     const getSrc = (name, isPlugin = false) => {
         return `./less${isPlugin ? '/plugins' : ''}/${name}.less`;
@@ -63,6 +63,8 @@ module.exports = (gulp) => {
                 }));
             });
         });
-        return eventStream.merge(streams);
+        return eventStream
+            .merge(streams)
+            .pipe(connect.reload());
     });
 };

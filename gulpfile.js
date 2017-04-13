@@ -1,4 +1,8 @@
 const gulp = require('gulp');
+const connect = require('gulp-connect');
 
-require('./tasks/gulp-js')(gulp);
-require('./tasks/gulp-css')(gulp);
+const plugins = { connect };
+
+require('./tasks/gulp-js')(gulp, plugins);
+require('./tasks/gulp-css')(gulp, plugins);
+require('./tasks/gulp-watch')(gulp, plugins);
