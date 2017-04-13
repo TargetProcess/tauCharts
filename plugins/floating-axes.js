@@ -419,6 +419,20 @@
                     yAxes: yAxes,
                     shadows: shadows
                 };
+
+                // Fix invoking unexpected chart pointer events
+                d3Svg.selectAll('.floating-axes')
+                    .on('mouseenter', function () {
+                        var evt = document.createEvent('SVGEvents');
+                        evt.initEvent('mouseleave', true, true);
+                        svg.dispatchEvent(evt);
+                    })
+                    .on('mousemove', function () {
+                        d3.event.stopPropagation();
+                    })
+                    .on('click', function () {
+                        d3.event.stopPropagation();
+                    });
             },
 
             removeFloatingLayout: function () {
