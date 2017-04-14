@@ -428,7 +428,7 @@ import tauCharts from 'taucharts';
 
                 var periodGenerator = tauCharts.api.tickPeriod;
                 var createPeriodCaster = function (period) {
-                    var gen = periodGenerator.get(period);
+                    var gen = periodGenerator.get(period, {utc: specRef.settings.utcTime});
                     return function (x) {
                         return gen.cast(new Date(x));
                     };

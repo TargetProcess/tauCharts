@@ -75,6 +75,8 @@ import tauCharts from 'taucharts';
 
             g.select('.tau-crosshair__label__box')
                 .attr('fill', color)
+                .attr('rx', options.boxCornerRadius)
+                .attr('ry', options.boxCornerRadius)
                 .attr('x', x + boxDx)
                 .attr('y', y + boxDy)
                 .attr('width', boxWidth)
@@ -106,8 +108,8 @@ import tauCharts from 'taucharts';
             },
 
             show: function (args) {
-                setValues(args);
                 options.container.appendChild(node);
+                setValues(args);
                 fixOverflow();
                 return instance;
             },
@@ -133,6 +135,7 @@ import tauCharts from 'taucharts';
                 formatters: {},
                 labelBoxHPadding: 5,
                 labelBoxVPadding: 3,
+                labelBoxCornerRadius: 3,
                 axisHPadding: 22,
                 axisVPadding: 22
             });
@@ -164,6 +167,7 @@ import tauCharts from 'taucharts';
                         chart: this._chart,
                         halign: dir === 'x' ? 'middle' : 'left',
                         valign: dir === 'x' ? 'bottom' : 'middle',
+                        boxCornerRadius: settings.labelBoxCornerRadius,
                         hpad: settings.labelBoxHPadding,
                         vpad: settings.labelBoxVPadding
                     });
