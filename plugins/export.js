@@ -1,26 +1,11 @@
-(function (factory) {
-    if (typeof define === 'function' && define.amd) {
-        define(['taucharts', 'canvg', 'FileSaver', 'promise', 'print.style.css', 'fetch'],
-            function (tauPlugins, canvg, saveAs, Promise, printCss) {
-                window.Promise = window.Promise || Promise.Promise;
-                return factory(tauPlugins, canvg, saveAs, window.Promise, printCss);
-            });
-    } else {
-        factory(this.tauCharts, this.canvg, this.saveAs);
-    }
-})(function (tauCharts, canvg, saveAs, Promise, printCss) {
+import tauCharts from 'taucharts';
+import canvg from 'canvg';
+import {saveAs} from 'file-saver';
+import Promise from 'promise';
+import 'fetch';
+import printCss from './print.style.css';
 
-// import tauCharts from 'taucharts';
-// import canvg from 'canvg';
-// import saveAs from 'FileSaver';
-// // import Promise from 'promise';
-// // import printCss from 'print.style.css';
-// // var canvg='';
-// // var saveAs='';
-// var Promise='';
-// // var printCss='';
-
-// {
+{
     var d3 = tauCharts.api.d3;
     var utils = tauCharts.api.utils;
     var pluginsSDK = tauCharts.api.pluginsSDK;
@@ -799,7 +784,4 @@
     }
 
     tauCharts.api.plugins.add('exportTo', exportTo);
-
-    return exportTo;
-// }
-});
+}

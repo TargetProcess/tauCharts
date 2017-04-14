@@ -22,10 +22,9 @@
     "d3": "~3.5.17"
   },
   "devDependencies": {
-    "modernizer": "2.8.2",
     "canvg": "https://github.com/gabelerner/canvg.git#v1.4",
-    "FileSaver.js": "https://github.com/Mavrin/FileSaver.js.git",
-    "fetch": "~0.6.1",
-    "es6-promise": "~2.0.1"
+    "fetch": "~2.0.3",
+    "es6-promise": "~4.0.5",
+    "file-saver": "~1.3.3"
   }
 }

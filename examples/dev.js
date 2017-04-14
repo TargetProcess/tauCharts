@@ -85,12 +85,12 @@
     var pluginConfigs = {
         'exportTo': {
             cssPaths: [
-                '../css/tauCharts.default.css',
-                '../css/export.default.css',
-                '../css/legend.default.css',
-                '../css/trendline.default.css',
-                '../css/annotations.default.css',
-                '../css/quick-filter.default.css'
+                '../dist/tauCharts.css',
+                '../dist/plugins/tauCharts.export.css',
+                '../dist/plugins/tauCharts.legend.css',
+                '../dist/plugins/tauCharts.trendline.css',
+                '../dist/plugins/tauCharts.annotations.css',
+                '../dist/plugins/tauCharts.quick-filter.css'
             ]
         }
     };

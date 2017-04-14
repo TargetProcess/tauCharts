@@ -4,9 +4,14 @@ const eventStream = require('event-stream');
 
 const babelConfig = {
     presets: [
-        ['es2015', {
-            modules: false
-        }]
+        ['es2015-rollup']
+    ],
+    include: [
+        '**/*.js'
+    ],
+    exclude: [
+        'node_modules/**',
+        'bower_components/**'
     ],
     plugins: [
         'external-helpers'
@@ -52,8 +57,9 @@ const pluginsCommonConfig = {
         'taucharts': 'tauCharts'
     },
     plugins: [
-        require('rollup-plugin-node-resolve')(),
-        require('rollup-plugin-commonjs')(),
+        require('rollup-plugin-commonjs')({
+            exclude: 'bower_components/**'
+        }),
         require('rollup-plugin-babel')(babelConfig)
     ]
 };
@@ -62,19 +68,31 @@ const plugins = [
     'annotations',
     'box-whiskers',
     'crosshair',
-    // ['export', {
-    //     plugins: pluginsCommonConfig.plugins.concat(
-    //         require('rollup-plugin-alias')({
-    //             'print.style.css': 'plugins/print.style.css',
-    //             'rgbcolor': 'bower_components/canvg/rgbcolor.js',
-    //             'stackblur': 'bower_components/canvg/StackBlur.js',
-    //             'canvg': 'bower_components/canvg/canvg.js',
-    //             'FileSaver': 'bower_components/FileSaver.js/FileSaver.js',
-    //             'fetch': 'bower_components/fetch/fetch.js',
-    //             'promise': 'bower_components/es6-promise/promise.js'
-    //         })
-    //     )
-    // }],
+    ['export', {
+        onwarn: function (warning) {
+            // Note: 'fetch' causes a warning.
+            if (warning.code === 'THIS_IS_UNDEFINED') {
+                return;
+            }
+            console.error(warning.message);
+        },
+        plugins: pluginsCommonConfig.plugins.concat(
+            require('rollup-plugin-string')({
+                include: 'plugins/**/*.css'
+            }),
+            require('rollup-plugin-alias')({
+                'rgbcolor': 'bower_components/canvg/rgbcolor.js',
+                'stackblur': 'bower_components/canvg/StackBlur.js',
+                'canvg': 'bower_components/canvg/canvg.js',
+                'file-saver': 'bower_components/file-saver/FileSaver.js',
+                'fetch': 'bower_components/fetch/fetch.js',
+                'promise': 'bower_components/es6-promise/es6-promise.js'
+            }),
+            require('rollup-plugin-amd')({
+                include: 'bower_components/**',
+            })
+        )
+    }],
     'floating-axes',
     'geomap-legend',
     'geomap-tooltip',
@@ -105,12 +123,29 @@ module.exports = (gulp, { connect }) => {
                 } :
                 {
                     cache: cache[entry],
-                    sourceMap: 'inline'
+                    sourceMap: false
                 })
         );
 
-        return rollup(config)
-            .on('bundle', (bundle) => cache[entry] = bundle)
+        var stream = rollup(config);
+        if (!production) {
+            stream = stream
+                .on('bundle', (bundle) => cache[entry] = bundle)
+                .on('error', function (err) {
+                    cache[entry] = null;
+                    console.error('\x1b[31m', [
+                        '',
+                        '.========================.',
+                        '!                        !',
+                        '! JAVASCRIPT BUILD ERROR !',
+                        '!                        !',
+                        '*========================*'
+                    ].join('\n'));
+                    console.error('\x1b[0m', err);
+                    this.emit('end');
+                });
+        }
+        return stream
             .pipe(source(distFile))
             .pipe(gulp.dest(distDir))
             .pipe(connect.reload());
