@@ -20,7 +20,7 @@
   ],
   "dependencies": {
     "d3": "^3.5.17",
-    "topojson": "1.6.24"
+    "topojson": "^1.6.27"
   },
   "repository": {
     "type": "git",
@@ -49,7 +49,8 @@
   },
   "scripts": {
     "dev": "gulp watch",
-    "prepublish": "bower install && gulp build-js build-plugins-js build-css"
+    "build": "gulp build",
+    "prepublish": "bower install"
   },
   "_old_scripts": {
     "devserver": "grunt webpack-dev-server:start",
