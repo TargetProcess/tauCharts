@@ -27,6 +27,7 @@
 .graphical-report__layout .tau-crosshair__label__text-shadow {
   stroke-linejoin: round;
   stroke-width: 3px;
+  visibility: hidden;
 }
 .graphical-report__layout .tau-crosshair__label__box {
   fill-opacity: 0.85;
