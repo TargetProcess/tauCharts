@@ -270,7 +270,7 @@ const Point = {
             return null;
         }
 
-        const items = (tree.find([cursorX, cursorY]) || [])
+        const items = (tree.find(cursorX, cursorY) || [])
             .map((item) => {
                 const distance = Math.sqrt(
                     Math.pow(cursorX - item.x, 2) +
