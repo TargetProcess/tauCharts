@@ -412,12 +412,10 @@ export class GeoMap extends Element {
 
         var update = function () {
             return this
-                .attr({
-                    r: ({data: d}) => sizeScale(d[sizeScale.dim]),
-                    transform: ({data: d}) => `translate(${d3Projection([d[lonScale.dim], d[latScale.dim]])})`,
-                    class: ({data: d}) => colorScale(d[colorScale.dim]),
-                    opacity: pointOpacity
-                })
+                .attr('r', ({data: d}) => sizeScale(d[sizeScale.dim]))
+                .attr('transform', ({data: d}) => `translate(${d3Projection([d[lonScale.dim], d[latScale.dim]])})`)
+                .attr('class', ({data: d}) => colorScale(d[colorScale.dim]))
+                .attr('opacity', pointOpacity)
                 .on('mouseover', ({data:d}) => self.fire('point-mouseover', {data: d, event: d3.event}))
                 .on('mouseout',  ({data:d}) => self.fire('point-mouseout', {data: d, event: d3.event}))
                 .on('click',     ({data:d}) => self.fire('point-click', {data: d, event: d3.event}));

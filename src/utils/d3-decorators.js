@@ -1,7 +1,7 @@
 import {utils} from './utils';
 import {utilsDom} from './utils-dom';
 import {utilsDraw} from './utils-draw';
-import {default as d3} from 'd3';
+import d3 from 'd3';
 import interpolatePathPoints from './path/interpolators/path-points';
 import {getLineInterpolator, getInterpolatorSplineType} from './path/interpolators/interpolators-registry';
 
@@ -142,7 +142,7 @@ var d3_decorator_prettify_categorical_axis_ticks = (nodeAxis, logicalScale, isHo
                     var val = (isHorizontal) ? offset : (-offset);
                     selection
                         .select('line')
-                        .attr({[key + '1']: val, [key + '2']: val});
+                        .attr(key + '1', val).attr(key + '2', val);
                 };
 
                 if (!tickNode.classed('tau-enter')) {
@@ -199,7 +199,8 @@ var d3_decorator_fixEdgeAxisTicksOverflow = function (axisNode, activeTicks) {
     activeTicks = activeTicks.map(d => Number(d));
     var texts = axisNode
         .selectAll('.tick text')
-        .filter(d => activeTicks.indexOf(Number(d)) >= 0)[0];
+        .filter(d => activeTicks.indexOf(Number(d)) >= 0)
+        .nodes();
     if (texts.length === 0) {
         return;
     }
@@ -685,8 +686,32 @@ var d3_createPathTween = (
     };
 };
 
+var d3_axis = (orient) => {
+    return ({
+        'left': d3.axisLeft,
+        'right': d3.axisRight,
+        'top': d3.axisTop,
+        'bottom': d3.axisBottom
+    }[orient]);
+};
+
+var d3_setAttrs = (attrs) => {
+    return (sel) => {
+        Object.keys(attrs).forEach((k) => sel.attr(k, attrs[k]));
+        return sel;
+    };
+};
+
+var d3_setClasses = (classMap) => {
+    return (sel) => {
+        Object.keys(classMap).forEach((k) => sel.classed(k, classMap[k]));
+        return sel;
+    };
+};
+
 export {
     d3_animationInterceptor,
+    d3_axis,
     d3_createPathTween,
     d3_decorator_wrap_tick_label,
     d3_decorator_prettify_axis_label,
@@ -696,8 +721,10 @@ export {
     d3_decorator_highlightZeroTick,
     d3_decorator_prettify_categorical_axis_ticks,
     d3_decorator_avoidLabelsCollisions,
-    d3_transition,
     d3_selectAllImmediate,
+    d3_setAttrs,
+    d3_setClasses,
+    d3_transition,
     wrapText,
     cutText
 };

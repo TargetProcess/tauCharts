@@ -1973,7 +1973,7 @@ dev.spec({
             brewer: function (state) {
                 // var stateOrder = orderByState[state];
                 var stateOrder = orderIndex.indexOf(state);
-                var color = d3.scale.linear()
+                var color = d3.scaleLinear()
                     .domain(splitEvenly([0, orderIndex.length], 8))
                     .range([
                         d3.hsl(260, 0.5, 0.8),

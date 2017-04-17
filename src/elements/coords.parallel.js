@@ -143,7 +143,7 @@ export class Parallel extends Element {
         var colsGuide = config.guide.columns || {};
         var xBase = this.xBase;
         var columnsScalesMap = this.columnsScalesMap;
-        var d3Axis = d3.svg.axis().orient('left');
+        var d3Axis = d3.axisLeft();
 
         var cols = grid
             .selectAll('.column')

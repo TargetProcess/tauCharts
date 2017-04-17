@@ -147,8 +147,9 @@ export class LayerLabels {
         var angle = get('angle');
         var color = get('color');
         var label = get('label');
-        var update = function () {
-            this.style('fill', color)
+        var update = function (elements) {
+            elements
+                .style('fill', color)
                 .style('font-size', `${self.guide.fontSize}px`)
                 .style('display', ((__, i) => labels[i].hide ? 'none' : null))
                 .attr('class', 'i-role-label')

@@ -484,22 +484,20 @@ const BasePath = {
         const container = unit.config.options.container;
         const dots = container
             .selectAll(`.${cssClass}`)
-            .attr({
-                r: (showOnHover ?
-                    ((d) => filter(d) ? Math.max(rmin, (screenModel.size(d) / 2)) : 0) :
-                    ((d) => {
-                        // NOTE: Highlight point with larger radius.
-                        var r = screenModel.size(d) / 2;
-                        if (filter(d)) {
-                            r = Math.max(rmin, Math.ceil(r * rx));
-                        }
-                        return r;
-                    })
-                ),
-                opacity: (showOnHover ? ((d) => filter(d) ? 1 : 0) : 1),
-                fill: (d) => screenModel.color(d),
-                class: (d) => utilsDom.classes(cssClass, screenModel.class(d))
-            })
+            .attr('r', (showOnHover ?
+                ((d) => filter(d) ? Math.max(rmin, (screenModel.size(d) / 2)) : 0) :
+                ((d) => {
+                    // NOTE: Highlight point with larger radius.
+                    var r = screenModel.size(d) / 2;
+                    if (filter(d)) {
+                        r = Math.max(rmin, Math.ceil(r * rx));
+                    }
+                    return r;
+                })
+            ))
+            .attr('opacity', (showOnHover ? ((d) => filter(d) ? 1 : 0) : 1))
+            .attr('fill', (d) => screenModel.color(d))
+            .attr('class', (d) => utilsDom.classes(cssClass, screenModel.class(d)))
             .classed(`${CSS_PREFIX}highlighted`, filter);
 
         // Display cursor line

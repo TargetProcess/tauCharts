@@ -96,7 +96,7 @@ import tauCharts from 'taucharts';
                 var width = 180 - margin.left - margin.right;
                 var height = 41 - margin.top - margin.bottom - 2 * padding;
 
-                var x = d3.scale.linear()
+                var x = d3.scaleLinear()
                     .domain(bounds)
                     .range([0, width]);
 

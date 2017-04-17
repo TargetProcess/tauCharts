@@ -3,7 +3,10 @@ import {Emitter} from '../event';
 import {Plugins} from '../plugins';
 import {utils} from '../utils/utils';
 import {utilsDom} from '../utils/utils-dom';
-import {d3_transition as transition} from '../utils/d3-decorators';
+import {
+    d3_setClasses as setClasses,
+    d3_transition as transition
+} from '../utils/d3-decorators';
 import {GrammarRegistry} from '../grammar-registry';
 import {unitsRegistry} from '../units-registry';
 import {scalesRegistry} from '../scales-registry';
@@ -535,10 +538,9 @@ export class Plot extends Emitter {
     _renderRoot({scenario, newSize}) {
         const d3Target = d3.select(this._layout.content);
         var frameRootId = scenario[0].config.uid;
-        var svg = selectOrAppend(d3Target, `svg`).attr({
-            width: Math.floor(newSize.width),
-            height: Math.floor(newSize.height)
-        });
+        var svg = selectOrAppend(d3Target, `svg`)
+            .attr('width', Math.floor(newSize.width))
+            .attr('height', Math.floor(newSize.height));
         if (!svg.attr('class')) {
             svg.attr('class', `${CSS_PREFIX}svg`);
         }
@@ -551,8 +553,8 @@ export class Plot extends Emitter {
         // NOTE: Fade out removed root, fade-in if removing interrupted.
         roots.enter()
             .append('g')
-            .classed(`${CSS_PREFIX}cell cell frame-root uid_${frameRootId}`, true);
-        roots
+            .classed(`${CSS_PREFIX}cell cell frame-root uid_${frameRootId}`, true)
+            .merge(roots)
             .call((selection) => {
                 selection.classed('tau-active', true);
                 transition(selection, this.configGPL.settings.animationSpeed, 'frameRootToggle')
