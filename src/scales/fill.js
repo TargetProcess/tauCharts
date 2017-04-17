@@ -54,7 +54,7 @@ export class FillScale extends BaseScale {
         var domain = utils.range(size - 1).map((i) => i + 1)
             .reduce((memo, i) => memo.concat([varSet[0] + (i * step)]), []);
 
-        var func = d3.scale.threshold().domain(domain).range(brewer);
+        var func = d3.scaleThreshold().domain(domain).range(brewer);
 
         return this.toBaseScale(func);
     }
