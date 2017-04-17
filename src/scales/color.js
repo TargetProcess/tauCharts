@@ -117,8 +117,7 @@ export class ColorScale extends BaseScale {
 
         if (Array.isArray(brewer)) {
 
-            func = d3.scale
-                .linear()
+            func = d3.scaleLinear()
                 .domain(utils.splitEvenly(varSet.map(x => x - 0), brewer.length))
                 .range(brewer);
 

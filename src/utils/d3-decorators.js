@@ -163,7 +163,8 @@ var d3_decorator_fixHorizontalAxisTicksOverflow = function (axisNode, activeTick
     }
 
     var timeTicks = axisNode.selectAll('.tick')
-        .filter(d => activeTicks.indexOf(isDate ? Number(d) : d) >= 0)[0];
+        .filter(d => activeTicks.indexOf(isDate ? Number(d) : d) >= 0)
+        .nodes();
     if (timeTicks.length < 2) {
         return;
     }
@@ -176,7 +177,8 @@ var d3_decorator_fixHorizontalAxisTicksOverflow = function (axisNode, activeTick
     var maxTextLn = 0;
     var iMaxTexts = -1;
     var timeTexts = axisNode.selectAll('.tick text')
-        .filter(d => activeTicks.indexOf(isDate ? Number(d) : d) >= 0)[0];
+        .filter(d => activeTicks.indexOf(isDate ? Number(d) : d) >= 0)
+        .nodes();
     timeTexts.forEach((textNode, i) => {
         var innerHTML = textNode.textContent || '';
         var textLength = innerHTML.length;
@@ -431,7 +433,7 @@ var d3_decorator_avoidLabelsCollisions = function (nodeScale, isHorizontal, acti
 
             curr.l = resolveCollide(prev.l, collideL);
 
-            var size = curr.textRef[0].length;
+            var size = curr.textRef.size();
             var text = curr.textRef.text();
 
             if (size > 1) {
@@ -599,17 +601,17 @@ var d3_animationInterceptor = (speed, initAttrs, doneAttrs, afterUpdate) => {
         xAfterUpdate(this);
     };
 
-    return function () {
+    return function (selection) {
 
-        var flow = this;
+        var flow = selection;
 
         if (initAttrs) {
-            flow = flow.attr(utils.defaults(initAttrs, doneAttrs));
+            flow = flow.call(d3_setAttrs(utils.defaults(initAttrs, doneAttrs)));
         }
 
         flow = d3_transition(flow, speed);
 
-        flow = flow.attr(doneAttrs);
+        flow = flow.call(d3_setAttrs(doneAttrs));
 
         if (speed > 0) {
             flow.each('end.d3_animationInterceptor', afterUpdateIterator);

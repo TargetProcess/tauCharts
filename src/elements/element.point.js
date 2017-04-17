@@ -1,14 +1,14 @@
 import {CSS_PREFIX} from '../const';
 import {GrammarRegistry} from '../grammar-registry';
 import {LayerLabels} from './decorators/layer-labels';
-import {d3_transition} from '../utils/d3-decorators';
 import {utils} from '../utils/utils';
 import {utilsDom} from '../utils/utils-dom';
 import {utilsDraw} from '../utils/utils-draw';
 import d3 from 'd3';
 import {
     d3_setAttrs as attrs,
-    d3_setClasses as classes
+    d3_setClasses as classes,
+    d3_transition
 } from '../utils/d3-decorators';
 
 const Point = {
@@ -143,10 +143,9 @@ const Point = {
                         .selectAll('circle')
                         .data((fiber) => fiber, screenModel.id);
 
-                    transition(dots.enter().append('circle').call(attrs(circleAttrs)))
-                        .call(attrs(circleTransAttrs));
-
-                    transition(dots.call(attrs(circleAttrs)))
+                    transition(dots.enter().append('circle')
+                        .merge(dots)
+                        .call(attrs(circleAttrs)))
                         .call(attrs(circleTransAttrs));
 
                     transition(dots.exit())
@@ -174,7 +173,7 @@ const Point = {
             .selectAll('.frame')
             .data(fibers, (f) => screenModel.group(f[0]));
 
-        const updated = frameGroups
+        const merged = frameGroups
             .enter()
             .append('g')
             .attr('opacity', 0)
@@ -182,7 +181,7 @@ const Point = {
             .call(updateGroups);
 
         // TODO: Render bars into single container, exclude removed elements from calculation.
-        this._boundsInfo = this._getBoundsInfo(updated.selectAll('.dot').nodes());
+        this._boundsInfo = this._getBoundsInfo(merged.selectAll('.dot').nodes());
 
         transition(frameGroups.exit())
             .attr('opacity', 0)
