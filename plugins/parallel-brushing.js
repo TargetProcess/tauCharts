@@ -39,6 +39,7 @@
                     });
 
                 plugin.forceBrush = settings.forceBrush || {};
+                plugin.onBrush = settings.onBrush || _.noop;
             },
 
             onRender: function (chart) {
@@ -65,43 +66,45 @@
 
                         plugin.forceBrush = {};
 
-                        var predicates = e.map(function (item) {
-                            var p = item.dim;
-                            var f = item.func;
-                            var a = item.args;
+                        //var predicates = e.map(function (item) {
+                        //    var p = item.dim;
+                        //    var f = item.func;
+                        //    var a = item.args;
+                        //
+                        //    plugin.forceBrush[p] = a;
+                        //
+                        //    var r = function () {
+                        //        return true;
+                        //    };
+                        //
+                        //    if (f === 'between') {
+                        //        r = function (row) {
+                        //            return (row[p] >= a[0]) && (a[1] >= row[p]);
+                        //        };
+                        //    }
+                        //
+                        //    if (f === 'inset') {
+                        //        r = function (row) {
+                        //            return a.indexOf(row[p]) >= 0;
+                        //        };
+                        //    }
+                        //
+                        //    return r;
+                        //});
 
-                            plugin.forceBrush[p] = a;
+                        //var matches = 0;
+                        //node.fire('highlight', function (row) {
+                        //
+                        //    var r = predicates.every(function (func) {
+                        //        return func(row);
+                        //    });
+                        //
+                        //    matches += (r ? 1 : 0);
+                        //
+                        //    return r;
+                        //});
 
-                            var r = function () {
-                                return true;
-                            };
-
-                            if (f === 'between') {
-                                r = function (row) {
-                                    return (row[p] >= a[0]) && (a[1] >= row[p]);
-                                };
-                            }
-
-                            if (f === 'inset') {
-                                r = function (row) {
-                                    return a.indexOf(row[p]) >= 0;
-                                };
-                            }
-
-                            return r;
-                        });
-
-                        var matches = 0;
-                        node.fire('highlight', function (row) {
-
-                            var r = predicates.every(function (func) {
-                                return func(row);
-                            });
-
-                            matches += (r ? 1 : 0);
-
-                            return r;
-                        });
+                        plugin.onBrush(e, chart);
 
                         if (settings.verbose) {
                             var part = plugin.panel.getElementsByClassName('i-' + i);

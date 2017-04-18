@@ -1,0 +1,341 @@
+<!DOCTYPE html>
+<html>
+<meta charset="utf-8">
+<head>
+    <script src="//cdnjs.cloudflare.com/ajax/libs/underscore.js/1.8.2/underscore-min.js"></script>
+    <script src="//cdnjs.cloudflare.com/ajax/libs/jquery/1.6.1/jquery.min.js"></script>
+    <script src="//cdnjs.cloudflare.com/ajax/libs/d3/3.4.11/d3.js"></script>
+    <script src="http://cdn.jsdelivr.net/alasql/0.2/alasql.min.js"></script>
+
+    <link rel="stylesheet" media="all"
+          href="http://docs.handsontable.com/0.21.0/bower_components/handsontable/dist/handsontable.full.css" />
+    <script src='http://docs.handsontable.com/0.21.0/bower_components/handsontable/dist/handsontable.full.js'></script>
+
+    <!-- core -->
+    <script src="../build/development/tauCharts.js"></script>
+    <!-- plugins -->
+    <script src="../plugins/tooltip.js"></script>
+    <!--<script src="../build/development/plugins/tauCharts.export.js"></script>-->
+    <script src="../plugins/layers.js"></script>
+    <script src="../plugins/legend.js"></script>
+    <script src="../plugins/trendline.js"></script>
+    <script src="../plugins/settings.js"></script>
+    <script src="../plugins/annotations.js"></script>
+    <script src="../plugins/parallel-brushing.js"></script>
+    <script src="../plugins/parallel-tooltip.js"></script>
+    <script src="../plugins/geomap-tooltip.js"></script>
+    <script src="../plugins/geomap-legend.js"></script>
+    <script src="../plugins/quick-filter.js"></script>
+
+    <!-- css -->
+    <link href="../css/tauCharts.default.css" rel="stylesheet"/>
+    <link href="../css/export.default.css" rel="stylesheet"/>
+    <link href="../css/legend.default.css" rel="stylesheet"/>
+    <link href="../css/tooltip.default.css" rel="stylesheet"/>
+    <link href="../css/trendline.default.css" rel="stylesheet"/>
+    <link href="../css/annotations.default.css" rel="stylesheet"/>
+    <link href="../css/quick-filter.default.css" rel="stylesheet"/>
+    <style>
+
+        body {
+            margin: 20px 15% 0 15%;
+            font-size: 13px;
+        }
+
+        .cc {
+            display:inline-block;
+            margin: 10px;
+            float: left;
+            width: 1000px;
+            height: 400px;
+            overflow: auto;
+        }
+    </style>
+    <script src="dev-experimental-views-source.js"></script>
+    <script src="dev-experimental-views-utils.js"></script>
+</head>
+<body>
+
+<div id="T0" style="display: block;float: none;overflow:auto;height: 200px; border: solid 1px"></div>
+<div id="T1" style="display: block;float: none;overflow:auto;margin-top:10px;font-size: large">
+    <!-- ABS(imdbRating - tomatoRating) < 0.5 -->
+    <!-- imdbRating > 8 AND tomatoRating > 8 -->
+    <!-- ABS(imdbRating - tomatoRating) < 0.25 AND imdbRating > 8 AND tomatoRating > 8 -->
+    SELECT * FROM ? WHERE <input id="gfilter" type="text" placeholder="..." style="width: 50%" />
+    <button onclick="applyFilter()">Apply</button>
+    <button onclick="clearFilter()">Reset</button>
+</div>
+
+<script>
+
+    window.samples = [
+        {
+            query: 'SELECT Title, Director, Country, imdbRating, tomatoRating, Genre, Decade, isWinner, oscarWins FROM ?',
+            viz: {
+                type: 'parallel',
+                columns: [
+                    'Genre', 'imdbRating', 'tomatoRating', 'oscarWins', 'Country', 'Decade'
+                ],
+                color: 'Genre',
+                plugins: [
+                    tauCharts.api.plugins.get('parallel-brushing')({
+                        onBrush: _.debounce(onBrushHandler)
+                    })
+                    ,
+                    tauCharts.api.plugins.get('parallel-tooltip')()
+                ]
+            },
+            w: 800,
+            h: 400
+        }
+        ,
+        {
+            query: 'SELECT Title, imdbRating, tomatoRating, Genre, imdbVotes FROM ?',
+            viz: {
+                type: 'scatterplot',
+                x: 'imdbRating',
+                y: 'tomatoRating',
+                color: 'Genre',
+                size: 'imdbVotes',
+                guide: {
+                    x: {autoScale: false, max: 10},
+                    y: {autoScale: false, max: 10}
+                },
+                plugins: [
+                    tauCharts.api.plugins.get('annotations')({
+                        items: [
+                            { dim: 'imdbRating',   val: 8.0, text: 'Good', position: 'front' },
+                            { dim: 'tomatoRating', val: 8.0, text: 'Good', position: 'front' }
+                        ]
+                    })
+                ]
+            },
+            w: 400,
+            h: 400
+        }
+        ,
+        {
+            query: 'SELECT Director, SUM(oscarWins) AS SumOscarWins FROM ? GROUP BY Director ORDER BY SumOscarWins',
+            viz: {
+                type: 'horizontal-bar',
+                x: 'SumOscarWins',
+                y: 'Director',
+                settings: {fitModel: 'minimal'}
+            },
+            w: 400,
+            h: 400
+        }
+        ,
+        {
+            query: 'SELECT Title, Director, imdbRating, gotAnOscar, oscarWins, YearDate FROM ?',
+            viz: {
+                type: 'line',
+                x: 'YearDate',
+                y: 'imdbRating',
+                color: 'Director',
+                plugins: [
+                    tauCharts.api.plugins.get('layers')({
+                        mode: 'merge',
+                        showPanel: false,
+                        layers: [
+                            {
+                                type: 'bar',
+                                y: 'oscarWins'
+                            }
+                        ]
+                    })
+                ]
+            },
+            w: 400,
+            h: 400
+        }
+        ,
+        {
+            query: 'SELECT Genre, COUNT(*) AS CountOfFilmsByGenre FROM ? GROUP BY Genre ORDER BY CountOfFilmsByGenre',
+            viz: {
+                type: 'horizontal-bar',
+                x: 'CountOfFilmsByGenre',
+                y: 'Genre',
+                settings: {fitModel: 'fit-width'}
+            },
+            w: 200,
+            h: 400
+        }
+        ,
+        {
+            query: 'SELECT Country, COUNT(*) AS CountOfFilmsByCountry FROM ? GROUP BY Country ORDER BY CountOfFilmsByCountry',
+            viz: {
+                type: 'horizontal-bar',
+                x: 'CountOfFilmsByCountry',
+                y: 'Country',
+                settings: {fitModel: 'fit-width'}
+            },
+            w: 200,
+            h: 400
+        }
+//        ,
+//        {
+//            query: 'SELECT Country, COUNT(*) AS CountOfFilmsByCountry FROM ? GROUP BY Country ORDER BY CountOfFilmsByCountry',
+//            viz: {
+//                type: 'map',
+//                code: 'Country',
+//                fill: 'CountOfFilmsByCountry',
+//                guide: {
+//                    code: {georole:'countries'},
+//                    sourcemap: './../src/addons/world-countries.json'
+//                },
+//                x: 'CountOfFilmsByCountry',
+//                y: 'Country',
+//                plugins: [
+//                    tauCharts.api.plugins.get('geomap-tooltip')(),
+//                    tauCharts.api.plugins.get('geomap-legend')()
+//                ]
+//            },
+//            w: 1200,
+//            h: 800
+//        }
+//        ,
+//        {
+//            query: 'SELECT Director, SUM(oscarWins) AS SumOscarWins, COUNT(*) AS CountFilms FROM ? GROUP BY Director ORDER BY SumOscarWins DESC LIMIT 50',
+//            viz: {
+//                type: 'bar',
+//                y: 'SumOscarWins',
+//                x: 'Director',
+//                plugins: [
+//                    tauCharts.api.plugins.get('layers')({
+//                        mode: 'merge',
+//                        showPanel: false,
+//                        layers: [
+//                            {
+//                                type: 'bar',
+//                                y: 'CountFilms'
+//                            }
+//                        ]
+//                    })
+//                    ,
+//                    tauCharts.api.plugins.get('legend')()
+//                ],
+//                settings: {fitModel: 'minimal'}
+//            },
+//            w: 1200,
+//            h: 400
+//        }
+//        ,
+//        {
+//            query: 'SELECT Title, Production, budget, boxOffice, Genre, imdbVotes FROM ? WHERE Production in ("Paramount", "Universal", "Columbia")',
+//            viz: {
+//                type: 'scatterplot',
+//                x: ['Genre', 'budget'],
+//                y: ['Production', 'boxOffice'],
+//                color: 'Genre',
+//                plugins: [
+//                    tauCharts.api.plugins.get('trendline')({showPanel: false}),
+//                    tauCharts.api.plugins.get('annotations')({
+//                        showPanel: true,
+//                        items: [
+//                            { dim: 'imdbRating',   val: 7.5, text: 'Good', position: 'front' }
+//                        ]
+//                    })
+//                ],
+//                settings: {fitModel: 'entire-view'}
+//            },
+//            w: 1200,
+//            h: 800
+//        }
+//        ,
+//        {
+//            query: 'SELECT Country, Genre, Year, COUNT(*) AS FilmsByContryAndYear FROM ? GROUP BY Country, Genre, Year',
+//            viz: {
+//                type: 'stacked-bar',
+//                x: 'Year',
+//                y: ['Country', 'FilmsByContryAndYear'],
+//                color: 'Genre'
+//            }
+//        }
+    ];
+
+</script>
+
+<script>
+
+    window.charts = [];
+    function draw() {
+        window.samples.forEach(function (cfg, i) {
+            var s = [];
+            if (cfg.w) s.push('width : ' + cfg.w + 'px');
+            if (cfg.h) s.push('height: ' + cfg.h + 'px');
+
+            $('body').append('<div class="cc" id="div' + i + '" style="' + s.join(';') + '"></div>');
+            cfg.viz.data = xsql(cfg.query);
+
+            var groupedBy = parseGroupBy(cfg.query);
+            cfg.viz.plugins = cfg.viz.plugins || [];
+            cfg.viz.plugins = cfg.viz.plugins.concat([
+                tauCharts.api.plugins.get('tooltip')({
+                    aggregationGroupFields: groupedBy,
+                    onRevealAggregation: showData
+                })
+            ]);
+            var chart = new tauCharts.Chart(cfg.viz);
+
+            chart.on('elementclick', function (chartSender, e) {
+                console.log(e.data);
+                var row = e.data;
+                if (groupedBy.length !== 0) {
+                    var g = groupedBy.reduce(function (memo, k) {
+                        memo[k] = row[k];
+                        return memo;
+                    }, {});
+
+                    showData(g, null, chartSender);
+                }
+            });
+
+            chart.renderTo('#div' + i);
+            window.charts.push(chart);
+        });
+    }
+
+    function redraw(jsonWhere, activeChart) {
+
+        window.charts.forEach(function (chart, i) {
+
+            var cfg = window.samples[i];
+
+            if (chart === activeChart) {
+                chart
+                        .select(_.identity)
+                        .forEach(function (geom) {
+                            geom.fire('highlight', (function (row) {
+                                return (jsonWhere || []).every(function (func) {
+                                    return func(row);
+                                });
+                            }));
+                        });
+                return;
+            }
+
+            chart
+                    .select(_.identity)
+                    .forEach(function (geom) {
+                        geom.fire('highlight', (function (row) {
+                            return true;
+                        }));
+                    });
+
+            chart.setData(xsql(cfg.query));
+        });
+    }
+
+    function applyFilter() {
+        var whereFilter = $('#gfilter').val();
+        drawTable(whereFilter);
+        redraw(null, null);
+    }
+
+    showData({});
+    draw();
+
+</script>
+</body>
+</html>
