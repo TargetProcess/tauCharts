@@ -502,95 +502,10 @@ var d3_decorator_highlightZeroTick = (axisNode, scale) => {
 
 var d3_transition = (selection, animationSpeed, nameSpace) => {
     if (animationSpeed > 0) {
-        selection = selection.transition(nameSpace).duration(animationSpeed);
-        selection.attr = d3_transition_attr;
+        return selection
+            .transition(nameSpace)
+            .duration(animationSpeed);
     }
-    selection.onTransitionEnd = function (callback) {
-        d3_add_transition_end_listener(this, callback);
-        return this;
-    };
-    return selection;
-};
-
-// TODO: Getting attribute value may be possible in D3 v4:
-// http://stackoverflow.com/a/39024812/4137472
-// so it will be possible to get future attribute value.
-var d3_transition_attr = function (keyOrMap, value) {
-    var d3AttrResult = d3.transition.prototype.attr.apply(this, arguments);
-
-    if (arguments.length === 0) {
-        throw new Error('Unexpected `transition().attr()` arguments.');
-    }
-    var attrs;
-    if (arguments.length === 1) {
-        attrs = keyOrMap;
-    } else if (arguments.length > 1) {
-        attrs = {[keyOrMap]: value};
-    }
-
-    // Store transitioned attributes values
-    // until transition ends.
-    var store = '__transitionAttrs__';
-    var idStore = '__lastTransitions__';
-    var id = getTransitionAttrId();
-    this.each(function () {
-        var newAttrs = {};
-        for (var key in attrs) {
-            if (typeof attrs[key] === 'function') {
-                newAttrs[key] = attrs[key].apply(this, arguments);
-            } else {
-                newAttrs[key] = attrs[key];
-            }
-        }
-        this[store] = Object.assign(
-            this[store] || {},
-            newAttrs
-        );
-
-        // NOTE: As far as d3 `interrupt` event is called asynchronously,
-        // we have to store ID to prevent removing attribute value from store,
-        // when new transition is applied for the same attribute.
-        if (!this[store][idStore]) {
-            Object.defineProperty(this[store], idStore, {value: {}});
-        }
-        Object.keys(newAttrs).forEach((key) => this[store][idStore][key] = id);
-    });
-    var onTransitionEnd = function () {
-        if (this[store]) {
-            Object.keys(attrs)
-                .filter((k) => this[store][idStore][k] === id)
-                .forEach((k) => delete this[store][k]);
-            if (Object.keys(this[store]).length === 0) {
-                delete this[store];
-            }
-        }
-    };
-    this.each(`interrupt.${id}`, onTransitionEnd);
-    this.each(`end.${id}`, onTransitionEnd);
-
-    return d3AttrResult;
-};
-var transitionsCounter = 0;
-var getTransitionAttrId = function () {
-    return ++transitionsCounter;
-};
-
-var d3_add_transition_end_listener = (selection, callback) => {
-    if (!d3.transition.prototype.isPrototypeOf(selection) || selection.empty()) {
-        // If selection is not transition or empty,
-        // execute callback immediately.
-        callback.call(null, selection);
-        return;
-    }
-    var t = selection.size();
-    var onTransitionEnd = () => {
-        t--;
-        if (t === 0) {
-            callback.call(null, selection);
-        }
-    };
-    selection.each('interrupt.d3_on_transition_end', onTransitionEnd);
-    selection.each('end.d3_on_transition_end', onTransitionEnd);
     return selection;
 };
 
@@ -614,7 +529,7 @@ var d3_animationInterceptor = (speed, initAttrs, doneAttrs, afterUpdate) => {
         flow = flow.call(d3_setAttrs(doneAttrs));
 
         if (speed > 0) {
-            flow.each('end.d3_animationInterceptor', afterUpdateIterator);
+            flow.on('end', () => flow.each(afterUpdateIterator));
         } else {
             flow.each(afterUpdateIterator);
         }

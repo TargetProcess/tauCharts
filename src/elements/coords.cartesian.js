@@ -1,4 +1,4 @@
-import {default as d3} from 'd3';
+import d3 from 'd3';
 import {Element} from './element';
 import {utilsDom} from '../utils/utils-dom';
 import {utilsDraw} from '../utils/utils-draw';

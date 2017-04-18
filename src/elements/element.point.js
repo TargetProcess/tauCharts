@@ -144,6 +144,7 @@ const Point = {
                         .data((fiber) => fiber, screenModel.id);
 
                     transition(dots.enter().append('circle')
+                        .call(attrs(circleTransAttrs))
                         .merge(dots)
                         .call(attrs(circleAttrs)))
                         .call(attrs(circleTransAttrs));

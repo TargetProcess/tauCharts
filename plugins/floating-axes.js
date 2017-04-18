@@ -11,7 +11,6 @@ import tauCharts from 'taucharts';
     var SHADOW_OPACITY_0 = 1;
     var SHADOW_OPACITY_1 = 0;
 
-    var storeProp = '__transitionAttrs__';
     var parentProp = '__floatingAxesSrcParent__';
     var transProp = '__floatingAxesSrcTransform__';
 
@@ -513,12 +512,18 @@ import tauCharts from 'taucharts';
      * that element will have when animation ends.
      */
     function getDynamicTransform(node) {
-        var isTransformInTransition = (node[storeProp] &&
-            node[storeProp].transform);
         var currentTransform = parseTransform(node.getAttribute('transform'));
-        var nextTransform = (isTransformInTransition ?
-            parseTransform(node[storeProp].transform) :
-            currentTransform);
+        var nextTransform = currentTransform;
+        var nodeTransition = d3.active(node, 'cartesianContainerTransform');
+        if (nodeTransition) {
+            var transitionTween = nodeTransition.attrTween('transform');
+            if (transitionTween) {
+                var interpolator = transitionTween.call(node);
+                if (interpolator) {
+                    nextTransform = parseTransform(interpolator(1));
+                }
+            }
+        }
         return {
             translate0: currentTransform,
             translate: nextTransform
