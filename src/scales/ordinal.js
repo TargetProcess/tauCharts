@@ -18,7 +18,8 @@ export class OrdinalScale extends BaseScale {
 
         var d3Domain = d3.scalePoint().domain(varSet);
 
-        var d3Scale = d3Domain.range(interval, 1);
+        var d3Scale = d3Domain.range(interval)
+            .padding(0.5);
 
         var size = Math.max(...interval);
 
