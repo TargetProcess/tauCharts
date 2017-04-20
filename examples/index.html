@@ -7,7 +7,7 @@
     <script>
         // Load development JS and CSS
         var loadLocalD3 = loadJS.bind(null, [
-            '../node_modules/d3/d3',
+            '../node_modules/d3/build/d3',
             '../node_modules/topojson/build/topojson'
         ]);
         var loadDevTaucharts = loadJS.bind(null, '../dist/tauCharts');
@@ -47,7 +47,7 @@
 
         // Load build JS and CSS
         var loadCloudD3 = loadJS.bind(null, [
-            'http://cdnjs.cloudflare.com/ajax/libs/d3/3.5.17/d3',
+            'http://cdnjs.cloudflare.com/ajax/libs/d3/4.7.4/d3',
             'http://cdnjs.cloudflare.com/ajax/libs/topojson/3.0.0/topojson'
         ]);
         var loadBuildTaucharts = loadJS.bind(null, '../build/development/tauCharts');

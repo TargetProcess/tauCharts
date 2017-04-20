@@ -1,4 +1,4 @@
-import {default as d3} from 'd3';
+import d3 from 'd3';
 import {Element} from './element';
 import {utilsDom} from '../utils/utils-dom';
 import {utilsDraw} from '../utils/utils-draw';
@@ -6,6 +6,7 @@ import {utils} from '../utils/utils';
 import {CSS_PREFIX} from '../const';
 import {FormatterRegistry} from '../formatter-registry';
 import {
+    d3_axis,
     d3_transition as transition,
     d3_selectAllImmediate as selectAllImmediate,
     d3_decorator_wrap_tick_label,
@@ -240,8 +241,10 @@ export class Cartesian extends Element {
         xcells
             .enter()
             .append('g')
-            .attr('class', (d) => `${CSS_PREFIX}cell cell uid_${d}`);
-        transition(xcells.classed('tau-active', true), this.config.guide.animationSpeed)
+            .attr('class', (d) => `${CSS_PREFIX}cell cell uid_${d}`)
+            .merge(xcells)
+            .classed('tau-active', true);
+        transition(xcells, this.config.guide.animationSpeed)
             .attr('opacity', 1);
         transition(xcells.exit().classed('tau-active', false), this.config.guide.animationSpeed)
             .attr('opacity', 1e-6)
@@ -250,10 +253,8 @@ export class Cartesian extends Element {
 
     _drawDimAxis(container, scale, position, size) {
 
-        var axisScale = d3.svg
-            .axis()
-            .scale(scale.scaleObj)
-            .orient(scale.guide.scaleOrient);
+        var axisScale = d3_axis(scale.guide.scaleOrient)()
+            .scale(scale.scaleObj);
 
         var formatter = FormatterRegistry.get(scale.guide.tickFormat, scale.guide.tickFormatNullAlias);
         if (formatter !== null) {
@@ -374,10 +375,8 @@ export class Cartesian extends Element {
                     if ((linesOptions.indexOf('x') > -1)) {
                         let xScale = node.x;
                         let xOrientKoeff = ((xScale.guide.scaleOrient === 'top') ? (-1) : (1));
-                        var xGridAxis = d3.svg
-                            .axis()
+                        var xGridAxis = d3_axis(xScale.guide.scaleOrient)()
                             .scale(xScale.scaleObj)
-                            .orient(xScale.guide.scaleOrient)
                             .tickSize(xOrientKoeff * height);
 
                         let formatter = FormatterRegistry.get(xScale.guide.tickFormat);
@@ -424,10 +423,8 @@ export class Cartesian extends Element {
                     if ((linesOptions.indexOf('y') > -1)) {
                         let yScale = node.y;
                         let yOrientKoeff = ((yScale.guide.scaleOrient === 'right') ? (1) : (-1));
-                        var yGridAxis = d3.svg
-                            .axis()
+                        var yGridAxis = d3_axis(yScale.guide.scaleOrient)()
                             .scale(yScale.scaleObj)
-                            .orient(yScale.guide.scaleOrient)
                             .tickSize(yOrientKoeff * width);
 
                         let formatter = FormatterRegistry.get(yScale.guide.tickFormat);

@@ -56,7 +56,7 @@ export class TimeScale extends BaseScale {
         var varSet = this.vars;
         var utcTime = this.scaleConfig.utcTime;
 
-        var d3TimeScale = (utcTime ? d3.time.scale.utc : d3.time.scale);
+        var d3TimeScale = (utcTime ? d3.scaleUtc : d3.scaleTime);
         var d3Domain = d3TimeScale().domain(
             this.scaleConfig.nice ?
                 utils.niceTimeDomain(varSet, this.niceIntervalFn, {utc: utcTime}) :

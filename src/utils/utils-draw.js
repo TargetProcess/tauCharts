@@ -57,7 +57,7 @@ var utilsDraw = {
         }
         const untargeted = d3.select(highlighted.node().parentNode)
             .selectAll(selector)
-            .filter((d) => !filter(d))[0];
+            .filter((d) => !filter(d)).nodes();
         const lastUntargeted = untargeted[untargeted.length - 1];
         if (lastUntargeted) {
             const untargetedIndex = Array.prototype.indexOf.call(

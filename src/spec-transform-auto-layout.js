@@ -146,7 +146,7 @@ var getMaxTickLabelSize = function (domainValues, formatter, fnCalcTickLabelSize
     }
 
     if (domainValues.every(d => (typeof d === 'number'))) {
-        domainValues = d3.scale.linear().domain(domainValues).ticks();
+        domainValues = d3.scaleLinear().domain(domainValues).ticks();
     }
 
     var maxXTickText = domainValues.reduce((prev, value) => {

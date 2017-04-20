@@ -521,13 +521,11 @@ import printCss from './print.style.css';
                     });
 
                     this.append('circle')
-                        .attr({
-                            r: function (d) {
-                                return d.radius;
-                            },
-                            class: function (d) {
-                                return d.className;
-                            }
+                        .attr('r', function (d) {
+                            return d.radius;
+                        })
+                        .attr('class', function (d) {
+                            return d.className;
                         })
                         .style({opacity: 0.4});
 
@@ -536,7 +534,7 @@ import printCss from './print.style.css';
                             return 'translate(' + maxDiameter + ',' + (fontSize / 2) + ')';
                         })
                         .append('text')
-                        .attr({x: 0, y: 0})
+                        .attr('x', 0).attr('y', 0)
                         .text(function (d) {
                             return d.value;
                         })

@@ -375,7 +375,7 @@ var utils = {
 
         var [low, top] = d3.extent(domain);
         var span = (top - low);
-        var d3TimeScale = (utc ? d3.time.scale.utc : d3.time.scale);
+        var d3TimeScale = (utc ? d3.scaleUtc : d3.scaleTime);
 
         if (span === 0) {
             var oneDay = 24 * 60 * 60 * 1000;

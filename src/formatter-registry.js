@@ -33,46 +33,46 @@ var FORMATS_MAP = {
         return v.toString() + '%';
     },
 
-    day: d3.time.format('%d-%b-%Y'),
-    'day-utc': d3.time.format.utc('%d-%b-%Y'),
+    day: d3.timeFormat('%d-%b-%Y'),
+    'day-utc': d3.utcFormat('%d-%b-%Y'),
 
-    'day-short': d3.time.format('%d-%b'),
-    'day-short-utc': d3.time.format.utc('%d-%b'),
+    'day-short': d3.timeFormat('%d-%b'),
+    'day-short-utc': d3.utcFormat('%d-%b'),
 
-    week: d3.time.format('%d-%b-%Y'),
-    'week-utc': d3.time.format.utc('%d-%b-%Y'),
+    week: d3.timeFormat('%d-%b-%Y'),
+    'week-utc': d3.utcFormat('%d-%b-%Y'),
 
-    'week-short': d3.time.format('%d-%b'),
-    'week-short-utc': d3.time.format.utc('%d-%b'),
+    'week-short': d3.timeFormat('%d-%b'),
+    'week-short-utc': d3.utcFormat('%d-%b'),
 
     month: (x) => {
         var d = new Date(x);
         var m = d.getMonth();
         var formatSpec = (m === 0) ? '%B, %Y' : '%B';
-        return d3.time.format(formatSpec)(x);
+        return d3.timeFormat(formatSpec)(x);
     },
     'month-utc': (x) => {
         var d = new Date(x);
         var m = d.getUTCMonth();
         var formatSpec = (m === 0) ? '%B, %Y' : '%B';
-        return d3.time.format.utc(formatSpec)(x);
+        return d3.utcFormat(formatSpec)(x);
     },
 
     'month-short': (x) => {
         var d = new Date(x);
         var m = d.getMonth();
         var formatSpec = (m === 0) ? '%b \'%y' : '%b';
-        return d3.time.format(formatSpec)(x);
+        return d3.timeFormat(formatSpec)(x);
     },
     'month-short-utc': (x) => {
         var d = new Date(x);
         var m = d.getUTCMonth();
         var formatSpec = (m === 0) ? '%b \'%y' : '%b';
-        return d3.time.format.utc(formatSpec)(x);
+        return d3.utcFormat(formatSpec)(x);
     },
 
-    'month-year': d3.time.format('%B, %Y'),
-    'month-year-utc': d3.time.format.utc('%B, %Y'),
+    'month-year': d3.timeFormat('%B, %Y'),
+    'month-year-utc': d3.utcFormat('%B, %Y'),
 
     quarter: (x) => {
         var d = new Date(x);
@@ -87,8 +87,8 @@ var FORMATS_MAP = {
         return 'Q' + (q + 1) + ' ' + d.getUTCFullYear();
     },
 
-    year: d3.time.format('%Y'),
-    'year-utc': d3.time.format.utc('%Y'),
+    year: d3.timeFormat('%Y'),
+    'year-utc': d3.utcFormat('%Y'),
 
     'x-time-auto': null
 };
@@ -110,7 +110,7 @@ var FormatterRegistry = {
 
         if (!hasFormat && formatAlias) {
             formatter = (v) => {
-                var f = utils.isDate(v) ? d3.time.format(formatAlias) : d3.format(formatAlias);
+                var f = utils.isDate(v) ? d3.timeFormat(formatAlias) : d3.format(formatAlias);
                 return f(v);
             };
         }

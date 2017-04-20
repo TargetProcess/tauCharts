@@ -73,13 +73,13 @@ export class ColorScale extends BaseScale {
 
         var buildArrayGetClass = (domain, brewer) => {
             var fullDomain = domain.map((x) => String(x).toString());
-            return d3.scale.ordinal().range(brewer).domain(fullDomain);
+            return d3.scaleOrdinal().range(brewer).domain(fullDomain);
         };
 
         var buildObjectGetClass = (brewer, defaultGetClass) => {
             var domain = Object.keys(brewer);
             var range = domain.map(x => brewer[x]);
-            var calculateClass = d3.scale.ordinal().range(range).domain(domain);
+            var calculateClass = d3.scaleOrdinal().range(range).domain(domain);
             return (d) => brewer.hasOwnProperty(d) ? calculateClass(d) : defaultGetClass(d);
         };
 
@@ -117,8 +117,7 @@ export class ColorScale extends BaseScale {
 
         if (Array.isArray(brewer)) {
 
-            func = d3.scale
-                .linear()
+            func = d3.scaleLinear()
                 .domain(utils.splitEvenly(varSet.map(x => x - 0), brewer.length))
                 .range(brewer);
 

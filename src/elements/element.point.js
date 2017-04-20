@@ -1,11 +1,15 @@
 import {CSS_PREFIX} from '../const';
 import {GrammarRegistry} from '../grammar-registry';
 import {LayerLabels} from './decorators/layer-labels';
-import {d3_transition} from '../utils/d3-decorators';
 import {utils} from '../utils/utils';
 import {utilsDom} from '../utils/utils-dom';
 import {utilsDraw} from '../utils/utils-draw';
 import d3 from 'd3';
+import {
+    d3_setAttrs as attrs,
+    d3_setClasses as classes,
+    d3_transition
+} from '../utils/d3-decorators';
 
 const Point = {
 
@@ -131,28 +135,28 @@ const Point = {
             cy: ((d) => screenModel.y(d))
         };
 
-        const updateGroups = function () {
+        const updateGroups = function (g) {
 
-            this.attr('class', 'frame')
-                .call(function () {
-                    var dots = this
+            g.attr('class', 'frame')
+                .call(function (c) {
+                    var dots = c
                         .selectAll('circle')
                         .data((fiber) => fiber, screenModel.id);
 
-                    transition(dots.enter().append('circle').attr(circleAttrs))
-                        .attr(circleTransAttrs);
-
-                    transition(dots.attr(circleAttrs))
-                        .attr(circleTransAttrs);
+                    transition(dots.enter().append('circle')
+                        .call(attrs(circleTransAttrs))
+                        .merge(dots)
+                        .call(attrs(circleAttrs)))
+                        .call(attrs(circleTransAttrs));
 
                     transition(dots.exit())
-                        .attr({r: 0})
+                        .attr('r', 0)
                         .remove();
 
                     node.subscribe(dots);
                 });
 
-            transition(this)
+            transition(g)
                 .attr('opacity', 1);
         };
 
@@ -170,17 +174,15 @@ const Point = {
             .selectAll('.frame')
             .data(fibers, (f) => screenModel.group(f[0]));
 
-        frameGroups
+        const merged = frameGroups
             .enter()
             .append('g')
             .attr('opacity', 0)
-            .call(updateGroups);
-
-        frameGroups
+            .merge(frameGroups)
             .call(updateGroups);
 
         // TODO: Render bars into single container, exclude removed elements from calculation.
-        this._boundsInfo = this._getBoundsInfo(frameGroups.selectAll('.dot').reduce((m, g) => m.concat(g), []));
+        this._boundsInfo = this._getBoundsInfo(merged.selectAll('.dot').nodes());
 
         transition(frameGroups.exit())
             .attr('opacity', 0)
@@ -242,10 +244,10 @@ const Point = {
             return coordinates;
         }, {});
 
-        const tree = d3.geom.quadtree()
+        const tree = d3.quadtree()
             .x((d) => d[0].x)
             .y((d) => d[0].y)
-            (Object.keys(coordinates).map((c) => coordinates[c]));
+            .addAll(Object.keys(coordinates).map((c) => coordinates[c]));
 
         return {bounds, tree};
     },
@@ -268,7 +270,7 @@ const Point = {
             return null;
         }
 
-        const items = (tree.find([cursorX, cursorY]) || [])
+        const items = (tree.find(cursorX, cursorY) || [])
             .map((item) => {
                 const distance = Math.sqrt(
                     Math.pow(cursorX - item.x, 2) +
@@ -317,11 +319,11 @@ const Point = {
 
         container
             .selectAll('.dot')
-            .classed(classed);
+            .call(classes(classed));
 
         container
             .selectAll('.i-role-label')
-            .classed(classed);
+            .call(classes(classed));
 
         this._sortElements(filter);
     },

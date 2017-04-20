@@ -1,4 +1,4 @@
-import {default as d3} from 'd3';
+import d3 from 'd3';
 import {Element} from './element';
 import {utilsDraw} from '../utils/utils-draw';
 import {utils} from '../utils/utils';
@@ -111,10 +111,10 @@ export class Parallel extends Element {
             .data(frames, (f) => f.hash());
         frms.exit()
             .remove();
-        frms.each(cellFrameIterator);
         frms.enter()
             .append('g')
             .attr('class', (d) => (`${CSS_PREFIX}cell cell parent-frame-${options.frameId} frame-${d.hash()}`))
+            .merge(frms)
             .each(cellFrameIterator);
 
         var cols = this._fnDrawColumns(grid, cfg);
@@ -131,31 +131,32 @@ export class Parallel extends Element {
             .data([uniqueHash], (x) => x);
         grid.exit()
             .remove();
-        grid.enter()
+        const merged = grid.enter()
             .append('g')
             .attr('class', `grid grid_${frameId}`)
-            .attr('transform', utilsDraw.translate(this.L, this.T));
+            .attr('transform', utilsDraw.translate(this.L, this.T))
+            .merge(grid);
 
-        return grid;
+        return merged;
     }
 
     _fnDrawColumns(grid, config) {
         var colsGuide = config.guide.columns || {};
         var xBase = this.xBase;
         var columnsScalesMap = this.columnsScalesMap;
-        var d3Axis = d3.svg.axis().orient('left');
+        var d3Axis = d3.axisLeft();
 
         var cols = grid
             .selectAll('.column')
             .data(config.columns, (x) => x);
         cols.exit()
             .remove();
-        cols.enter()
+        const merged = cols.enter()
             .append('g')
             .attr('class', 'column')
             .attr('transform', (d) => utilsDraw.translate(xBase(d), 0))
-            .call(function () {
-                this.append('g')
+            .call(function (selection) {
+                selection.append('g')
                     .attr('class', 'y axis')
                     .each(function (d) {
                         var propName = columnsScalesMap[d].dim;
@@ -173,9 +174,10 @@ export class Parallel extends Element {
                     .attr('text-anchor', 'middle')
                     .attr('y', -9)
                     .text((d) => ((colsGuide[d] || {}).label || {}).text || columnsScalesMap[d].dim);
-            });
+            })
+            .merge(cols);
 
-        return cols;
+        return merged;
     }
 
     _enableBrushing(cols) {
@@ -220,12 +222,12 @@ export class Parallel extends Element {
         cols.append('g')
             .attr('class', 'brush')
             .each(function (d) {
-                columnsBrushes[d] = d3.svg
-                    .brush()
-                    .y(columnsScalesMap[d])
-                    .on('brushstart', onBrushStartEventHandler)
+                columnsBrushes[d] = d3
+                    .brushY() // TODO: Fix using brush https://github.com/d3/d3-brush/blob/master/README.md
+                    // .y(columnsScalesMap[d])
+                    .on('start', onBrushStartEventHandler)
                     .on('brush', onBrushEventHandler)
-                    .on('brushend', onBrushEndEventHandler);
+                    .on('end', onBrushEndEventHandler);
 
                 d3.select(this)
                     .classed(`brush-${utils.generateHash(d)}`, true)

@@ -1,6 +1,6 @@
-import {default as d3} from 'd3';
+import d3 from 'd3';
 import {utils} from '../utils/utils';
-import {default as topojson} from 'topojson';
+import topojson from 'topojson';
 import {d3Labeler} from '../utils/d3-labeler';
 import {Element} from './element';
 
@@ -247,18 +247,18 @@ export class GeoMap extends Element {
 
         var d3Projection = this._createProjection(topoJSONData, contours[0], center);
 
-        var path = d3.geo.path().projection(d3Projection);
+        var path = d3.geoPath().projection(d3Projection);
 
         var xmap = node
             .selectAll('.map-container')
             .data([`${innerW}${innerH}${center}${contours.join('-')}`], (x) => x);
         xmap.exit()
             .remove();
-        xmap.enter()
+        const merged = xmap.enter()
             .append('g')
-            .call(function () {
+            .call(function (selection) {
 
-                var node = this;
+                var node = selection;
 
                 node.attr('class', 'map-container');
 
@@ -277,9 +277,9 @@ export class GeoMap extends Element {
                         .data(topojson.feature(topoJSONData, topoJSONData.objects[c]).features || [])
                         .enter()
                         .append('g')
-                        .call(function () {
+                        .call(function (selection) {
 
-                            var cont = this;
+                            var cont = selection;
 
                             cont.attr('class', `map-contour-${c} map-contour-level map-contour-level-${i}`)
                                 .attr('fill', 'none');
@@ -375,7 +375,8 @@ export class GeoMap extends Element {
                         .attr('transform', (d) => `translate(${d.x},${d.y})`)
                         .text((d) => d.name);
                 }
-            });
+            })
+            .merge(xmap);
 
         this.groupByCode = frames.reduce(
             (groups, f) => {
@@ -391,10 +392,10 @@ export class GeoMap extends Element {
 
         var toData = this._resolveFeature.bind(this);
 
-        xmap.selectAll(`.map-contour-${contourToFill}`)
+        merged.selectAll(`.map-contour-${contourToFill}`)
             .data(topojson.feature(topoJSONData, topoJSONData.objects[contourToFill]).features)
-            .call(function () {
-                this.classed('map-contour', true)
+            .call(function (selection) {
+                selection.classed('map-contour', true)
                     .attr('fill', (d) => {
                         var row = toData(d);
                         return (row === null) ?
@@ -410,24 +411,22 @@ export class GeoMap extends Element {
             return [];
         }
 
-        var update = function () {
-            return this
-                .attr({
-                    r: ({data: d}) => sizeScale(d[sizeScale.dim]),
-                    transform: ({data: d}) => `translate(${d3Projection([d[lonScale.dim], d[latScale.dim]])})`,
-                    class: ({data: d}) => colorScale(d[colorScale.dim]),
-                    opacity: pointOpacity
-                })
+        var update = function (selection) {
+            return selection
+                .attr('r', (d) => sizeScale(d[sizeScale.dim]))
+                .attr('transform', ({data: d}) => `translate(${d3Projection([d[lonScale.dim], d[latScale.dim]])})`)
+                .attr('class', ({data: d}) => colorScale(d[colorScale.dim]))
+                .attr('opacity', pointOpacity)
                 .on('mouseover', ({data:d}) => self.fire('point-mouseover', {data: d, event: d3.event}))
                 .on('mouseout',  ({data:d}) => self.fire('point-mouseout', {data: d, event: d3.event}))
                 .on('click',     ({data:d}) => self.fire('point-click', {data: d, event: d3.event}));
         };
 
-        var updateGroups = function () {
+        var updateGroups = function (selection) {
 
-            this.attr('class', (f) => `frame frame-${f.hash}`)
-                .call(function () {
-                    var points = this
+            selection.attr('class', (f) => `frame frame-${f.hash}`)
+                .call(function (selection) {
+                    var points = selection
                         .selectAll('circle')
                         .data(frame => frame.data.map(item => ({data: item, uid: options.uid})));
                     points
@@ -444,17 +443,16 @@ export class GeoMap extends Element {
 
         var mapper = (f) => ({tags: f.key || {}, hash: f.hash(), data: f.part()});
 
-        var frameGroups = xmap
+        var frameGroups = merged
             .selectAll('.frame')
             .data(frames.map(mapper), (f) => f.hash);
         frameGroups
             .exit()
             .remove();
         frameGroups
-            .call(updateGroups);
-        frameGroups
             .enter()
             .append('g')
+            .merge(frameGroups)
             .call(updateGroups);
 
         return [];
@@ -514,7 +512,7 @@ export class GeoMap extends Element {
 
         var d3Projection = this._createD3Projection(mapProjection, mapCenter, scale, offset);
 
-        var path = d3.geo.path().projection(d3Projection);
+        var path = d3.geoPath().projection(d3Projection);
 
         // using the path determine the bounds of the current map and use
         // these to determine better values for the scale and translation
@@ -535,7 +533,9 @@ export class GeoMap extends Element {
 
     _createD3Projection(projection, center, scale, translate) {
 
-        var d3ProjectionMethod = d3.geo[projection];
+        // TODO: Proper projection mapping.
+        var proj = ('geo' + projection.substring(0, 1).toUpperCase() + projection.substring(1));
+        var d3ProjectionMethod = d3[proj];
 
         if (!d3ProjectionMethod) {
             /*eslint-disable */

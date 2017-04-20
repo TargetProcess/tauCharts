@@ -57,23 +57,20 @@ export class ParallelLine extends Element {
         var xBase = this.xBase;
         var color = this.color;
 
-        var d3Line = d3.svg.line();
+        var d3Line = d3.line();
 
-        var drawPath = function () {
-            this.attr({
-                d: (row) => d3Line(node.columns.map((p) => [xBase(p), scalesMap[p](row[scalesMap[p].dim])]))
-            });
+        var drawPath = function (selection) {
+            selection.attr('d',
+                (row) => d3Line(node.columns.map((p) => [xBase(p), scalesMap[p](row[scalesMap[p].dim])])));
         };
 
-        var markPath = function () {
-            this.attr({
-                stroke: (row) => color.toColor(color(row[color.dim])),
-                class: (row) => `${CSS_PREFIX}__line line ${color.toClass(color(row[color.dim]))} foreground`
-            });
+        var markPath = function (sel) {
+            sel.attr('stroke', (row) => color.toColor(color(row[color.dim])))
+            sel.attr('class', (row) => `${CSS_PREFIX}__line line ${color.toClass(color(row[color.dim]))} foreground`);
         };
 
-        var updateFrame = function () {
-            var backgroundPath = this
+        var updateFrame = function (selection) {
+            var backgroundPath = selection
                 .selectAll('.background')
                 .data(f => f.part());
             backgroundPath
@@ -87,23 +84,23 @@ export class ParallelLine extends Element {
                 .attr('class', 'background line')
                 .call(drawPath);
 
-            var foregroundPath = this
+            var foregroundPath = selection
                 .selectAll('.foreground')
                 .data(f => f.part());
             foregroundPath
                 .exit()
                 .remove();
             foregroundPath
-                .call(function () {
-                    drawPath.call(this);
-                    markPath.call(this);
+                .call(function (selection) {
+                    drawPath(selection);
+                    markPath(selection);
                 });
             foregroundPath
                 .enter()
                 .append('path')
-                .call(function () {
-                    drawPath.call(this);
-                    markPath.call(this);
+                .call(function (selection) {
+                    drawPath(selection);
+                    markPath(selection);
                 });
         };
 

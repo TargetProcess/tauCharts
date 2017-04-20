@@ -19,7 +19,7 @@
     }
   ],
   "dependencies": {
-    "d3": "^3.5.17",
+    "d3": "^4.7.4",
     "topojson": "^1.6.27"
   },
   "repository": {

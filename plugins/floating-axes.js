@@ -103,12 +103,8 @@ import tauCharts from 'taucharts';
                         ].join(', ');
                     };
                     return {
-                        x: Array.prototype.slice.call(
-                            svg.querySelectorAll(getAxesSelector('x')), 0
-                        ),
-                        y: Array.prototype.slice.call(
-                            svg.querySelectorAll(getAxesSelector('y')), 0
-                        )
+                        x: Array.from(svg.querySelectorAll(getAxesSelector('x'))),
+                        y: Array.from(svg.querySelectorAll(getAxesSelector('y')))
                     };
                 })();
 

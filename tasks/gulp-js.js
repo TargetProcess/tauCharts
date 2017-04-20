@@ -24,7 +24,7 @@ const mainConfig = {
     moduleName: 'tauCharts',
     exports: 'default',
     format: 'umd',
-    useStrict: false,
+    useStrict: true,
     external: [
         'd3',
         'topojson'
@@ -49,7 +49,7 @@ const mainConfig = {
 const pluginsCommonConfig = {
     exports: 'none',
     format: 'umd',
-    useStrict: false,
+    useStrict: true,
     external: [
         'taucharts'
     ],

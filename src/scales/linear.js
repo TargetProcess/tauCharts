@@ -41,7 +41,7 @@ export class LinearScale extends BaseScale {
 
         var domain = this.vars;
 
-        var scale = this.extendScale(d3.scale.linear());
+        var scale = this.extendScale(d3.scaleLinear());
         scale
             .domain(domain)
             .range(interval)

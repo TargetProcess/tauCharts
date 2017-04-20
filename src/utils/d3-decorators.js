@@ -1,7 +1,7 @@
 import {utils} from './utils';
 import {utilsDom} from './utils-dom';
 import {utilsDraw} from './utils-draw';
-import {default as d3} from 'd3';
+import d3 from 'd3';
 import interpolatePathPoints from './path/interpolators/path-points';
 import {getLineInterpolator, getInterpolatorSplineType} from './path/interpolators/interpolators-registry';
 
@@ -142,7 +142,7 @@ var d3_decorator_prettify_categorical_axis_ticks = (nodeAxis, logicalScale, isHo
                     var val = (isHorizontal) ? offset : (-offset);
                     selection
                         .select('line')
-                        .attr({[key + '1']: val, [key + '2']: val});
+                        .attr(key + '1', val).attr(key + '2', val);
                 };
 
                 if (!tickNode.classed('tau-enter')) {
@@ -163,7 +163,8 @@ var d3_decorator_fixHorizontalAxisTicksOverflow = function (axisNode, activeTick
     }
 
     var timeTicks = axisNode.selectAll('.tick')
-        .filter(d => activeTicks.indexOf(isDate ? Number(d) : d) >= 0)[0];
+        .filter(d => activeTicks.indexOf(isDate ? Number(d) : d) >= 0)
+        .nodes();
     if (timeTicks.length < 2) {
         return;
     }
@@ -176,7 +177,8 @@ var d3_decorator_fixHorizontalAxisTicksOverflow = function (axisNode, activeTick
     var maxTextLn = 0;
     var iMaxTexts = -1;
     var timeTexts = axisNode.selectAll('.tick text')
-        .filter(d => activeTicks.indexOf(isDate ? Number(d) : d) >= 0)[0];
+        .filter(d => activeTicks.indexOf(isDate ? Number(d) : d) >= 0)
+        .nodes();
     timeTexts.forEach((textNode, i) => {
         var innerHTML = textNode.textContent || '';
         var textLength = innerHTML.length;
@@ -199,7 +201,8 @@ var d3_decorator_fixEdgeAxisTicksOverflow = function (axisNode, activeTicks) {
     activeTicks = activeTicks.map(d => Number(d));
     var texts = axisNode
         .selectAll('.tick text')
-        .filter(d => activeTicks.indexOf(Number(d)) >= 0)[0];
+        .filter(d => activeTicks.indexOf(Number(d)) >= 0)
+        .nodes();
     if (texts.length === 0) {
         return;
     }
@@ -430,7 +433,7 @@ var d3_decorator_avoidLabelsCollisions = function (nodeScale, isHorizontal, acti
 
             curr.l = resolveCollide(prev.l, collideL);
 
-            var size = curr.textRef[0].length;
+            var size = curr.textRef.size();
             var text = curr.textRef.text();
 
             if (size > 1) {
@@ -509,9 +512,6 @@ var d3_transition = (selection, animationSpeed, nameSpace) => {
     return selection;
 };
 
-// TODO: Getting attribute value may be possible in D3 v4:
-// http://stackoverflow.com/a/39024812/4137472
-// so it will be possible to get future attribute value.
 var d3_transition_attr = function (keyOrMap, value) {
     var d3AttrResult = d3.transition.prototype.attr.apply(this, arguments);
 
@@ -562,8 +562,8 @@ var d3_transition_attr = function (keyOrMap, value) {
             }
         }
     };
-    this.each(`interrupt.${id}`, onTransitionEnd);
-    this.each(`end.${id}`, onTransitionEnd);
+    this.on(`interrupt.${id}`, () => this.each(onTransitionEnd));
+    this.on(`end.${id}`, () => this.each(onTransitionEnd));
 
     return d3AttrResult;
 };
@@ -579,15 +579,9 @@ var d3_add_transition_end_listener = (selection, callback) => {
         callback.call(null, selection);
         return;
     }
-    var t = selection.size();
-    var onTransitionEnd = () => {
-        t--;
-        if (t === 0) {
-            callback.call(null, selection);
-        }
-    };
-    selection.each('interrupt.d3_on_transition_end', onTransitionEnd);
-    selection.each('end.d3_on_transition_end', onTransitionEnd);
+    var onTransitionEnd = () => callback.call(null, selection);
+    selection.on('interrupt.d3_on_transition_end', onTransitionEnd);
+    selection.on('end.d3_on_transition_end', onTransitionEnd);
     return selection;
 };
 
@@ -598,20 +592,20 @@ var d3_animationInterceptor = (speed, initAttrs, doneAttrs, afterUpdate) => {
         xAfterUpdate(this);
     };
 
-    return function () {
+    return function (selection) {
 
-        var flow = this;
+        var flow = selection;
 
         if (initAttrs) {
-            flow = flow.attr(utils.defaults(initAttrs, doneAttrs));
+            flow = flow.call(d3_setAttrs(utils.defaults(initAttrs, doneAttrs)));
         }
 
         flow = d3_transition(flow, speed);
 
-        flow = flow.attr(doneAttrs);
+        flow = flow.call(d3_setAttrs(doneAttrs));
 
         if (speed > 0) {
-            flow.each('end.d3_animationInterceptor', afterUpdateIterator);
+            flow.on('end.d3_animationInterceptor', () => flow.each(afterUpdateIterator));
         } else {
             flow.each(afterUpdateIterator);
         }
@@ -685,8 +679,32 @@ var d3_createPathTween = (
     };
 };
 
+var d3_axis = (orient) => {
+    return ({
+        'left': d3.axisLeft,
+        'right': d3.axisRight,
+        'top': d3.axisTop,
+        'bottom': d3.axisBottom
+    }[orient]);
+};
+
+var d3_setAttrs = (attrs) => {
+    return (sel) => {
+        Object.keys(attrs).forEach((k) => sel.attr(k, attrs[k]));
+        return sel;
+    };
+};
+
+var d3_setClasses = (classMap) => {
+    return (sel) => {
+        Object.keys(classMap).forEach((k) => sel.classed(k, classMap[k]));
+        return sel;
+    };
+};
+
 export {
     d3_animationInterceptor,
+    d3_axis,
     d3_createPathTween,
     d3_decorator_wrap_tick_label,
     d3_decorator_prettify_axis_label,
@@ -696,8 +714,10 @@ export {
     d3_decorator_highlightZeroTick,
     d3_decorator_prettify_categorical_axis_ticks,
     d3_decorator_avoidLabelsCollisions,
-    d3_transition,
     d3_selectAllImmediate,
+    d3_setAttrs,
+    d3_setClasses,
+    d3_transition,
     wrapText,
     cutText
 };

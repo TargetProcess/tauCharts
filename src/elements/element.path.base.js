@@ -1,6 +1,11 @@
 import {LayerLabels} from './decorators/layer-labels';
 import {CSS_PREFIX} from '../const';
-import {d3_animationInterceptor, d3_transition as transition} from '../utils/d3-decorators';
+import {
+    d3_animationInterceptor,
+    d3_setAttrs as attrs,
+    d3_setClasses as classes,
+    d3_transition as transition
+} from '../utils/d3-decorators';
 import {utils} from '../utils/utils';
 import {utilsDom} from '../utils/utils-dom';
 import {utilsDraw} from '../utils/utils-draw';
@@ -165,11 +170,11 @@ const BasePath = {
 
         const createUpdateFunc = d3_animationInterceptor;
 
-        const updateGroupContainer = function () {
+        const updateGroupContainer = function (selection) {
 
-            this.attr(model.groupAttributes);
+            selection.call(attrs(model.groupAttributes));
 
-            const points = this
+            const points = selection
                 .selectAll('circle')
                 .data((fiber) => (fiber.length <= 1) ? fiber : [], screenModel.id);
             points
@@ -181,12 +186,13 @@ const BasePath = {
                     (node) => d3.select(node).remove()));
             points
                 .call(createUpdateFunc(guide.animationSpeed, null, model.dotAttributes));
-            points
+            const merged = points
                 .enter()
                 .append('circle')
-                .call(createUpdateFunc(guide.animationSpeed, model.dotAttributesDefault, model.dotAttributes));
+                .call(createUpdateFunc(guide.animationSpeed, model.dotAttributesDefault, model.dotAttributes))
+                .merge(points);
 
-            node.subscribe(points);
+            node.subscribe(merged);
 
             const updatePath = (selection) => {
                 if (config.guide.animationSpeed > 0) {
@@ -205,7 +211,7 @@ const BasePath = {
                 }
             };
 
-            const series = this
+            const series = selection
                 .selectAll(model.pathElement)
                 .data((fiber) => (fiber.length > 1) ? [fiber] : [], getDataSetId);
             series
@@ -217,9 +223,8 @@ const BasePath = {
                     model.pathAttributesUpdateInit,
                     model.pathAttributesUpdateDone,
                     model.afterPathUpdate
-                ))
-                .call(updatePath);
-            series
+                ));
+            const allSeries = series
                 .enter()
                 .append(model.pathElement)
                 .call(createUpdateFunc(
@@ -228,9 +233,10 @@ const BasePath = {
                     model.pathAttributesEnterDone,
                     model.afterPathUpdate
                 ))
+                .merge(series)
                 .call(updatePath);
 
-            node.subscribe(series);
+            node.subscribe(merged);
 
             if (guide.showAnchors !== 'never') {
                 const anchorClass = 'i-data-anchor';
@@ -245,17 +251,18 @@ const BasePath = {
                     class: anchorClass
                 };
 
-                const dots = this
+                const dots = selection
                     .selectAll(`.${anchorClass}`)
                     .data((fiber) => fiber.filter(isNonSyntheticRecord), screenModel.id);
                 dots.exit()
                     .remove();
                 dots.call(createUpdateFunc(guide.animationSpeed, null, attr));
-                dots.enter()
+                const allDots = dots.enter()
                     .append('circle')
-                    .call(createUpdateFunc(guide.animationSpeed, {r: 0}, attr));
+                    .call(createUpdateFunc(guide.animationSpeed, {r: 0}, attr))
+                    .merge(dots);
 
-                node.subscribe(dots);
+                node.subscribe(allDots);
             }
         };
 
@@ -318,7 +325,7 @@ const BasePath = {
         frameBinding.order();
 
         // TODO: Exclude removed elements from calculation.
-        this._boundsInfo = this._getBoundsInfo(options.container.selectAll('.i-data-anchor')[0]);
+        this._boundsInfo = this._getBoundsInfo(options.container.selectAll('.i-data-anchor').nodes());
 
         node.subscribe(new LayerLabels(
             screenModel.model,
@@ -453,10 +460,10 @@ const BasePath = {
         const hasTarget = (targetFibers.length > 0);
 
         paths
-            .classed({
+            .call(classes({
                 [x]: ((fiber) => hasTarget && targetFibers.indexOf(fiber) >= 0),
                 [_]: ((fiber) => hasTarget && targetFibers.indexOf(fiber) < 0)
-            });
+            }));
 
         const classed = {
             [x]: ((d) => filter(d) === true),
@@ -465,11 +472,11 @@ const BasePath = {
 
         container
             .selectAll('.i-role-dot')
-            .classed(classed);
+            .call(classes(classed));
 
         container
             .selectAll('.i-role-label')
-            .classed(classed);
+            .call(classes(classed));
 
         this._sortElements(filter);
     },
@@ -484,22 +491,20 @@ const BasePath = {
         const container = unit.config.options.container;
         const dots = container
             .selectAll(`.${cssClass}`)
-            .attr({
-                r: (showOnHover ?
-                    ((d) => filter(d) ? Math.max(rmin, (screenModel.size(d) / 2)) : 0) :
-                    ((d) => {
-                        // NOTE: Highlight point with larger radius.
-                        var r = screenModel.size(d) / 2;
-                        if (filter(d)) {
-                            r = Math.max(rmin, Math.ceil(r * rx));
-                        }
-                        return r;
-                    })
-                ),
-                opacity: (showOnHover ? ((d) => filter(d) ? 1 : 0) : 1),
-                fill: (d) => screenModel.color(d),
-                class: (d) => utilsDom.classes(cssClass, screenModel.class(d))
-            })
+            .attr('r', (showOnHover ?
+                ((d) => filter(d) ? Math.max(rmin, (screenModel.size(d) / 2)) : 0) :
+                ((d) => {
+                    // NOTE: Highlight point with larger radius.
+                    var r = screenModel.size(d) / 2;
+                    if (filter(d)) {
+                        r = Math.max(rmin, Math.ceil(r * rx));
+                    }
+                    return r;
+                })
+            ))
+            .attr('opacity', (showOnHover ? ((d) => filter(d) ? 1 : 0) : 1))
+            .attr('fill', (d) => screenModel.color(d))
+            .attr('class', (d) => utilsDom.classes(cssClass, screenModel.class(d)))
             .classed(`${CSS_PREFIX}highlighted`, filter);
 
         // Display cursor line
