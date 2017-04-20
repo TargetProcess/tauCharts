@@ -241,8 +241,10 @@ export class Cartesian extends Element {
         xcells
             .enter()
             .append('g')
-            .attr('class', (d) => `${CSS_PREFIX}cell cell uid_${d}`);
-        transition(xcells.classed('tau-active', true), this.config.guide.animationSpeed)
+            .attr('class', (d) => `${CSS_PREFIX}cell cell uid_${d}`)
+            .merge(xcells)
+            .classed('tau-active', true);
+        transition(xcells, this.config.guide.animationSpeed)
             .attr('opacity', 1);
         transition(xcells.exit().classed('tau-active', false), this.config.guide.animationSpeed)
             .attr('opacity', 1e-6)

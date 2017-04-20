@@ -502,10 +502,86 @@ var d3_decorator_highlightZeroTick = (axisNode, scale) => {
 
 var d3_transition = (selection, animationSpeed, nameSpace) => {
     if (animationSpeed > 0) {
-        return selection
-            .transition(nameSpace)
-            .duration(animationSpeed);
+        selection = selection.transition(nameSpace).duration(animationSpeed);
+        selection.attr = d3_transition_attr;
     }
+    selection.onTransitionEnd = function (callback) {
+        d3_add_transition_end_listener(this, callback);
+        return this;
+    };
+    return selection;
+};
+
+var d3_transition_attr = function (keyOrMap, value) {
+    var d3AttrResult = d3.transition.prototype.attr.apply(this, arguments);
+
+    if (arguments.length === 0) {
+        throw new Error('Unexpected `transition().attr()` arguments.');
+    }
+    var attrs;
+    if (arguments.length === 1) {
+        attrs = keyOrMap;
+    } else if (arguments.length > 1) {
+        attrs = {[keyOrMap]: value};
+    }
+
+    // Store transitioned attributes values
+    // until transition ends.
+    var store = '__transitionAttrs__';
+    var idStore = '__lastTransitions__';
+    var id = getTransitionAttrId();
+    this.each(function () {
+        var newAttrs = {};
+        for (var key in attrs) {
+            if (typeof attrs[key] === 'function') {
+                newAttrs[key] = attrs[key].apply(this, arguments);
+            } else {
+                newAttrs[key] = attrs[key];
+            }
+        }
+        this[store] = Object.assign(
+            this[store] || {},
+            newAttrs
+        );
+
+        // NOTE: As far as d3 `interrupt` event is called asynchronously,
+        // we have to store ID to prevent removing attribute value from store,
+        // when new transition is applied for the same attribute.
+        if (!this[store][idStore]) {
+            Object.defineProperty(this[store], idStore, {value: {}});
+        }
+        Object.keys(newAttrs).forEach((key) => this[store][idStore][key] = id);
+    });
+    var onTransitionEnd = function () {
+        if (this[store]) {
+            Object.keys(attrs)
+                .filter((k) => this[store][idStore][k] === id)
+                .forEach((k) => delete this[store][k]);
+            if (Object.keys(this[store]).length === 0) {
+                delete this[store];
+            }
+        }
+    };
+    this.on(`interrupt.${id}`, () => this.each(onTransitionEnd));
+    this.on(`end.${id}`, () => this.each(onTransitionEnd));
+
+    return d3AttrResult;
+};
+var transitionsCounter = 0;
+var getTransitionAttrId = function () {
+    return ++transitionsCounter;
+};
+
+var d3_add_transition_end_listener = (selection, callback) => {
+    if (!d3.transition.prototype.isPrototypeOf(selection) || selection.empty()) {
+        // If selection is not transition or empty,
+        // execute callback immediately.
+        callback.call(null, selection);
+        return;
+    }
+    var onTransitionEnd = () => callback.call(null, selection);
+    selection.on('interrupt.d3_on_transition_end', onTransitionEnd);
+    selection.on('end.d3_on_transition_end', onTransitionEnd);
     return selection;
 };
 
@@ -529,7 +605,7 @@ var d3_animationInterceptor = (speed, initAttrs, doneAttrs, afterUpdate) => {
         flow = flow.call(d3_setAttrs(doneAttrs));
 
         if (speed > 0) {
-            flow.on('end', () => flow.each(afterUpdateIterator));
+            flow.on('end.d3_animationInterceptor', () => flow.each(afterUpdateIterator));
         } else {
             flow.each(afterUpdateIterator);
         }
