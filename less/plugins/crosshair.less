@@ -4,7 +4,7 @@
 
     &__line {
         shape-rendering: crispEdges;
-        stroke-opacity: 0.85;
+        stroke-dasharray: 1px 1px;
         stroke-width: 1px;
     }
 
@@ -22,9 +22,17 @@
     &__line-shadow {
         shape-rendering: crispEdges;
         stroke: @bg-color;
-        stroke-opacity: 0.5;
-        stroke-width: 3px;
+        stroke-width: 1px;
     }
+
+    // Prevent drawing line shadow pixel over highlighted stroke
+    &__group.y .tau-crosshair__line-shadow {
+        transform: translateX(-0.5px);
+    }
+    &__group.x .tau-crosshair__line-shadow {
+        transform: translateY(0.5px);
+    }
+
     &__label__text-shadow {
         stroke-linejoin: round;
         stroke-width: 3px;
