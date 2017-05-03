@@ -423,8 +423,9 @@
                 // Fix invoking unexpected chart pointer events
                 d3Svg.selectAll('.floating-axes')
                     .on('mouseenter', function () {
-                        var evt = document.createEvent('SVGEvents');
-                        evt.initEvent('mouseleave', true, true);
+                        var evt = document.createEvent('MouseEvents');
+                        evt.initMouseEvent('mouseleave',
+                            true, true, window, 0, 0, 0, 0, 0, false, false, false, false, 0, null);
                         svg.dispatchEvent(evt);
                     })
                     .on('mousemove', function () {
