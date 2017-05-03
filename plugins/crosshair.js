@@ -271,9 +271,11 @@
                 var color = scaleColor(e.data[scaleColor.dim]);
                 var xValue = e.data[scaleX.dim];
                 var yValue = e.data[scaleY.dim];
+                var ex = unit.screenModel.x(e.data);
+                var ey = unit.screenModel.y(e.data);
                 if (unit.config.stack) {
                     if (unit.config.flip) {
-                        xValue = unit.data()
+                        ex = (xValue < 0 ? Math.min : Math.max).apply(null, unit.data()
                             .filter(function (d) {
                                 var dy = d[scaleY.dim];
                                 return (
@@ -281,11 +283,11 @@
                                     ((unit.screenModel.x(e.data) - unit.screenModel.x(d)) *
                                         d[scaleX.dim] >= 0)
                                 );
-                            }).reduce(function (total, d) {
-                                return (total + d[scaleX.dim]);
-                            }, 0);
+                            }).map(function (d) {
+                                return unit.screenModel.x(d);
+                            }, 0));
                     } else {
-                        yValue = unit.data()
+                        ey = (yValue < 0 ? Math.max : Math.min).apply(null, unit.data()
                             .filter(function (d) {
                                 var dx = d[scaleX.dim];
                                 return (
@@ -293,9 +295,9 @@
                                     ((unit.screenModel.y(d) - unit.screenModel.y(e.data)) *
                                         d[scaleY.dim] >= 0)
                                 );
-                            }).reduce(function (total, d) {
-                                return (total + d[scaleY.dim]);
-                            }, 0);
+                            }).map(function (d) {
+                                return unit.screenModel.y(d);
+                            }, 0));
                     }
                 }
 
@@ -318,14 +320,14 @@
                     {
                         label: this._getFormat(scaleX.dim)(xValue),
                         start: 0,
-                        value: scaleX(xValue),
+                        value: ex,
                         crossPadding: pad.x,
                         minMode: (parentUnit && parentUnit.guide.x.hide)
                     },
                     {
                         label: this._getFormat(scaleY.dim)(yValue),
                         start: unit.config.options.height,
-                        value: scaleY(yValue),
+                        value: ey,
                         crossPadding: pad.y,
                         minMode: (parentUnit && parentUnit.guide.y.hide)
                     },
