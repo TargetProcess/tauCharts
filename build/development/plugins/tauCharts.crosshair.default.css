@@ -6,7 +6,7 @@
 /* endregion */
 .graphical-report__layout .tau-crosshair__line {
   shape-rendering: crispEdges;
-  stroke-opacity: 0.85;
+  stroke-dasharray: 1px 1px;
   stroke-width: 1px;
 }
 .graphical-report__layout .tau-crosshair__label__text {
@@ -21,8 +21,13 @@
 .graphical-report__layout .tau-crosshair__line-shadow {
   shape-rendering: crispEdges;
   stroke: #fff;
-  stroke-opacity: 0.5;
-  stroke-width: 3px;
+  stroke-width: 1px;
+}
+.graphical-report__layout .tau-crosshair__group.y .tau-crosshair__line-shadow {
+  transform: translateX(-0.5px);
+}
+.graphical-report__layout .tau-crosshair__group.x .tau-crosshair__line-shadow {
+  transform: translateY(0.5px);
 }
 .graphical-report__layout .tau-crosshair__label__text-shadow {
   stroke-linejoin: round;

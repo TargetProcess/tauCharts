@@ -445,9 +445,6 @@
 .graphical-report__svg .tick text {
   font-size: 11px;
 }
-.graphical-report__svg .tick.zero-tick line {
-  stroke: rgba(126, 129, 134, 0.505);
-}
 .graphical-report__svg .grid .grid-lines path {
   shape-rendering: crispEdges;
 }
@@ -461,6 +458,9 @@
   stroke: rgba(189, 195, 205, 0.4);
   stroke-width: 1px;
   shape-rendering: crispEdges;
+}
+.graphical-report__svg .grid .tick.zero-tick > line {
+  stroke: rgba(126, 129, 134, 0.505);
 }
 .graphical-report__svg .grid .line path {
   shape-rendering: auto;
