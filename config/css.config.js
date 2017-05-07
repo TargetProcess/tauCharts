@@ -58,23 +58,31 @@ var generateThemes = function () {
         prodCss: [null].concat(themes).reduce(
             function (memo, key) {
                 var suffix = generateCompatibleSuffixes(key);
-                memo['build/production/tauCharts' + suffix.dst + '.min.css'] = ['build/development/**/*' + suffix.src + '.css'];
-                return memo;
-            },
-            {}),
-
-        cssMin: [null].concat(themes).reduce(
-            function (memo, key) {
-                var suffix = generateCompatibleSuffixes(key);
                 memo.push({
-                    src: 'build/production/tauCharts' + suffix.dst + '.min.css',
-                    dest: 'build/production/tauCharts' + suffix.dst + '.min.css'
+                    src: 'build/development/**/*' + suffix.src + '.css',
+                    dest: 'build/production/tauCharts' + suffix.dst + '.css'
                 });
                 return memo;
             },
             [
                 {
                     src: 'css/base.css',
+                    dest: 'build/production/tauCharts.normalize.css'
+                }
+            ]),
+
+        cssMin: [null].concat(themes).reduce(
+            function (memo, key) {
+                var suffix = generateCompatibleSuffixes(key);
+                memo.push({
+                    src: 'build/production/tauCharts' + suffix.dst + '.css',
+                    dest: 'build/production/tauCharts' + suffix.dst + '.min.css'
+                });
+                return memo;
+            },
+            [
+                {
+                    src: 'build/production/tauCharts.normalize.css',
                     dest: 'build/production/tauCharts.normalize.min.css'
                 }
             ])

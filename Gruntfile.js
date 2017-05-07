@@ -36,7 +36,7 @@ module.exports = function (grunt) {
                     'build/development/tauCharts.color-brewer.js',
                     'build/development/plugins/*.js'
                 ],
-                dest: 'build/production/tauCharts.min.js'
+                dest: 'build/production/tauCharts.js'
             },
             prodCSS: {
                 files: cssConfig.prodCss
