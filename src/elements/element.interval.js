@@ -76,8 +76,7 @@ const Interval = {
             config.stack && GrammarRegistry.get('stack'),
             enableColorPositioning && GrammarRegistry.get('positioningByColor')
         ]
-            .filter(x => x)
-            .concat(config.transformModel || []);
+            .filter(x => x);
 
         config.adjustRules = [
             (enableDistributeEvenly && ((prevModel, args) => {

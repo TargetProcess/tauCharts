@@ -28,7 +28,7 @@ const Area = {
             !enableStack && GrammarRegistry.get('groupOrderByAvg'),
             enableStack && BasePath.grammarRuleFillGaps,
             enableStack && GrammarRegistry.get('stack')
-        ].concat(config.transformModel || []);
+        ];
 
         config.adjustRules = [
             ((prevModel, args) => {

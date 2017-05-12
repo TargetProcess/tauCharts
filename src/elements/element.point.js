@@ -56,8 +56,7 @@ const Point = {
             config.stack && GrammarRegistry.get('stack'),
             enableColorPositioning && GrammarRegistry.get('positioningByColor')
         ]
-            .filter(x => x)
-            .concat(config.transformModel || []);
+            .filter(x => x);
 
         config.adjustRules = [
             (config.stack && GrammarRegistry.get('adjustYScale')),
