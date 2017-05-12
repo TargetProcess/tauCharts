@@ -35,7 +35,7 @@ const Line = {
             !enableStack && GrammarRegistry.get('groupOrderByAvg'),
             enableStack && BasePath.grammarRuleFillGaps,
             enableStack && GrammarRegistry.get('stack')
-        ].concat(config.transformModel || []);
+        ];
 
         const avoidScalesOverflow = config.guide.avoidScalesOverflow;
         const isEmptySize = ((model) => model.scaleSize.isEmptyScale());
