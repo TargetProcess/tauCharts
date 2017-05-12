@@ -119,7 +119,7 @@
 
     var getGuideLabel = function (guide, key, defaultLabel) {
 
-        defaultLabel = (defaultLabel === undefined ? '' : String(defaultLabel));
+        defaultLabel = (defaultLabel == null ? '' : String(defaultLabel));
         var kGuide = ((guide || {})[key] || {});
         var kLabel = (utils.isObject(kGuide.label)) ? kGuide.label.text : kGuide.label;
 
