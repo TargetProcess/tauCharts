@@ -2,6 +2,9 @@ Taucharts [![Build Status](https://travis-ci.org/TargetProcess/tauCharts.png?bra
 [![Slack Status](http://slack.taucharts.com/badge.svg)](http://slack.taucharts.com/)
 ======
 
+![NPM downloads](https://nodei.co/npm-dl/taucharts.png?months=6)
+
+
 Taucharts is a [data-focused JavaScript charting library](http://blog.taucharts.com/taucharts-data-focused-charting-library/) based on D3 and designed with passion.
 
 ##### Official website: [www.taucharts.com](http://www.taucharts.com)
