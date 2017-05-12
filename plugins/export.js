@@ -119,6 +119,7 @@
 
     var getGuideLabel = function (guide, key, defaultLabel) {
 
+        defaultLabel = (defaultLabel == null ? '' : String(defaultLabel));
         var kGuide = ((guide || {})[key] || {});
         var kLabel = (utils.isObject(kGuide.label)) ? kGuide.label.text : kGuide.label;
 
@@ -614,7 +615,7 @@
             },
 
             onUnitDraw: function (chart, unit) {
-                if (tauCharts.api.isChartElement(unit)) {
+                if (tauCharts.api.isChartElement(unit) && unit.config.namespace === 'chart') {
                     this._unit = unit;
                 }
             },
