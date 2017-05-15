@@ -40,8 +40,9 @@ var alignByX = (exp) => {
 
                 var k = (exp[1]);
                 var u = (exp[0] === exp[0].toUpperCase()) ? 1 : 0;
+                var pad = Math.floor(prev.model.size(row) / 5);
 
-                return prev.dx(row) + (k * (prev.w(row) / 2)) + (k * u * prev.model.size(row) / 2) + k * 2;
+                return prev.dx(row) + (k * (prev.w(row) / 2)) + (k * u * prev.model.size(row) / 2) + k * pad;
             }
         };
     };
@@ -281,6 +282,36 @@ LayerLabelsRules
                 return prevDy;
             }
         };
+    })
+
+    .regRule('inside-start-then-outside-end', (prev, args) => {
+
+        var innerStart = [
+            (prev, args) => {
+                return {
+                    x: (row) => prev.model.y0(row),
+                    dx: (row) => -prev.dx(row)
+                };
+            }
+        ].concat(['r+', 'cut-label-horizontal']
+            .map(LayerLabelsRules.getRule))
+            .reduce((p, r) => LayerLabelsModel.compose(p, r(p, args)), prev);
+
+        var outerEnd = ['r+', 'cut-outer-label-horizontal']
+            .map(LayerLabelsRules.getRule)
+            .reduce((p, r) => LayerLabelsModel.compose(p, r(p, args)), prev);
+
+        var betterInside = (row) => (innerStart.label(row).length >= outerEnd.label(row).length);
+
+        return Object.assign(
+            {},
+            innerStart,
+            ['x', 'dx', 'hide', 'label'].reduce((obj, prop) => {
+                obj[prop] = (row) => ((betterInside(row) ? innerStart : outerEnd)[prop](row));
+                return obj;
+            }, {})
+        );
+
     })
 
     .regRule('outside-then-inside-horizontal', (prev, args) => {

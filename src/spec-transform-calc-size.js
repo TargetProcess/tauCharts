@@ -258,7 +258,7 @@ export class SpecTransformCalcSize {
                 !chart.getScaleInfo(root.units[0].label, frame).isEmpty()
             ) {
 
-                const labelFontSize = (guide.label && guide.label.fontSize ? guide.label.fontSize : 10);
+                const labelFontSize = (guide.label && guide.label.fontSize ? guide.label.fontSize : 10) * 2.5;
                 var rowsTotal = root.frames.reduce((sum, f) => f.full().length * labelFontSize, 0);
                 var scaleSize = calcScaleSize(chart.getScaleInfo(xCfg, frame), xSize);
                 return resScaleSize + Math.max(rowsTotal, scaleSize);
