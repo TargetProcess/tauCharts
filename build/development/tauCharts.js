@@ -1,4 +1,4 @@
-/*! taucharts - v1.1.3 - 2017-05-04
+/*! taucharts - v1.1.4 - 2017-05-15
 * https://github.com/TargetProcess/tauCharts
 * Copyright (c) 2017 Taucraft Limited; Licensed Apache License 2.0 */
 (function webpackUniversalModuleDefinition(root, factory) {
@@ -386,7 +386,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	}]));
 
 	/* global VERSION:false */
-	var version = ("1.1.3");
+	var version = ("1.1.4");
 	exports.GPL = _tau.GPL;
 	exports.Plot = _tau2.Plot;
 	exports.Chart = _tau3.Chart;
@@ -12068,7 +12068,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	            return isHorizontal ? _grammarRegistry.GrammarRegistry.get('flip')(prevModel) : _grammarRegistry.GrammarRegistry.get('identity')(prevModel);
 	        }, config.stack && _grammarRegistry.GrammarRegistry.get('stack'), enableColorPositioning && _grammarRegistry.GrammarRegistry.get('positioningByColor')].filter(function (x) {
 	            return x;
-	        }).concat(config.transformModel || []);
+	        });
 
 	        config.adjustRules = [config.stack && _grammarRegistry.GrammarRegistry.get('adjustYScale'), function (prevModel, args) {
 	            var isEmptySize = prevModel.scaleSize.isEmptyScale();
@@ -13588,7 +13588,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	        var config = _elementPath.BasePath.init(xConfig);
 	        var enableStack = config.stack;
 
-	        config.transformRules = [config.flip && _grammarRegistry.GrammarRegistry.get('flip'), !enableStack && _grammarRegistry.GrammarRegistry.get('groupOrderByAvg'), enableStack && _elementPath.BasePath.grammarRuleFillGaps, enableStack && _grammarRegistry.GrammarRegistry.get('stack')].concat(config.transformModel || []);
+	        config.transformRules = [config.flip && _grammarRegistry.GrammarRegistry.get('flip'), !enableStack && _grammarRegistry.GrammarRegistry.get('groupOrderByAvg'), enableStack && _elementPath.BasePath.grammarRuleFillGaps, enableStack && _grammarRegistry.GrammarRegistry.get('stack')];
 
 	        config.adjustRules = [function (prevModel, args) {
 	            var isEmptySize = prevModel.scaleSize.isEmptyScale();
@@ -14380,7 +14380,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	        var config = _elementPath.BasePath.init(xConfig);
 
-	        config.transformRules = [config.flip && _grammarRegistry.GrammarRegistry.get('flip')].concat(config.transformModel || []);
+	        config.transformRules = [config.flip && _grammarRegistry.GrammarRegistry.get('flip')];
 
 	        config.adjustRules = [function (prevModel, args) {
 	            var isEmptySize = prevModel.scaleSize.isEmptyScale();
@@ -14507,7 +14507,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	            interpolate: 'linear'
 	        });
 
-	        config.transformRules = [config.flip && _grammarRegistry.GrammarRegistry.get('flip'), !enableStack && _grammarRegistry.GrammarRegistry.get('groupOrderByAvg'), enableStack && _elementPath.BasePath.grammarRuleFillGaps, enableStack && _grammarRegistry.GrammarRegistry.get('stack')].concat(config.transformModel || []);
+	        config.transformRules = [config.flip && _grammarRegistry.GrammarRegistry.get('flip'), !enableStack && _grammarRegistry.GrammarRegistry.get('groupOrderByAvg'), enableStack && _elementPath.BasePath.grammarRuleFillGaps, enableStack && _grammarRegistry.GrammarRegistry.get('stack')];
 
 	        var avoidScalesOverflow = config.guide.avoidScalesOverflow;
 	        var isEmptySize = function isEmptySize(model) {
@@ -14881,7 +14881,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	        config.transformRules = [config.flip && _grammarRegistry.GrammarRegistry.get('flip'), config.stack && _grammarRegistry.GrammarRegistry.get('stack'), enableColorPositioning && _grammarRegistry.GrammarRegistry.get('positioningByColor')].filter(function (x) {
 	            return x;
-	        }).concat(config.transformModel || []);
+	        });
 
 	        config.adjustRules = [enableDistributeEvenly && function (prevModel, args) {
 	            var sizeCfg = _utils.utils.defaults(config.guide.size || {}, {

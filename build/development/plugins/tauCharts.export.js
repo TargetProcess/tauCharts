@@ -170,6 +170,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	    var getGuideLabel = function getGuideLabel(guide, key, defaultLabel) {
 
+	        defaultLabel = defaultLabel == null ? '' : String(defaultLabel);
 	        var kGuide = (guide || {})[key] || {};
 	        var kLabel = utils.isObject(kGuide.label) ? kGuide.label.text : kGuide.label;
 
@@ -567,7 +568,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	            },
 
 	            onUnitDraw: function onUnitDraw(chart, unit) {
-	                if (tauCharts.api.isChartElement(unit)) {
+	                if (tauCharts.api.isChartElement(unit) && unit.config.namespace === 'chart') {
 	                    this._unit = unit;
 	                }
 	            },
@@ -6154,6 +6155,10 @@ return /******/ (function(modules) { // webpackBootstrap
 	process.removeListener = noop;
 	process.removeAllListeners = noop;
 	process.emit = noop;
+	process.prependListener = noop;
+	process.prependOnceListener = noop;
+
+	process.listeners = function (name) { return [] }
 
 	process.binding = function (name) {
 	    throw new Error('process.binding is not supported');
