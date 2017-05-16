@@ -66,15 +66,15 @@ export class TimeScale extends BaseScale {
         var d3Scale = d3Domain.range(interval);
 
         var scale = (x) => {
-            // var min = varSet[0];
-            // var max = varSet[1];
+            var min = varSet[0];
+            var max = varSet[1];
 
-            // if (x > max) {
-            //     x = max;
-            // }
-            // if (x < min) {
-            //     x = min;
-            // }
+            if (x > max) {
+                x = max;
+            }
+            if (x < min) {
+                x = min;
+            }
             return d3Scale(new Date(x));
         };
 

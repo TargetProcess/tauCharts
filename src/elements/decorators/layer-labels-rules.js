@@ -284,7 +284,7 @@ LayerLabelsRules
         };
     })
 
-    .regRule('inside-start-then-outside-end', (prev, args) => {
+    .regRule('inside-start-then-outside-end-horizontal', (prev, args) => {
 
         var innerStart = [
             (prev, args) => {
@@ -307,6 +307,36 @@ LayerLabelsRules
             {},
             innerStart,
             ['x', 'dx', 'hide', 'label'].reduce((obj, prop) => {
+                obj[prop] = (row) => ((betterInside(row) ? innerStart : outerEnd)[prop](row));
+                return obj;
+            }, {})
+        );
+
+    })
+
+    .regRule('inside-start-then-outside-end-vertical', (prev, args) => {
+
+        var innerStart = [
+            (prev, args) => {
+                return {
+                    y: (row) => prev.model.y0(row),
+                    dy: (row) => -prev.dy(row)
+                };
+            }
+        ].concat(['b+', 'cut-label-vertical']
+            .map(LayerLabelsRules.getRule))
+            .reduce((p, r) => LayerLabelsModel.compose(p, r(p, args)), prev);
+
+        var outerEnd = ['b+', 'cut-outer-label-vertical']
+            .map(LayerLabelsRules.getRule)
+            .reduce((p, r) => LayerLabelsModel.compose(p, r(p, args)), prev);
+
+        var betterInside = (row) => (innerStart.label(row).length >= outerEnd.label(row).length);
+
+        return Object.assign(
+            {},
+            innerStart,
+            ['y', 'dy', 'hide', 'label'].reduce((obj, prop) => {
                 obj[prop] = (row) => ((betterInside(row) ? innerStart : outerEnd)[prop](row));
                 return obj;
             }, {})
