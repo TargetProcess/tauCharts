@@ -23,6 +23,8 @@ const cutString = (str, index) => ((index === 0) ? '' : str.slice(0, index).repl
 
 var isPositive = (scale, row) => scale.discrete || (!scale.discrete && row[scale.dim] >= 0);
 var isNegative = (scale, row) => !scale.discrete && row[scale.dim] < 0;
+var getXPad = (prev, row) => ((prev.w(row) / 2) + Math.floor(prev.model.size(row) / 5));
+var getYPad = (prev, row) => ((prev.h(row) / 2) + Math.floor(prev.model.size(row) / 5));
 var alignByX = (exp) => {
     return (prev) => {
         return {
@@ -40,9 +42,8 @@ var alignByX = (exp) => {
 
                 var k = (exp[1]);
                 var u = (exp[0] === exp[0].toUpperCase()) ? 1 : 0;
-                var pad = Math.floor(prev.model.size(row) / 5);
 
-                return prev.dx(row) + (k * (prev.w(row) / 2)) + (k * u * prev.model.size(row) / 2) + k * pad;
+                return prev.dx(row) + (k * u * prev.model.size(row) / 2) + (k * getXPad(prev, row));
             }
         };
     };
@@ -66,7 +67,7 @@ var alignByY = (exp) => {
                 var k = (exp[1]);
                 var u = (exp[0] === exp[0].toUpperCase()) ? 1 : 0;
 
-                return prev.dy(row) + (k * (prev.h(row) / 2)) + (k * u * prev.model.size(row) / 2) + k * 2;
+                return prev.dy(row) + (k * u * prev.model.size(row) / 2) + (k * getYPad(prev, row));
             }
         };
     };
@@ -284,22 +285,36 @@ LayerLabelsRules
         };
     })
 
+    .regRule('from-beginning', (prev, args) => {
+        var y0 = (row) => prev.model.y0(row);
+        return (prev.model.flip ? {x: y0} : {y: y0});
+    })
+
+    .regRule('to-end', (prev, args) => {
+        var yi = (row) => prev.model.yi(row);
+        return (prev.model.flip ? {x: yi} : {y: yi});
+    })
+
+    .regRule('towards', (prev, args) => {
+        var getSign = (prev, row) => (prev.model.yi(row) - prev.model.y0(row) >= 0 ? 1 : -1);
+        var getPad = (prev.model.flip ? getXPad : getYPad);
+        var dy = (row) => (getSign(prev, row) * getPad(prev, row));
+        return (prev.model.flip ? {dx: dy} : {dy: dy});
+    })
+
     .regRule('inside-start-then-outside-end-horizontal', (prev, args) => {
 
         var innerStart = [
-            (prev, args) => {
-                return {
-                    x: (row) => prev.model.y0(row),
-                    dx: (row) => -prev.dx(row)
-                };
-            }
-        ].concat(['r+', 'cut-label-horizontal']
-            .map(LayerLabelsRules.getRule))
-            .reduce((p, r) => LayerLabelsModel.compose(p, r(p, args)), prev);
+            LayerLabelsRules.getRule('from-beginning'),
+            LayerLabelsRules.getRule('towards'),
+            LayerLabelsRules.getRule('cut-label-horizontal')
+        ].reduce((p, r) => LayerLabelsModel.compose(p, r(p, args)), prev);
 
-        var outerEnd = ['r+', 'cut-outer-label-horizontal']
-            .map(LayerLabelsRules.getRule)
-            .reduce((p, r) => LayerLabelsModel.compose(p, r(p, args)), prev);
+        var outerEnd = [
+            LayerLabelsRules.getRule('to-end'),
+            LayerLabelsRules.getRule('towards'),
+            LayerLabelsRules.getRule('cut-outer-label-horizontal')
+        ].reduce((p, r) => LayerLabelsModel.compose(p, r(p, args)), prev);
 
         var betterInside = (row) => (innerStart.label(row).length >= outerEnd.label(row).length);
 
@@ -316,20 +331,27 @@ LayerLabelsRules
 
     .regRule('inside-start-then-outside-end-vertical', (prev, args) => {
 
+        var getSign = (prev, row) => (prev.model.yi(row) - prev.model.y0(row) >= 0 ? 1 : -1);
+
         var innerStart = [
             (prev, args) => {
                 return {
                     y: (row) => prev.model.y0(row),
-                    dy: (row) => -prev.dy(row)
+                    dy: (row) => (getSign(prev, row) * getYPad(prev, row))
                 };
-            }
-        ].concat(['b+', 'cut-label-vertical']
-            .map(LayerLabelsRules.getRule))
-            .reduce((p, r) => LayerLabelsModel.compose(p, r(p, args)), prev);
+            },
+            LayerLabelsRules.getRule('cut-label-vertical')
+        ].reduce((p, r) => LayerLabelsModel.compose(p, r(p, args)), prev);
 
-        var outerEnd = ['b+', 'cut-outer-label-vertical']
-            .map(LayerLabelsRules.getRule)
-            .reduce((p, r) => LayerLabelsModel.compose(p, r(p, args)), prev);
+        var outerEnd = [
+            (prev, args) => {
+                return {
+                    y: (row) => prev.model.yi(row),
+                    dy: (row) => (getSign(prev, row) * getYPad(prev, row))
+                };
+            },
+            LayerLabelsRules.getRule('cut-outer-label-vertical')
+        ].reduce((p, r) => LayerLabelsModel.compose(p, r(p, args)), prev);
 
         var betterInside = (row) => (innerStart.label(row).length >= outerEnd.label(row).length);
 
