@@ -57,7 +57,11 @@ tauCharts.api.plugins.add('bar-as-span', function BarAsSpan(settings) {
         return {};
     };
 
-    var preventCollision = function (model) {
+    // Todo: Categories names can repeat among facets.
+    var totalLines = {};
+    var totalLinesPerFacet = {};
+
+    var transformMultiline = function (model) {
 
         var data = model.data().slice();
         var xScale = model.scaleX;
@@ -94,19 +98,56 @@ tauCharts.api.plugins.add('bar-as-span', function BarAsSpan(settings) {
             itemLine.set(d, lineNum);
         });
 
-        // Todo: Adjust ordinal scale step size (ratio function).
+        Object.keys(categoryLines).forEach(function (key) {
+            totalLines[key] = categoryLines[key];
+        });
+
+        xScale.fixup(function (xScaleConfig) {
+
+            var newConf = {};
+
+            var totalRows = xScale.domain().reduce((sum, cat) => {
+                return (sum + totalLines[cat].length);
+            }, 0);
+
+            xScale.domain().forEach(function (cat) {
+                totalLinesPerFacet[cat] = totalRows;
+            });
+
+            newConf.ratio = function (cat) {
+                return (totalLines[cat].length / totalLinesPerFacet[cat]);
+            };
+
+            return newConf;
+        });
 
         return {
             xi: (row) => {
                 var cat = row[catDim];
-                var catHeight = xScale.stepSize(row);
+                var catHeight = xScale.stepSize(cat);
                 var top = (model.xi(row) - catHeight / 2);
-                var lineHeight = (catHeight / categoryLines[cat].length);
+                var lineHeight = (catHeight / totalLines[cat].length);
                 var lineIndex = itemLine.get(row);
                 return (top + lineHeight * (lineIndex + 0.5));
             }
         };
     };
+
+    // var transformParentMultiline=function(model){
+
+    //     var yScale = model.scaleY;
+    //     var catDim = yScale.dim;
+
+    //     return {
+    //         xi: (row) => {
+    //             if (!row) {
+    //                 return;
+    //             }
+    //             var cat = row[catDim];
+    //             return model.xi(row);
+    //         }
+    //     };
+    // };
 
     return {
 
@@ -116,16 +157,43 @@ tauCharts.api.plugins.add('bar-as-span', function BarAsSpan(settings) {
                 specRef,
                 function (unit, parentUnit) {
 
-                    if ((unit.type === 'ELEMENT.INTERVAL')) {
+                    // if (unit && unit.units && unit.units.some(function (unit) {
+                    //     return (unit.units && unit.units.some(function (unit) {
+                    //         return (unit.type === 'ELEMENT.INTERVAL');
+                    //     }));
+                    // })) {
+                    //     unit.transformModel = [
+                    //         transformParentMultiline
+                    //     ];
+
+                    //     // unit.adjustScales = [
+                    //     //     function(model){
+                    //     //         // debugger;
+                    //     //     }
+                    //     // ];
+                    // }
+
+                    if (unit.type === 'ELEMENT.INTERVAL') {
+
+                        // debugger;
+                        // specRef;
+                        // chart;
 
                         unit.transformModel = [
                             (unit.flip ? transformX0 : transformY0),
-                            preventCollision
+                            transformMultiline
                         ];
 
-                        unit.adjustModel = [
-                            adjustValueScale
+                        unit.adjustScales = [
+                            adjustValueScale,
+                            // function(model){
+                            //     // debugger;
+                            // }
                         ];
+
+                        // parentUnit.transformModel = [
+                        //     transformParentMultiline
+                        // ];
 
                         unit.guide.label = unit.guide.label || {};
                         unit.guide.label.position = unit.guide.label.position || [
@@ -142,7 +210,7 @@ tauCharts.api.plugins.add('bar-as-span', function BarAsSpan(settings) {
 dev.spec({
     type: 'horizontal-bar',
     x: 'end',
-    y: 'team',
+    y: ['country', 'team'],
     color: 'team',
     label: 'team',
     plugins: [
@@ -153,18 +221,26 @@ dev.spec({
         })
     ],
     data: [
-        {start: '2015-02-03', end: '2015-03-02', team: 'Manchester'},
-        {start: '2015-03-12', end: '2015-02-01', team: 'Chelsea'},
-        {start: '2015-02-17', end: '2015-02-19', team: 'Liverpool'},
-        {start: '2015-03-04', end: '2015-03-10', team: 'Aston Villa'},
-        {start: '2015-02-24', end: '2015-03-03', team: 'Manchester'},
-        {start: '2015-03-04', end: '2015-03-10', team: 'Manchester'},
-        {start: '2015-03-29', end: '2015-02-09', team: 'Tottenham'}
+        {start: '2015-02-03', end: '2015-03-02', team: 'Manchester', country: 'England'},
+        {start: '2015-02-12', end: '2015-03-01', team: 'Chelsea', country: 'England'},
+        {start: '2015-02-17', end: '2015-02-19', team: 'Liverpool', country: 'England'},
+        {start: '2015-03-04', end: '2015-03-10', team: 'Aston Villa', country: 'England'},
+        {start: '2015-02-24', end: '2015-03-03', team: 'Manchester', country: 'England'},
+        {start: '2015-03-04', end: '2015-03-10', team: 'Manchester', country: 'England'},
+        {start: '2015-02-29', end: '2015-03-09', team: 'Real', country: 'Spain'},
+        {start: '2015-02-24', end: '2015-03-03', team: 'Real', country: 'Spain'},
+        {start: '2015-03-04', end: '2015-03-10', team: 'Barcelona', country: 'Spain'},
+        {start: '2015-02-29', end: '2015-03-09', team: 'Valencia', country: 'Spain'},
+        {start: '2015-02-29', end: '2015-03-09', team: 'Borussia', country: 'Germany'},
+        {start: '2015-02-24', end: '2015-03-03', team: 'Borussia', country: 'Germany'},
+        {start: '2015-03-04', end: '2015-03-10', team: 'Borussia', country: 'Germany'},
+        {start: '2015-02-29', end: '2015-03-09', team: 'Schalke', country: 'Germany'}
     ].map(function (data) {
         return {
             team: data.team,
             start: new Date(data.start),
-            end: new Date(data.end)
+            end: new Date(data.end),
+            country:data.country
         };
     }),
     dimensions: {
@@ -175,6 +251,10 @@ dev.spec({
         'end': {
             type: 'measure',
             scale: 'time'
+        },
+        'country': {
+            type: 'category',
+            scale: 'ordinal'
         },
         'team': {
             type: 'category',
@@ -189,7 +269,7 @@ dev.spec({
         }
     }
 });
-
+/*
 dev.spec({
     type: 'bar',
     y: 'end',
@@ -239,3 +319,4 @@ dev.spec({
         }
     }
 });
+*/
