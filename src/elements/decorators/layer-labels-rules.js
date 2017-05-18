@@ -285,17 +285,17 @@ LayerLabelsRules
         };
     })
 
-    .regRule('from-beginning', (prev, args) => {
+    .regRule('from-beginning', (prev) => {
         var y0 = (row) => prev.model.y0(row);
         return (prev.model.flip ? {x: y0} : {y: y0});
     })
 
-    .regRule('to-end', (prev, args) => {
+    .regRule('to-end', (prev) => {
         var yi = (row) => prev.model.yi(row);
         return (prev.model.flip ? {x: yi} : {y: yi});
     })
 
-    .regRule('towards', (prev, args) => {
+    .regRule('towards', (prev) => {
         var getSign = (prev, row) => (prev.model.yi(row) - prev.model.y0(row) >= 0 ? 1 : -1);
         var getPad = (prev.model.flip ? getXPad : getYPad);
         var dy = (row) => (getSign(prev, row) * getPad(prev, row));
@@ -334,7 +334,7 @@ LayerLabelsRules
         var getSign = (prev, row) => (prev.model.yi(row) - prev.model.y0(row) >= 0 ? 1 : -1);
 
         var innerStart = [
-            (prev, args) => {
+            (prev) => {
                 return {
                     y: (row) => prev.model.y0(row),
                     dy: (row) => (getSign(prev, row) * getYPad(prev, row))
@@ -344,7 +344,7 @@ LayerLabelsRules
         ].reduce((p, r) => LayerLabelsModel.compose(p, r(p, args)), prev);
 
         var outerEnd = [
-            (prev, args) => {
+            (prev) => {
                 return {
                     y: (row) => prev.model.yi(row),
                     dy: (row) => (getSign(prev, row) * getYPad(prev, row))
