@@ -334,22 +334,14 @@ LayerLabelsRules
         var getSign = (prev, row) => (prev.model.yi(row) - prev.model.y0(row) >= 0 ? 1 : -1);
 
         var innerStart = [
-            (prev) => {
-                return {
-                    y: (row) => prev.model.y0(row),
-                    dy: (row) => (getSign(prev, row) * getYPad(prev, row))
-                };
-            },
+            LayerLabelsRules.getRule('from-beginning'),
+            LayerLabelsRules.getRule('towards'),
             LayerLabelsRules.getRule('cut-label-vertical')
         ].reduce((p, r) => LayerLabelsModel.compose(p, r(p, args)), prev);
 
         var outerEnd = [
-            (prev) => {
-                return {
-                    y: (row) => prev.model.yi(row),
-                    dy: (row) => (getSign(prev, row) * getYPad(prev, row))
-                };
-            },
+            LayerLabelsRules.getRule('to-end'),
+            LayerLabelsRules.getRule('towards'),
             LayerLabelsRules.getRule('cut-outer-label-vertical')
         ].reduce((p, r) => LayerLabelsModel.compose(p, r(p, args)), prev);
 

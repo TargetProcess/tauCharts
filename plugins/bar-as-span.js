@@ -1,4 +1,20 @@
-tauCharts.api.plugins.add('bar-as-span', function BarAsSpan(settings) {
+(function (factory) {
+    if (typeof define === 'function' && define.amd) {
+        define(['taucharts'], function (tauPlugins) {
+            return factory(tauPlugins);
+        });
+    } else if (typeof module === 'object' && module.exports) {
+        var tauPlugins = require('taucharts');
+        module.exports = factory(tauPlugins);
+    } else {
+        factory(this.tauCharts);
+    }
+})(function (tauCharts) {
+
+var d3 = tauCharts.api.d3;
+var utils = tauCharts.api.utils;
+
+function BarAsSpan(settings) {
 
     var xDim0 = settings.x0;
     var yDim0 = settings.y0;
@@ -168,4 +184,10 @@ tauCharts.api.plugins.add('bar-as-span', function BarAsSpan(settings) {
                 });
         }
     };
+}
+
+tauCharts.api.plugins.add('bar-as-span', BarAsSpan);
+
+return BarAsSpan;
+
 });
