@@ -102,6 +102,7 @@ const Interval = {
             })),
             (
                 avoidScalesOverflow &&
+                enableDistributeEvenly &&
                 ((prevModel, args) => {
                     const params = Object.assign({}, args, {
                         sizeDirection: 'x'

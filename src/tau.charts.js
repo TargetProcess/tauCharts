@@ -96,10 +96,10 @@ var api = {
 
         animationSpeed: 750,
         renderingTimeout: 10000,
-        asyncRendering: true,
+        asyncRendering: false,
         syncRenderingInterval: 50,
         syncPointerEvents: false,
-        handleRenderingErrors: false,
+        handleRenderingErrors: true,
         experimentalShouldAnimate: (spec) => {
             const createSvg = (tag, attrs) => {
                 var el = document.createElementNS('http://www.w3.org/2000/svg', tag);
