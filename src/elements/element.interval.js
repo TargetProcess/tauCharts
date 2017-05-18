@@ -24,7 +24,9 @@ const Interval = {
                 maxHighlightDistance: 32,
                 prettify: true,
                 sortByBarHeight: true,
-                enableColorToBarPosition: !config.stack
+                enableColorToBarPosition: (config.guide.enableColorToBarPosition != null ?
+                    config.guide.enableColorToBarPosition :
+                    !config.stack)
             });
 
         config.guide.size = utils.defaults(

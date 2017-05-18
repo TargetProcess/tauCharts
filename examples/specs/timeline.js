@@ -74,13 +74,13 @@ tauCharts.api.plugins.add('bar-as-span', function BarAsSpan(settings) {
         var dim0 = (model.flip ? xDim0 : yDim0);
         var dim = yScale.dim;
         data.sort(utils.createMultiSorter(
-            (a, b) => (a[dim0] - b[dim0]),
-            (a, b) => (a[dim] - b[dim]),
+            function (a, b) { return (a[dim0] - b[dim0]); },
+            function (a, b) { return (a[dim] - b[dim]); },
         ));
 
         var catDim = xScale.dim;
         var categories = xScale.domain();
-        var categoryLines = categories.reduce((map, c) => {
+        var categoryLines = categories.reduce(function (map, c) {
             map[c] = [];
             return map;
         }, {});
@@ -89,7 +89,9 @@ tauCharts.api.plugins.add('bar-as-span', function BarAsSpan(settings) {
             // Todo: optimize.
             var cat = d[catDim];
             var lines = categoryLines[cat];
-            var lineNum = lines.findIndex((l) => l[l.length - 1][dim] <= d[dim0]);
+            var lineNum = lines.findIndex(function (l) {
+                return (l[l.length - 1][dim] <= d[dim0]);
+            });
             if (lineNum < 0) {
                 lineNum = lines.length;
                 lines.push([]);
@@ -106,7 +108,7 @@ tauCharts.api.plugins.add('bar-as-span', function BarAsSpan(settings) {
 
             var newConf = {};
 
-            var totalRows = xScale.domain().reduce((sum, cat) => {
+            var totalRows = xScale.domain().reduce(function (sum, cat) {
                 return (sum + totalLines[cat].length);
             }, 0);
 
@@ -122,7 +124,7 @@ tauCharts.api.plugins.add('bar-as-span', function BarAsSpan(settings) {
         });
 
         return {
-            xi: (row) => {
+            xi: function (row) {
                 var cat = row[catDim];
                 var catHeight = xScale.stepSize(cat);
                 var top = (model.xi(row) - catHeight / 2);
@@ -175,32 +177,26 @@ tauCharts.api.plugins.add('bar-as-span', function BarAsSpan(settings) {
 
                     if (unit.type === 'ELEMENT.INTERVAL') {
 
-                        // debugger;
-                        // specRef;
-                        // chart;
-
                         unit.transformModel = [
                             (unit.flip ? transformX0 : transformY0),
                             transformMultiline
                         ];
 
                         unit.adjustScales = [
-                            adjustValueScale,
-                            // function(model){
-                            //     // debugger;
-                            // }
+                            adjustValueScale
                         ];
 
-                        // parentUnit.transformModel = [
-                        //     transformParentMultiline
-                        // ];
+                        unit.guide.enableColorToBarPosition = false;
+
+                        unit.guide.size = unit.guide.size || {};
 
                         unit.guide.label = unit.guide.label || {};
-                        unit.guide.label.position = unit.guide.label.position || [
-                            (unit.flip ?
-                                'inside-start-then-outside-end-horizontal' :
-                                'inside-start-then-outside-end-vertical')
-                        ];
+                        unit.guide.label.position = (unit.guide.label.position || (unit.flip ? [
+                            'inside-start-then-outside-end-horizontal',
+                            'hide-by-label-height-horizontal'
+                        ] : [
+                                'inside-start-then-outside-end-vertical'
+                            ]));
                     }
                 });
         }
@@ -220,6 +216,9 @@ dev.spec({
             x0: 'start'
         })
     ],
+    // settings:{
+    //     fitModel:'entire-view'
+    // },
     data: [
         {start: '2015-02-03', end: '2015-03-02', team: 'Manchester', country: 'England'},
         {start: '2015-02-12', end: '2015-03-01', team: 'Chelsea', country: 'England'},
@@ -234,13 +233,19 @@ dev.spec({
         {start: '2015-02-29', end: '2015-03-09', team: 'Borussia', country: 'Germany'},
         {start: '2015-02-24', end: '2015-03-03', team: 'Borussia', country: 'Germany'},
         {start: '2015-03-04', end: '2015-03-10', team: 'Borussia', country: 'Germany'},
-        {start: '2015-02-29', end: '2015-03-09', team: 'Schalke', country: 'Germany'}
+        {start: '2015-02-29', end: '2015-03-09', team: 'Schalke', country: 'Germany'},
+        {start: '2015-02-02', end: '2015-02-09', team: 'Bate', country: 'Belarus'},
+        {start: '2015-02-05', end: '2015-03-03', team: 'Dynamo', country: 'Belarus'},
+        {start: '2015-02-07', end: '2015-02-10', team: 'Dynamo', country: 'Belarus'},
+        {start: '2015-02-08', end: '2015-02-20', team: 'Dynamo', country: 'Belarus'},
+        {start: '2015-02-12', end: '2015-02-24', team: 'Dynamo', country: 'Belarus'},
+        {start: '2015-02-29', end: '2015-03-04', team: 'Shakhtyor', country: 'Belarus'}
     ].map(function (data) {
         return {
             team: data.team,
             start: new Date(data.start),
             end: new Date(data.end),
-            country:data.country
+            country: data.country
         };
     }),
     dimensions: {
@@ -258,14 +263,7 @@ dev.spec({
         },
         'team': {
             type: 'category',
-            scale: 'ordinal',
-            order: [
-                'Aston Villa',
-                'Liverpool',
-                'Tottenham',
-                'Chelsea',
-                'Manchester'
-            ]
+            scale: 'ordinal'
         }
     }
 });
