@@ -331,8 +331,6 @@ LayerLabelsRules
 
     .regRule('inside-start-then-outside-end-vertical', (prev, args) => {
 
-        var getSign = (prev, row) => (prev.model.yi(row) - prev.model.y0(row) >= 0 ? 1 : -1);
-
         var innerStart = [
             LayerLabelsRules.getRule('from-beginning'),
             LayerLabelsRules.getRule('towards'),

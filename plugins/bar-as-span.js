@@ -171,9 +171,7 @@ function BarAsSpan(settings) {
 
                         unit.guide.enableColorToBarPosition = false;
 
-                        unit.guide.size = unit.guide.size || {};
-
-                        unit.guide.label = unit.guide.label || {};
+                        unit.guide.label = (unit.guide.label || {});
                         unit.guide.label.position = (unit.guide.label.position || (unit.flip ? [
                             'inside-start-then-outside-end-horizontal',
                             'hide-by-label-height-horizontal'
