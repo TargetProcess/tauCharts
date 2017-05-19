@@ -153,6 +153,7 @@ define(function (require) {
             beforeEach(function () {
                 tauCharts.Chart.winAware = [];
                 context.element = document.createElement('div');
+                context.element.setAttribute('data-chart-id', name);
                 document.body.appendChild(context.element);
 
                 tauCharts.Plot.globalSettings = testChartSettings;

@@ -31,7 +31,7 @@ export class GenericCartesian extends Element {
         ];
 
         this.decorators = (this.config.transformRules || defaultDecorators).concat(config.transformModel || []);
-        this.adjusters = (this.config.adjustRules || []);
+        this.adjusters = (this.config.adjustRules || []).concat(config.adjustScales || []);
     }
 
     defineGrammarModel(fnCreateScale) {
