@@ -18,6 +18,7 @@ function BarAsSpan(settings) {
 
     var xDim0 = settings.x0;
     var yDim0 = settings.y0;
+    var collapse = (settings.collapse != null ? settings.collapse : true);
 
     var transformX0 = function (model) {
         return {
@@ -101,7 +102,8 @@ function BarAsSpan(settings) {
             return map;
         }, {});
         var itemLine = new Map();
-        data.forEach(function (d) {
+
+        var collapseIteratee = function (d) {
             var cat = d[catDim];
             var lines = categoryLines[cat];
             var lineNum = lines.findIndex(function (l) {
@@ -113,7 +115,17 @@ function BarAsSpan(settings) {
             }
             lines[lineNum].push(d);
             itemLine.set(d, lineNum);
-        });
+        };
+        var expandIteratee = function (d) {
+            var cat = d[catDim];
+            var lines = categoryLines[cat];
+            var lineNum = lineNum = lines.length;
+            lines.push([]);
+            lines[lineNum].push(d);
+            itemLine.set(d, lineNum);
+        };
+
+        data.forEach(collapse ? collapseIteratee : expandIteratee);
 
         Object.keys(categoryLines).forEach(function (key) {
             totalLines[key] = categoryLines[key];
