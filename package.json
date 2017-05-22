@@ -90,5 +90,6 @@
     "devtest": "grunt karma:dev",
     "buildExporTo": "grunt webpack:buildExportTo",
     "prepublish": "grunt clean:npmpublish && npm run build"
-  }
+  },
+  "types": "./types/index.d.ts"
 }
