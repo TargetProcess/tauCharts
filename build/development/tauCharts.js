@@ -1,4 +1,4 @@
-/*! taucharts - v1.2.0 - 2017-05-23
+/*! taucharts - v1.2.1 - 2017-05-23
 * https://github.com/TargetProcess/tauCharts
 * Copyright (c) 2017 Taucraft Limited; Licensed Apache License 2.0 */
 (function webpackUniversalModuleDefinition(root, factory) {
@@ -386,7 +386,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	}]));
 
 	/* global VERSION:false */
-	var version = ("1.2.0");
+	var version = ("1.2.1");
 	exports.GPL = _tau.GPL;
 	exports.Plot = _tau2.Plot;
 	exports.Chart = _tau3.Chart;
@@ -3015,7 +3015,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    }
 
 	    var svg = axisNode.node();
-	    while (svg.tagName !== 'svg') {
+	    while (svg && svg.tagName !== 'svg') {
 	        svg = svg.parentNode;
 	    }
 	    var svgRect = svg.getBoundingClientRect();
@@ -3528,7 +3528,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	        var translate = { x: 0, y: 0 };
 	        var parent = node;
 	        var tr, attr;
-	        while (parent.nodeName.toUpperCase() !== 'SVG') {
+	        while (parent && parent.nodeName.toUpperCase() !== 'SVG') {
 	            attr = parent.getAttribute('transform');
 	            if (attr) {
 	                tr = parseTransformTranslate(attr);
