@@ -175,6 +175,11 @@ module.exports = function (grunt) {
                     {
                         src: 'plugins/box-whiskers.js',
                         dest: 'build/development/plugins/tauCharts.box-whiskers.js'
+                    },
+
+                    {
+                        src: 'types/**',
+                        dest: 'build/'
                     }
                 ].concat(cssConfig.css)
             }
