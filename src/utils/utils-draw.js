@@ -36,7 +36,7 @@ var utilsDraw = {
         var translate = {x: 0, y: 0};
         var parent = node;
         var tr, attr;
-        while (parent.nodeName.toUpperCase() !== 'SVG') {
+        while (parent && parent.nodeName.toUpperCase() !== 'SVG') {
             attr = parent.getAttribute('transform');
             if (attr) {
                 tr = parseTransformTranslate(attr);
