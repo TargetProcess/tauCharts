@@ -114,6 +114,10 @@ module.exports = function (grunt) {
                     {
                         src: 'component.json',
                         dest: 'build/component.json'
+                    },
+                    {
+                        src: 'types/**',
+                        dest: 'build/'
                     }
                 ]
             },
