@@ -22,6 +22,8 @@ import tauCharts from 'taucharts';
             xSettings || {},
             {
                 // add default settings here
+                align: 'bottom-right',
+                escapeHtml: true,
                 fields: null,
                 formatters: {},
                 dockToData: false,
@@ -30,7 +32,8 @@ import tauCharts from 'taucharts';
                     console.log(
                         'Setup [onRevealAggregation] callback and filter original data by the following criteria: ',
                         JSON.stringify(filters, null, 2));
-                }
+                },
+                spacing: 24
             });
 
         var plugin = {
@@ -46,7 +49,7 @@ import tauCharts from 'taucharts';
 
                 this._tooltip = this._chart.addBalloon(
                     {
-                        spacing: 24,
+                        spacing: settings.spacing,
                         auto: true,
                         effectClass: 'fade'
                     });
@@ -205,7 +208,7 @@ import tauCharts from 'taucharts';
 
                 this._tooltip
                     .position(cursor.x, cursor.y)
-                    .place('bottom-right')
+                    .place(settings.align)
                     .show()
                     .updateSize();
             },
@@ -298,8 +301,8 @@ import tauCharts from 'taucharts';
 
             renderItem: function (label, formattedValue, fieldKey, fieldVal) {
                 return this.itemTemplate({
-                    label: escapeHtml(label),
-                    value: escapeHtml(formattedValue)
+                    label: settings.escapeHtml ? escapeHtml(label) : label,
+                    value: settings.escapeHtml ? escapeHtml(formattedValue) : formattedValue
                 });
             },
 

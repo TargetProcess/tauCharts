@@ -21,7 +21,7 @@ const Path = {
 
         config.transformRules = [
             config.flip && GrammarRegistry.get('flip')
-        ].concat(config.transformModel || []);
+        ];
 
         config.adjustRules = [
             ((prevModel, args) => {

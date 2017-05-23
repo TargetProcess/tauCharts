@@ -114,6 +114,10 @@ module.exports = function (grunt) {
                     {
                         src: 'component.json',
                         dest: 'build/component.json'
+                    },
+                    {
+                        src: 'types/**',
+                        dest: 'build/'
                     }
                 ]
             },
@@ -155,6 +159,10 @@ module.exports = function (grunt) {
                     {
                         src: 'plugins/annotations.js',
                         dest: 'build/development/plugins/tauCharts.annotations.js'
+                    },
+                    {
+                        src: 'plugins/annotations.js',
+                        dest: 'build/development/plugins/tauCharts.bar-as-span.js'
                     },
                     {
                         src: 'plugins/layers.js',

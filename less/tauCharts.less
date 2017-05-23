@@ -181,9 +181,6 @@
         .tick text {
             font-size: @font-size-xs;
         }
-        .tick.zero-tick line {
-            stroke: mix(@axis-color, @font-color, 82.5%);
-        }
         .grid {
             .grid-lines {
                 path {
@@ -203,6 +200,9 @@
                 stroke: @axis-color;
                 stroke-width: 1px;
                 shape-rendering: crispEdges;
+            }
+            .tick.zero-tick > line {
+                stroke: mix(@axis-color, @font-color, 82.5%);
             }
             .line path {
                 shape-rendering: auto;

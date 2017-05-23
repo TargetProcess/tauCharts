@@ -19,6 +19,7 @@
             'linear-bars',
             'logarithmic-scale',
             'smooth-line',
+            'timeline',
             'utc',
             'whiskers'
         ],

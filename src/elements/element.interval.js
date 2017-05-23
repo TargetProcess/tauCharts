@@ -27,7 +27,9 @@ const Interval = {
                 maxHighlightDistance: 32,
                 prettify: true,
                 sortByBarHeight: true,
-                enableColorToBarPosition: !config.stack
+                enableColorToBarPosition: (config.guide.enableColorToBarPosition != null ?
+                    config.guide.enableColorToBarPosition :
+                    !config.stack)
             });
 
         config.guide.size = utils.defaults(
@@ -79,8 +81,7 @@ const Interval = {
             config.stack && GrammarRegistry.get('stack'),
             enableColorPositioning && GrammarRegistry.get('positioningByColor')
         ]
-            .filter(x => x)
-            .concat(config.transformModel || []);
+            .filter(x => x);
 
         config.adjustRules = [
             (enableDistributeEvenly && ((prevModel, args) => {

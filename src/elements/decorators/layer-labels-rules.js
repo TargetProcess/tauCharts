@@ -23,6 +23,8 @@ const cutString = (str, index) => ((index === 0) ? '' : str.slice(0, index).repl
 
 var isPositive = (scale, row) => scale.discrete || (!scale.discrete && row[scale.dim] >= 0);
 var isNegative = (scale, row) => !scale.discrete && row[scale.dim] < 0;
+var getXPad = (prev, row) => ((prev.w(row) / 2) + Math.floor(prev.model.size(row) / 5));
+var getYPad = (prev, row) => ((prev.h(row) / 2) + Math.floor(prev.model.size(row) / 5));
 var alignByX = (exp) => {
     return (prev) => {
         return {
@@ -41,7 +43,7 @@ var alignByX = (exp) => {
                 var k = (exp[1]);
                 var u = (exp[0] === exp[0].toUpperCase()) ? 1 : 0;
 
-                return prev.dx(row) + (k * (prev.w(row) / 2)) + (k * u * prev.model.size(row) / 2) + k * 2;
+                return prev.dx(row) + (k * u * prev.model.size(row) / 2) + (k * getXPad(prev, row));
             }
         };
     };
@@ -65,7 +67,7 @@ var alignByY = (exp) => {
                 var k = (exp[1]);
                 var u = (exp[0] === exp[0].toUpperCase()) ? 1 : 0;
 
-                return prev.dy(row) + (k * (prev.h(row) / 2)) + (k * u * prev.model.size(row) / 2) + k * 2;
+                return prev.dy(row) + (k * u * prev.model.size(row) / 2) + (k * getYPad(prev, row));
             }
         };
     };
@@ -281,6 +283,77 @@ LayerLabelsRules
                 return prevDy;
             }
         };
+    })
+
+    .regRule('from-beginning', (prev) => {
+        var y0 = (row) => prev.model.y0(row);
+        return (prev.model.flip ? {x: y0} : {y: y0});
+    })
+
+    .regRule('to-end', (prev) => {
+        var yi = (row) => prev.model.yi(row);
+        return (prev.model.flip ? {x: yi} : {y: yi});
+    })
+
+    .regRule('towards', (prev) => {
+        var getSign = (prev, row) => (prev.model.yi(row) - prev.model.y0(row) >= 0 ? 1 : -1);
+        var getPad = (prev.model.flip ? getXPad : getYPad);
+        var dy = (row) => (getSign(prev, row) * getPad(prev, row));
+        return (prev.model.flip ? {dx: dy} : {dy: dy});
+    })
+
+    .regRule('inside-start-then-outside-end-horizontal', (prev, args) => {
+
+        var innerStart = [
+            LayerLabelsRules.getRule('from-beginning'),
+            LayerLabelsRules.getRule('towards'),
+            LayerLabelsRules.getRule('cut-label-horizontal')
+        ].reduce((p, r) => LayerLabelsModel.compose(p, r(p, args)), prev);
+
+        var outerEnd = [
+            LayerLabelsRules.getRule('to-end'),
+            LayerLabelsRules.getRule('towards'),
+            LayerLabelsRules.getRule('cut-outer-label-horizontal')
+        ].reduce((p, r) => LayerLabelsModel.compose(p, r(p, args)), prev);
+
+        var betterInside = (row) => (innerStart.label(row).length >= outerEnd.label(row).length);
+
+        return Object.assign(
+            {},
+            innerStart,
+            ['x', 'dx', 'hide', 'label'].reduce((obj, prop) => {
+                obj[prop] = (row) => ((betterInside(row) ? innerStart : outerEnd)[prop](row));
+                return obj;
+            }, {})
+        );
+
+    })
+
+    .regRule('inside-start-then-outside-end-vertical', (prev, args) => {
+
+        var innerStart = [
+            LayerLabelsRules.getRule('from-beginning'),
+            LayerLabelsRules.getRule('towards'),
+            LayerLabelsRules.getRule('cut-label-vertical')
+        ].reduce((p, r) => LayerLabelsModel.compose(p, r(p, args)), prev);
+
+        var outerEnd = [
+            LayerLabelsRules.getRule('to-end'),
+            LayerLabelsRules.getRule('towards'),
+            LayerLabelsRules.getRule('cut-outer-label-vertical')
+        ].reduce((p, r) => LayerLabelsModel.compose(p, r(p, args)), prev);
+
+        var betterInside = (row) => (innerStart.label(row).length >= outerEnd.label(row).length);
+
+        return Object.assign(
+            {},
+            innerStart,
+            ['y', 'dy', 'hide', 'label'].reduce((obj, prop) => {
+                obj[prop] = (row) => ((betterInside(row) ? innerStart : outerEnd)[prop](row));
+                return obj;
+            }, {})
+        );
+
     })
 
     .regRule('outside-then-inside-horizontal', (prev, args) => {
