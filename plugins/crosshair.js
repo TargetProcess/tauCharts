@@ -1,5 +1,7 @@
 import tauCharts from 'taucharts';
 
+const svgNS = 'http://www.w3.org/2000/svg';
+
 {
 
     var d3 = tauCharts.api.d3;
@@ -11,7 +13,7 @@ import tauCharts from 'taucharts';
 
         options = (options || {});
 
-        var node = document.createElementNS(d3.ns.prefix.svg, 'g');
+        var node = document.createElementNS(svgNS, 'g');
 
         var g = d3.select(node).attr('class', 'tau-crosshair__label');
         g.append('rect').attr('class', 'tau-crosshair__label__box');
@@ -154,7 +156,7 @@ import tauCharts from 'taucharts';
             _createNode: function () {
 
                 var root = d3.select(
-                    document.createElementNS(d3.ns.prefix.svg, 'g'))
+                    document.createElementNS(svgNS, 'g'))
                     .attr('class', 'tau-crosshair');
                 this._labels = {x: null, y: null};
                 var createAxisNode = function (dir) {

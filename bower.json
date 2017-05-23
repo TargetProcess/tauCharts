@@ -26,6 +26,7 @@
     "canvg": "https://github.com/gabelerner/canvg.git#v1.4",
     "fetch": "~2.0.3",
     "es6-promise": "~4.0.5",
-    "file-saver": "~1.3.3"
+    "file-saver": "~1.3.3",
+    "rgb-color": "https://github.com/yetzt/node-rgbcolor.git"
   }
 }

@@ -27,6 +27,7 @@
     "url": "https://github.com/TargetProcess/tauCharts.git"
   },
   "devDependencies": {
+    "@types/d3": "^4.9.0",
     "babel-plugin-external-helpers": "^6.22.0",
     "babel-preset-es2015-rollup": "^3.0.0",
     "bower": "^1.8.0",
@@ -43,8 +44,10 @@
     "rollup-plugin-node-resolve": "^3.0.0",
     "rollup-plugin-replace": "^1.1.1",
     "rollup-plugin-string": "^2.0.2",
+    "rollup-plugin-typescript": "^0.8.1",
     "rollup-stream": "^1.19.0",
     "tau-tooltip": "^1.1.2",
+    "typescript": "^2.3.3",
     "vinyl-source-stream": "^1.1.0"
   },
   "scripts": {

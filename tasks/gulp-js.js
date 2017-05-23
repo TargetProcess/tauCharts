@@ -2,9 +2,13 @@ const rollup = require('rollup-stream');
 const source = require('vinyl-source-stream');
 const eventStream = require('event-stream');
 
-const babelConfig = {
-    presets: [
-        ['es2015-rollup']
+const tsConfig = {
+    typescript: require('typescript'),
+    target: 'es5',
+    allowJs: true,
+    lib: [
+        'es6',
+        'dom'
     ],
     include: [
         '**/*.js'
@@ -12,9 +16,6 @@ const babelConfig = {
     exclude: [
         'node_modules/**',
         'bower_components/**'
-    ],
-    plugins: [
-        'external-helpers'
     ]
 };
 
@@ -42,7 +43,7 @@ const mainConfig = {
         }),
         require('rollup-plugin-node-resolve')(),
         require('rollup-plugin-commonjs')(),
-        require('rollup-plugin-babel')(babelConfig)
+        require('rollup-plugin-typescript')(tsConfig)
     ]
 };
 
@@ -57,10 +58,8 @@ const pluginsCommonConfig = {
         'taucharts': 'tauCharts'
     },
     plugins: [
-        require('rollup-plugin-commonjs')({
-            exclude: 'bower_components/**'
-        }),
-        require('rollup-plugin-babel')(babelConfig)
+        require('rollup-plugin-commonjs')(),
+        require('rollup-plugin-typescript')(tsConfig)
     ]
 };
 
@@ -76,22 +75,19 @@ const plugins = [
             }
             console.error(warning.message);
         },
-        plugins: pluginsCommonConfig.plugins.concat(
+        plugins: [
             require('rollup-plugin-string')({
                 include: 'plugins/**/*.css'
             }),
             require('rollup-plugin-alias')({
-                'rgbcolor': 'bower_components/canvg/rgbcolor.js',
+                'rgbcolor': 'bower_components/rgb-color/index.js',
                 'stackblur': 'bower_components/canvg/StackBlur.js',
                 'canvg': 'bower_components/canvg/canvg.js',
                 'file-saver': 'bower_components/file-saver/FileSaver.js',
                 'fetch': 'bower_components/fetch/fetch.js',
                 'promise': 'bower_components/es6-promise/es6-promise.js'
-            }),
-            require('rollup-plugin-amd')({
-                include: 'bower_components/**',
             })
-        )
+        ].concat(pluginsCommonConfig.plugins)
     }],
     'floating-axes',
     'geomap-legend',

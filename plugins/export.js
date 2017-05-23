@@ -419,13 +419,13 @@ import printCss from './print.style.css';
                     ._getColorMap(chart.getChartModelData({excludeFilter: ['legend']}), colorScale, colorScale.dim)
                     .values;
 
-                var draw = function () {
+                var draw = function (self) {
 
-                    this.attr('transform', function (d, index) {
+                    self.attr('transform', function (d, index) {
                         return 'translate(5,' + 20 * (index + 1) + ')';
                     });
 
-                    this.append('circle')
+                    self.append('circle')
                         .attr('r', 6)
                         .attr('fill', function (d) {
                             return colorScale.toColor(d.color);
@@ -434,7 +434,7 @@ import printCss from './print.style.css';
                             return colorScale.toClass(d.color);
                         });
 
-                    this.append('text')
+                    self.append('text')
                         .attr('x', 12)
                         .attr('y', 5)
                         .text(function (d) {
@@ -512,16 +512,16 @@ import printCss from './print.style.css';
                 var fontSize = settings.fontSize;
 
                 var offsetInner = 0;
-                var draw = function () {
+                var draw = function (self) {
 
-                    this.attr('transform', function () {
+                    self.attr('transform', function () {
                         offsetInner += maxDiameter;
                         var transform = 'translate(5,' + (offsetInner) + ')';
                         offsetInner += 10;
                         return transform;
                     });
 
-                    this.append('circle')
+                    self.append('circle')
                         .attr('r', function (d) {
                             return d.radius;
                         })
@@ -530,7 +530,7 @@ import printCss from './print.style.css';
                         })
                         .style({opacity: 0.4});
 
-                    this.append('g')
+                    self.append('g')
                         .attr('transform', function () {
                             return 'translate(' + maxDiameter + ',' + (fontSize / 2) + ')';
                         })

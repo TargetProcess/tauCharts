@@ -1,5 +1,3 @@
-const rollup = require('rollup');
-
 module.exports = (gulp, { connect }) => {
     gulp.task('watch',
         [
