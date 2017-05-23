@@ -1,9 +1,3 @@
-// Type definitions for Taucharts v1.1
-// Project: https://www.taucharts.com/
-// Definitions by: TargetProcess <https://www.targetprocess.com/>
-// Definitions: https://github.com/DefinitelyTyped/DefinitelyTyped
-// TypeScript Version: 2.2
-
 import tauCharts from 'taucharts';
 
 // Create simple chart
