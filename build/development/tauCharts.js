@@ -1,4 +1,4 @@
-/*! taucharts - v1.1.4 - 2017-05-15
+/*! taucharts - v1.2.0 - 2017-05-23
 * https://github.com/TargetProcess/tauCharts
 * Copyright (c) 2017 Taucraft Limited; Licensed Apache License 2.0 */
 (function webpackUniversalModuleDefinition(root, factory) {
@@ -386,7 +386,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	}]));
 
 	/* global VERSION:false */
-	var version = ("1.1.4");
+	var version = ("1.2.0");
 	exports.GPL = _tau.GPL;
 	exports.Plot = _tau2.Plot;
 	exports.Chart = _tau3.Chart;
@@ -1693,7 +1693,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	        var defaultDecorators = [config.flip && _grammarRegistry.GrammarRegistry.get('flip'), enableStack && _grammarRegistry.GrammarRegistry.get('stack'), enableColorPositioning && _grammarRegistry.GrammarRegistry.get('positioningByColor')];
 
 	        _this.decorators = (_this.config.transformRules || defaultDecorators).concat(config.transformModel || []);
-	        _this.adjusters = _this.config.adjustRules || [];
+	        _this.adjusters = (_this.config.adjustRules || []).concat(config.adjustScales || []);
 	        return _this;
 	    }
 
@@ -12957,6 +12957,12 @@ return /******/ (function(modules) { // webpackBootstrap
 	var isNegative = function isNegative(scale, row) {
 	    return !scale.discrete && row[scale.dim] < 0;
 	};
+	var getXPad = function getXPad(prev, row) {
+	    return prev.w(row) / 2 + Math.floor(prev.model.size(row) / 5);
+	};
+	var getYPad = function getYPad(prev, row) {
+	    return prev.h(row) / 2 + Math.floor(prev.model.size(row) / 5);
+	};
 	var alignByX = function alignByX(exp) {
 	    return function (prev) {
 	        return {
@@ -12975,7 +12981,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	                var k = exp[1];
 	                var u = exp[0] === exp[0].toUpperCase() ? 1 : 0;
 
-	                return prev.dx(row) + k * (prev.w(row) / 2) + k * u * prev.model.size(row) / 2 + k * 2;
+	                return prev.dx(row) + k * u * prev.model.size(row) / 2 + k * getXPad(prev, row);
 	            }
 	        };
 	    };
@@ -12999,7 +13005,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	                var k = exp[1];
 	                var u = exp[0] === exp[0].toUpperCase() ? 1 : 0;
 
-	                return prev.dy(row) + k * (prev.h(row) / 2) + k * u * prev.model.size(row) / 2 + k * 2;
+	                return prev.dy(row) + k * u * prev.model.size(row) / 2 + k * getYPad(prev, row);
 	            }
 	        };
 	    };
@@ -13184,6 +13190,65 @@ return /******/ (function(modules) { // webpackBootstrap
 	            return prevDy;
 	        }
 	    };
+	}).regRule('from-beginning', function (prev) {
+	    var y0 = function y0(row) {
+	        return prev.model.y0(row);
+	    };
+	    return prev.model.flip ? { x: y0 } : { y: y0 };
+	}).regRule('to-end', function (prev) {
+	    var yi = function yi(row) {
+	        return prev.model.yi(row);
+	    };
+	    return prev.model.flip ? { x: yi } : { y: yi };
+	}).regRule('towards', function (prev) {
+	    var getSign = function getSign(prev, row) {
+	        return prev.model.yi(row) - prev.model.y0(row) >= 0 ? 1 : -1;
+	    };
+	    var getPad = prev.model.flip ? getXPad : getYPad;
+	    var dy = function dy(row) {
+	        return getSign(prev, row) * getPad(prev, row);
+	    };
+	    return prev.model.flip ? { dx: dy } : { dy: dy };
+	}).regRule('inside-start-then-outside-end-horizontal', function (prev, args) {
+
+	    var innerStart = [LayerLabelsRules.getRule('from-beginning'), LayerLabelsRules.getRule('towards'), LayerLabelsRules.getRule('cut-label-horizontal')].reduce(function (p, r) {
+	        return _layerLabelsModel.LayerLabelsModel.compose(p, r(p, args));
+	    }, prev);
+
+	    var outerEnd = [LayerLabelsRules.getRule('to-end'), LayerLabelsRules.getRule('towards'), LayerLabelsRules.getRule('cut-outer-label-horizontal')].reduce(function (p, r) {
+	        return _layerLabelsModel.LayerLabelsModel.compose(p, r(p, args));
+	    }, prev);
+
+	    var betterInside = function betterInside(row) {
+	        return innerStart.label(row).length >= outerEnd.label(row).length;
+	    };
+
+	    return Object.assign({}, innerStart, ['x', 'dx', 'hide', 'label'].reduce(function (obj, prop) {
+	        obj[prop] = function (row) {
+	            return (betterInside(row) ? innerStart : outerEnd)[prop](row);
+	        };
+	        return obj;
+	    }, {}));
+	}).regRule('inside-start-then-outside-end-vertical', function (prev, args) {
+
+	    var innerStart = [LayerLabelsRules.getRule('from-beginning'), LayerLabelsRules.getRule('towards'), LayerLabelsRules.getRule('cut-label-vertical')].reduce(function (p, r) {
+	        return _layerLabelsModel.LayerLabelsModel.compose(p, r(p, args));
+	    }, prev);
+
+	    var outerEnd = [LayerLabelsRules.getRule('to-end'), LayerLabelsRules.getRule('towards'), LayerLabelsRules.getRule('cut-outer-label-vertical')].reduce(function (p, r) {
+	        return _layerLabelsModel.LayerLabelsModel.compose(p, r(p, args));
+	    }, prev);
+
+	    var betterInside = function betterInside(row) {
+	        return innerStart.label(row).length >= outerEnd.label(row).length;
+	    };
+
+	    return Object.assign({}, innerStart, ['y', 'dy', 'hide', 'label'].reduce(function (obj, prop) {
+	        obj[prop] = function (row) {
+	            return (betterInside(row) ? innerStart : outerEnd)[prop](row);
+	        };
+	        return obj;
+	    }, {}));
 	}).regRule('outside-then-inside-horizontal', function (prev, args) {
 
 	    var outer = ['r+', 'l-', 'cut-outer-label-horizontal'].map(LayerLabelsRules.getRule).reduce(function (p, r) {
@@ -14864,7 +14929,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	            maxHighlightDistance: 32,
 	            prettify: true,
 	            sortByBarHeight: true,
-	            enableColorToBarPosition: !config.stack
+	            enableColorToBarPosition: config.guide.enableColorToBarPosition != null ? config.guide.enableColorToBarPosition : !config.stack
 	        });
 
 	        config.guide.size = _utils.utils.defaults(config.guide.size || {}, {
