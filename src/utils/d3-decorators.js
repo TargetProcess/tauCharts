@@ -205,7 +205,7 @@ var d3_decorator_fixEdgeAxisTicksOverflow = function (axisNode, activeTicks) {
     }
 
     var svg = axisNode.node();
-    while (svg.tagName !== 'svg') {
+    while (svg && svg.tagName !== 'svg') {
         svg = svg.parentNode;
     }
     var svgRect = svg.getBoundingClientRect();

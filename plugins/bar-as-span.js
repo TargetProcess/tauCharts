@@ -48,8 +48,8 @@ function BarAsSpan(settings) {
         var dim0 = (model.flip ? xDim0 : yDim0);
         var dim = yScale.dim;
         data.forEach(function (d) {
-            y0 = d[dim0];
-            y = d[dim];
+            var y0 = d[dim0];
+            var y = d[dim];
             var min = (y0 < y ? y0 : y);
             var max = (y > y0 ? y : y0);
             minY = (min < minY ? min : minY);
