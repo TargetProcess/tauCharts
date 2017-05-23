@@ -161,7 +161,7 @@ module.exports = function (grunt) {
                         dest: 'build/development/plugins/tauCharts.annotations.js'
                     },
                     {
-                        src: 'plugins/annotations.js',
+                        src: 'plugins/bar-as-span.js',
                         dest: 'build/development/plugins/tauCharts.bar-as-span.js'
                     },
                     {
