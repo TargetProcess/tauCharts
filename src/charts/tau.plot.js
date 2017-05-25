@@ -1,8 +1,8 @@
 import {Tooltip} from '../api/balloon';
 import {Emitter} from '../event';
 import {Plugins} from '../plugins';
-import {utils} from '../utils/utils';
-import {utilsDom} from '../utils/utils-dom';
+import * as utils from '../utils/utils';
+import * as utilsDom from '../utils/utils-dom';
 import {
     d3_setClasses as setClasses,
     d3_transition as transition
@@ -22,7 +22,7 @@ import {SpecTransformExtractAxes} from '../spec-transform-extract-axes';
 import {CSS_PREFIX} from '../const';
 
 import {GPL} from './tau.gpl';
-import d3 from 'd3';
+import * as d3 from 'd3';
 import TaskRunner from './task-runner';
 var selectOrAppend = utilsDom.selectOrAppend;
 var selectImmediate = utilsDom.selectImmediate;

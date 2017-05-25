@@ -1,4 +1,6 @@
-export function getPolyline(p) {
+import {Point} from '../point';
+
+export function getPolyline(p: Point[]) {
     if (p.length < 2) {
         return '';
     }
@@ -9,7 +11,7 @@ export function getPolyline(p) {
     return result;
 }
 
-export function getCurve(p) {
+export function getCurve(p: Point[]) {
     if (p.length < 4) {
         return '';
     }

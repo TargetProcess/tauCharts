@@ -1,4 +1,4 @@
-import {utils} from './utils/utils';
+import * as utils from './utils/utils';
 import {SpecTransformOptimize} from './spec-transform-optimize';
 
 var byOptimisticMaxText = ((gx) => gx.$maxTickTextW);

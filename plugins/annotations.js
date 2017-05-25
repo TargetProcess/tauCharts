@@ -1,9 +1,7 @@
 import tauCharts from 'taucharts';
-
-{
+import * as d3 from 'd3';
 
     var utils = tauCharts.api.utils;
-    var d3 = tauCharts.api.d3;
     var pluginsSDK = tauCharts.api.pluginsSDK;
 
     var addToUnits = function (units, newUnit, position) {
@@ -348,4 +346,3 @@ import tauCharts from 'taucharts';
     }
 
     tauCharts.api.plugins.add('annotations', annotations);
-}

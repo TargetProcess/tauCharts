@@ -1,5 +1,5 @@
-import {utils} from './utils/utils';
-import d3 from 'd3';
+import * as utils from './utils/utils';
+import * as d3 from 'd3';
 
 const d3Fromat4S = d3.format('.4s');
 const d3Fromat2R = d3.format('.2r');

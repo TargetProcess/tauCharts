@@ -1,5 +1,5 @@
 import {Plot} from './tau.plot';
-import {utils} from '../utils/utils';
+import * as utils from '../utils/utils';
 import {chartTypesRegistry} from '../chart-alias-registry';
 
 class Chart extends Plot {

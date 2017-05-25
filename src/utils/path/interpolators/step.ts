@@ -1,5 +1,7 @@
-export function getStepLine(points) {
-    var result = [];
+import {Point} from '../point';
+
+export function getStepLine(points: Point[]) {
+    var result: Point[] = [];
     var hasId = (points[0].id !== undefined);
     var hasSize = (points[0].size !== undefined);
     for (var i = 1, p0, p1, m0, m1; i < points.length; i++) {
@@ -29,8 +31,8 @@ export function getStepLine(points) {
     return result;
 }
 
-export function getStepBeforeLine(points) {
-    var result = [];
+export function getStepBeforeLine(points: Point[]) {
+    var result: Point[] = [];
     var hasId = (points[0].id !== undefined);
     var hasSize = (points[0].size !== undefined);
     for (var i = 1, p0, p1, m; i < points.length; i++) {
@@ -54,8 +56,8 @@ export function getStepBeforeLine(points) {
     return result;
 }
 
-export function getStepAfterLine(points) {
-    var result = [];
+export function getStepAfterLine(points: Point[]) {
+    var result: Point[] = [];
     var hasId = (points[0].id !== undefined);
     var hasSize = (points[0].size !== undefined);
     for (var i = 1, p0, p1, m; i < points.length; i++) {

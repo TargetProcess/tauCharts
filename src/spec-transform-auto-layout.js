@@ -1,6 +1,6 @@
-import {utils} from './utils/utils';
+import * as utils from './utils/utils';
 import {FormatterRegistry} from './formatter-registry';
-import d3 from 'd3';
+import * as d3 from 'd3';
 
 var sum = ((arr) => arr.reduce((sum, x) => (sum + x), 0));
 

@@ -1,4 +1,6 @@
-export function bezier(t, ...p) {
+import {Point} from './point';
+
+export function bezier(t: number, ...p: number[]) {
     if (p.length === 2) {
         return (p[0] * (1 - t) + p[1] * t);
     }
@@ -17,18 +19,16 @@ export function bezier(t, ...p) {
     );
 }
 
-export function getBezierPoint(t, ...p) {
+export function getBezierPoint(t: number, ...p: Point[]) {
     var x = p.map(p => p.x);
     var y = p.map(p => p.y);
-    x.unshift(t);
-    y.unshift(t);
     return {
-        x: bezier(...x),
-        y: bezier(...y)
+        x: bezier(t, ...x),
+        y: bezier(t, ...y)
     };
 }
 
-export function splitCubicSegment(t, p0, c0, c1, p1) {
+export function splitCubicSegment(t: number, p0: Point, c0: Point, c1: Point, p1: Point) {
     var c2 = getBezierPoint(t, p0, c0);
     var c3 = getBezierPoint(t, p0, c0, c1);
     var c4 = getBezierPoint(t, c0, c1, p1);

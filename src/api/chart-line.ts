@@ -1,28 +1,24 @@
 import {DataProcessor} from '../data-processor';
 import {normalizeConfig, transformConfig} from './converter-helpers';
+import {ChartConfig} from '../definitions';
 
-var ChartArea = (rawConfig) => {
-
+const ChartLine = (rawConfig: ChartConfig) => {
     var config = normalizeConfig(rawConfig);
 
     var data = config.data;
 
     var log = config.settings.log;
 
-    var orientStrategies = {
+    var lineOrientationStrategies = {
+
+        none: () => null,
 
         horizontal: (config) => {
-            return {
-                prop: config.x[config.x.length - 1],
-                flip: false
-            };
+            return config.x[config.x.length - 1];
         },
 
         vertical: (config) => {
-            return {
-                prop: config.y[config.y.length - 1],
-                flip: true
-            };
+            return config.y[config.y.length - 1];
         },
 
         auto: (config) => {
@@ -59,36 +55,32 @@ var ChartArea = (rawConfig) => {
             });
 
             var propSortBy;
-            var flip = null;
             if (isMatchAny) {
                 propSortBy = variations[variantIndex][0][0];
-                flip = (variantIndex !== 0);
             } else {
-                log('All attempts are failed. Gonna transform AREA to general PATH.');
-                propSortBy = null;
+                log([
+                    'All attempts are failed.',
+                    'Will orient line horizontally by default.',
+                    'NOTE: the [scatterplot] chart is more convenient for that data.'
+                ].join(' '));
+                propSortBy = primaryX;
             }
 
-            return {
-                prop: propSortBy,
-                flip: flip
-            };
+            return propSortBy;
         }
     };
 
-    var orient = ((typeof config.flip) !== 'boolean') ?
-        ('auto') :
-        ((config.flip) ? 'vertical' : 'horizontal');
-
-    var strategy = orientStrategies[orient];
+    var orient = (config.lineOrientation || '').toLowerCase();
+    var strategy = lineOrientationStrategies.hasOwnProperty(orient) ?
+        lineOrientationStrategies[orient] :
+        lineOrientationStrategies.auto;
 
     var propSortBy = strategy(config);
-    var elementName = 'ELEMENT.AREA';
-    if (propSortBy.prop !== null) {
-        config.data = DataProcessor.sortByDim(data, propSortBy.prop, config.dimensions[propSortBy.prop]);
-        config.flip = propSortBy.flip;
+    if (propSortBy !== null) {
+        config.data = DataProcessor.sortByDim(data, propSortBy, config.dimensions[propSortBy]);
     }
 
-    return transformConfig(elementName, config);
+    return transformConfig('ELEMENT.LINE', config);
 };
 
-export {ChartArea};
+export {ChartLine};

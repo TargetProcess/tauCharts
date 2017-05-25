@@ -1,5 +1,5 @@
 import {BaseScale} from './base';
-import {default as d3} from 'd3';
+import * as d3 from 'd3';
 
 export class OrdinalScale extends BaseScale {
 

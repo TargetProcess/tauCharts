@@ -11,6 +11,7 @@ const tsConfig = {
         'dom'
     ],
     include: [
+        '**/*.ts',
         '**/*.js'
     ],
     exclude: [
@@ -20,7 +21,7 @@ const tsConfig = {
 };
 
 const mainConfig = {
-    entry: './src/tau.charts.js',
+    entry: './src/tau.charts.ts',
     moduleId: 'taucharts',
     moduleName: 'tauCharts',
     exports: 'default',
@@ -39,7 +40,7 @@ const mainConfig = {
             'tau-tooltip': 'node_modules/tau-tooltip/src/tooltip.js'
         }),
         require('rollup-plugin-replace')({
-            VERSION: `'${require('../package.json').version}'`
+            '{{VERSION}}': `${require('../package.json').version}`
         }),
         require('rollup-plugin-node-resolve')(),
         require('rollup-plugin-commonjs')(),
@@ -52,9 +53,11 @@ const pluginsCommonConfig = {
     format: 'umd',
     useStrict: true,
     external: [
+        'd3',
         'taucharts'
     ],
     globals: {
+        'd3': 'd3',
         'taucharts': 'tauCharts'
     },
     plugins: [
@@ -104,22 +107,22 @@ const plugins = [
 
 const cache = {};
 
-module.exports = (gulp, { connect }) => {
+module.exports = (gulp, {connect}) => {
 
-    const createStream = ({ distDir, distFile, rollupConfig, production }) => {
+    const createStream = ({distDir, distFile, rollupConfig, production}) => {
 
-        const { entry } = rollupConfig;
+        const {entry} = rollupConfig;
         const config = Object.assign(
             {},
             rollupConfig,
-            { rollup: require('rollup') },
+            {rollup: require('rollup')},
             (production ?
                 {
                     sourceMap: false
                 } :
                 {
                     cache: cache[entry],
-                    sourceMap: false
+                    sourceMap: true
                 })
         );
 
@@ -169,7 +172,7 @@ module.exports = (gulp, { connect }) => {
                     {},
                     pluginsCommonConfig,
                     pluginConfig,
-                    { entry: `./plugins/${plugin}.js` }
+                    {entry: `./plugins/${plugin}.js`}
                 ),
                 production: false
             });

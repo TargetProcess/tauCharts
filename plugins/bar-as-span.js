@@ -1,6 +1,6 @@
 import tauCharts from 'taucharts';
+import * as d3 from 'd3';
 
-var d3 = tauCharts.api.d3;
 var utils = tauCharts.api.utils;
 
 function BarAsSpan(settings) {

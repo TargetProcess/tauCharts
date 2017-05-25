@@ -1,6 +1,6 @@
-import {utilsDraw} from '../../utils/utils-draw';
-import {utilsDom} from '../../utils/utils-dom';
-import {utils} from '../../utils/utils';
+import * as utilsDraw from '../../utils/utils-draw';
+import * as utilsDom from '../../utils/utils-dom';
+import * as utils from '../../utils/utils';
 import {LayerLabelsModel} from './layer-labels-model';
 import {LayerLabelsRules} from './layer-labels-rules';
 import {AnnealingSimulator} from './layer-labels-annealing-simulator';

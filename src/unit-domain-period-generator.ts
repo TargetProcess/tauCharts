@@ -1,4 +1,13 @@
-var PERIODS_MAP = {
+interface PeriodGenerator {
+    cast: (this: PeriodGenerator, d: Date) => Date;
+    next: (this: PeriodGenerator, d: Date) => Date;
+}
+
+interface PeriodMap {
+    [name: string]: PeriodGenerator;
+}
+
+var PERIODS_MAP: PeriodMap = {
 
     day: {
         cast: function (d) {
@@ -71,7 +80,7 @@ var PERIODS_MAP = {
     }
 };
 
-var PERIODS_MAP_UTC = {
+var PERIODS_MAP_UTC: PeriodMap = {
 
     day: {
         cast: function (d) {
@@ -146,18 +155,18 @@ var PERIODS_MAP_UTC = {
 
 var UnitDomainPeriodGenerator = {
 
-    add: function (periodAlias, obj, {utc} = {utc: false}) {
+    add(periodAlias: string, obj:PeriodGenerator, {utc} = {utc: false}) {
         (utc ? PERIODS_MAP_UTC : PERIODS_MAP)[periodAlias.toLowerCase()] = obj;
         return this;
     },
 
-    get: (periodAlias, {utc} = {utc: false}) => {
+    get(periodAlias: string, {utc} = {utc: false}) {
         var alias = periodAlias || '';
         return (utc ? PERIODS_MAP_UTC : PERIODS_MAP)[alias.toLowerCase()] || null;
     },
 
-    generate: (lTick, rTick, periodAlias, {utc} = {utc: false}) => {
-        var r = [];
+    generate: (lTick: Date, rTick: Date, periodAlias: string, {utc} = {utc: false}) => {
+        var r: Date[] = [];
         var period = UnitDomainPeriodGenerator.get(periodAlias, {utc});
         if (period) {
             var last = period.cast(new Date(rTick));

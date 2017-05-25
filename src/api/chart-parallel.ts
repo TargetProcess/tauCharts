@@ -1,6 +1,15 @@
-var ChartParallel = (config) => {
+import {
+    ChartConfig,
+    ChartGuide
+} from '../definitions';
 
-    var guide = Object.assign({columns: {}}, config.guide || {});
+interface ParallelConfig extends ChartConfig {
+    columns: string[];
+}
+
+const ChartParallel = (config: ParallelConfig) => {
+
+    var guide = Object.assign({columns: {}}, (config.guide as ChartConfig) || {});
 
     var scales = {};
 

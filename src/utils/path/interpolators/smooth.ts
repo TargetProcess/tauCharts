@@ -1,10 +1,11 @@
 import {getBezierPoint} from '../bezier';
+import {Point} from '../point';
 
 /**
  * Returns smooth cubic spline.
  * Applicable to math functions.
  */
-export function getCurve(points) {
+export function getCurve(points: Point[]) {
     return getCubicSpline(points, false);
 }
 
@@ -12,12 +13,12 @@ export function getCurve(points) {
  * Returns cubic spline that never exceeds extremums.
  * Applicable to business data.
  */
-export function getCurveKeepingExtremums(points) {
+export function getCurveKeepingExtremums(points: Point[]) {
     return getCubicSpline(points, true);
 }
 
-// TODO: Smooth sengments junctions.
-function getCubicSpline(points, limited) {
+// TODO: Smooth sengments junctions (try preserve curve radius).
+function getCubicSpline(points: Point[], limited: boolean): Point[] {
     if (points.length < 2) {
         return points.slice(0);
     }
@@ -36,7 +37,7 @@ function getCubicSpline(points, limited) {
         ];
     }
 
-    var curve = new Array((points.length - 1) * 3 + 1);
+    var curve: Point[] = new Array((points.length - 1) * 3 + 1);
     var c0, p1, c3, c1x, c1y, c2x, c2y, qx, qy, qt, tan, dx1, dx2, kl;
     for (var i = 0; i < points.length; i++) {
         curve[i * 3] = points[i];
@@ -46,7 +47,7 @@ function getCubicSpline(points, limited) {
         }
     }
     var result = curve.slice(0);
-    for (var j = 0, last; j < 3; j++) {
+    for (var j = 0; j < 3; j++) {
         for (i = 6; i < result.length; i += 3) {
             c0 = result[i - 5];
             p1 = result[i - 3];
@@ -100,7 +101,7 @@ function getCubicSpline(points, limited) {
                 3 / 2
             ), 2 / 3)
         };
-        last = curve.length - 1;
+        var last = curve.length - 1;
         curve[last - 1] = {
             x: interpolate(curve[last].x, curve[last - 3].x, 1 / 3),
             y: interpolate(curve[last].y, interpolate(
@@ -115,6 +116,6 @@ function getCubicSpline(points, limited) {
     return result;
 }
 
-function interpolate(a, b, t) {
+function interpolate(a: number, b: number, t: number) {
     return a + t * (b - a);
 }

@@ -1,10 +1,7 @@
 import tauCharts from 'taucharts';
+import * as d3 from 'd3';
 
 const svgNS = 'http://www.w3.org/2000/svg';
-
-{
-
-    var d3 = tauCharts.api.d3;
     var utils = tauCharts.api.utils;
     var svgUtils = tauCharts.api.svgUtils;
     var pluginsSDK = tauCharts.api.pluginsSDK;
@@ -443,4 +440,3 @@ const svgNS = 'http://www.w3.org/2000/svg';
     }
 
     tauCharts.api.plugins.add('crosshair', Crosshair);
-}

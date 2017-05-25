@@ -1,0 +1,18 @@
+{
+    "compilerOptions": {
+        "lib": [
+            "es6",
+            "dom"
+        ],
+        "allowJs": true,
+        "target": "es5"
+    },
+    "include": [
+        "plugins/**/*",
+        "src/**/*"
+    ],
+    "exclude": [
+        "bower_components",
+        "node_modules"
+    ]
+}

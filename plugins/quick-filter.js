@@ -1,7 +1,5 @@
 import tauCharts from 'taucharts';
 
-{
-
     var utils = tauCharts.api.utils;
     var REFRESH_DELAY = 0;
 
@@ -121,7 +119,7 @@ import tauCharts from 'taucharts';
                 var rect = svg.append('g').selectAll('rect')
                     .data(data)
                     .enter().append('rect')
-                    .attr('transform', function (d) {return 'translate(' + x(d) + ',' + (margin.top + padding) + ')'; })
+                    .attr('transform', function (d) {return 'translate(' + x(d) + ',' + (margin.top + padding) + ')';})
                     .attr('height', height)
                     .attr('width', 1);
 
@@ -253,4 +251,3 @@ import tauCharts from 'taucharts';
     }
 
     tauCharts.api.plugins.add('quick-filter', QuickFilter);
-}

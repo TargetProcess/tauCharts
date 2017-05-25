@@ -1,7 +1,7 @@
 import {CSS_PREFIX} from '../const';
 import {Element} from './element';
-import {utils} from '../utils/utils';
-import {default as d3} from 'd3';
+import * as utils from '../utils/utils';
+import * as d3 from 'd3';
 
 export class ParallelLine extends Element {
 

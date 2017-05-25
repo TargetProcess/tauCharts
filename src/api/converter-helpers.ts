@@ -1,14 +1,34 @@
-import {utils} from '../utils/utils';
-var convertAxis = (data) => (!data) ? null : data;
+import * as utils from '../utils/utils';
+import {
+    ChartConfig,
+    ChartDimensionsMap,
+    ChartGuide,
+    Unit
+} from '../definitions';
 
-var normalizeSettings = (axis, defaultValue = null) => {
+interface XChartConfig extends ChartConfig {
+    colorGuide?: Object;
+    sizeGuide?: Object;
+}
+
+interface ValidatedConfig {
+    status: string;
+    countMeasureAxis: number;
+    indexMeasureAxis: number[];
+    messages: string[];
+    axis: string;
+}
+
+var convertAxis = <T>(data: T) => (!data) ? null : data;
+
+var normalizeSettings = <T>(axis: T | T[], defaultValue: T = null): T[] => {
     return (!Array.isArray(axis)) ?
         [axis] :
         (axis.length === 0) ? [defaultValue] : axis;
 };
 
-var createElement = (type, config) => {
-    return {
+var createElement = (type: string, config: XChartConfig) => {
+    return <ChartConfig>{
         type: type,
         x: config.x,
         y: config.y,
@@ -32,7 +52,7 @@ const status = {
     FAIL: 'FAIL'
 };
 
-var strategyNormalizeAxis = {
+var strategyNormalizeAxis: {[status: string]: (axis: string[], config: ValidatedConfig, guide: ChartGuide[]) => string[]} = {
     [status.SUCCESS]: (axis) => axis,
     [status.FAIL]: (axis, data) => {
         throw new Error((data.messages || []).join('\n') ||
@@ -56,12 +76,12 @@ var strategyNormalizeAxis = {
     }
 };
 
-function validateAxis(dimensions, axis, axisName) {
+function validateAxis(dimensions: ChartDimensionsMap, axis: string[], axisName: string) {
     return axis.reduce(function (result, item, index) {
         var dimension = dimensions[item];
         if (!dimension) {
             result.status = status.FAIL;
-            if(item) {
+            if (item) {
                 result.messages.push(`"${item}" dimension is undefined for "${axisName}" axis`);
             } else {
                 result.messages.push(`"${axisName}" axis should be specified`);
@@ -80,10 +100,16 @@ function validateAxis(dimensions, axis, axisName) {
             }
         }
         return result;
-    }, {status: status.SUCCESS, countMeasureAxis: 0, indexMeasureAxis: [], messages: [], axis: axisName});
+    }, <ValidatedConfig>{
+        status: status.SUCCESS,
+        countMeasureAxis: 0,
+        indexMeasureAxis: [],
+        messages: [],
+        axis: axisName
+    });
 }
 
-function normalizeConfig(config) {
+function normalizeConfig(config: ChartConfig) {
 
     var x = normalizeSettings(config.x);
     var y = normalizeSettings(config.y);
@@ -116,7 +142,7 @@ function normalizeConfig(config) {
         });
 }
 
-function transformConfig(type, config) {
+function transformConfig(type: string, config: ChartConfig) {
 
     var x = config.x;
     var y = config.y;
@@ -126,7 +152,7 @@ function transformConfig(type, config) {
     var spec = {
         type: 'COORDS.RECT',
         unit: []
-    };
+    } as Unit;
 
     var xs = [].concat(x);
     var ys = [].concat(y);

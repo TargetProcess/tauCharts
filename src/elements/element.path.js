@@ -1,7 +1,7 @@
 import {CSS_PREFIX} from '../const';
 import {GrammarRegistry} from '../grammar-registry';
 import {BasePath} from './element.path.base';
-import {utils} from '../utils/utils';
+import * as utils from '../utils/utils';
 import {getLineClassesByCount} from '../utils/css-class-map';
 import {d3_createPathTween} from '../utils/d3-decorators';
 

@@ -1,4 +1,4 @@
-import {utils} from './utils/utils';
+import * as utils from './utils/utils';
 import {TauChartError as Error, errorCodes} from './error';
 
 var rules = {};

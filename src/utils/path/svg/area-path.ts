@@ -1,10 +1,12 @@
-export function getAreaPolygon(dirPoints, revPoints) {
+import {Point} from '../point';
+
+export function getAreaPolygon(dirPoints: Point[], revPoints: Point[]) {
 
     if (dirPoints.length < 2) {
         return '';
     }
 
-    const path = String.prototype.concat.apply('',
+    const path: string = String.prototype.concat.apply('',
         dirPoints
             .concat(revPoints.slice().reverse())
             .map((d, i) => `${i === 0 ? '' : ' '}${d.x},${d.y}`)
@@ -13,7 +15,7 @@ export function getAreaPolygon(dirPoints, revPoints) {
     return path;
 }
 
-export function getSmoothAreaPath(dirPoints, revPoints) {
+export function getSmoothAreaPath(dirPoints: Point[], revPoints: Point[]) {
 
     if (dirPoints.length < 2) {
         return '';

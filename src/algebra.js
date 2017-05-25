@@ -1,4 +1,4 @@
-import {utils} from './utils/utils';
+import * as utils from './utils/utils';
 import {UnitDomainPeriodGenerator} from './unit-domain-period-generator';
 
 var unify = (v) => utils.isDate(v) ? v.getTime() : v;

@@ -1,4 +1,4 @@
-module.exports = (gulp, { connect }) => {
+module.exports = (gulp, {connect}) => {
     gulp.task('watch',
         [
             'build-js',
@@ -12,7 +12,7 @@ module.exports = (gulp, { connect }) => {
                 root: './',
                 livereload: true
             });
-            gulp.watch('src/**/*.js', ['build-js']);
+            gulp.watch(['src/**/*.js', 'src/**/*.ts'], ['build-js']);
             gulp.watch('less/**/*.less', ['build-css']);
             gulp.watch('plugins/**/*.js', ['build-plugins-js']);
         });

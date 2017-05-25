@@ -1,6 +1,6 @@
-import {utilsDom} from './utils/utils-dom';
-import {utils} from './utils/utils';
-import {utilsDraw} from './utils/utils-draw';
+import * as utilsDom from './utils/utils-dom';
+import * as utils from './utils/utils';
+import * as utilsDraw from './utils/utils-draw';
 import {GPL} from './charts/tau.gpl';
 import {Plot} from './charts/tau.plot';
 import {Chart} from './charts/tau.chart';
@@ -10,41 +10,43 @@ import {unitsRegistry} from './units-registry';
 import {scalesRegistry} from './scales-registry';
 import {GrammarRegistry} from './grammar-registry';
 
-import {Cartesian}  from './elements/coords.cartesian';
-import {Parallel}   from './elements/coords.parallel';
-import {GeoMap}     from './elements/coords.geomap';
+import {Cartesian} from './elements/coords.cartesian';
+import {Parallel} from './elements/coords.parallel';
+import {GeoMap} from './elements/coords.geomap';
 import {GenericCartesian} from './elements/element.generic.cartesian';
-import {Point}      from './elements/element.point';
-import {Area}       from './elements/element.area';
-import {Path}       from './elements/element.path';
-import {Line}       from './elements/element.line';
-import {Interval}   from './elements/element.interval';
-import {ParallelLine}      from './elements/element.parallel.line';
+import {Point} from './elements/element.point';
+import {Area} from './elements/element.area';
+import {Path} from './elements/element.path';
+import {Line} from './elements/element.line';
+import {Interval} from './elements/element.interval';
+import {ParallelLine} from './elements/element.parallel.line';
 
-import {IdentityScale}     from './scales/identity';
-import {ColorScale}     from './scales/color';
-import {SizeScale}      from './scales/size';
-import {OrdinalScale}   from './scales/ordinal';
-import {PeriodScale}    from './scales/period';
-import {TimeScale}      from './scales/time';
-import {LinearScale}    from './scales/linear';
-import {LogarithmicScale}    from './scales/logarithmic';
-import {ValueScale}     from './scales/value';
-import {FillScale}      from './scales/fill';
+import {IdentityScale} from './scales/identity';
+import {ColorScale} from './scales/color';
+import {SizeScale} from './scales/size';
+import {OrdinalScale} from './scales/ordinal';
+import {PeriodScale} from './scales/period';
+import {TimeScale} from './scales/time';
+import {LinearScale} from './scales/linear';
+import {LogarithmicScale} from './scales/logarithmic';
+import {ValueScale} from './scales/value';
+import {FillScale} from './scales/fill';
 
-import {chartTypesRegistry}     from './chart-alias-registry';
-import {ChartMap}               from './api/chart-map';
-import {ChartInterval}          from './api/chart-interval';
-import {ChartScatterplot}       from './api/chart-scatterplot';
-import {ChartLine}              from './api/chart-line';
-import {ChartArea}              from './api/chart-area';
-import {ChartParallel}          from './api/chart-parallel';
+import {chartTypesRegistry} from './chart-alias-registry';
+import {ChartMap} from './api/chart-map';
+import {ChartInterval} from './api/chart-interval';
+import {ChartScatterplot} from './api/chart-scatterplot';
+import {ChartLine} from './api/chart-line';
+import {ChartArea} from './api/chart-area';
+import {ChartParallel} from './api/chart-parallel';
 import {d3_animationInterceptor} from './utils/d3-decorators';
 
 import {errorCodes} from './error';
 import {PluginsSDK} from './plugins-sdk';
 
-import d3 from 'd3';
+import {GrammarElement} from './definitions';
+
+import * as d3 from 'd3';
 
 import './utils/polyfills';
 
@@ -52,18 +54,18 @@ var colorBrewers = {};
 var plugins = {};
 
 var __api__ = {
-    UnitDomainPeriodGenerator: UnitDomainPeriodGenerator
+    UnitDomainPeriodGenerator
 };
 
 var api = {
     errorCodes,
-    unitsRegistry: unitsRegistry,
-    scalesRegistry: scalesRegistry,
+    unitsRegistry,
+    scalesRegistry,
     grammarRegistry: GrammarRegistry,
     tickFormat: FormatterRegistry,
     isChartElement: utils.isChartElement,
-    d3: d3,
-    utils: utils,
+    d3,
+    utils,
     svgUtils: utilsDraw,
     tickPeriod: UnitDomainPeriodGenerator,
     colorBrewers: {
@@ -76,7 +78,7 @@ var api = {
             return colorBrewers[name];
         }
     },
-    d3_animationInterceptor: d3_animationInterceptor,
+    d3_animationInterceptor,
     pluginsSDK: PluginsSDK,
     plugins: {
         add: function (name, brewer) {
@@ -92,14 +94,15 @@ var api = {
             });
         }
     },
+    chartTypesRegistry,
     globalSettings: {
 
         animationSpeed: 750,
         renderingTimeout: 10000,
-        asyncRendering: false,
+        asyncRendering: true,
         syncRenderingInterval: 50,
         syncPointerEvents: false,
-        handleRenderingErrors: true,
+        handleRenderingErrors: false,
         experimentalShouldAnimate: (spec) => {
             const createSvg = (tag, attrs) => {
                 var el = document.createElementNS('http://www.w3.org/2000/svg', tag);
@@ -141,7 +144,7 @@ var api = {
 
         defaultClassBrewer: utils.range(20).map((i) => 'color20-' + (1 + i)),
 
-        log: (msg, type) => {
+        log: (msg: string | string[], type: 'ERROR' | 'WARNING' | 'INFO' | 'LOG') => {
             type = type || 'INFO';
             if (!Array.isArray(msg)) {
                 msg = [msg];
@@ -177,7 +180,7 @@ var api = {
             'world-countries.json'
         ].join('/'),
 
-        getAxisTickLabelSize: utils.memoize(utilsDom.getAxisTickLabelSize, (text) => String(text).length),
+        getAxisTickLabelSize: utils.memoize(utilsDom.getAxisTickLabelSize, (text) => String(String(text).length)),
 
         getScrollbarSize: utilsDom.getScrollbarSize,
 
@@ -216,78 +219,64 @@ var api = {
     }
 };
 
-Plot.__api__ = api;
-Plot.globalSettings = api.globalSettings;
+(<any>Plot).__api__ = api;
+(<any>Plot).globalSettings = api.globalSettings;
 
-[
-    ['COORDS.RECT', Cartesian],
-    ['COORDS.MAP', GeoMap],
-    ['COORDS.PARALLEL', Parallel],
-    ['ELEMENT.GENERIC.CARTESIAN', GenericCartesian],
-    ['ELEMENT.POINT', Point, 'ELEMENT.GENERIC.CARTESIAN'],
-    ['ELEMENT.LINE', Line, 'ELEMENT.GENERIC.CARTESIAN'],
-    ['ELEMENT.PATH', Path, 'ELEMENT.GENERIC.CARTESIAN'],
-    ['ELEMENT.AREA', Area, 'ELEMENT.GENERIC.CARTESIAN'],
-    ['ELEMENT.INTERVAL', Interval, 'ELEMENT.GENERIC.CARTESIAN'],
-    ['ELEMENT.INTERVAL.STACKED', Interval, 'ELEMENT.GENERIC.CARTESIAN'],
-    ['PARALLEL/ELEMENT.LINE', ParallelLine]
-].reduce((memo, nv) => (memo.reg(...nv)), api.unitsRegistry);
+api.unitsRegistry
+    .reg('COORDS.RECT', Cartesian)
+    .reg('COORDS.MAP', GeoMap)
+    .reg('COORDS.PARALLEL', Parallel)
+    .reg('ELEMENT.GENERIC.CARTESIAN', GenericCartesian)
+    .reg('ELEMENT.POINT', Point, 'ELEMENT.GENERIC.CARTESIAN')
+    .reg('ELEMENT.LINE', Line, 'ELEMENT.GENERIC.CARTESIAN')
+    .reg('ELEMENT.PATH', Path, 'ELEMENT.GENERIC.CARTESIAN')
+    .reg('ELEMENT.AREA', Area, 'ELEMENT.GENERIC.CARTESIAN')
+    .reg('ELEMENT.INTERVAL', Interval, 'ELEMENT.GENERIC.CARTESIAN')
+    .reg('ELEMENT.INTERVAL.STACKED', Interval, 'ELEMENT.GENERIC.CARTESIAN')
+    .reg('ELEMENT.INTERVAL.STACKED', Interval, 'ELEMENT.GENERIC.CARTESIAN');
 
-[
-    [
-        'identity',
-        IdentityScale,
-        ((config, settings) => utils.defaults(
-            config,
-            {
-                references: settings.references,
-                refCounter: settings.refCounter
-            }))
-    ],
-    [
-        'color',
-        ColorScale,
-        ((config, settings) => utils.defaults(
-            config,
-            {
-                nice: settings.defaultNiceColor,
-                brewer: (config.dimType === 'measure' ?
-                        (settings.defaultColorBrewer) :
-                        (settings.defaultClassBrewer)
-                )
-            }))
-    ],
-    ['fill', FillScale],
-    ['size', SizeScale],
-    ['ordinal', OrdinalScale],
-    [
-        'period',
-        PeriodScale,
-        ((config, settings) => utils.defaults(
-            config,
-            {
-                utcTime: settings.utcTime
-            }))
-    ],
-    [
-        'time',
-        TimeScale,
-        ((config, settings) => utils.defaults(
-            config,
-            {
-                utcTime: settings.utcTime
-            }))
-    ],
-    ['linear', LinearScale],
-    ['logarithmic', LogarithmicScale],
-    ['value', ValueScale]
-].reduce((memo, nv) => (memo.reg(...nv)), api.scalesRegistry);
+api.scalesRegistry
+    .reg('identity', IdentityScale, ((config, settings) => utils.defaults(
+        config,
+        {
+            references: settings.references,
+            refCounter: settings.refCounter
+        }))
+    )
+    .reg('color', ColorScale, ((config, settings) => utils.defaults(
+        config,
+        {
+            nice: settings.defaultNiceColor,
+            brewer: (config.dimType === 'measure' ?
+                (settings.defaultColorBrewer) :
+                (settings.defaultClassBrewer)
+            )
+        }))
+    )
+    .reg('fill', FillScale)
+    .reg('size', SizeScale)
+    .reg('ordinal', OrdinalScale)
+    .reg('period', PeriodScale, ((config, settings) => utils.defaults(
+        config,
+        {
+            utcTime: settings.utcTime
+        }))
+    )
+    .reg('time', TimeScale, ((config, settings) => utils.defaults(
+        config,
+        {
+            utcTime: settings.utcTime
+        }))
+    )
+    .reg('linear', LinearScale)
+    .reg('logarithmic', LogarithmicScale)
+    .reg('value', ValueScale);
 
 var commonRules = [
-    ((config) => (!config.data) ? ['[data] must be specified'] : [])
+    ((config) => ((!config.data) ? ['[data] must be specified'] : [] as string | string[]))
 ];
 
-api.chartTypesRegistry = chartTypesRegistry
+api.chartTypesRegistry
 
     .add('scatterplot', ChartScatterplot, commonRules)
     .add('line', ChartLine, commonRules)
@@ -324,6 +313,11 @@ api.chartTypesRegistry = chartTypesRegistry
         }
     ]));
 
-/* global VERSION:false */
-var version = VERSION;
-export default {GPL, Plot, Chart, __api__, api, version};
+var version = '{{VERSION}}';
+export default {
+    GPL,
+    Plot,
+    Chart,
+    api,
+    version
+};

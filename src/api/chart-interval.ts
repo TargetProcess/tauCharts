@@ -1,4 +1,5 @@
 import {normalizeConfig, transformConfig} from './converter-helpers';
+import {ChartConfig} from '../definitions';
 
 var disableColorToBarPositionOnceColorAndAxesUseTheSameDim = ((normConfig) => {
 
@@ -12,7 +13,7 @@ var disableColorToBarPositionOnceColorAndAxesUseTheSameDim = ((normConfig) => {
     return normConfig;
 });
 
-var ChartInterval = (rawConfig) => {
+const ChartInterval = (rawConfig: ChartConfig) => {
     var config = normalizeConfig(rawConfig);
 
     config = disableColorToBarPositionOnceColorAndAxesUseTheSameDim(config);

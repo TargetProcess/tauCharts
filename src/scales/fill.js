@@ -1,7 +1,7 @@
 import {BaseScale} from './base';
-import {utils} from '../utils/utils';
+import * as utils from '../utils/utils';
 /* jshint ignore:start */
-import {default as d3} from 'd3';
+import * as d3 from 'd3';
 /* jshint ignore:end */
 
 export class FillScale extends BaseScale {

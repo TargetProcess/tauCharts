@@ -1,14 +1,24 @@
-import {utils} from '../../utils';
+import * as utils from '../../utils';
 import {getBezierPoint, splitCubicSegment as split} from '../bezier';
+import {Point} from '../point';
+
+interface XPoint extends Point {
+    isCubicControl?: boolean;
+    isInterpolated?: boolean;
+    positionIsBeingChanged?: boolean;
+}
 
 /**
  * Returns intermediate line or curve between two sources.
  */
-export default function interpolatePathPoints(pointsFrom, pointsTo, type = 'polyline') {
+export default function interpolatePathPoints(
+    pointsFrom: XPoint[],
+    pointsTo: XPoint[],
+    type: 'polyline' | 'cubic' = 'polyline') {
 
-    var interpolate;
+    var interpolate: (t: number) => XPoint[];
 
-    return (t) => {
+    return (t: number) => {
         if (t === 0) {
             return pointsFrom;
         }
@@ -32,7 +42,7 @@ export default function interpolatePathPoints(pointsFrom, pointsTo, type = 'poly
  * remains the same and added or excluded points are situated between
  * existing points.
  */
-function getLinearInterpolator(pointsFrom, pointsTo) {
+function getLinearInterpolator(pointsFrom: XPoint[], pointsTo: XPoint[]): (t: number) => XPoint[] {
 
     // TODO: Continue unfinished transition of ending points.
     pointsFrom = pointsFrom.filter(d => !d.isInterpolated);
@@ -64,6 +74,7 @@ function getLinearInterpolator(pointsFrom, pointsTo) {
             (indexFrom > 0 || indexTo > 0)
         ) {
             interpolators.push(getEndingInterpolator({
+                isCubic: false,
                 polylineFrom: pointsFrom.slice(0, indexFrom + 1),
                 polylineTo: pointsTo.slice(0, indexTo + 1),
                 toOppositeScale: indexTo === 0 ? toEndScale : toStartScale
@@ -75,6 +86,7 @@ function getLinearInterpolator(pointsFrom, pointsTo) {
             var prevIndexTo = idsTo.indexOf(remainingIds[i - 1]);
             if (indexFrom - prevIndexFrom > 1 || indexTo - prevIndexTo > 1) {
                 interpolators.push(getInnerInterpolator({
+                    isCubic: false,
                     polylineFrom: pointsFrom.slice(prevIndexFrom, indexFrom + 1),
                     polylineTo: pointsTo.slice(prevIndexTo, indexTo + 1)
                 }));
@@ -92,6 +104,7 @@ function getLinearInterpolator(pointsFrom, pointsTo) {
                 pointsTo.length - indexTo - 1 > 0)
         ) {
             interpolators.push(getEndingInterpolator({
+                isCubic: false,
                 polylineFrom: pointsFrom.slice(indexFrom),
                 polylineTo: pointsTo.slice(indexTo),
                 toOppositeScale: pointsTo.length - indexTo === 1 ? toEndScale : toStartScale
@@ -104,13 +117,14 @@ function getLinearInterpolator(pointsFrom, pointsTo) {
         pointsFrom.length > 0 && remainingIds.length === 0
     )) {
         interpolators.push(getNonRemainingPathInterpolator({
+            isCubic: false,
             polylineFrom: pointsFrom.slice(0),
             polylineTo: pointsTo.slice(0)
         }));
     }
 
-    return (t) => {
-        var intermediate = [];
+    return (t: number) => {
+        var intermediate: XPoint[] = [];
         interpolators.forEach((interpolator) => {
             var points = interpolator(t);
             push(intermediate, points);
@@ -124,7 +138,7 @@ function getLinearInterpolator(pointsFrom, pointsTo) {
  * remains the same and added or excluded points are situated between
  * existing points.
  */
-function getCubicInterpolator(pointsFrom, pointsTo) {
+function getCubicInterpolator(pointsFrom: XPoint[], pointsTo: XPoint[]) {
 
     for (var i = 2; i < pointsFrom.length - 1; i += 3) {
         pointsFrom[i - 1].isCubicControl = true;
@@ -241,8 +255,8 @@ function getCubicInterpolator(pointsFrom, pointsTo) {
         }));
     }
 
-    return (t) => {
-        var intermediate = [];
+    return (t: number) => {
+        var intermediate: XPoint[] = [];
         interpolators.forEach(ipl => {
             var points = ipl(t);
             push(intermediate, points);
@@ -256,7 +270,7 @@ function getEndingInterpolator({polylineFrom, polylineTo, isCubic, toOppositeSca
     var polyline = (polylineFrom.length > polylineTo.length ? polylineFrom : polylineTo);
     var decreasing = (polylineTo.length === 1);
     var isLeftEnding = (polylineFrom[0].id !== polylineTo[0].id);
-    var rightToLeft = Boolean(isLeftEnding ^ decreasing);
+    var rightToLeft = Boolean(isLeftEnding !== decreasing);
 
     return (t) => {
         var interpolated = (isCubic ? interpolateCubicEnding : interpolateEnding)({
@@ -368,7 +382,7 @@ function interpolatePoint(a, b, t) {
     if (a === b) {
         return b;
     }
-    var c = {};
+    var c = {} as XPoint;
     var props = Object.keys(a);
     props.forEach((k) => c[k] = interpolateValue(a[k], b[k], t));
     if (b.id !== undefined) {
@@ -693,8 +707,8 @@ function getDistance(x0, y0, x, y) {
     return Math.sqrt((x - x0) * (x - x0) + (y - y0) * (y - y0));
 }
 
-function splitCubicSegment(t, [p0, c0, c1, p1]) {
-    var seg = split(t, p0, c0, c1, p1);
+function splitCubicSegment(t: number, [p0, c0, c1, p1]: XPoint[]) {
+    var seg = split(t, p0, c0, c1, p1) as XPoint[];
     [seg[1], seg[2], seg[4], seg[5]].forEach(c => c.isCubicControl = true);
     Object.keys(p1).forEach((k) => {
         if (k !== 'x' && k !== 'y' && k !== 'id') {

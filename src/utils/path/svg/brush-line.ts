@@ -3,11 +3,13 @@ import {
     splitCubicSegment as split
 } from '../bezier';
 
+import {Point as Point} from '../point';
+
 /**
  * Returns line with variable width.
  * @param points Linear points.
  */
-export function getBrushLine(points) {
+export function getBrushLine(points: Point[]) {
     if (points.length === 0) {
         return '';
     }
@@ -25,7 +27,7 @@ export function getBrushLine(points) {
  * Returns curve with variable width.
  * @param points Cubic spline points.
  */
-export function getBrushCurve(points) {
+export function getBrushCurve(points: Point[]) {
     if (points.length === 0) {
         return '';
     }
@@ -39,7 +41,7 @@ export function getBrushCurve(points) {
     return segments.join(' ');
 }
 
-function getCirclePath(pt) {
+function getCirclePath(pt: Point) {
     var r = (pt.size / 2);
     return [
         `M${pt.x},${pt.y - r}`,
@@ -51,7 +53,7 @@ function getCirclePath(pt) {
     ].join(' ');
 }
 
-function getStraightSegmentPath(a, b) {
+function getStraightSegmentPath(a: Point, b: Point) {
     var tan = getCirclesTangents(a, b);
     if (!tan) {
         return getCirclePath((a.size > b.size ? a : b));
@@ -68,7 +70,7 @@ function getStraightSegmentPath(a, b) {
     ].join(' ');
 }
 
-function getCurveSegmentPath(a, ca, cb, b) {
+function getCurveSegmentPath(a: Point, ca: Point, cb: Point, b: Point) {
     var ctan = getCirclesCurveTangents(a, ca, cb, b);
     if (!ctan) {
         return getStraightSegmentPath(a, b);
@@ -91,18 +93,18 @@ function getCurveSegmentPath(a, ca, cb, b) {
     ].join(' ');
 }
 
-function angle(a, b) {
+function angle(a: Point, b: Point) {
     return Math.atan2(b.y - a.y, b.x - a.x);
 }
 
-function rotation(a, b) {
+function rotation(a: number, b: number) {
     if (b < a) {
         b += 2 * Math.PI;
     }
     return (b - a);
 }
 
-function dist(...p) {
+function dist(...p: Point[]) {
     var total = 0;
     for (var i = 1; i < p.length; i++) {
         total += Math.sqrt(
@@ -113,25 +115,27 @@ function dist(...p) {
     return total;
 }
 
-function polar(start, d, a) {
+function polar(start: Point, d: number, a: number) {
     return {
         x: (start.x + d * Math.cos(a)),
         y: (start.y + d * Math.sin(a))
     };
 }
 
-function splitCurveSegment(t, p0, c0, c1, p1) {
+function splitCurveSegment(t: number, ...p: Point[]);
+function splitCurveSegment(t: number, p0: Point, c0: Point, c1: Point, p1: Point) {
     var seg = split(t, p0, c0, c1, p1);
     var tl = 1 / (1 +
         dist(seg[3], seg[4], seg[5], seg[6], seg[3]) /
         dist(seg[0], seg[1], seg[2], seg[3], seg[0])
     );
-    seg[3].size = (p0.size * (1 - tl) + p1.size * tl);
+    (<Point>seg[3]).size = (p0.size * (1 - tl) + p1.size * tl);
 
     return seg;
 }
 
-function approximateQuadCurve(p0, p1, p2) {
+function approximateQuadCurve(...p: Point[]);
+function approximateQuadCurve(p0: Point, p1: Point, p2: Point) {
     var m = bezierPt(dist(p0, p1) / dist(p0, p1, p2), p0, p2);
     var c = bezierPt(2, m, p1);
     return [p0, c, p2];
@@ -163,7 +167,7 @@ function getCirclesTangents(a, b) {
     };
 }
 
-function getCirclesCurveTangents(a, ca, cb, b) {
+function getCirclesCurveTangents(a: Point, ca: Point, cb: Point, b: Point) {
     var d = dist(a, b);
     if (d === 0 ||
         (d + a.size / 2 <= b.size / 2) ||

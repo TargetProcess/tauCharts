@@ -1,8 +1,6 @@
 import tauCharts from 'taucharts';
+import * as d3 from 'd3';
 
-{
-
-    var d3 = tauCharts.api.d3;
     var utils = tauCharts.api.utils;
     var pluginsSDK = tauCharts.api.pluginsSDK;
     var TARGET_SVG_CLASS = 'graphical-report__tooltip-target';
@@ -484,4 +482,3 @@ import tauCharts from 'taucharts';
     }
 
     tauCharts.api.plugins.add('tooltip', Tooltip);
-}

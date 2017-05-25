@@ -1,7 +1,5 @@
 import tauCharts from 'taucharts';
 
-{
-
     var utils = tauCharts.api.utils;
 
     function ChartSettings(xSettings) {
@@ -65,4 +63,3 @@ import tauCharts from 'taucharts';
     }
 
     tauCharts.api.plugins.add('settings', ChartSettings);
-}

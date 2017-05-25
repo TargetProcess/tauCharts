@@ -1,12 +1,18 @@
-var NULL_HANDLER = {};
-var events = {};
+export type EventCallback = (sender: Emitter, data: any) => void;
+
+export interface EventHandlerMap {
+    [event: string]: EventCallback;
+}
+
+var NULL_HANDLER: EventHandlerMap = {};
+var events: EventHandlerMap = {};
 
 /**
  * Creates new type of event or returns existing one, if it was created before.
  * @param {string} eventName
  * @return {function(..eventArgs)}
  */
-function createDispatcher(eventName) {
+function createDispatcher(eventName: string) {
     var eventFunction = events[eventName];
 
     if (!eventFunction) {
@@ -71,6 +77,12 @@ function createDispatcher(eventName) {
     return eventFunction;
 }
 
+type HandlerObject = {
+    callbacks: EventHandlerMap;
+    context: any;
+    handler: HandlerObject;
+};
+
 /**
  * Base class for event dispatching. It provides interface for instance
  * to add and remove handler for desired events, and call it when event happens.
@@ -78,6 +90,9 @@ function createDispatcher(eventName) {
  */
 
 class Emitter {
+    handler: HandlerObject;
+    emit_destroy;
+
     /**
      * @constructor
      */
@@ -91,7 +106,7 @@ class Emitter {
      * @param {object} callbacks Callback set.
      * @param {object=} context Context object.
      */
-    addHandler(callbacks, context) {
+    addHandler(callbacks: EventHandlerMap, context?: any) {
         context = context || this;
         // add handler
         this.handler = {
@@ -101,14 +116,14 @@ class Emitter {
         };
     }
 
-    on(name, callback, context) {
+    on(name: string, callback: EventCallback, context?: any): EventHandlerMap {
         var obj = {};
         obj[name] = callback;
         this.addHandler(obj, context);
         return obj;
     }
 
-    fire(name, data) {
+    fire(name: string, data: any) {
         createDispatcher.call(this, name).call(this, data);
     }
 
@@ -118,8 +133,8 @@ class Emitter {
      * @param {object} callbacks Callback set.
      * @param {object=} context Context object.
      */
-    removeHandler(callbacks, context) {
-        var cursor = this;
+    removeHandler(callbacks: EventHandlerMap, context?: any) {
+        var cursor: HandlerObject | this = this;
         var prev;
 
         context = context || this;

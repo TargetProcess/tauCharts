@@ -1,15 +1,27 @@
 import {TauChartError as Error, errorCodes} from './error';
+import {GrammarElement,ElementConfig} from './definitions';
 
-var UnitsMap = {};
-var SeedsMap = {};
+interface ElementConsructor {
+    new (config: ElementConfig, Base?: ElementConsructor): GrammarElement;
+    prototype: GrammarElement;
+}
 
-var unitsRegistry = {
+var UnitsMap: {[type: string]: ElementConsructor } = {};
+var SeedsMap: {[type: string]: string} = {};
 
-    reg(unitType, xUnit, xSeed) {
+interface UnitsRegistry {
+    reg(unitType: string, xUnit: GrammarElement | ElementConsructor, xSeed?: string): UnitsRegistry;
+    get(unitType: string): ElementConsructor;
+    create(unitType: string, unitConfig: ElementConfig): GrammarElement;
+}
+
+var unitsRegistry: UnitsRegistry = {
+
+    reg(unitType: string, xUnit: GrammarElement | ElementConsructor, xSeed?: string) {
 
         if (xSeed) {
             SeedsMap[unitType] = xSeed;
-            UnitsMap[unitType] = function (config, Base) {
+            UnitsMap[unitType] = <ElementConsructor><any>function (config, Base) {
                 this.___tauchartsseed___ = new Base(this.init(config));
             };
             UnitsMap[unitType].prototype = Object.assign(
@@ -41,12 +53,12 @@ var unitsRegistry = {
                 },
                 xUnit);
         } else {
-            UnitsMap[unitType] = xUnit;
+            UnitsMap[unitType] = xUnit as ElementConsructor;
         }
         return this;
     },
 
-    get(unitType) {
+    get(unitType: string) {
 
         if (!UnitsMap.hasOwnProperty(unitType)) {
             throw new Error('Unknown unit type: ' + unitType, errorCodes.UNKNOWN_UNIT_TYPE);
@@ -55,9 +67,9 @@ var unitsRegistry = {
         return UnitsMap[unitType];
     },
 
-    create(unitType, unitConfig) {
+    create(unitType: string, unitConfig: ElementConfig) {
         var Unit = this.get(unitType);
-        var node;
+        var node: GrammarElement;
         if (SeedsMap[unitType]) {
             var Base = this.get(SeedsMap[unitType]);
             node = new Unit(unitConfig, Base);

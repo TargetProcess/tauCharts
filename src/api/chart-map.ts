@@ -1,13 +1,35 @@
-import {utils} from '../utils/utils';
-var ChartMap = (config) => {
-    let guide = Object.assign({sourcemap: config.settings.defaultSourceMap}, config.guide || {});
+import * as utils from '../utils/utils';
+import {
+    ChartConfig,
+    ChartGuide,
+    ChartScaleGuide
+} from '../definitions';
+
+interface MapConfig extends ChartConfig {
+    code?: string;
+    fill?: string;
+    latitude?: string;
+    longitude?: string;
+    guide?: MapGuide;
+}
+
+interface MapGuide extends ChartGuide {
+    code?: ChartScaleGuide & {
+        georole: string;
+    };
+    fill?: ChartScaleGuide;
+    sourcemap?: string;
+}
+
+const ChartMap = (config: MapConfig) => {
+    let guide = Object.assign({sourcemap: config.settings.defaultSourceMap}, (<MapGuide>config.guide) || {});
 
     guide.size = utils.defaults(guide.size || {}, {min: 1, max: 10});
     guide.code = utils.defaults(guide.code || {}, {georole: 'countries'});
 
     var scales = {};
 
-    var scalesPool = (type, prop, guide = {}) => {
+    var scalesPool = (type: string, prop: string, guide: ChartScaleGuide = {}) => {
         var key;
         var dim = prop;
         var src;

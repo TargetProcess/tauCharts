@@ -1,32 +1,48 @@
 import {Emitter} from '../event';
-import {utils} from '../utils/utils';
-import {default as d3} from 'd3';
+import * as utils from '../utils/utils';
+import * as d3 from 'd3';
+import {
+    global_Element,
+    DataFrame,
+    ElementConfig,
+    GrammarElement,
+    GrammarModel,
+    ScaleObject,
+    ScreenModel
+} from '../definitions';
 
-export class Element extends Emitter {
+export abstract class Element extends Emitter implements GrammarElement {
+
+    abstract init(config: ElementConfig);
+
+    config: ElementConfig;
+    screenModel: GrammarModel;
+    _elementNameSpace: string;
+    _elementScalesHub: {[scale: string]: ScaleObject};
 
     // add base behaviour here
-    constructor(config) {
-        super(config);
+    constructor(config: ElementConfig) {
+        super();
         this.screenModel = null;
         this._elementNameSpace = (config.namespace || 'default');
         this._elementScalesHub = {};
     }
 
-    regScale(paramId, scaleObj) {
+    regScale(paramId: string, scaleObj: ScaleObject) {
         this._elementScalesHub[paramId] = scaleObj;
         return this;
     }
 
-    getScale(paramId) {
+    getScale(paramId: string) {
         return this._elementScalesHub[paramId] || null;
     }
 
-    fireNameSpaceEvent(eventName, eventData) {
+    fireNameSpaceEvent(eventName: string, eventData: any) {
         var namespace = this._elementNameSpace;
         this.fire(`${eventName}.${namespace}`, eventData);
     }
 
-    subscribe(sel, dataInterceptor = (x => x), eventInterceptor = (x => x)) {
+    subscribe(sel: GrammarElement, dataInterceptor = ((x: any) => x), eventInterceptor = ((x: Event) => x)) {
         var self = this;
         var last = {};
         [
@@ -97,6 +113,8 @@ export class Element extends Emitter {
     addInteraction() {
         // do nothing
     }
+
+    abstract drawFrames(frames: DataFrame[]);
 
     draw() {
         // TODO: expose to explicit call everywhere

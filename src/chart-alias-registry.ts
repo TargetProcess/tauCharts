@@ -1,17 +1,24 @@
 import {TauChartError as Error, errorCodes} from './error';
-var chartTypes = {};
-var chartRules = {};
+import {ChartConfig} from './definitions';
 
-var throwNotSupported = (alias) => {
+type ConfigConverter = (config: ChartConfig) => ChartConfig;
+type ConfigRule = (config: ChartConfig) => string | string[];
+
+var chartTypes: {[alias: string]: ConfigConverter} = {};
+var chartRules: {[alias: string]: ConfigRule[]} = {};
+
+var throwNotSupported = (alias: string) => {
     let msg = `Chart type ${alias} is not supported.`;
     console.log(msg); // eslint-disable-line
     console.log(`Use one of ${Object.keys(chartTypes).join(', ')}.`); // eslint-disable-line
     throw new Error(msg, errorCodes.NOT_SUPPORTED_TYPE_CHART);
 };
 
+type Config = Object;
+
 var chartTypesRegistry = {
 
-    validate(alias, config) {
+    validate(alias: string, config: Config) {
 
         if (!chartRules.hasOwnProperty(alias)) {
             throwNotSupported(alias);
@@ -20,7 +27,7 @@ var chartTypesRegistry = {
         return chartRules[alias].reduce((e, rule) => e.concat(rule(config) || []), []);
     },
 
-    get(alias) {
+    get(alias: string) {
 
         var chartFactory = chartTypes[alias];
 
@@ -31,12 +38,13 @@ var chartTypesRegistry = {
         return chartFactory;
     },
 
-    add(alias, converter, rules = []) {
+    add(alias: string, converter: ConfigConverter, rules: ConfigRule[] = []) {
         chartTypes[alias] = converter;
         chartRules[alias] = rules;
-        return this;
+        return chartTypesRegistry;
     },
-    getAllRegisteredTypes: function () {
+
+    getAllRegisteredTypes() {
         return chartTypes;
     }
 };

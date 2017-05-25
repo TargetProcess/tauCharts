@@ -1,15 +1,17 @@
 import {CSS_PREFIX} from '../const';
 import {GrammarRegistry} from '../grammar-registry';
 import {LayerLabels} from './decorators/layer-labels';
-import {utils} from '../utils/utils';
-import {utilsDom} from '../utils/utils-dom';
-import {utilsDraw} from '../utils/utils-draw';
-import d3 from 'd3';
+import * as utils from '../utils/utils';
+import * as utilsDom from '../utils/utils-dom';
+import * as utilsDraw from '../utils/utils-draw';
+import * as d3 from 'd3';
 import {
     d3_setAttrs as attrs,
     d3_setClasses as classes,
     d3_transition
 } from '../utils/d3-decorators';
+import {GrammarElement} from '../definitions';
+import {Element} from './element';
 
 const Point = {
 
@@ -243,7 +245,11 @@ const Point = {
             return coordinates;
         }, {});
 
-        const tree = d3.quadtree()
+        interface Point {
+            x: number;
+            y: number;
+        }
+        const tree = d3.quadtree<Point>()
             .x((d) => d[0].x)
             .y((d) => d[0].y)
             .addAll(Object.keys(coordinates).map((c) => coordinates[c]));

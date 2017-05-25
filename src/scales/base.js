@@ -1,4 +1,4 @@
-import {utils} from '../utils/utils';
+import * as utils from '../utils/utils';
 
 var map_value = (dimType) => {
     return (dimType === 'date') ?

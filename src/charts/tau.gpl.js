@@ -1,5 +1,5 @@
 import {Emitter} from '../event';
-import {utils} from '../utils/utils';
+import * as utils from '../utils/utils';
 import {FramesAlgebra} from '../algebra';
 import {DataFrame} from '../data-frame';
 var cast = (v) => (utils.isDate(v) ? v.getTime() : v);

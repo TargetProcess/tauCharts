@@ -1,6 +1,6 @@
 import {BaseScale} from './base';
-import {utils} from '../utils/utils';
-import d3 from 'd3';
+import * as utils from '../utils/utils';
+import * as d3 from 'd3';
 
 export class LinearScale extends BaseScale {
 

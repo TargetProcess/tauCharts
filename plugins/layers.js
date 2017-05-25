@@ -1,8 +1,6 @@
 // jscs:disable *
 import tauCharts from 'taucharts';
 
-{
-
     var utils = tauCharts.api.utils;
     var pluginsSDK = tauCharts.api.pluginsSDK;
     var tokens = pluginsSDK.tokens();
@@ -617,5 +615,4 @@ import tauCharts from 'taucharts';
     }
 
     tauCharts.api.plugins.add('layers', Layers);
-}
 // jscs:enable *
