@@ -1,20 +1,25 @@
 import {BaseScale} from './base';
 import {UnitDomainPeriodGenerator} from '../unit-domain-period-generator';
 import * as utils from '../utils/utils';
-/* jshint ignore:start */
 import * as d3 from 'd3';
-/* jshint ignore:end */
+import {
+    DataFrame,
+    ScaleConfig,
+    ScaleFunction
+} from '../definitions';
 
 export class PeriodScale extends BaseScale {
 
-    constructor(xSource, scaleConfig) {
+    vars: Date[];
+
+    constructor(xSource: DataFrame, scaleConfig: ScaleConfig) {
 
         super(xSource, scaleConfig);
 
         var props = this.scaleConfig;
         var vars = this.vars;
 
-        var domain = d3.extent(vars);
+        var domain = d3.extent(vars) as number[];
         var min = (props.min === null || props.min === undefined) ? domain[0] : new Date(props.min).getTime();
         var max = (props.max === null || props.max === undefined) ? domain[1] : new Date(props.max).getTime();
 
@@ -48,11 +53,11 @@ export class PeriodScale extends BaseScale {
         var varSetTicks = this.vars.map(t => t.getTime());
         var props = this.scaleConfig;
 
-        var d3Domain = d3.scalePoint().domain(varSet);
+        var d3Domain = d3.scalePoint<Date>().domain(varSet);
         var d3Scale = d3Domain.range(interval)
             .padding(0.5);
 
-        var d3DomainTicks = d3.scalePoint().domain(varSetTicks.map(String));
+        var d3DomainTicks = d3.scalePoint<String>().domain(varSetTicks.map(String));
         var d3ScaleTicks = d3DomainTicks.range(interval)
             .padding(0.5);
 
@@ -62,10 +67,9 @@ export class PeriodScale extends BaseScale {
 
             var tick = new Date(key).getTime();
 
-            var ratioType = typeof(props.ratio);
-            if (ratioType === 'function') {
+            if (typeof props.ratio === 'function') {
                 return props.ratio(tick, size, varSetTicks);
-            } else if (ratioType === 'object') {
+            } else if (typeof props.ratio === 'object') {
                 return props.ratio[tick];
             } else {
                 // uniform distribution
@@ -73,7 +77,7 @@ export class PeriodScale extends BaseScale {
             }
         };
 
-        var scale = (x) => {
+        var scale = ((x) => {
 
             var r;
             var dx = new Date(x);
@@ -88,7 +92,7 @@ export class PeriodScale extends BaseScale {
             }
 
             return r;
-        };
+        }) as ScaleFunction;
 
         // have to copy properties since d3 produce Function with methods
         Object.keys(d3Scale).forEach((p) => (scale[p] = d3Scale[p]));

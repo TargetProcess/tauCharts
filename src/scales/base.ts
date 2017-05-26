@@ -1,24 +1,53 @@
 import * as utils from '../utils/utils';
+import {
+    DataFrame,
+    DataFilter,
+    ScaleConfig,
+    ScaleFields,
+    ScaleFunction
+} from '../definitions';
 
-var map_value = (dimType) => {
+var map_value = (dimType: string) => {
     return (dimType === 'date') ?
         ((v) => (new Date(v)).getTime()) :
         ((v) => v);
 };
 
-var generateHashFunction = (varSet, interval) => utils.generateHash([varSet, interval].map(JSON.stringify).join(''));
+var generateHashFunction = (varSet, interval) => {
+    return utils.generateHash([varSet, interval].map((v) => {
+        return JSON.stringify;
+    }).join(''));
+};
 
-export class BaseScale {
+export abstract class BaseScale implements ScaleFields {
 
-    constructor(dataFrame, scaleConfig) {
+    _fields: {[field: string]: any};
+    vars: any;
+
+    scaleConfig: ScaleConfig;
+    dim: string;
+    scaleDim: string;
+    scaleType: string;
+    source: string;
+    domain: () => any[];
+    isInteger: boolean;
+    originalSeries: () => any[];
+    isContains: (x) => boolean;
+    isEmptyScale: () => boolean;
+    fixup: (fn: (config: ScaleConfig) => ScaleConfig) => void;
+    commit: () => void;
+
+    abstract create(interval: [number, number]): ScaleFunction;
+
+    constructor(dataFrame: DataFrame, scaleConfig: ScaleConfig) {
 
         this._fields = {};
 
         var data;
         if (Array.isArray(scaleConfig.fitToFrameByDims) && scaleConfig.fitToFrameByDims.length) {
 
-            let leaveDimsInWhereArgsOrEx = (f) => {
-                var r = {};
+            let leaveDimsInWhereArgsOrEx = (f: DataFilter) => {
+                var r = {} as DataFilter;
                 if (f.type === 'where' && f.args) {
                     r.type = f.type;
                     r.args = scaleConfig
@@ -65,7 +94,7 @@ export class BaseScale {
             .addField('isInteger', originalSeries.every(Number.isInteger))
             .addField('originalSeries', (() => originalSeries))
             .addField('isContains', ((x) => this.isInDomain(x)))
-            .addField('isEmptyScale', ((x) => this.isEmpty(x)))
+            .addField('isEmptyScale', (() => this.isEmpty()))
             .addField('fixup', (fn) => {
                 var cfg = this.scaleConfig;
                 cfg.__fixup__ = cfg.__fixup__ || {};
@@ -79,17 +108,17 @@ export class BaseScale {
             });
     }
 
-    isInDomain(val) {
+    isInDomain(val: any) {
         return (this.domain().indexOf(val) >= 0);
     }
 
-    addField(key, val) {
+    addField(key: string, val) {
         this._fields[key] = val;
         this[key] = val;
         return this;
     }
 
-    getField(key) {
+    getField(key: string) {
         return this._fields[key];
     }
 
@@ -97,14 +126,14 @@ export class BaseScale {
         return !Boolean(this._fields.dim);
     }
 
-    toBaseScale(func, dynamicProps = null) {
+    toBaseScale(func: (x, row) => any, dynamicProps = null) {
 
         var scaleFn = Object
             .keys(this._fields)
             .reduce((memo, k) => {
                 memo[k] = this._fields[k];
                 return memo;
-            }, func);
+            }, func as ScaleFunction);
 
         scaleFn.getHash = (() => generateHashFunction(this.vars, dynamicProps));
         scaleFn.value = scaleFn;
@@ -112,7 +141,7 @@ export class BaseScale {
         return scaleFn;
     }
 
-    getVarSet(arr, scale) {
+    getVarSet(arr: any[], scale: ScaleConfig) {
 
         var series = scale.hasOwnProperty('series') ?
             scale.series :

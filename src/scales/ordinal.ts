@@ -1,9 +1,15 @@
 import {BaseScale} from './base';
 import * as d3 from 'd3';
+import {
+    DataFrame,
+    ScaleConfig
+} from '../definitions';
 
 export class OrdinalScale extends BaseScale {
 
-    constructor(xSource, scaleConfig) {
+    vars: string[];
+
+    constructor(xSource: DataFrame, scaleConfig: ScaleConfig) {
 
         super(xSource, scaleConfig);
 
@@ -11,7 +17,7 @@ export class OrdinalScale extends BaseScale {
             .addField('discrete', true);
     }
 
-    create(interval) {
+    create(interval: [number, number]) {
 
         var props = this.scaleConfig;
         var varSet = this.vars;
@@ -24,10 +30,9 @@ export class OrdinalScale extends BaseScale {
         var size = Math.max(...interval);
 
         var fnRatio = (key) => {
-            var ratioType = typeof(props.ratio);
-            if (ratioType === 'function') {
+            if (typeof props.ratio === 'function') {
                 return props.ratio(key, size, varSet);
-            } else if (ratioType === 'object') {
+            } else if (typeof props.ratio === 'object') {
                 return props.ratio[key];
             } else {
                 // uniform distribution
@@ -53,7 +58,7 @@ export class OrdinalScale extends BaseScale {
         // have to copy properties since d3 produce Function with methods
         Object.keys(d3Scale).forEach((p) => (scale[p] = d3Scale[p]));
 
-        scale.stepSize = (x) => (fnRatio(x) * size);
+        (<any>scale).stepSize = (x) => (fnRatio(x) * size);
 
         return this.toBaseScale(scale, interval);
     }

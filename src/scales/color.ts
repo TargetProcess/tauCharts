@@ -1,12 +1,17 @@
 import {BaseScale} from './base';
 import * as utils from '../utils/utils';
-/* jshint ignore:start */
 import * as d3 from 'd3';
-/* jshint ignore:end */
+import {
+    DataFrame,
+    ScaleConfig
+} from '../definitions';
 
 export class ColorScale extends BaseScale {
 
-    constructor(xSource, scaleConfig) {
+    vars: any[];
+    discrete: boolean;
+
+    constructor(xSource: DataFrame, scaleConfig: ScaleConfig) {
 
         super(xSource, scaleConfig);
 
@@ -21,7 +26,7 @@ export class ColorScale extends BaseScale {
         var props = this.scaleConfig;
 
         if (!discrete) {
-            var vars = d3.extent(this.vars);
+            var vars = d3.extent(this.vars as number[]) as number[];
 
             var isNum = (num) => (Number.isFinite(num) || utils.isDate(num));
             var min = isNum(props.min) ? props.min : vars[0];
@@ -58,34 +63,34 @@ export class ColorScale extends BaseScale {
         var discrete = this.discrete;
 
         var varSet = this.vars;
-        var brewer = this.getField('brewer');
+        var brewer: string[] = this.getField('brewer');
 
         var func = discrete ?
             this.createDiscreteScale(varSet, brewer) :
-            this.createContinuesScale(varSet, brewer);
+            this.createContinuesScale(varSet as [number, number], brewer);
 
         return this.toBaseScale(func);
     }
 
-    createDiscreteScale(varSet, brewer) {
+    createDiscreteScale(varSet: any[], brewer: string[]) {
 
         var defaultColorClass = () => 'color-default';
 
-        var buildArrayGetClass = (domain, brewer) => {
+        var buildArrayGetClass = (domain: any[], brewer: string[]) => {
             var fullDomain = domain.map((x) => String(x).toString());
-            return d3.scaleOrdinal().range(brewer).domain(fullDomain);
+            return d3.scaleOrdinal<any, string>().range(brewer).domain(fullDomain);
         };
 
         var buildObjectGetClass = (brewer, defaultGetClass) => {
             var domain = Object.keys(brewer);
             var range = domain.map(x => brewer[x]);
-            var calculateClass = d3.scaleOrdinal().range(range).domain(domain);
+            var calculateClass = d3.scaleOrdinal<any, string>().range(range).domain(domain);
             return (d) => brewer.hasOwnProperty(d) ? calculateClass(d) : defaultGetClass(d);
         };
 
-        var wrapString = (f) => ((d) => f(String(d).toString()));
+        var wrapString = (f: d3.ScaleOrdinal<any, string>) => ((d) => f(String(d).toString()));
 
-        var func;
+        var func: (x) => string;
 
         if (Array.isArray(brewer)) {
 
@@ -111,13 +116,13 @@ export class ColorScale extends BaseScale {
         return func;
     }
 
-    createContinuesScale(varSet, brewer) {
+    createContinuesScale(varSet: [number, number], brewer: string[]) {
 
-        var func;
+        var func: d3.ScaleLinear<string, number>;
 
         if (Array.isArray(brewer)) {
 
-            func = d3.scaleLinear()
+            func = d3.scaleLinear<string, number>()
                 .domain(utils.splitEvenly(varSet.map(x => x - 0), brewer.length))
                 .range(brewer);
 

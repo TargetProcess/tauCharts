@@ -1,6 +1,10 @@
 import {BaseScale} from './base';
 import * as utils from '../utils/utils';
 import * as d3 from 'd3';
+import {
+    DataFrame,
+    ScaleConfig
+} from '../definitions';
 
 let funcTypes = {
     sqrt: (x) => Math.sqrt(x),
@@ -9,7 +13,7 @@ let funcTypes = {
 
 export class SizeScale extends BaseScale {
 
-    constructor(xSource, scaleConfig) {
+    constructor(xSource: DataFrame, scaleConfig: ScaleConfig) {
 
         super(xSource, scaleConfig);
 

@@ -1,15 +1,21 @@
 import {BaseScale} from './base';
 import * as utils from '../utils/utils';
 import * as d3 from 'd3';
+import {
+    DataFrame,
+    ScaleConfig
+} from '../definitions';
 
 export class LinearScale extends BaseScale {
 
-    constructor(xSource, scaleConfig) {
+    vars: number[];
+
+    constructor(xSource: DataFrame, scaleConfig: ScaleConfig) {
 
         super(xSource, scaleConfig);
 
         var props = this.scaleConfig;
-        var vars = d3.extent(this.vars);
+        var vars: number[] = d3.extent(this.vars);
 
         var min = Number.isFinite(props.min) ? props.min : vars[0];
         var max = Number.isFinite(props.max) ? props.max : vars[1];
@@ -37,7 +43,7 @@ export class LinearScale extends BaseScale {
         return (!Number.isNaN(min) && !Number.isNaN(max) && (x <= max) && (x >= min));
     }
 
-    create(interval) {
+    create(interval: [number, number]) {
 
         var domain = this.vars;
 
@@ -50,7 +56,7 @@ export class LinearScale extends BaseScale {
         return this.toBaseScale(scale, interval);
     }
 
-    extendScale(scale) {
+    extendScale(scale: d3.ScaleLinear<number, number>) {
 
         // have to copy properties since d3 produce Function with methods
         var d3ScaleCopy = scale.copy;

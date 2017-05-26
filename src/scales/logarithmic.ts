@@ -1,10 +1,16 @@
 import {BaseScale} from './base';
 import {TauChartError, errorCodes} from '../error';
 import * as d3 from 'd3';
+import {
+    DataFrame,
+    ScaleConfig
+} from '../definitions';
 
 export class LogarithmicScale extends BaseScale {
 
-    constructor(xSource, scaleConfig) {
+    vars: number[];
+
+    constructor(xSource: DataFrame, scaleConfig: ScaleConfig) {
 
         super(xSource, scaleConfig);
 
@@ -21,7 +27,7 @@ export class LogarithmicScale extends BaseScale {
         throwIfCrossesZero(domain);
 
         if (props.nice) {
-            domain = niceLog10(domain);
+            domain = niceLog10(domain) as [number, number];
         }
 
         this.vars = domain;
@@ -37,7 +43,7 @@ export class LogarithmicScale extends BaseScale {
         return (!Number.isNaN(min) && !Number.isNaN(max) && (x <= max) && (x >= min));
     }
 
-    create(interval) {
+    create(interval: [number, number]) {
 
         var domain = this.vars;
         throwIfCrossesZero(domain);
@@ -51,11 +57,11 @@ export class LogarithmicScale extends BaseScale {
     }
 }
 
-function log10(x) {
+function log10(x: number) {
     return Math.log(x) / Math.LN10;
 }
 
-function throwIfCrossesZero(domain) {
+function throwIfCrossesZero(domain: number[]) {
     if (domain[0] * domain[1] <= 0) {
         throw new TauChartError(
             'Logarithmic scale domain cannot cross zero.',
@@ -76,7 +82,7 @@ function extendLogScale(scale) {
 
         var ticksPerExp = 10;
         var ticks = [];
-        var extent = d3.extent(scale.domain());
+        var extent = d3.extent(scale.domain()) as [number, number];
         var lowExp = Math.floor(log10(extent[0]));
         var topExp = Math.ceil(log10(extent[1]));
 
@@ -106,7 +112,7 @@ function extendLogScale(scale) {
     return scale;
 }
 
-function niceLog10(domain) {
+function niceLog10(domain: [number, number]): [number, number] {
 
     var isPositive = domain[0] > 0;
     var absDomain = domain.map((d) => Math.abs(d));
@@ -115,8 +121,8 @@ function niceLog10(domain) {
 
     var lowExp = low.toExponential().split('e');
     var topExp = top.toExponential().split('e');
-    var niceLow = parseFloat(Math.floor(lowExp[0]) + 'e' + lowExp[1]);
-    var niceTop = parseFloat(Math.ceil(topExp[0]) + 'e' + topExp[1]);
+    var niceLow = parseFloat(Math.floor(Number(lowExp[0])) + 'e' + lowExp[1]);
+    var niceTop = parseFloat(Math.ceil(Number(topExp[0])) + 'e' + topExp[1]);
 
     return (
         isPositive ?

@@ -1,8 +1,15 @@
 import {BaseScale} from './base';
+import {
+    DataFrame,
+    ScaleConfig
+} from '../definitions';
 
 export class IdentityScale extends BaseScale {
 
-    constructor(xSource, scaleConfig) {
+    _references: WeakMap<any, any>;
+    _refCounter: () => number;
+
+    constructor(xSource: DataFrame, scaleConfig: ScaleConfig) {
 
         super(xSource, scaleConfig);
 

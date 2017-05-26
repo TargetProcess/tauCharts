@@ -1,31 +1,42 @@
 import {BaseScale} from './base';
 import * as d3 from 'd3';
 import * as utils from '../utils/utils';
+import {
+    DataFrame,
+    ScaleConfig,
+    ScaleFunction
+} from '../definitions';
 
 export class TimeScale extends BaseScale {
 
-    constructor(xSource, scaleConfig) {
+    vars: Date[];
+    niceIntervalFn: (domain: [Date, Date]) => [Date, Date];
+
+    constructor(xSource: DataFrame, scaleConfig: ScaleConfig) {
 
         super(xSource, scaleConfig);
 
         var props = this.scaleConfig;
         var vars = this.vars;
 
-        var domain = d3.extent(vars).map((v) => new Date(v));
+        var domain = (d3.extent(vars) as [Date, Date]).map((v) => new Date(v));
 
         var min = (props.min === null || props.min === undefined) ? domain[0] : new Date(props.min).getTime();
         var max = (props.max === null || props.max === undefined) ? domain[1] : new Date(props.max).getTime();
 
         vars = [
-            new Date(Math.min(min, domain[0])),
-            new Date(Math.max(max, domain[1]))
+            new Date(Math.min(min as number, Number(domain[0]))),
+            new Date(Math.max(max as number, Number(domain[1])))
         ];
 
         this.niceIntervalFn = null;
         if (props.nice) {
             var niceInterval = props.niceInterval;
-            var d3TimeInterval = (niceInterval && d3.time[niceInterval] ?
-                (props.utcTime ? d3.time[niceInterval].utc : d3.time[niceInterval]) :
+            // Todo: Some map for d3 intervals.
+            var getD3Interval = (n: string) => d3[`time${n[0].toUpperCase()}${n.slice(1)}`];
+            var getD3UtcInterval = (n: string) => d3[`utc${n[0].toUpperCase()}${n.slice(1)}`];
+            var d3TimeInterval = (niceInterval && getD3Interval(niceInterval) ?
+                (props.utcTime ? getD3UtcInterval(niceInterval) : getD3Interval(niceInterval)) :
                 null);
             if (d3TimeInterval) {
                 this.niceIntervalFn = d3TimeInterval;
@@ -65,7 +76,7 @@ export class TimeScale extends BaseScale {
 
         var d3Scale = d3Domain.range(interval);
 
-        var scale = (x) => {
+        var scale = ((x) => {
             var min = varSet[0];
             var max = varSet[1];
 
@@ -76,7 +87,7 @@ export class TimeScale extends BaseScale {
                 x = min;
             }
             return d3Scale(new Date(x));
-        };
+        }) as ScaleFunction;
 
         // have to copy properties since d3 produce Function with methods
         Object.keys(d3Scale).forEach((p) => (scale[p] = d3Scale[p]));

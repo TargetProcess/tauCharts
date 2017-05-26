@@ -1,22 +1,23 @@
 import {
     DataFrame,
     ScaleConfig,
-    ScaleObject,
+    ScaleFunction,
     ScaleSettings
 } from './definitions';
+import {BaseScale} from './scales/base';
 
 type ConfigInterceptor = (config: ScaleConfig, settings: ScaleSettings) => ScaleConfig;
 
-interface ScaleConstructor {
-    new (dataFrame: DataFrame, config: ScaleConfig): ScaleObject;
+interface BaseScaleConstructor {
+    new (dataFrame: DataFrame, config: ScaleConfig): BaseScale;
 }
 
-var ScalesMap: {[scale: string]: ScaleConstructor} = {};
+var ScalesMap: {[scale: string]: BaseScaleConstructor} = {};
 var ConfigMap: {[scale: string]: ConfigInterceptor} = {};
 
 export const scalesRegistry = {
 
-    reg(scaleType: string, scaleClass: ScaleConstructor, configInterceptor: ConfigInterceptor = (x => x)) {
+    reg(scaleType: string, scaleClass: BaseScaleConstructor, configInterceptor: ConfigInterceptor = (x => x)) {
         ScalesMap[scaleType] = scaleClass;
         ConfigMap[scaleType] = configInterceptor;
         return scalesRegistry;
@@ -35,4 +36,8 @@ export const scalesRegistry = {
             }
         };
     }
+}
+
+export interface ScaleConstructor {
+    create(scaleType: string, dataFrame: DataFrame, scaleConfig: ScaleConfig): BaseScale;
 }

@@ -1,6 +1,9 @@
-export type global_Element = Element;
 import {EventCallback, EventHandlerMap} from './event';
 import {Plot} from './charts/tau.plot';
+import {Selection} from 'd3';
+
+export type global_Element = Element;
+export type d3Selection = Selection<global_Element, any, global_Element, any>;
 
 export interface GrammarModel {
     [m: string]: (row: any) => any;
@@ -10,19 +13,23 @@ export interface ScreenModel {
     [m: string]: (row: any) => any;
 }
 
-export interface DataFrame {
-    part(): any[];
+export interface DataFilter {
+    type: string;
+    args: {[key: string]: string};
 }
 
-export type d3Selection = d3.Selection<global_Element, any, global_Element, any>;
+export interface DataFrame {
+    part(filter?: (f: DataFilter) => DataFilter): any[];
+    full(): any[];
+}
 
 export interface GrammarElement {
     init?(config: ElementConfig);
     config?: ElementConfig;
     screenModel?: ScreenModel;
     on?(name: string, callback: EventCallback, context?: any): EventHandlerMap;
-    regScale?(paramId: string, scaleObj: ScaleObject): GrammarElement;
-    getScale?(paramId: string): ScaleObject;
+    regScale?(paramId: string, scaleObj: ScaleFunction): GrammarElement;
+    getScale?(paramId: string): ScaleFunction;
     fireNameSpaceEvent?(eventName: string, eventData: any);
     subscribe?(sel: GrammarElement, dataInterceptor: (x: any) => any, eventInterceptor: (x: Event) => Event);
     allocateRect?(): {
@@ -70,16 +77,52 @@ export interface ElementGuide {
     };
 }
 
-export interface ScaleObject {
+export interface ScaleFields {
+    dim: string;
+    scaleDim: string;
+    scaleType: string;
+    discrete?: boolean;
+    source: string;
+    domain: () => any[];
+    isInteger: boolean;
+    originalSeries: () => any[];
+    isContains: (x) => boolean;
+    isEmptyScale: () => boolean;
+    fixup: (fn: (config: ScaleConfig) => ScaleConfig) => void;
+    commit: () => void;
+    period?: string;
+}
 
+export interface ScaleFunction extends ScaleFields {
+    (x): any;
+    getHash: () => string;
+    value: (x, row) => any;
+    stepSize?: (x) => number;
+    ticks?: () => any[];
+    copy?: () => ScaleFunction;
 }
 
 export interface ScaleConfig {
+    dim?: string;
+    type?: string;
+    source?: string;
     dimType?: string;
     references?: WeakMap<any, any>;
     refCounter?: () => number;
     nice?: boolean;
     brewer?: string[];
+    fitToFrameByDims?: string[];
+    order?: string[];
+    autoScale?: boolean;
+    series?: any[];
+    __fixup__?: any;
+    min?: any;
+    max?: any;
+    ratio?: {[key: string]: number} | ((key: any, maxSize: number, keys: any[]) => number);
+    niceInterval?: string;
+    utcTime?: boolean;
+    period?: string;
+    georole?: string;
 }
 
 export interface ScaleSettings {

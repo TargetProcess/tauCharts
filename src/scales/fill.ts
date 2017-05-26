@@ -1,17 +1,21 @@
 import {BaseScale} from './base';
 import * as utils from '../utils/utils';
-/* jshint ignore:start */
 import * as d3 from 'd3';
-/* jshint ignore:end */
+import {
+    DataFrame,
+    ScaleConfig
+} from '../definitions';
 
 export class FillScale extends BaseScale {
 
-    constructor(xSource, scaleConfig) {
+    vars: number[];
+
+    constructor(xSource: DataFrame, scaleConfig: ScaleConfig) {
 
         super(xSource, scaleConfig);
 
         var props = this.scaleConfig;
-        var vars = d3.extent(this.vars);
+        var vars = d3.extent(this.vars) as [number, number];
 
         var min = Number.isFinite(props.min) ? props.min : vars[0];
         var max = Number.isFinite(props.max) ? props.max : vars[1];
@@ -33,7 +37,7 @@ export class FillScale extends BaseScale {
     }
 
     isInDomain(x) {
-        var domain = this.domain();
+        var domain = this.domain() as [number, number];
         var min = domain[0];
         var max = domain[domain.length - 1];
         return (!Number.isNaN(min) && !Number.isNaN(max) && (x <= max) && (x >= min));
@@ -43,7 +47,7 @@ export class FillScale extends BaseScale {
 
         var varSet = this.vars;
 
-        var brewer = this.getField('brewer');
+        var brewer = this.getField('brewer') as string[];
 
         if (!Array.isArray(brewer)) {
             throw new Error('This brewer is not supported');
@@ -52,9 +56,9 @@ export class FillScale extends BaseScale {
         var size = brewer.length;
         var step = (varSet[1] - varSet[0]) / size;
         var domain = utils.range(size - 1).map((i) => i + 1)
-            .reduce((memo, i) => memo.concat([varSet[0] + (i * step)]), []);
+            .reduce((memo, i) => memo.concat([varSet[0] + (i * step)]), [] as number[]);
 
-        var func = d3.scaleThreshold().domain(domain).range(brewer);
+        var func = d3.scaleThreshold<number, string>().domain(domain).range(brewer);
 
         return this.toBaseScale(func);
     }

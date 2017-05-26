@@ -1,8 +1,12 @@
 import {BaseScale} from './base';
+import {
+    DataFrame,
+    ScaleConfig
+} from '../definitions';
 
 export class ValueScale extends BaseScale {
 
-    constructor(xSource, scaleConfig) {
+    constructor(xSource: DataFrame, scaleConfig: ScaleConfig) {
 
         super(xSource, scaleConfig);
 

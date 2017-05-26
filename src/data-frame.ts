@@ -1,8 +1,24 @@
 import * as utils from './utils/utils';
 
+interface DataFrameOptions {
+    key?: string;
+    pipe?: string;
+    source?: string;
+    units?: string;
+}
+
 export class DataFrame {
 
-    constructor({key: key, pipe: pipe, source: source, units: units}, dataSource, transformations = {}) {
+    key;
+    pipe;
+    source;
+    units;
+
+    _frame;
+    _data;
+    _pipeReducer;
+
+    constructor({key, pipe, source, units}: DataFrameOptions, dataSource, transformations = {}) {
 
         this.key = key;
         this.pipe = pipe || [];
@@ -16,7 +32,7 @@ export class DataFrame {
 
     hash() {
         var x = [this._frame.pipe, this._frame.key, this._frame.source]
-            .map(JSON.stringify)
+            .map((x) => JSON.stringify(x))
             .join('');
 
         return utils.generateHash(x);

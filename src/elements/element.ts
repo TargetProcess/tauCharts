@@ -7,7 +7,7 @@ import {
     ElementConfig,
     GrammarElement,
     GrammarModel,
-    ScaleObject,
+    ScaleFunction,
     ScreenModel
 } from '../definitions';
 
@@ -18,7 +18,7 @@ export abstract class Element extends Emitter implements GrammarElement {
     config: ElementConfig;
     screenModel: GrammarModel;
     _elementNameSpace: string;
-    _elementScalesHub: {[scale: string]: ScaleObject};
+    _elementScalesHub: {[scale: string]: ScaleFunction};
 
     // add base behaviour here
     constructor(config: ElementConfig) {
@@ -28,7 +28,7 @@ export abstract class Element extends Emitter implements GrammarElement {
         this._elementScalesHub = {};
     }
 
-    regScale(paramId: string, scaleObj: ScaleObject) {
+    regScale(paramId: string, scaleObj: ScaleFunction) {
         this._elementScalesHub[paramId] = scaleObj;
         return this;
     }
