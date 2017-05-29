@@ -1,8 +1,8 @@
 import * as utils from '../utils/utils';
 import {
     ChartConfig,
-    ChartGuide,
-    ChartScaleGuide
+    ElementGuide,
+    ScaleGuide
 } from '../definitions';
 
 interface MapConfig extends ChartConfig {
@@ -13,11 +13,11 @@ interface MapConfig extends ChartConfig {
     guide?: MapGuide;
 }
 
-interface MapGuide extends ChartGuide {
-    code?: ChartScaleGuide & {
+interface MapGuide extends ElementGuide {
+    code?: ScaleGuide & {
         georole: string;
     };
-    fill?: ChartScaleGuide;
+    fill?: ScaleGuide;
     sourcemap?: string;
 }
 
@@ -29,7 +29,7 @@ const ChartMap = (config: MapConfig) => {
 
     var scales = {};
 
-    var scalesPool = (type: string, prop: string, guide: ChartScaleGuide = {}) => {
+    var scalesPool = (type: string, prop: string, guide: ScaleGuide = {}) => {
         var key;
         var dim = prop;
         var src;

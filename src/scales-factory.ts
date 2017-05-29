@@ -1,16 +1,21 @@
 import {DataFrame} from './data-frame';
 import {ScaleConstructor} from './scales-registry';
 import {
+    DataSources,
     ScaleConfig
 } from './definitions';
+
+interface Scales {
+    [scale: string]: ScaleConfig;
+}
 
 export class ScalesFactory {
 
     registry: ScaleConstructor;
-    sources;
-    scales;
+    sources: DataSources;
+    scales: Scales;
 
-    constructor(scalesRegistry: ScaleConstructor, sources, scales) {
+    constructor(scalesRegistry: ScaleConstructor, sources: DataSources, scales: Scales) {
         this.registry = scalesRegistry;
         this.sources = sources;
         this.scales = scales;

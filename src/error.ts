@@ -1,5 +1,12 @@
+interface ErrorArgs {
+    field?: string;
+}
+
 class TauChartError extends Error {
-    constructor(message, errorCode, errorArgs) {
+    errorCode: string;
+    errorArgs: ErrorArgs;
+
+    constructor(message: string, errorCode: string, errorArgs?: ErrorArgs) {
         super();
         this.name = 'TauChartError';
         this.message = message;

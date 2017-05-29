@@ -1,16 +1,25 @@
 import * as utils from './utils/utils';
+import {Dimension} from './definitions';
+
+interface XDim extends Dimension {
+    hasNull?: boolean;
+    value?: any;
+}
+interface DimTypeMap {
+    [dim: string]: XDim;
+};
 
 var DataProcessor = {
 
-    isYFunctionOfX: (data, xFields, yFields) => {
+    isYFunctionOfX: (data: any[], xFields: string[], yFields: string[]) => {
         var isRelationAFunction = true;
-        var error = null;
+        var error: {type: string; keyX: string; keyY: string; valX: string; errY: [string, string]} = null;
         // domain should has only 1 value from range
         try {
             data.reduce(
                 (memo, item) => {
 
-                    var fnVar = (hash, f) => {
+                    var fnVar = (hash: string[], f: string) => {
                         var propValue = item[f];
                         var hashValue = utils.isObject(propValue) ? JSON.stringify(propValue) : propValue;
                         hash.push(hashValue);
@@ -54,7 +63,7 @@ var DataProcessor = {
         };
     },
 
-    excludeNullValues: (dimensions, onExclude) => {
+    excludeNullValues: (dimensions: DimTypeMap, onExclude: (item: any) => void) => {
         var fields = Object.keys(dimensions).reduce((fields, k) => {
             var d = dimensions[k];
             if ((!d.hasOwnProperty('hasNull') || d.hasNull) && ((d.type === 'measure') || (d.scale === 'period'))) {
@@ -72,7 +81,7 @@ var DataProcessor = {
         };
     },
 
-    autoAssignScales: function (dimensions) {
+    autoAssignScales: function (dimensions: DimTypeMap) {
 
         var defaultType = 'category';
         var scaleMap = {
@@ -81,7 +90,7 @@ var DataProcessor = {
             measure: 'linear'
         };
 
-        var r = {};
+        var r: DimTypeMap = {};
         Object.keys(dimensions).forEach((k) => {
             var item = dimensions[k];
             var type = (item.type || defaultType).toLowerCase();
@@ -98,7 +107,7 @@ var DataProcessor = {
         return r;
     },
 
-    autoDetectDimTypes: function (data) {
+    autoDetectDimTypes: function (data: any[]): DimTypeMap {
 
         var defaultDetect = {
             type: 'category',
@@ -153,7 +162,7 @@ var DataProcessor = {
         return data.reduce(reducer, {});
     },
 
-    sortByDim: function (data, dimName, dimInfo) {
+    sortByDim: function (data: any[], dimName: string, dimInfo: XDim) {
         var rows = data;
 
         var interceptor = (['period', 'time'].indexOf(dimInfo.scale) >= 0) ?

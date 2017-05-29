@@ -6,11 +6,34 @@ export type global_Element = Element;
 export type d3Selection = Selection<global_Element, any, global_Element, any>;
 
 export interface GrammarModel {
-    [m: string]: (row: any) => any;
+    [m: string]: any;
+
+    color?(row): string;
+    data?(): any[];
+    flip?: boolean;
+    group?(row): string;
+    id?(row): any;
+    label?(row): string;
+    order?(row): number;
+    scaleColor?: ScaleFunction;
+    scaleIdentity?: ScaleFunction;
+    scaleLabel?: ScaleFunction;
+    scaleSize?: ScaleFunction;
+    scaleSplit?: ScaleFunction;
+    scaleX?: ScaleFunction;
+    scaleY?: ScaleFunction;
+    size?(row): number;
+    xi?(row): number;
+    y0?(row): number;
+    yi?(row): number;
 }
 
 export interface ScreenModel {
     [m: string]: (row: any) => any;
+}
+
+export interface DataKey {
+    name: string;
 }
 
 export interface DataFilter {
@@ -21,6 +44,22 @@ export interface DataFilter {
 export interface DataFrame {
     part(filter?: (f: DataFilter) => DataFilter): any[];
     full(): any[];
+}
+
+export interface DataSource {
+    data: any[];
+    dims: {
+        [dim: string]: Dimension;
+    };
+}
+
+export interface DataSources {
+    '/': DataSource;
+    '?': DataSource;
+}
+
+export interface DataTransformations {
+    [trans: string]: (data: any[], tuple: any) => any[];
 }
 
 export interface GrammarElement {
@@ -63,18 +102,28 @@ export interface ElementConfig {
     adjustRules?: ((prev?: GrammarModel, args?: any) => GrammarModel)[];
 }
 
+type Brewer = string[] | {[group: string]: string};
+
 export interface ElementGuide {
     animationSpeed?: number;
     avoidScalesOverflow?: boolean;
     enableColorToBarPosition?: boolean;
     maxHighlightDistance?: number;
-    size?: {
-        minSize?: number;
-        maxSize?: number;
+    x?: ScaleGuide;
+    y?: ScaleGuide;
+    size?: ScaleGuide;
+    label?: ScaleGuide;
+    padding?: {
+        t: number;
+        r: number;
+        b: number;
+        l: number;
     };
-    label?: {
-        position?: string[];
-    };
+    color?: ScaleGuide;
+    showAnchors?: 'always' | 'hover' | 'never';
+    interpolate?: 'linear' | 'smooth' | 'smooth-keep-extremum' | 'step' | 'step-before' | 'step-after';
+    split?: ScaleGuide;
+    showGridLines?: 'x' | 'y' | 'xy';
 }
 
 export interface ScaleFields {
@@ -96,11 +145,14 @@ export interface ScaleFields {
 export interface ScaleFunction extends ScaleFields {
     (x): any;
     getHash: () => string;
-    value: (x, row) => any;
-    stepSize?: (x) => number;
+    value: (x, row?) => any;
+    stepSize?: (x?) => number;
     ticks?: () => any[];
     copy?: () => ScaleFunction;
+    discrete?: boolean;
 }
+
+type RatioArg = {[key: string]: number} | ((key: any, maxSize: number, keys: any[]) => number);
 
 export interface ScaleConfig {
     dim?: string;
@@ -110,19 +162,60 @@ export interface ScaleConfig {
     references?: WeakMap<any, any>;
     refCounter?: () => number;
     nice?: boolean;
-    brewer?: string[];
+    brewer?: Brewer;
     fitToFrameByDims?: string[];
-    order?: string[];
+    order?: any[];
     autoScale?: boolean;
     series?: any[];
     __fixup__?: any;
+    fixed?: boolean;
+    minSize?: number;
+    maxSize?: number;
     min?: any;
     max?: any;
-    ratio?: {[key: string]: number} | ((key: any, maxSize: number, keys: any[]) => number);
+    ratio?: RatioArg;
     niceInterval?: string;
     utcTime?: boolean;
     period?: string;
     georole?: string;
+}
+
+export interface Unit {
+    color?: string;
+    expression?: Expression;
+    flip?: boolean;
+    frames?: DataFrame[];
+    guide?: ElementGuide;
+    identity?: string;
+    label?: string;
+    namespace?: string;
+    options?: {
+
+    };
+    size?: string;
+    split?: string;
+    stack?: boolean;
+    transformation?: {
+        type: string;
+        args: {
+            type: string;
+        } & {
+            [dim: string]: ScaleConfig;
+        }
+    }[];
+    type?: string;
+    uid?: string;
+    x?: string;
+    y?: string;
+    unit?: Unit[];
+    units?: Unit[];
+}
+
+export interface Expression {
+    inherit?: boolean;
+    operator?: string;
+    params?: string[];
+    source?: string;
 }
 
 export interface ScaleSettings {
@@ -145,7 +238,7 @@ export interface ChartConfig {
     label?: string;
     flip?: boolean;
     stack?: boolean;
-    guide?: ChartGuide | ChartGuide[];
+    guide?: ElementGuide | ElementGuide[];
     dimensions?: ChartDimensionsMap;
     spec?: ChartSpec;
     settings?: ChartSettings;
@@ -154,51 +247,39 @@ export interface ChartConfig {
     plugins?: PluginObject[];
 }
 
-export interface ChartScaleGuide {
+export interface ScaleGuide {
     nice?: boolean;
     min?: number;
     max?: number;
+    minSize?: number;
+    maxSize?: number;
     label?: string | {text: string; padding: number;};
     tickPeriod?: string;
     tickFormat?: string;
+    fontSize?: string;
+    brewer?: Brewer;
+    func?: string;
+    autoScale?: boolean;
+    niceInterval?: string;
+    fitToFrameByDims?: string[];
+    ratio?: RatioArg;
+    tickLabel?: string;
 }
 
-export interface ChartDimension {
+export interface Dimension {
     type: 'category' | 'measure' | 'order';
     scale?: 'ordinal' | 'period' | 'time' | 'linear' | 'logarithmic';
-    order?: string[];
+    order?: any[];
+    value?: any;
 }
 
 export interface ChartDimensionsMap {
-    [field: string]: ChartDimension;
-}
-
-export interface ChartGuide {
-    x?: ChartScaleGuide;
-    y?: ChartScaleGuide;
-    size?: ChartScaleGuide;
-    padding?: {
-        t: number;
-        r: number;
-        b: number;
-        l: number;
-    };
-    color?: {
-        brewer?: string[] | {[group: string]: string};
-    };
-    showAnchors?: 'always' | 'hover' | 'never';
-    interpolate?: 'linear' | 'smooth' | 'smooth-keep-extremum' | 'step' | 'step-before' | 'step-after';
-    split?: boolean;
-    showGridLines?: 'x' | 'y' | 'xy';
+    [field: string]: Dimension;
 }
 
 export interface ChartSpec {
     dimensions?: ChartDimensionsMap;
-    unit?: ChartSpec;
-}
-
-export interface Unit extends ChartConfig {
-    unit?: Unit[];
+    unit?: Unit;
 }
 
 export interface ChartSettings {
@@ -248,6 +329,32 @@ export interface ChartSettings {
     'yDensityPadding:measure'?: number;
     utcTime?: boolean;
     defaultFormats?: {[name: string]: string};
+}
+
+export interface GPLSpec {
+    scales: {[scale: string]: GPLSpecScale};
+    sources: DataSources;
+    settings: ChartSettings;
+    unit?: Unit;
+}
+
+export interface GPLSpecScale {
+    type: string;
+    source: string;
+    dim?: string;
+    brewer?: Brewer;
+    order?: any[];
+    min?: any;
+    max?: any;
+    nice?: boolean;
+    func?: string;
+    minSize?: number;
+    maxSize?: number;
+    autoScale?: boolean;
+    niceInterval?: string;
+    period?: string;
+    fitToFrameByDims?: string[];
+    ratio?: RatioArg;
 }
 
 export type PluginObject = Object & {

@@ -12,7 +12,7 @@ const removeRedundantZeros = (() => {
         .replace(zerosAfterNotZero, '$1$2');
 })();
 
-var FORMATS_MAP = {
+var FORMATS_MAP: {[format: string]: (x) => string} = {
 
     'x-num-auto': function (x) {
         var abs = Math.abs(x);
@@ -95,11 +95,11 @@ var FORMATS_MAP = {
 
 var FormatterRegistry = {
 
-    get: (formatAlias, nullOrUndefinedAlias) => {
+    get: (formatAlias: string, nullOrUndefinedAlias?: string) => {
 
         var nullAlias = nullOrUndefinedAlias || '';
 
-        var identity = ((x) => (((x === null) || (typeof x === 'undefined')) ? nullAlias : x).toString());
+        var identity = ((x) => String(((x === null) || (typeof x === 'undefined')) ? nullAlias : x));
 
         var hasFormat = FORMATS_MAP.hasOwnProperty(formatAlias);
         var formatter = hasFormat ? FORMATS_MAP[formatAlias] : identity;
@@ -110,7 +110,7 @@ var FormatterRegistry = {
 
         if (!hasFormat && formatAlias) {
             formatter = (v) => {
-                var f = utils.isDate(v) ? d3.timeFormat(formatAlias) : d3.format(formatAlias);
+                var f: ((x) => string) = utils.isDate(v) ? d3.timeFormat(formatAlias) : d3.format(formatAlias);
                 return f(v);
             };
         }
@@ -122,7 +122,7 @@ var FormatterRegistry = {
         return formatter;
     },
 
-    add: (formatAlias, formatter) => {
+    add: (formatAlias: string, formatter: (x) => string) => {
         FORMATS_MAP[formatAlias] = formatter;
     }
 };

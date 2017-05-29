@@ -2,7 +2,7 @@ import * as utils from '../utils/utils';
 import {
     ChartConfig,
     ChartDimensionsMap,
-    ChartGuide,
+    ElementGuide,
     Unit
 } from '../definitions';
 
@@ -28,10 +28,10 @@ var normalizeSettings = <T>(axis: T | T[], defaultValue: T = null): T[] => {
 };
 
 var createElement = (type: string, config: XChartConfig) => {
-    return <ChartConfig>{
+    return {
         type: type,
-        x: config.x,
-        y: config.y,
+        x: config.x as string,
+        y: config.y as string,
         identity: config.identity,
         size: config.size,
         color: config.color,
@@ -52,7 +52,7 @@ const status = {
     FAIL: 'FAIL'
 };
 
-var strategyNormalizeAxis: {[status: string]: (axis: string[], config: ValidatedConfig, guide: ChartGuide[]) => string[]} = {
+var strategyNormalizeAxis: {[status: string]: (axis: string[], config: ValidatedConfig, guide: ElementGuide[]) => string[]} = {
     [status.SUCCESS]: (axis) => axis,
     [status.FAIL]: (axis, data) => {
         throw new Error((data.messages || []).join('\n') ||
@@ -154,9 +154,9 @@ function transformConfig(type: string, config: ChartConfig) {
         unit: []
     } as Unit;
 
-    var xs = [].concat(x);
-    var ys = [].concat(y);
-    var gs = [].concat(guide);
+    var xs: string[] = [].concat(x);
+    var ys: string[] = [].concat(y);
+    var gs: ElementGuide[] = [].concat(guide);
 
     for (var i = maxDepth; i > 0; i--) {
         var currentX = xs.pop();

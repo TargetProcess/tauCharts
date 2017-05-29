@@ -606,7 +606,7 @@ export function defaults<T>(obj: T, ...defaultObjs: T[]): T {
     return obj;
 }
 
-export function omit(obj: Object, ...props: string[]) {
+export function omit<T>(obj: T, ...props: string[]): T {
     let newObj = Object.assign({}, obj);
     props.forEach((prop) => {
         delete newObj[prop];
@@ -614,9 +614,10 @@ export function omit(obj: Object, ...props: string[]) {
     return newObj;
 }
 
-export function memoize<A, R>(func: (a?: A) => R, hasher?: (a: A) => string): (a?: A) => R;
-export function memoize<A, B, R>(func: (a?: A, b?: B) => R, hasher?: (a?: A, b?: B) => string): (a?: A, b?: B) => R;
-export function memoize<A, B, C, R>(func: (a?: A, b?: B, c?: C) => R, hasher?: (a?: A, b?: B, c?: C) => string): (a?: A, b?: B, c?: C) => R;
+export function memoize<R>(func: () => R, hasher?: () => string): () => R;
+export function memoize<A, R>(func: (a: A) => R, hasher?: (a: A) => string): (a: A) => R;
+export function memoize<A, B, R>(func: (a: A, b: B) => R, hasher?: (a: A, b: B) => string): (a: A, b: B) => R;
+export function memoize<A, B, C, R>(func: (a: A, b: B, c: C) => R, hasher?: (a: A, b: B, c: C) => string): (a: A, b: B, c: C) => R;
 export function memoize<R>(func: (...args: any[]) => R, hasher?: (...args: any[]) => string): (...args: any[]) => R;
 export function memoize(func, hasher) {
     const memoize = <any>function (key) {

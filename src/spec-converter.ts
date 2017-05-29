@@ -1,12 +1,27 @@
 import * as utils from './utils/utils';
+import {
+    ChartConfig,
+    ChartSettings,
+    DataSources,
+    ElementGuide,
+    Expression,
+    GPLSpec,
+    GPLSpecScale,
+    ScaleConfig,
+    ScaleGuide,
+    Unit
+} from './definitions';
 
 export class SpecConverter {
 
-    constructor(spec) {
+    spec: ChartConfig;
+    dist: GPLSpec;
+
+    constructor(spec: ChartConfig) {
         this.spec = spec;
 
         this.dist = {
-            sources: {
+            sources: <DataSources>{
                 '?': {
                     dims: {},
                     data: [{}]
@@ -46,7 +61,7 @@ export class SpecConverter {
         return gplSpec;
     }
 
-    ruleApplyDefaults(spec) {
+    ruleApplyDefaults(spec: GPLSpec) {
 
         var settings = spec.settings || {};
 
@@ -55,7 +70,7 @@ export class SpecConverter {
             (node.units || []).map((x) => traverse(x, iterator, node));
         };
 
-        var iterator = (childUnit, root) => {
+        var iterator = (childUnit: Unit, root: Unit) => {
 
             childUnit.namespace = 'chart';
             childUnit.guide = utils.defaults(
@@ -83,7 +98,7 @@ export class SpecConverter {
         traverse(spec.unit, iterator, null);
     }
 
-    ruleAssignSourceData(srcSpec, gplSpec) {
+    ruleAssignSourceData(srcSpec: ChartConfig, gplSpec: GPLSpec) {
 
         var meta = srcSpec.spec.dimensions || {};
 
@@ -119,7 +134,7 @@ export class SpecConverter {
             });
     }
 
-    ruleAssignSourceDims(srcSpec, gplSpec) {
+    ruleAssignSourceDims(srcSpec: ChartConfig, gplSpec: GPLSpec) {
         var dims = srcSpec.spec.dimensions;
         gplSpec.sources['/'].dims = Object
             .keys(dims)
@@ -129,9 +144,9 @@ export class SpecConverter {
             }, {});
     }
 
-    ruleAssignStructure(srcSpec, gplSpec) {
+    ruleAssignStructure(srcSpec: ChartConfig, gplSpec: GPLSpec) {
 
-        var walkStructure = (srcUnit) => {
+        var walkStructure = (srcUnit: Unit) => {
             var gplRoot = utils.clone(utils.omit(srcUnit, 'unit'));
             this.ruleCreateScales(srcUnit, gplRoot);
             gplRoot.expression = this.ruleInferExpression(srcUnit);
@@ -148,9 +163,10 @@ export class SpecConverter {
         gplSpec.unit = root;
     }
 
-    ruleCreateScales(srcUnit, gplRoot) {
+    ruleCreateScales(srcUnit: Unit, gplRoot: Unit) {
 
         var guide = srcUnit.guide || {};
+        console.log('guide', guide);
         ['identity', 'color', 'size', 'label', 'x', 'y', 'split'].forEach((p) => {
             if (srcUnit.hasOwnProperty(p)) {
                 gplRoot[p] = this.scalesPool(p, srcUnit[p], guide[p] || {});
@@ -158,7 +174,7 @@ export class SpecConverter {
         });
     }
 
-    ruleInferDim(dimName, guide) {
+    ruleInferDim(dimName: string, guide: ScaleGuide) {
 
         var r = dimName;
 
@@ -183,7 +199,7 @@ export class SpecConverter {
         return r;
     }
 
-    scalesPool(scaleType, dimName, guide) {
+    scalesPool(scaleType: string, dimName: string, guide: ScaleGuide) {
 
         var k = `${scaleType}_${dimName}`;
 
@@ -193,13 +209,13 @@ export class SpecConverter {
 
         var dims = this.spec.spec.dimensions;
 
-        var item = {};
+        var item = {} as GPLSpecScale;
         if (scaleType === 'color' && dimName !== null) {
             item = {
                 type: 'color',
                 source: '/',
                 dim: this.ruleInferDim(dimName, guide)
-            };
+            } as GPLSpecScale;
 
             if (guide.hasOwnProperty('brewer')) {
                 item.brewer = guide.brewer;
@@ -328,17 +344,17 @@ export class SpecConverter {
         return k;
     }
 
-    getScaleConfig(scaleType, dimName) {
+    getScaleConfig(scaleType: string, dimName: string) {
         var k = `${scaleType}_${dimName}`;
         return this.dist.scales[k];
     }
 
-    ruleInferExpression(srcUnit) {
+    ruleInferExpression(srcUnit: Unit) {
 
         var expr = {
             operator: 'none',
             params: []
-        };
+        } as Expression;
 
         var g = srcUnit.guide || {};
         var gx = g.x || {};

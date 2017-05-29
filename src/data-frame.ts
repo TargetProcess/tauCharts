@@ -1,24 +1,34 @@
 import * as utils from './utils/utils';
+import {
+    DataFilter,
+    DataKey,
+    DataTransformations,
+    Unit
+} from './definitions';
 
 interface DataFrameOptions {
-    key?: string;
-    pipe?: string;
+    key?: DataKey;
+    pipe?: DataFilter[];
     source?: string;
-    units?: string;
+    units?: Unit[];
 }
 
-export class DataFrame {
+export class DataFrame implements DataFrameOptions {
 
-    key;
-    pipe;
-    source;
-    units;
+    key: DataKey;
+    pipe: DataFilter[];
+    source: string;
+    units: Unit[];
 
-    _frame;
-    _data;
-    _pipeReducer;
+    _frame: {
+        key: DataKey;
+        source: string;
+        pipe: DataFilter[];
+    };
+    _data: any[];
+    _pipeReducer: (data: any[], pipeCfg: DataFilter) => any[];
 
-    constructor({key, pipe, source, units}: DataFrameOptions, dataSource, transformations = {}) {
+    constructor({key, pipe, source, units}: DataFrameOptions, dataSource, transformations: DataTransformations = {}) {
 
         this.key = key;
         this.pipe = pipe || [];
@@ -42,7 +52,7 @@ export class DataFrame {
         return this._data;
     }
 
-    part(pipeMapper = (x => x)) {
+    part(pipeMapper = ((x: DataFilter) => x)) {
         return this
             ._frame
             .pipe

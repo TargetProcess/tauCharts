@@ -1,14 +1,25 @@
 import * as utils from './utils/utils';
 import {TauChartError as Error, errorCodes} from './error';
+import {
+    GrammarModel,
+    ScaleConfig
+} from './definitions';
 
-var rules = {};
-var GrammarRegistry = {
+type GrammarFunction = (prev?: GrammarModel, args?: any) => GrammarModel;
 
-    get(name) {
+interface GramReg {
+    get(name: string): GrammarFunction;
+    reg(name: string, func: GrammarFunction): GramReg;
+}
+
+var rules: {[rule: string]: GrammarFunction} = {};
+var GrammarRegistry: GramReg = {
+
+    get(name: string) {
         return rules[name];
     },
 
-    reg(name, func) {
+    reg(name: string, func: (prev: GrammarModel) => GrammarModel): GramReg {
         rules[name] = func;
         return this;
     }
@@ -40,7 +51,7 @@ GrammarRegistry
     })
     .reg('positioningByColor', (model) => {
 
-        var method = (model.scaleX.discrete ?
+        var method: GrammarFunction = (model.scaleX.discrete ?
             ((model) => {
                 const dataSource = model.data();
                 const xColors = dataSource
@@ -86,11 +97,11 @@ GrammarRegistry
 
         const dataSource = model.data();
 
-        const avg = (arr) => {
+        const avg = (arr: any[]) => {
             return arr.map(model.yi).reduce(((sum, i) => (sum + i)), 0) / arr.length;
         };
 
-        const groups = dataSource.reduce((memo, row) => {
+        const groups = dataSource.reduce<{[group: string]: any[]}>((memo, row) => {
             var k = model.group(row);
             memo[k] = memo[k] || [];
             memo[k].push(row);
@@ -99,7 +110,7 @@ GrammarRegistry
 
         const order = Object
             .keys(groups)
-            .map((k) => ([k, avg(groups[k])]))
+            .map((k) => ([k, avg(groups[k])] as [string, number]))
             .sort((a, b) => (a[1] - b[1]))
             .map((r) => r[0]);
 
@@ -125,10 +136,15 @@ GrammarRegistry
             );
         }
 
-        const createFnStack = (totalState) => {
+        interface State {
+            positive: {[x: string]: number};
+            negative: {[x: string]: number};
+        }
+
+        const createFnStack = (totalState: State) => {
             return ((d) => {
-                const x = d[xScale.dim];
-                const y = d[yScale.dim];
+                const x: string = d[xScale.dim];
+                const y: number = d[yScale.dim];
 
                 const state = ((y >= 0) ? totalState.positive : totalState.negative);
 
@@ -143,14 +159,14 @@ GrammarRegistry
         const stackYi = createFnStack({positive: {}, negative: {}});
         const stackY0 = createFnStack({positive: {}, negative: {}});
 
-        const memoize = ((fn) => utils.memoize(fn, model.id));
+        const memoize = (<T>(fn: (...args) => T) => utils.memoize(fn, model.id));
 
         var trackedMinY = Number.MAX_VALUE;
         var trackedMaxY = Number.MIN_VALUE;
-        const trackAndEval = (y) => {
+        const trackAndEval = (y: number) => {
             trackedMinY = (y < trackedMinY) ? y : trackedMinY;
             trackedMaxY = (y > trackedMaxY) ? y : trackedMaxY;
-            return yScale.value(y);
+            return yScale.value(y) as number;
         };
 
         const nextYi = memoize((d) => trackAndEval(stackYi(d).nextStack));
@@ -170,7 +186,7 @@ GrammarRegistry
 
         yScale.fixup((yScaleConfig) => {
 
-            const newConf = {};
+            const newConf: ScaleConfig = {};
 
             if (!yScaleConfig.hasOwnProperty('max') || yScaleConfig.max < trackedMaxY) {
                 newConf.max = trackedMaxY;
@@ -217,7 +233,7 @@ GrammarRegistry
 
         const minDiff = Math.min(diff, stepSize);
 
-        const currMinSize = (typeof (minLimit) === 'number') ? minLimit : defMin;
+        const currMinSize: number = (typeof (minLimit) === 'number') ? minLimit : defMin;
         const curr = {
             minSize: currMinSize,
             maxSize: (typeof (maxLimit) === 'number') ? maxLimit : Math.max(currMinSize, Math.min(defMax, minDiff))
@@ -225,7 +241,7 @@ GrammarRegistry
 
         model.scaleSize.fixup((prev) => {
 
-            const next = {};
+            const next: ScaleConfig = {};
 
             if (!prev.fixed) {
                 next.fixed = true;
@@ -251,7 +267,7 @@ GrammarRegistry
 
         model.scaleSize.fixup((prev) => {
 
-            var next = {};
+            var next: ScaleConfig = {};
 
             if (!prev.fixed) {
                 next.fixed = true;
@@ -292,7 +308,7 @@ GrammarRegistry
         const currMinSize = (typeof (minLimit) === 'number') ? minLimit : defMin;
         const maxSizeLimit = (typeof (maxLimit) === 'number') ? maxLimit : defMax;
 
-        const sigma = (x) => {
+        const sigmoid = (x) => {
             var Ab = (currMinSize + maxSizeLimit) / 2;
             var At = maxSizeLimit;
             var X0 = currMinSize;
@@ -303,12 +319,12 @@ GrammarRegistry
 
         const curr = {
             minSize: currMinSize,
-            maxSize: Math.max(currMinSize, Math.min(maxSizeLimit, sigma(maxSize)))
+            maxSize: Math.max(currMinSize, Math.min(maxSizeLimit, sigmoid(maxSize)))
         };
 
         model.scaleSize.fixup((prev) => {
 
-            const next = {};
+            const next: ScaleConfig = {};
 
             if (!prev.fixed) {
                 next.fixed = true;
@@ -393,7 +409,7 @@ GrammarRegistry
             var endVal = Number(domain[1]) + ((flip ? startPad : endPad) * koeff);
 
             scale.fixup((prev) => {
-                var next = {};
+                var next: ScaleConfig = {};
                 if (!prev.fixed) {
                     next.fixed = true;
                     next.min = startVal;

@@ -1,6 +1,5 @@
 import {
-    ChartConfig,
-    ChartGuide
+    ChartConfig
 } from '../definitions';
 
 interface ParallelConfig extends ChartConfig {
