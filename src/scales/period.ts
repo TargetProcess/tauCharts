@@ -1,9 +1,9 @@
 import {BaseScale} from './base';
 import {UnitDomainPeriodGenerator} from '../unit-domain-period-generator';
+import {DataFrame} from '../data-frame';
 import * as utils from '../utils/utils';
 import * as d3 from 'd3';
 import {
-    DataFrame,
     ScaleConfig,
     ScaleFunction
 } from '../definitions';

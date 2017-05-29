@@ -2,6 +2,21 @@ import {Emitter} from '../event';
 import * as utils from '../utils/utils';
 import {FramesAlgebra} from '../algebra';
 import {DataFrame} from '../data-frame';
+import {
+    DataSources,
+    DataTransformations,
+    GPLSpec,
+    GPLSpecScale,
+    Unit
+} from '../definitions';
+import {ScalesFactory} from '../scales-factory';
+import {unitsRegistry} from '../units-registry';
+import {GrammarRegistry as GrammarRules} from '../grammar-registry';
+type UnitsRegistry = typeof unitsRegistry;
+type GrammarRegistry = typeof GrammarRules;
+
+type Iteratee = (node: Unit, parentNode: Unit, currFrame: DataFrame) => void;
+
 var cast = (v) => (utils.isDate(v) ? v.getTime() : v);
 
 const MixinModel = function (prev) {
@@ -25,7 +40,16 @@ const evalGrammarRules = (grammarRules, initialGrammarModel, grammarRegistry) =>
 
 export class GPL extends Emitter {
 
-    constructor(config, scalesRegistryInstance, unitsRegistry, grammarRules) {
+    config: GPLSpec;
+    sources: DataSources;
+    scales: {[scale: string]: GPLSpecScale};
+    unitSet: UnitsRegistry;
+    grammarRules: GrammarRegistry;
+    scalesHub: ScalesFactory;
+    transformations: DataTransformations;
+    root: Unit;
+
+    constructor(config: GPLSpec, scalesRegistryInstance: ScalesFactory, unitsRegistry: UnitsRegistry, grammarRules: GrammarRegistry) {
 
         super();
 
@@ -67,11 +91,11 @@ export class GPL extends Emitter {
             });
     }
 
-    static traverseSpec(spec, enter, exit, rootNode = null, rootFrame = null) {
+    static traverseSpec(spec: {unit: Unit}, enter: Iteratee, exit: Iteratee, rootNode: Unit = null, rootFrame: DataFrame = null) {
 
-        var queue = [];
+        var queue: Iteratee[] = [];
 
-        var traverse = (node, enter, exit, parentNode, currFrame) => {
+        var traverse = (node: Unit, enter: Iteratee, exit: Iteratee, parentNode: Unit, currFrame: DataFrame) => {
 
             queue.push(() => {
                 enter(node, parentNode, currFrame);

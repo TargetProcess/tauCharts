@@ -1,8 +1,8 @@
 import {BaseScale} from './base';
 import {TauChartError, errorCodes} from '../error';
+import {DataFrame} from '../data-frame';
 import * as d3 from 'd3';
 import {
-    DataFrame,
     ScaleConfig
 } from '../definitions';
 

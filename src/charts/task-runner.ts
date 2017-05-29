@@ -1,9 +1,31 @@
+interface TaskRunnerCallbacks {
+    timeout: (duration?: number, runner?: TaskRunner) => void;
+    done: (result?: any, runner?: TaskRunner) => void;
+    error: (error?: Error, runner?: TaskRunner) => void;
+    progress: (progress?: number, runner?: TaskRunner) => void;
+}
+
+type Task = (x: any) => any;
+
 export default class TaskRunner {
+
+    private _running: boolean;
+    private _queue: Task[];
+    private _result: any;
+    private _syncDuration: number;
+    private _asyncDuration: number;
+    private _syncInterval: number;
+    private _requestedFrameId: number;
+    private _tasksCount: number;
+    private _finishedTasksCount: number;
+    private _timeout: number;
+    private _callbacks: TaskRunnerCallbacks;
+
     constructor({
         src = null,
         timeout = Number.MAX_SAFE_INTEGER,
         syncInterval = Number.MAX_SAFE_INTEGER,
-        callbacks = {}
+        callbacks = {} as TaskRunnerCallbacks
     } = {}) {
 
         this.setTimeout(timeout);
@@ -15,29 +37,28 @@ export default class TaskRunner {
         this._result = src;
         this._syncDuration = 0;
         this._asyncDuration = 0;
-        this._lastCall = null;
         this._requestedFrameId = null;
 
         this._tasksCount = 0;
         this._finishedTasksCount = 0;
     }
 
-    setTimeout(timeout) {
+    setTimeout(timeout: number) {
         TaskRunner.checkType(timeout, 'number', 'timeout');
         this._timeout = timeout;
     }
 
-    setSyncInterval(syncInterval) {
+    setSyncInterval(syncInterval: number) {
         TaskRunner.checkType(syncInterval, 'number', 'syncInterval');
         this._syncInterval = syncInterval;
     }
 
-    setCallbacks(callbacks) {
+    setCallbacks(callbacks: TaskRunnerCallbacks) {
         TaskRunner.checkType(callbacks, 'object', 'callbacks');
         this._callbacks = Object.assign(this._callbacks || {}, callbacks);
     }
 
-    addTask(fn) {
+    addTask(fn: Task) {
         this._queue.push(fn);
         this._tasksCount++;
         return this;
@@ -58,11 +79,11 @@ export default class TaskRunner {
 
     _loopTasks() {
 
-        var task;
-        var duration;
+        var task: Task;
+        var duration: number;
         var frameDuration = 0;
-        var isTimeoutReached;
-        var isFrameTimeoutReached;
+        var isTimeoutReached: boolean;
+        var isFrameTimeoutReached: boolean;
         var syncInterval = (this._syncInterval / TaskRunner.runnersInProgress);
         while (
             this._running &&
@@ -109,7 +130,7 @@ export default class TaskRunner {
         }
     }
 
-    _runTask(task) {
+    _runTask(task: Task) {
         var start = performance.now();
         if (this._callbacks.error) {
             try {
@@ -161,11 +182,11 @@ export default class TaskRunner {
         }
     }
 
-    static checkType(x, t, name) {
+    static checkType(x: any, t: string, name: string) {
         if (typeof x !== t) {
             throw new Error(`Task Runner "${name}" property is not "${t}"`);
         }
     }
-}
 
-TaskRunner.runnersInProgress = 0;
+    static runnersInProgress = 0;
+}

@@ -166,7 +166,6 @@ export class SpecConverter {
     ruleCreateScales(srcUnit: Unit, gplRoot: Unit) {
 
         var guide = srcUnit.guide || {};
-        console.log('guide', guide);
         ['identity', 'color', 'size', 'label', 'x', 'y', 'split'].forEach((p) => {
             if (srcUnit.hasOwnProperty(p)) {
                 gplRoot[p] = this.scalesPool(p, srcUnit[p], guide[p] || {});

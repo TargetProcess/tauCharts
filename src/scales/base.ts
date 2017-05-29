@@ -1,6 +1,6 @@
 import * as utils from '../utils/utils';
+import {DataFrame} from '../data-frame';
 import {
-    DataFrame,
     DataFilter,
     ScaleConfig,
     ScaleFields,

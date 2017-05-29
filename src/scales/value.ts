@@ -1,6 +1,6 @@
 import {BaseScale} from './base';
+import {DataFrame} from '../data-frame';
 import {
-    DataFrame,
     ScaleConfig
 } from '../definitions';
 

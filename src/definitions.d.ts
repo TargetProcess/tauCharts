@@ -1,5 +1,6 @@
 import {EventCallback, EventHandlerMap} from './event';
 import {Plot} from './charts/tau.plot';
+import {DataFrame} from './data-frame';
 import {Selection} from 'd3';
 
 export type global_Element = Element;
@@ -39,11 +40,6 @@ export interface DataKey {
 export interface DataFilter {
     type: string;
     args: {[key: string]: string};
-}
-
-export interface DataFrame {
-    part(filter?: (f: DataFilter) => DataFilter): any[];
-    full(): any[];
 }
 
 export interface DataSource {
@@ -86,6 +82,7 @@ export interface GrammarElement {
     draw?();
     data?(): any[];
     node?(): GrammarElement;
+    parentUnit?: Unit;
 }
 
 export interface ElementConfig {
@@ -336,6 +333,7 @@ export interface GPLSpec {
     sources: DataSources;
     settings: ChartSettings;
     unit?: Unit;
+    transformations?: DataTransformations;
 }
 
 export interface GPLSpecScale {
