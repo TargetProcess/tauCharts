@@ -1,25 +1,28 @@
-import {LayerLabelsModel} from './layer-labels-model';
-var rules = {};
+import {LayerLabelsModel, LayerLabelsModelObj} from './layer-labels-model';
+import {ScaleFunction} from '../../definitions';
+var rules: {[alias: string]: LabelRule} = {};
+
+type LabelRule = (prev?: LayerLabelsModelObj, args?) => LayerLabelsModelObj;
 
 export class LayerLabelsRules {
 
-    static regRule(alias, func) {
+    static regRule(alias: string, func: LabelRule) {
         rules[alias] = func;
         return this;
     }
 
-    static getRule(alias) {
+    static getRule(alias: string) {
         return rules[alias];
     }
 }
 
-const findCutIndex = (text, labelWidth, availableSpace) => {
+const findCutIndex = (text: string, labelWidth: number, availableSpace: number) => {
     return ((availableSpace < labelWidth) ?
         (Math.max(1, Math.floor(availableSpace * text.length / labelWidth)) - 1) :
         (text.length));
 };
 
-const cutString = (str, index) => ((index === 0) ? '' : str.slice(0, index).replace(/\.+$/g, '') + '\u2026');
+const cutString = (str: string, index: number) => ((index === 0) ? '' : str.slice(0, index).replace(/\.+$/g, '') + '\u2026');
 
 var isPositive = (scale, row) => scale.discrete || (!scale.discrete && row[scale.dim] >= 0);
 var isNegative = (scale, row) => !scale.discrete && row[scale.dim] < 0;

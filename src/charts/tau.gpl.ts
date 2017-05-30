@@ -7,7 +7,7 @@ import {
     DataFrameObject,
     DataSources,
     DataTransformations,
-    ElementGuide,
+    UnitGuide,
     Expression,
     GPLSpec,
     GPLSpecScale,
@@ -299,7 +299,7 @@ export class GPL extends Emitter {
         return new DataFrame(frame, this.sources[frame.source].data, this.transformations);
     }
 
-    _parseExpression(expr: Expression, parentPipe: DataFilter[], guide: ElementGuide) {
+    _parseExpression(expr: Expression, parentPipe: DataFilter[], guide: UnitGuide) {
 
         var funcName = expr.operator || 'none';
         var srcAlias = expr.source;

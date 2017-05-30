@@ -10,10 +10,39 @@ import {
     d3_setClasses as classes,
     d3_transition
 } from '../utils/d3-decorators';
-import {GrammarElement} from '../definitions';
-import {Element} from './element';
+import {
+    d3Selection,
+    GrammarElement,
+    GrammarModel,
+    GrammarRule
+} from '../definitions';
 
-const Point = {
+interface Bounds {
+    left: number;
+    right: number;
+    top: number;
+    bottom: number;
+}
+
+interface BoundsInfo {
+    bounds: Bounds;
+    tree: d3.Quadtree<{x: number; y: number;}>;
+}
+
+interface PointClass extends GrammarElement {
+    _getBoundsInfo(dots: Element[]): BoundsInfo;
+    highlight(filter: HighlightFilter);
+    _sortElements(filter: HighlightFilter);
+}
+
+interface PointInstance extends PointClass {
+    _boundsInfo: BoundsInfo;
+    _getGroupOrder: (g: any[]) => number;
+}
+
+type HighlightFilter = (row) => boolean | null;
+
+const Point: PointClass = {
 
     init(xConfig) {
 
@@ -46,7 +75,7 @@ const Point = {
         const enableColorPositioning = config.guide.enableColorToBarPosition;
 
         config.transformRules = [
-            ((prevModel) => {
+            ((prevModel: GrammarModel) => {
                 const bestBaseScale = [prevModel.scaleX, prevModel.scaleY]
                     .sort((a, b) => {
                         var discreteA = a.discrete ? 1 : 0;
@@ -66,7 +95,7 @@ const Point = {
 
         config.adjustRules = [
             (config.stack && GrammarRegistry.get('adjustYScale')),
-            ((prevModel, args) => {
+            ((prevModel: GrammarModel, args) => {
                 const isEmptySize = prevModel.scaleSize.isEmptyScale();
                 const sizeCfg = utils.defaults(
                     (config.guide.size),
@@ -91,7 +120,7 @@ const Point = {
 
                 return method(prevModel, params);
             }),
-            (avoidScalesOverflow && ((prevModel, args) => {
+            (avoidScalesOverflow && ((prevModel: GrammarModel, args) => {
                 const params = Object.assign({}, args, {
                     sizeDirection: 'xy'
                 });
@@ -103,15 +132,15 @@ const Point = {
     },
 
     addInteraction() {
-        const node = this.node();
+        const node: PointClass = this.node();
         const createFilter = ((data, falsy) => ((row) => row === data ? true : falsy));
         node.on('highlight', (sender, filter) => this.highlight(filter));
         node.on('data-hover', ((sender, e) => this.highlight(createFilter(e.data, null))));
     },
 
-    draw() {
+    draw(this: PointInstance) {
 
-        const node = this.node();
+        const node = this.node() as PointClass;
         const config = node.config;
         const options = config.options;
         // TODO: hide it somewhere
@@ -136,7 +165,7 @@ const Point = {
             cy: ((d) => screenModel.y(d))
         };
 
-        const updateGroups = function (g) {
+        const updateGroups = function (g: d3Selection) {
 
             g.attr('class', 'frame')
                 .call(function (c) {
@@ -154,7 +183,7 @@ const Point = {
                         .attr('r', 0)
                         .remove();
 
-                    node.subscribe(dots);
+                    node.subscribe(dots as d3Selection);
                 });
 
             transition(g)
@@ -183,7 +212,7 @@ const Point = {
             .call(updateGroups);
 
         // TODO: Render bars into single container, exclude removed elements from calculation.
-        this._boundsInfo = this._getBoundsInfo(merged.selectAll('.dot').nodes());
+        this._boundsInfo = this._getBoundsInfo((merged.selectAll('.dot') as d3Selection).nodes());
 
         transition(frameGroups.exit())
             .attr('opacity', 0)
@@ -311,7 +340,7 @@ const Point = {
         return closest;
     },
 
-    highlight(filter) {
+    highlight(this: PointClass, filter) {
 
         const x = 'graphical-report__highlighted';
         const _ = 'graphical-report__dimmed';
@@ -333,7 +362,7 @@ const Point = {
         this._sortElements(filter);
     },
 
-    _sortElements(filter) {
+    _sortElements(this: PointInstance, filter) {
 
         const container = this.node().config.options.container;
 
@@ -342,7 +371,7 @@ const Point = {
         const groups = new Map();
         container
             .selectAll('.frame')
-            .each(function (d) {
+            .each(function (d: any[]) {
                 filters.set(this, d.some(filter));
                 groups.set(this, d);
             });

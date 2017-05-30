@@ -2,7 +2,7 @@ import * as utils from '../utils/utils';
 import {
     ChartConfig,
     ChartDimensionsMap,
-    ElementGuide,
+    UnitGuide,
     Unit
 } from '../definitions';
 
@@ -52,7 +52,7 @@ const status = {
     FAIL: 'FAIL'
 };
 
-var strategyNormalizeAxis: {[status: string]: (axis: string[], config: ValidatedConfig, guide: ElementGuide[]) => string[]} = {
+var strategyNormalizeAxis: {[status: string]: (axis: string[], config: ValidatedConfig, guide: UnitGuide[]) => string[]} = {
     [status.SUCCESS]: (axis) => axis,
     [status.FAIL]: (axis, data) => {
         throw new Error((data.messages || []).join('\n') ||
@@ -156,7 +156,7 @@ function transformConfig(type: string, config: ChartConfig) {
 
     var xs: string[] = [].concat(x);
     var ys: string[] = [].concat(y);
-    var gs: ElementGuide[] = [].concat(guide);
+    var gs: UnitGuide[] = [].concat(guide);
 
     for (var i = maxDepth; i > 0; i--) {
         var currentX = xs.pop();

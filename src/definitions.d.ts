@@ -30,7 +30,22 @@ export interface GrammarModel {
 }
 
 export interface ScreenModel {
-    [m: string]: (row: any) => any;
+    [m: string]: any;
+
+    flip?: boolean;
+    id?(row): any;
+    x?(row): number;
+    y?(row): number;
+    x0?(row): number;
+    y0?(row): number;
+    size?(row): number;
+    group?(row): string;
+    order?(row): number;
+    label?(row): string;
+    color?(row): string;
+    class?(row): string;
+    model?: GrammarModel;
+    toFibers?(): any[];
 }
 
 export interface DataKey {
@@ -75,7 +90,7 @@ export interface GrammarElement {
     regScale?(paramId: string, scaleObj: ScaleFunction): GrammarElement;
     getScale?(paramId: string): ScaleFunction;
     fireNameSpaceEvent?(eventName: string, eventData: any);
-    subscribe?(sel: GrammarElement, dataInterceptor: (x: any) => any, eventInterceptor: (x: Event) => Event);
+    subscribe?(sel: GrammarElement | d3Selection, dataInterceptor?: (x: any) => any, eventInterceptor?: (x: Event) => Event);
     allocateRect?(key?: DataKey): ElementOptions;
     defineGrammarModel?(fnCreateScale: ScaleFactoryMethod): GrammarModel;
     getGrammarRules?(): GrammarRule[];
@@ -88,17 +103,6 @@ export interface GrammarElement {
     node?(): GrammarElement;
     parentUnit?: Unit;
 }
-
-// export interface ElementConfig {
-//     namespace: string;
-//     uid: string;
-//     frames: DataFrame[];
-//     options: ElementOptions;
-//     guide: ElementGuide;
-//     stack: boolean;
-//     transformRules?: ((prev?: GrammarModel) => GrammarModel)[];
-//     adjustRules?: ((prev?: GrammarModel, args?: any) => GrammarModel)[];
-// }
 
 export interface ElementOptions {
     left?: number;
@@ -114,7 +118,7 @@ export interface ElementOptions {
 
 type Brewer = string[] | {[group: string]: string};
 
-export interface ElementGuide {
+export interface UnitGuide {
     animationSpeed?: number;
     avoidScalesOverflow?: boolean;
     enableColorToBarPosition?: boolean;
@@ -161,6 +165,8 @@ export interface ScaleFunction extends ScaleFields {
     ticks?: () => any[];
     copy?: () => ScaleFunction;
     discrete?: boolean;
+    toColor?: (color: string) => string;
+    toClass?: (color: string) => string;
 }
 
 type ScaleFactoryMethod = (type: string, alias: string, dynamicProps) => ScaleFunction;
@@ -198,7 +204,7 @@ export interface Unit {
     expression?: Expression;
     flip?: boolean;
     frames?: DataFrame[];
-    guide?: ElementGuide;
+    guide?: UnitGuide;
     identity?: string;
     label?: string;
     namespace?: string;
@@ -220,6 +226,10 @@ export interface Unit {
     y?: string;
     unit?: Unit[];
     units?: Unit[];
+    transformRules?: GrammarRule[];
+    adjustRules?: GrammarRule[];
+    transformModel?: GrammarRule[];
+    adjustScales?: GrammarRule[];
 }
 
 export interface Expression {
@@ -249,7 +259,7 @@ export interface ChartConfig {
     label?: string;
     flip?: boolean;
     stack?: boolean;
-    guide?: ElementGuide | ElementGuide[];
+    guide?: UnitGuide | UnitGuide[];
     dimensions?: ChartDimensionsMap;
     spec?: ChartSpec;
     settings?: ChartSettings;
@@ -267,7 +277,6 @@ export interface ScaleGuide {
     label?: string | {text: string; padding: number;};
     tickPeriod?: string;
     tickFormat?: string;
-    fontSize?: string;
     brewer?: Brewer;
     func?: string;
     autoScale?: boolean;
@@ -275,6 +284,13 @@ export interface ScaleGuide {
     fitToFrameByDims?: string[];
     ratio?: RatioArg;
     tickLabel?: string;
+    fontFamily?: string;
+    fontWeight?: string;
+    fontSize?: number;
+    fontColor?: string;
+    hideEqualLabels?: boolean;
+    position?: string[];
+    tickFormatNullAlias?: string;
 }
 
 export interface Dimension {

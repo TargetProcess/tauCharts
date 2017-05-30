@@ -1,8 +1,38 @@
-var createFunc = ((x) => (() => x));
+import {
+    GrammarModel
+} from '../../definitions';
 
-export class LayerLabelsModel {
+var createFunc = (<T>(x: T) => (() => x));
 
-    constructor(prev) {
+export interface LayerLabelsModelObj {
+    model?: GrammarModel;
+    x?: (row, args?) => number;
+    y?: (row, args?) => number;
+    dx?: (row, args?) => number;
+    dy?: (row, args?) => number;
+    w?: (row, args?) => number;
+    h?: (row, args?) => number;
+    hide?: (row, args?) => boolean;
+    label?: (row, args?) => string;
+    color?: (row, args?) => string;
+    angle?: (row, args?) => number;
+}
+
+export class LayerLabelsModel implements LayerLabelsModelObj {
+
+    model: GrammarModel;
+    x: (row, args?) => number;
+    y: (row, args?) => number;
+    dx: (row, args?) => number;
+    dy: (row, args?) => number;
+    w: (row, args?) => number;
+    h: (row, args?) => number;
+    hide: (row, args?) => boolean;
+    label: (row, args?) => string;
+    color: (row, args?) => string;
+    angle: (row, args?) => number;
+
+    constructor(prev: LayerLabelsModelObj) {
         this.model = prev.model;
         this.x = prev.x || createFunc(0);
         this.y = prev.y || createFunc(0);
@@ -16,7 +46,7 @@ export class LayerLabelsModel {
         this.angle = prev.angle || createFunc(0);
     }
 
-    static seed(model, {fontColor, flip, formatter, labelRectSize, paddingKoeff = 0.5}) {
+    static seed(model: GrammarModel, {fontColor, flip, formatter, labelRectSize, paddingKoeff = 0.5}) {
 
         var x = flip ? model.yi : model.xi;
         var y = flip ? model.xi : model.yi;
@@ -36,7 +66,7 @@ export class LayerLabelsModel {
         });
     }
 
-    static compose(prev, updates = {}) {
+    static compose(prev: LayerLabelsModelObj, updates: LayerLabelsModelObj = {}) {
         return (Object
             .keys(updates)
             .reduce((memo, propName) => {

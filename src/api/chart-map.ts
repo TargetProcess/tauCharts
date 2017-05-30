@@ -1,7 +1,7 @@
 import * as utils from '../utils/utils';
 import {
     ChartConfig,
-    ElementGuide,
+    UnitGuide,
     ScaleGuide
 } from '../definitions';
 
@@ -13,7 +13,7 @@ interface MapConfig extends ChartConfig {
     guide?: MapGuide;
 }
 
-interface MapGuide extends ElementGuide {
+interface MapGuide extends UnitGuide {
     code?: ScaleGuide & {
         georole: string;
     };

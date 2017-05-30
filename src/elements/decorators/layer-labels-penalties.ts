@@ -1,4 +1,20 @@
 import * as utilsDraw from '../../utils/utils-draw';
+import {EdgeInfo} from './layer-labels';
+
+export interface LabelPenaltyModel {
+    i: number;
+    x0: number;
+    y0: number;
+    x: number;
+    y: number;
+    w: number;
+    h: number;
+    size: number;
+    hide: boolean;
+    extr: string;
+}
+
+type LabelPenaltyFunction = (labels: LabelPenaltyModel[], edges: EdgeInfo[], penaltyRate?: number) => (index: number) => number;
 
 var intersect = (x1, x2, x3, x4, y1, y2, y3, y4) => utilsDraw.isIntersect(
     x1, y1,
@@ -7,11 +23,11 @@ var intersect = (x1, x2, x3, x4, y1, y2, y3, y4) => utilsDraw.isIntersect(
     x4, y4
 );
 
-const _penalties = {};
+const _penalties: {[alias: string]: LabelPenaltyFunction} = {};
 
 export class LayerLabelsPenalties {
 
-    static reg(alias, funcPenalty) {
+    static reg(alias: string, funcPenalty: LabelPenaltyFunction) {
         _penalties[alias] = funcPenalty;
         return this;
     }
@@ -30,7 +46,7 @@ LayerLabelsPenalties
             var y22 = labels[index].y + 2.0;
 
             return labels.reduce((sum, labi, i) => {
-                var k = (i !== index);
+                var k = Number(i !== index);
                 var x11 = labi.x;
                 var y11 = labi.y - labi.h + 2.0;
                 var x12 = labi.x + labi.w;
@@ -71,7 +87,7 @@ LayerLabelsPenalties
             return edges.reduce((sum, edge) => {
                 var overlapLeftTopRightBottom = intersect(x0, x1, edge.x0, edge.x1, y0, y1, edge.y0, edge.y1);
                 var overlapLeftBottomRightTop = intersect(x0, x1, edge.x0, edge.x1, y1, y0, edge.y0, edge.y1);
-                return sum + (overlapLeftTopRightBottom + overlapLeftBottomRightTop) * penaltyRate;
+                return sum + (Number(overlapLeftTopRightBottom) + Number(overlapLeftBottomRightTop)) * penaltyRate;
             }, 0);
         };
     });

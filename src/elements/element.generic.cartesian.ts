@@ -3,10 +3,22 @@ import {GrammarRegistry} from '../grammar-registry';
 import {d3_animationInterceptor} from '../utils/d3-decorators';
 import * as utils from '../utils/utils';
 import * as d3 from 'd3';
+import {
+    d3Selection,
+    GrammarElement,
+    GrammarModel,
+    GrammarRule,
+    ScaleFactoryMethod,
+    ScreenModel,
+    Unit
+} from '../definitions';
 
-export class GenericCartesian extends Element {
+export abstract class GenericCartesian extends Element {
 
-    constructor(config) {
+    decorators: GrammarRule[];
+    adjusters: GrammarRule[];
+
+    constructor(config: Unit) {
 
         super(config);
 
@@ -34,7 +46,7 @@ export class GenericCartesian extends Element {
         this.adjusters = (this.config.adjustRules || []).concat(config.adjustScales || []);
     }
 
-    defineGrammarModel(fnCreateScale) {
+    defineGrammarModel(fnCreateScale: ScaleFactoryMethod): GrammarModel {
         const config = this.config;
         this.regScale('x', fnCreateScale('pos', config.x, [0, config.options.width]))
             .regScale('y', fnCreateScale('pos', config.y, [config.options.height, 0]))
@@ -94,7 +106,7 @@ export class GenericCartesian extends Element {
         return (this.adjusters || []).filter(x => x);
     }
 
-    createScreenModel(grammarModel) {
+    createScreenModel(grammarModel: GrammarModel): ScreenModel {
         const flip = grammarModel.flip;
         const iff = ((statement, yes, no) => statement ? yes : no);
         return {
@@ -135,7 +147,7 @@ export class GenericCartesian extends Element {
         var size = ((d) => round(self.screenModel.size(d) / 2, 4));
         var createUpdateFunc = d3_animationInterceptor;
 
-        var drawPart = function (that, id, props) {
+        var drawPart = function (that: d3Selection, id: string, props) {
             var speed = self.config.guide.animationSpeed;
             var part = that
                 .selectAll(`.${id}`)
@@ -182,10 +194,10 @@ export class GenericCartesian extends Element {
             });
         };
 
-        var updateGroups = function () {
+        var updateGroups = function (this: d3Selection) {
 
             this.attr('class', `frame-id-${self.config.uid}`)
-                .call(function () {
+                .call(function (this: d3Selection) {
                     var generic = this
                         .selectAll('.generic')
                         .data((fiber) => fiber, self.screenModel.id);

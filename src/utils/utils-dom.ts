@@ -130,7 +130,7 @@ export function getAxisTickLabelSize(text: string) {
     return size;
 }
 
-export function getLabelSize(text: string, {fontSize, fontFamily, fontWeight}) {
+export function getLabelSize(text: string, {fontSize, fontFamily, fontWeight}: {fontSize?: number, fontFamily?: string, fontWeight?: string}) {
 
     var xFontSize = typeof (fontSize) === 'string' ? fontSize : (`${fontSize}px`);
     var w = 0;

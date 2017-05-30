@@ -1,6 +1,6 @@
 import * as utils from './utils/utils';
 import {UnitDomainPeriodGenerator} from './unit-domain-period-generator';
-import {ElementGuide} from './definitions';
+import {UnitGuide} from './definitions';
 
 type FrameAlgebraFunction = (dataFn: () => any[], ...args: any[]) => any[];
 
@@ -39,7 +39,7 @@ var FramesAlgebra: {[algebra: string]: FrameAlgebraFunction} = {
             []);
     },
 
-    cross_period(dataFn: () => any[], dimX: string, dimY: string, xPeriod: string, yPeriod: string, guide: ElementGuide): any[] {
+    cross_period(dataFn: () => any[], dimX: string, dimY: string, xPeriod: string, yPeriod: string, guide: UnitGuide): any[] {
         var data = dataFn();
         var utc = (guide ? guide.utcTime : false);
 

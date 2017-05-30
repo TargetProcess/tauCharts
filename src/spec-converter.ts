@@ -3,7 +3,7 @@ import {
     ChartConfig,
     ChartSettings,
     DataSources,
-    ElementGuide,
+    UnitGuide,
     Expression,
     GPLSpec,
     GPLSpecScale,

@@ -4,8 +4,40 @@ import * as utils from '../../utils/utils';
 import {LayerLabelsModel} from './layer-labels-model';
 import {LayerLabelsRules} from './layer-labels-rules';
 import {AnnealingSimulator} from './layer-labels-annealing-simulator';
-import {LayerLabelsPenalties} from './layer-labels-penalties';
+import {LayerLabelsPenalties, LabelPenaltyModel} from './layer-labels-penalties';
 import {FormatterRegistry} from '../../formatter-registry';
+import {
+    d3Selection,
+    GrammarModel,
+    ScaleGuide
+} from '../../definitions';
+
+export interface TextInfo {
+    data;
+    x: number;
+    y: number;
+    w: number;
+    h: number;
+    hide: boolean,
+    extr: string;
+    size: number;
+    angle: number;
+    label: string;
+    color: string;
+    i?: number;
+}
+
+export interface EdgeInfo {
+    x0: number;
+    y0: number;
+    x1: number;
+    y1: number;
+}
+
+interface Parallel {
+    text: TextInfo[];
+    edges: EdgeInfo[];
+}
 
 var intersect = (x1, x2, x3, x4, y1, y2, y3, y4) => utilsDraw.isIntersect(
     x1, y1,
@@ -16,7 +48,14 @@ var intersect = (x1, x2, x3, x4, y1, y2, y3, y4) => utilsDraw.isIntersect(
 
 export class LayerLabels {
 
-    constructor(model, isHorizontal, labelGuide, {width, height, container}) {
+    container: d3Selection;
+    model: GrammarModel;
+    flip: boolean;
+    w: number;
+    h: number;
+    guide: ScaleGuide;
+
+    constructor(model: GrammarModel, isHorizontal: boolean, labelGuide: ScaleGuide, {width, height, container}: {width?: number, height?: number, container?: d3Selection}) {
         this.container = container;
         this.model = model;
         this.flip = isHorizontal;
@@ -36,7 +75,7 @@ export class LayerLabels {
             });
     }
 
-    draw(fibers) {
+    draw(fibers: any[][]) {
 
         var self = this;
 
@@ -46,7 +85,7 @@ export class LayerLabels {
         var seed = LayerLabelsModel.seed(
             model,
             {
-                fontSize: guide.fontSize,
+                // fontSize: guide.fontSize,
                 fontColor: guide.fontColor,
                 flip: self.flip,
                 formatter: FormatterRegistry.get(guide.tickFormat, guide.tickFormatNullAlias),
@@ -63,9 +102,9 @@ export class LayerLabels {
             .map(LayerLabelsRules.getRule)
             .reduce((prev, rule) => LayerLabelsModel.compose(prev, rule(prev, args)), seed);
 
-        var readBy3 = (list, iterator) => {
+        var readBy3 = <T, K>(list: T[], iterator: (a: T, b: T, c: T) => K) => {
             var l = list.length - 1;
-            var r = [];
+            var r: K[] = [];
             for (var i = 0; i <= l; i++) {
                 var iPrev = (i === 0) ? i : (i - 1);
                 var iCurr = i;
@@ -109,7 +148,7 @@ export class LayerLabels {
 
                 return memo;
             },
-            {text: [], edges: []});
+            <Parallel>{text: [], edges: []});
 
         parallel.text = parallel.text
             .filter((r) => r.label)
@@ -147,7 +186,7 @@ export class LayerLabels {
         var angle = get('angle');
         var color = get('color');
         var label = get('label');
-        var update = function (elements) {
+        var update = function (elements: d3Selection) {
             elements
                 .style('fill', color)
                 .style('font-size', `${self.guide.fontSize}px`)
@@ -179,10 +218,10 @@ export class LayerLabels {
             .append('text')
             .call(update);
 
-        return text;
+        return text as d3Selection;
     }
 
-    autoPosition(parallel, tokens) {
+    autoPosition(parallel: Parallel, tokens: string[]) {
 
         const calcEllipticXY = (r, angle) => {
             const xReserve = 4;
@@ -204,7 +243,7 @@ export class LayerLabels {
                     norm: (Math.random() * Math.PI * 2)
                 };
                 const xy = calcEllipticXY(r, maxAngles[r.extr]);
-                return {
+                return <LabelPenaltyModel>{
                     i: r.i,
                     x0: r.x,
                     y0: r.y,
@@ -266,14 +305,14 @@ export class LayerLabels {
         return parallel;
     }
 
-    hideOnLabelEdgesOverlap(data, edges) {
+    hideOnLabelEdgesOverlap(data: TextInfo[], edges: EdgeInfo[]) {
 
-        const penaltyLabelEdgesOverlap = (label, edges) => {
+        const penaltyLabelEdgesOverlap = (label: TextInfo, edges: EdgeInfo[]) => {
             const rect = this.getLabelRect(label);
             return edges.reduce((sum, edge) => {
                 var overlapTop = intersect(rect.x0, rect.x1, edge.x0, edge.x1, rect.y0, rect.y1, edge.y0, edge.y1);
                 var overlapBtm = intersect(rect.x0, rect.x1, edge.x0, edge.x1, rect.y1, rect.y0, edge.y0, edge.y1);
-                return sum + (overlapTop + overlapBtm) * 2;
+                return sum + (Number(overlapTop) + Number(overlapBtm)) * 2;
             }, 0);
         };
 
@@ -287,7 +326,7 @@ export class LayerLabels {
         return data;
     }
 
-    hideOnLabelLabelOverlap(data) {
+    hideOnLabelLabelOverlap(data: TextInfo[]) {
 
         var extremumOrder = {min: 0, max: 1, norm: 2};
         var collisionSolveStrategies = {
@@ -299,10 +338,10 @@ export class LayerLabels {
             'norm/norm': ((p0, p1) => p0.y - p1.y) // asc
         };
 
-        var cross = ((a, b) => {
+        var cross = ((a: TextInfo, b: TextInfo) => {
             var ra = this.getLabelRect(a);
             var rb = this.getLabelRect(b);
-            var k = (!a.hide && !b.hide);
+            var k = Number(!a.hide && !b.hide);
 
             var x_overlap = k * Math.max(0, Math.min(rb.x1, ra.x1) - Math.max(ra.x0, rb.x0));
             var y_overlap = k * Math.max(0, Math.min(rb.y1, ra.y1) - Math.max(ra.y0, rb.y0));
@@ -333,7 +372,7 @@ export class LayerLabels {
         return data;
     }
 
-    getLabelRect(a, border = 0) {
+    getLabelRect(a: TextInfo, border = 0) {
         return {
             x0: a.x - a.w / 2 - border,
             x1: a.x + a.w / 2 + border,
@@ -342,7 +381,7 @@ export class LayerLabels {
         };
     }
 
-    getPointRect(a, border = 0) {
+    getPointRect(a: TextInfo, border = 0) {
         return {
             x0: a.x - a.size / 2 - border,
             x1: a.x + a.size / 2 + border,
@@ -351,7 +390,7 @@ export class LayerLabels {
         };
     }
 
-    hideOnLabelAnchorOverlap(data) {
+    hideOnLabelAnchorOverlap(data: TextInfo[]) {
 
         var isIntersects = ((label, point) => {
             const labelRect = this.getLabelRect(label, 2);
@@ -383,7 +422,7 @@ export class LayerLabels {
         return data;
     }
 
-    adjustOnOverflow(data, {maxWidth, maxHeight}) {
+    adjustOnOverflow(data: TextInfo[], {maxWidth, maxHeight}) {
         return data.map((row) => {
             if (!row.hide) {
                 row.x = Math.min(Math.max(row.x, row.w / 2), (maxWidth - row.w / 2));

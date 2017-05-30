@@ -566,7 +566,7 @@ export function unique<T>(array: T[], func?: (T) => string) {
     return result;
 }
 
-export function groupBy<T>(array: T[], func?: (item: T) => string): {[key: string]: T} {
+export function groupBy<T>(array: T[], func?: (item: T) => string): {[key: string]: T[]} {
     return array.reduce((obj, v) => {
         var group = func(v);
         obj[group] = obj[group] || [];
