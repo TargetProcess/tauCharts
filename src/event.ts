@@ -1,4 +1,4 @@
-export type EventCallback = (sender: Emitter, data: any) => void;
+export type EventCallback = (sender?: Emitter, data?: any) => void;
 
 export interface EventHandlerMap {
     [event: string]: EventCallback;
@@ -91,7 +91,7 @@ type HandlerObject = {
 
 class Emitter {
     handler: HandlerObject;
-    emit_destroy;
+    emit_destroy: EventCallback;
 
     /**
      * @constructor
@@ -123,7 +123,7 @@ class Emitter {
         return obj;
     }
 
-    fire(name: string, data: any) {
+    fire(name: string, data?: any) {
         createDispatcher.call(this, name).call(this, data);
     }
 

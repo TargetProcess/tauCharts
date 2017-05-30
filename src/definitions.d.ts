@@ -65,13 +65,13 @@ export interface DataSource {
 }
 
 export interface DataSources {
-    '/': DataSource;
-    '?': DataSource;
+    '/'?: DataSource;
+    '?'?: DataSource;
 }
 
 export interface DataFrameObject {
     key?: DataKey;
-    pipe: DataFilter[];
+    pipe?: DataFilter[];
     source: string;
     units?: Unit[];
 }
@@ -87,6 +87,8 @@ export interface GrammarElement {
     config?: Unit;
     screenModel?: ScreenModel;
     on?(name: string, callback: EventCallback, context?: any): EventHandlerMap;
+    fire?(name: string, data?: any);
+    destroy?();
     regScale?(paramId: string, scaleObj: ScaleFunction): GrammarElement;
     getScale?(paramId: string): ScaleFunction;
     fireNameSpaceEvent?(eventName: string, eventData: any);
@@ -266,6 +268,7 @@ export interface ChartConfig {
     lineOrientation?: 'none' | 'horizontal' | 'vertical' | 'auto';
     data?: Object[];
     plugins?: PluginObject[];
+    emptyContainer?: string;
 }
 
 export interface ScaleGuide {
@@ -318,7 +321,7 @@ export interface ChartSettings {
     handleRenderingErrors?: boolean;
     defaultColorBrewer?: string[];
     defaultClassBrewer?: string[];
-    log?: (msg: string | string[], type?: 'ERROR' | 'WARNING' | 'INFO' | 'LOG') => void;
+    log?: (msg: string | string[], type?: 'ERROR' | 'WARN' | 'INFO' | 'LOG') => void;
     facetLabelDelimiter?: string;
     excludeNull?: boolean;
     minChartWidth?: number;
@@ -356,6 +359,11 @@ export interface ChartSettings {
     'yDensityPadding:measure'?: number;
     utcTime?: boolean;
     defaultFormats?: {[name: string]: string};
+    size?: {
+        width?: number;
+        height?: number;
+    };
+    experimentalShouldAnimate?: (spec: GPLSpec) => boolean;
 }
 
 export interface GPLSpec {
@@ -390,3 +398,9 @@ export type PluginObject = Object & {
     destroy?: () => void;
     onRender?: () => void;
 };
+
+export interface PointerEventArgs {
+    element: GrammarElement;
+    data;
+    event: MouseEvent;
+}

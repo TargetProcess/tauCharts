@@ -36,7 +36,7 @@ export class ScalesFactory {
         return this.registry.create(scaleConfig.type, frame, scaleConfig);
     }
 
-    createScaleInfoByName(name, dataFrame = null) {
+    createScaleInfoByName(name, dataFrame: DataFrame = null) {
         return this.createScaleInfo(this.scales[name], dataFrame);
     }
 }

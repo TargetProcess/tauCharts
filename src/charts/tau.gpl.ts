@@ -101,7 +101,7 @@ export class GPL extends Emitter {
 
     static traverseSpec(spec: {unit: Unit}, enter: Iteratee, exit: Iteratee, rootNode: Unit = null, rootFrame: DataFrame = null) {
 
-        var queue: Iteratee[] = [];
+        var queue: (() => void)[] = [];
 
         var traverse = (node: Unit, enter: Iteratee, exit: Iteratee, parentNode: Unit, currFrame: DataFrame) => {
 

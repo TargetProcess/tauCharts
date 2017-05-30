@@ -1,5 +1,17 @@
 import {CSS_PREFIX} from '../const';
-var createElement = function (cssClass, parent) {
+
+export interface ChartLayout {
+    layout: HTMLDivElement;
+    header: HTMLDivElement;
+    content: HTMLDivElement;
+    contentContainer: HTMLDivElement;
+    leftSidebar: HTMLDivElement;
+    rightSidebar: HTMLDivElement;
+    rightSidebarContainer: HTMLDivElement;
+    footer: HTMLDivElement;
+}
+
+var createElement = function (cssClass: string, parent?: Element) {
     var tag = 'div';
     var element = document.createElement(tag);
     element.classList.add(CSS_PREFIX + cssClass);
@@ -19,7 +31,7 @@ var getLayout = function () {
     var rightSidebar = createElement('layout__sidebar-right__wrap', rightSidebarContainer);
     var footer = createElement('layout__footer', layout);
     /* jshint ignore:start */
-    return {
+    return <ChartLayout>{
         layout,
         header,
         content,

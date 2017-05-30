@@ -12,7 +12,7 @@ import {unitsRegistry} from '../units-registry';
 import {scalesRegistry} from '../scales-registry';
 import {ScalesFactory} from '../scales-factory';
 import {DataProcessor} from '../data-processor';
-import {getLayout} from '../utils/layuot-template';
+import {getLayout, ChartLayout} from '../utils/layuot-template';
 import {SpecConverter} from '../spec-converter';
 import {SpecTransformAutoLayout} from '../spec-transform-auto-layout';
 
@@ -27,8 +27,63 @@ import TaskRunner from './task-runner';
 var selectOrAppend = utilsDom.selectOrAppend;
 var selectImmediate = utilsDom.selectImmediate;
 
+import {
+    ChartConfig,
+    ChartDimensionsMap,
+    ChartSettings,
+    DataSources,
+    d3Selection,
+    GPLSpec,
+    GrammarElement,
+    PointerEventArgs,
+    Unit
+} from '../definitions';
+
+interface Size {
+    width?: number;
+    height?: number;
+}
+
 export class Plot extends Emitter {
-    constructor(config) {
+
+    protected _nodes: GrammarElement[];
+    protected _svg: SVGSVGElement;
+    protected _filtersStore: {
+        filters: any;
+        tick: number;
+    };
+    protected _layout: ChartLayout;
+    configGPL: GPLSpec;
+    transformers: any[];
+    onUnitsStructureExpandedTransformers: any[];
+    protected _originData: DataSources;
+    protected _chartDataModel: (dataSources: DataSources) => DataSources;
+    protected _liveSpec: GPLSpec;
+    protected _plugins: Plugins;
+    protected _reportProgress: (value: number) => void;
+    protected _taskRunner: TaskRunner;
+    protected _renderingPhase: 'spec' | 'draw' | null;
+    protected _emptyContainer: string;
+    protected _pointerAnimationFrameId: number;
+    protected _target: HTMLElement | string;
+    protected _defaultSize: Size;
+    protected _renderedItems: GrammarElement[];
+
+    on(event: 'render', callback: (chart: Plot, svg: SVGSVGElement) => void, context?);
+    on(event: 'beforerender', callback: (chart: Plot, svg: SVGSVGElement) => void, context?);
+    on(event: 'specready', callback: (chart: Plot, spec: GPLSpec) => void, context?);
+    on(event: 'unitsstructureexpanded', callback: (chart: Plot, spec: GPLSpec) => void, context?);
+    on(event: 'renderingtimeout', callback: (chart: Plot) => void, context?);
+    on(event: 'renderingerror', callback: (chart: Plot, error: Error) => void, context?);
+    on(event: 'unitdraw', callback: (chart: Plot, unit: GrammarElement) => void, context?);
+    on(event: 'elementclick', callback: (chart: Plot, data: PointerEvent) => void, context?);
+    on(event: 'elementmouseout', callback: (chart: Plot, data: PointerEvent) => void, context?);
+    on(event: 'elementmouseover', callback: (chart: Plot, data: PointerEvent) => void, context?);
+    on(event: string, callback: (chart: Plot, data) => void, context?) {
+        super.on(event, callback, context);
+    }
+
+    constructor(config: ChartConfig) {
         super();
         this._nodes = [];
         this._svg = null;
@@ -48,7 +103,7 @@ export class Plot extends Emitter {
         ));
 
         if (['sources', 'scales'].filter((p) => config.hasOwnProperty(p)).length === 2) {
-            this.configGPL = config;
+            this.configGPL = config as GPLSpec;
         } else {
             this.configGPL = new SpecConverter(this.setupConfig(config)).convert();
         }
@@ -89,7 +144,7 @@ export class Plot extends Emitter {
         this._chartDataModel = fnModelTransformation;
     }
 
-    setupConfig(config) {
+    setupConfig(config: ChartConfig) {
 
         if (!config.spec || !config.spec.unit) {
             throw new Error('Provide spec for plot');
@@ -123,7 +178,7 @@ export class Plot extends Emitter {
         return resConfig;
     }
 
-    static setupPeriodData(spec) {
+    static setupPeriodData(spec: GPLSpec) {
         var tickPeriod = Plot.__api__.tickPeriod;
         var log = spec.settings.log;
 
@@ -169,12 +224,12 @@ export class Plot extends Emitter {
         return spec;
     }
 
-    static setupMetaInfo(dims, data) {
+    static setupMetaInfo(dims: ChartDimensionsMap, data: any[]) {
         var meta = (dims) ? dims : DataProcessor.autoDetectDimTypes(data);
         return DataProcessor.autoAssignScales(meta);
     }
 
-    static setupSettings(configSettings) {
+    static setupSettings(configSettings: ChartSettings) {
         var globalSettings = Plot.globalSettings;
         var localSettings = Object
             .keys(globalSettings)
@@ -183,7 +238,7 @@ export class Plot extends Emitter {
                     globalSettings[k] :
                     utils.clone(globalSettings[k]);
                 return memo;
-            }, {});
+            }, {} as ChartSettings);
 
         var r = utils.defaults(configSettings || {}, localSettings);
 
@@ -194,19 +249,19 @@ export class Plot extends Emitter {
         return r;
     }
 
-    insertToLeftSidebar(el) {
+    insertToLeftSidebar(el: Element) {
         return utilsDom.appendTo(el, this._layout.leftSidebar);
     }
 
-    insertToRightSidebar(el) {
+    insertToRightSidebar(el: Element) {
         return utilsDom.appendTo(el, this._layout.rightSidebar);
     }
 
-    insertToFooter(el) {
+    insertToFooter(el: Element) {
         return utilsDom.appendTo(el, this._layout.footer);
     }
 
-    insertToHeader(el) {
+    insertToHeader(el: Element) {
         return utilsDom.appendTo(el, this._layout.header);
     }
 
@@ -220,7 +275,7 @@ export class Plot extends Emitter {
         this._renderedItems = [];
     }
 
-    onUnitDraw(unitNode) {
+    onUnitDraw(unitNode: GrammarElement) {
         this._nodes.push(unitNode);
         this.fire('unitdraw', unitNode);
         ['click', 'mouseover', 'mouseout']
@@ -229,7 +284,7 @@ export class Plot extends Emitter {
                 (sender, e) => {
                     this.fire(
                         `element${eventName}`,
-                        {
+                        <PointerEventArgs>{
                             element: sender,
                             data: e.data,
                             event: e.event
@@ -238,10 +293,10 @@ export class Plot extends Emitter {
                 }));
     }
 
-    onUnitsStructureExpanded(specRef) {
+    onUnitsStructureExpanded(specRef: GPLSpec) {
         this.onUnitsStructureExpandedTransformers
             .forEach((TClass) => (new TClass(specRef)).transform(this));
-        this.fire(['units', 'structure', 'expanded'].join(''), specRef);
+        this.fire('unitsstructureexpanded', specRef);
     }
 
     _getClosestElementPerUnit(x0, y0) {
@@ -262,7 +317,7 @@ export class Plot extends Emitter {
         this._layout.layout.style.pointerEvents = '';
     }
 
-    _handlePointerEvent(event) {
+    _handlePointerEvent(event: MouseEvent) {
         // TODO: Highlight API seems not consistent.
         // Just predicate is not enough, also
         // need coordinates or event object.
@@ -338,7 +393,7 @@ export class Plot extends Emitter {
         this._pointerAnimationFrameId = null;
     }
 
-    _setupTaskRunner(liveSpec) {
+    _setupTaskRunner(liveSpec: GPLSpec) {
         this._resetTaskRunner();
         this._taskRunner = new TaskRunner({
             timeout: (liveSpec.settings.renderingTimeout || Number.MAX_SAFE_INTEGER),
@@ -397,7 +452,7 @@ export class Plot extends Emitter {
         }
     }
 
-    renderTo(target, xSize) {
+    renderTo(target: HTMLElement | string, xSize?: Size) {
 
         this._resetProgressLayout();
 
@@ -417,12 +472,12 @@ export class Plot extends Emitter {
         taskRunner.run();
     }
 
-    _createLiveSpec(target, xSize) {
+    _createLiveSpec(target: HTMLElement | string, xSize?: Size) {
         this.disablePointerEvents();
         this._target = target;
         this._defaultSize = Object.assign({}, xSize);
 
-        var targetNode = d3.select(target).node();
+        var targetNode = d3.select(target as any).node();
         if (targetNode === null) {
             throw new Error('Target element not found');
         }
@@ -442,7 +497,7 @@ export class Plot extends Emitter {
         if (!size.width || !size.height) {
             let {scrollLeft, scrollTop} = content.parentElement;
             content.style.display = 'none';
-            size = utils.defaults(size, utilsDom.getContainerSize(content.parentNode));
+            size = utils.defaults(size, utilsDom.getContainerSize(content.parentNode as HTMLElement));
             content.style.display = '';
             content.parentElement.scrollLeft = scrollLeft;
             content.parentElement.scrollTop = scrollTop;
@@ -475,13 +530,13 @@ export class Plot extends Emitter {
         return this._liveSpec;
     }
 
-    _experimentalSetupAnimationSpeed(spec) {
+    _experimentalSetupAnimationSpeed(spec: GPLSpec) {
         // Determine if it's better to draw chart without animation
-        spec.settings.initialAnimationSpeed = (
-            spec.settings.initialAnimationSpeed ||
+        (<any>spec.settings).initialAnimationSpeed = (
+            (<any>spec.settings).initialAnimationSpeed ||
             spec.settings.animationSpeed);
         const animationSpeed = (spec.settings.experimentalShouldAnimate(spec) ?
-            spec.settings.initialAnimationSpeed : 0);
+            (<any>spec.settings).initialAnimationSpeed : 0);
         spec.settings.animationSpeed = animationSpeed;
         const setUnitAnimation = (u) => {
             u.guide = (u.guide || {});
@@ -493,7 +548,7 @@ export class Plot extends Emitter {
         setUnitAnimation(spec.unit);
     }
 
-    _createGPL(liveSpec) {
+    _createGPL(liveSpec: GPLSpec) {
         var gpl = new GPL(liveSpec, this.getScaleFactory(), unitsRegistry, GrammarRegistry);
         var structure = gpl.unfoldStructure();
         this.onUnitsStructureExpanded(structure);
@@ -501,13 +556,13 @@ export class Plot extends Emitter {
         return gpl;
     }
 
-    _scheduleDrawScenario(taskRunner, gpl) {
+    _scheduleDrawScenario(taskRunner: TaskRunner, gpl: GPL) {
         const d3Target = d3.select(this._layout.content);
         const newSize = gpl.config.settings.size;
         taskRunner.addTask(() => this._renderingPhase = 'spec');
         gpl.getDrawScenarioQueue({
             allocateRect: () => ({
-                slot: ((uid) => d3Target.selectAll(`.uid_${uid}`)),
+                slot: ((uid) => d3Target.selectAll(`.uid_${uid}`) as d3Selection),
                 frameId: 'root',
                 left: 0,
                 top: 0,
@@ -519,9 +574,9 @@ export class Plot extends Emitter {
         }).forEach((task) => taskRunner.addTask(task));
     }
 
-    _scheduleDrawing(taskRunner, gpl) {
+    _scheduleDrawing(taskRunner: TaskRunner, gpl: GPL) {
         const newSize = gpl.config.settings.size;
-        taskRunner.addTask((scenario) => {
+        taskRunner.addTask((scenario: GrammarElement[]) => {
             this._renderingPhase = 'draw';
             this._renderRoot({scenario, newSize});
             this._cancelPointerAnimationFrame();
@@ -535,7 +590,7 @@ export class Plot extends Emitter {
         this._clearTimeoutWarning();
     }
 
-    _renderRoot({scenario, newSize}) {
+    _renderRoot({scenario, newSize}: {scenario: GrammarElement[]; newSize: Size;}) {
         const d3Target = d3.select(this._layout.content);
         var frameRootId = scenario[0].config.uid;
         var svg = selectOrAppend(d3Target, `svg`)
@@ -569,7 +624,7 @@ export class Plot extends Emitter {
             });
     }
 
-    _scheduleRenderScenario(scenario) {
+    _scheduleRenderScenario(scenario: GrammarElement[]) {
 
         scenario.forEach((item) => {
             this._taskRunner.addTask(() => {
@@ -615,7 +670,7 @@ export class Plot extends Emitter {
         };
     }
 
-    _displayRenderingError() {
+    _displayRenderingError(error?: Error) {
         this._layout.layout.classList.add(`${CSS_PREFIX}layout_rendering-error`);
     }
 
@@ -623,7 +678,7 @@ export class Plot extends Emitter {
         this._layout.layout.classList.remove(`${CSS_PREFIX}layout_rendering-error`);
     }
 
-    getScaleFactory(dataSources = null) {
+    getScaleFactory(dataSources: DataSources = null) {
         return new ScalesFactory(
             scalesRegistry.instance(this._liveSpec.settings),
             dataSources || this._liveSpec.sources,
@@ -631,7 +686,7 @@ export class Plot extends Emitter {
         );
     }
 
-    getScaleInfo(name, dataFrame = null) {
+    getScaleInfo(name: string, dataFrame = null) {
         return this
             .getScaleFactory()
             .createScaleInfoByName(name, dataFrame);
@@ -645,7 +700,7 @@ export class Plot extends Emitter {
         return (row) => filters.reduce((prev, f) => (prev && f(row)), true);
     }
 
-    getDataSources(param = {}) {
+    getDataSources(param: any = {}) {
         var excludeFiltersByTagAndSource = (k) =>
             ((f) => (param.excludeFilter && param.excludeFilter.indexOf(f.tag) !== -1) || f.src !== k);
 
@@ -822,4 +877,7 @@ export class Plot extends Emitter {
             this._layout.content.style.height = '';
         }
     }
+
+    static globalSettings: ChartSettings;
+    static __api__;
 }

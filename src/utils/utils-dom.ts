@@ -37,7 +37,7 @@ export function getScrollbarSize(container: HTMLElement) {
  * @param el Target element.
  * @param [direction=both] Scrollbar direction ("horizontal", "vertical" or "both").
  */
-export function setScrollPadding(el: HTMLElement, direction: 'horizontal' | 'vertical' | 'both') {
+export function setScrollPadding(el: HTMLElement, direction?: 'horizontal' | 'vertical' | 'both') {
     direction = direction || 'both';
     var isBottom = direction === 'horizontal' || direction === 'both';
     var isRight = direction === 'vertical' || direction === 'both';
