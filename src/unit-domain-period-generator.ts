@@ -165,12 +165,12 @@ var UnitDomainPeriodGenerator = {
         return (utc ? PERIODS_MAP_UTC : PERIODS_MAP)[alias.toLowerCase()] || null;
     },
 
-    generate: (lTick: Date, rTick: Date, periodAlias: string, {utc} = {utc: false}) => {
+    generate: (lTick: Date | number | string, rTick: Date | number | string, periodAlias: string, {utc} = {utc: false}) => {
         var r: Date[] = [];
         var period = UnitDomainPeriodGenerator.get(periodAlias, {utc});
         if (period) {
-            var last = period.cast(new Date(rTick));
-            var curr = period.cast(new Date(lTick));
+            var last = period.cast(new Date(<any>rTick));
+            var curr = period.cast(new Date(<any>lTick));
             r.push(curr);
             while ((curr = period.next(new Date(curr))) <= last) {
                 r.push(curr);

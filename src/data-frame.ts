@@ -1,19 +1,13 @@
 import * as utils from './utils/utils';
 import {
     DataFilter,
+    DataFrameObject,
     DataKey,
     DataTransformations,
     Unit
 } from './definitions';
 
-interface DataFrameOptions {
-    key?: DataKey;
-    pipe?: DataFilter[];
-    source?: string;
-    units?: Unit[];
-}
-
-export class DataFrame implements DataFrameOptions {
+export class DataFrame implements DataFrameObject {
 
     key: DataKey;
     pipe: DataFilter[];
@@ -28,7 +22,7 @@ export class DataFrame implements DataFrameOptions {
     _data: any[];
     _pipeReducer: (data: any[], pipeCfg: DataFilter) => any[];
 
-    constructor({key, pipe, source, units}: DataFrameOptions, dataSource, transformations: DataTransformations = {}) {
+    constructor({key, pipe, source, units}: DataFrameObject, dataSource, transformations: DataTransformations = {}) {
 
         this.key = key;
         this.pipe = pipe || [];

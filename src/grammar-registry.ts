@@ -2,24 +2,23 @@ import * as utils from './utils/utils';
 import {TauChartError as Error, errorCodes} from './error';
 import {
     GrammarModel,
+    GrammarRule,
     ScaleConfig
 } from './definitions';
 
-type GrammarFunction = (prev?: GrammarModel, args?: any) => GrammarModel;
-
-interface GramReg {
-    get(name: string): GrammarFunction;
-    reg(name: string, func: GrammarFunction): GramReg;
+interface GrammarRegistryInstance {
+    get(name: string): GrammarRule;
+    reg(name: string, func: GrammarRule): GrammarRegistryInstance;
 }
 
-var rules: {[rule: string]: GrammarFunction} = {};
-var GrammarRegistry: GramReg = {
+var rules: {[rule: string]: GrammarRule} = {};
+var GrammarRegistry: GrammarRegistryInstance = {
 
     get(name: string) {
         return rules[name];
     },
 
-    reg(name: string, func: (prev: GrammarModel) => GrammarModel): GramReg {
+    reg(name: string, func: GrammarRule): GrammarRegistryInstance {
         rules[name] = func;
         return this;
     }
@@ -51,7 +50,7 @@ GrammarRegistry
     })
     .reg('positioningByColor', (model) => {
 
-        var method: GrammarFunction = (model.scaleX.discrete ?
+        var method: GrammarRule = (model.scaleX.discrete ?
             ((model) => {
                 const dataSource = model.data();
                 const xColors = dataSource

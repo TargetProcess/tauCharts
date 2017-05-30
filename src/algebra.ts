@@ -1,11 +1,14 @@
 import * as utils from './utils/utils';
 import {UnitDomainPeriodGenerator} from './unit-domain-period-generator';
+import {ElementGuide} from './definitions';
 
-var unify = (v) => utils.isDate(v) ? v.getTime() : v;
+type FrameAlgebraFunction = (dataFn: () => any[], ...args: any[]) => any[];
 
-var FramesAlgebra = {
+var unify = ((v) => utils.isDate(v) ? v.getTime() : v);
 
-    cross(dataFn, dimX, dimY) {
+var FramesAlgebra: {[algebra: string]: FrameAlgebraFunction} = {
+
+    cross(dataFn: () => any[], dimX: string, dimY: string): any[] {
 
         var data = dataFn();
 
@@ -36,7 +39,7 @@ var FramesAlgebra = {
             []);
     },
 
-    cross_period(dataFn, dimX, dimY, xPeriod, yPeriod, guide) {
+    cross_period(dataFn: () => any[], dimX: string, dimY: string, xPeriod: string, yPeriod: string, guide: ElementGuide): any[] {
         var data = dataFn();
         var utc = (guide ? guide.utcTime : false);
 
@@ -75,7 +78,7 @@ var FramesAlgebra = {
             []);
     },
 
-    groupBy(dataFn, dim) {
+    groupBy(dataFn: () => any[], dim: string) {
         var data = dataFn();
         var domainX = utils.unique(data.map(x => x[dim]), unify);
         return domainX.map((x)=>({[dim]: unify(x)}));

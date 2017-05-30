@@ -3,25 +3,26 @@ import * as utils from '../utils/utils';
 import * as d3 from 'd3';
 import {
     global_Element,
-    DataFrame,
-    ElementConfig,
     GrammarElement,
     GrammarModel,
     ScaleFunction,
-    ScreenModel
+    ScreenModel,
+    Unit
 } from '../definitions';
+
+import {DataFrame} from '../data-frame';
 
 export abstract class Element extends Emitter implements GrammarElement {
 
-    abstract init(config: ElementConfig);
+    abstract init(config: Unit);
 
-    config: ElementConfig;
+    config: Unit;
     screenModel: GrammarModel;
     _elementNameSpace: string;
     _elementScalesHub: {[scale: string]: ScaleFunction};
 
     // add base behaviour here
-    constructor(config: ElementConfig) {
+    constructor(config: Unit) {
         super();
         this.screenModel = null;
         this._elementNameSpace = (config.namespace || 'default');
@@ -102,7 +103,7 @@ export abstract class Element extends Emitter implements GrammarElement {
     }
 
     createScreenModel(grammarModel) {
-        // return nothing
+        return null;
     }
 
     getClosestElement(x, y) {

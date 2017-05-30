@@ -34,7 +34,7 @@ export interface ScreenModel {
 }
 
 export interface DataKey {
-    name: string;
+    [key: string]: string;
 }
 
 export interface DataFilter {
@@ -54,29 +54,33 @@ export interface DataSources {
     '?': DataSource;
 }
 
+export interface DataFrameObject {
+    key?: DataKey;
+    pipe: DataFilter[];
+    source: string;
+    units?: Unit[];
+}
+
 export interface DataTransformations {
     [trans: string]: (data: any[], tuple: any) => any[];
 }
 
+export type GrammarRule = (prev: GrammarModel, args?: any) => GrammarModel;
+
 export interface GrammarElement {
-    init?(config: ElementConfig);
-    config?: ElementConfig;
+    init?(config: Unit);
+    config?: Unit;
     screenModel?: ScreenModel;
     on?(name: string, callback: EventCallback, context?: any): EventHandlerMap;
     regScale?(paramId: string, scaleObj: ScaleFunction): GrammarElement;
     getScale?(paramId: string): ScaleFunction;
     fireNameSpaceEvent?(eventName: string, eventData: any);
     subscribe?(sel: GrammarElement, dataInterceptor: (x: any) => any, eventInterceptor: (x: Event) => Event);
-    allocateRect?(): {
-        left: number;
-        top: number;
-        width: number;
-        height: number;
-    };
-    defineGrammarModel?(fnCreateScale: any): any;
-    getGrammarRules?(): any[];
-    getAdjustScalesRules?(): any[];
-    createScreenModel?(grammarModel: GrammarModel);
+    allocateRect?(key?: DataKey): ElementOptions;
+    defineGrammarModel?(fnCreateScale: ScaleFactoryMethod): GrammarModel;
+    getGrammarRules?(): GrammarRule[];
+    getAdjustScalesRules?(): GrammarRule[];
+    createScreenModel?(grammarModel: GrammarModel): ScreenModel;
     getClosestElement?(x: number, y: number): any;
     addInteraction?();
     draw?();
@@ -85,18 +89,27 @@ export interface GrammarElement {
     parentUnit?: Unit;
 }
 
-export interface ElementConfig {
-    namespace: string;
-    uid: string;
-    frames: DataFrame[];
-    options: {
-        container: d3Selection;
-        slot: (uid: string) => d3Selection;
-    };
-    guide: ElementGuide;
-    stack: boolean;
-    transformRules?: ((prev?: GrammarModel) => GrammarModel)[];
-    adjustRules?: ((prev?: GrammarModel, args?: any) => GrammarModel)[];
+// export interface ElementConfig {
+//     namespace: string;
+//     uid: string;
+//     frames: DataFrame[];
+//     options: ElementOptions;
+//     guide: ElementGuide;
+//     stack: boolean;
+//     transformRules?: ((prev?: GrammarModel) => GrammarModel)[];
+//     adjustRules?: ((prev?: GrammarModel, args?: any) => GrammarModel)[];
+// }
+
+export interface ElementOptions {
+    left?: number;
+    top?: number;
+    width?: number;
+    height?: number;
+    containerWidth?: number;
+    containerHeight?: number;
+    container?: d3Selection;
+    slot?: (uid?: string) => d3Selection;
+    frameId?: string;
 }
 
 type Brewer = string[] | {[group: string]: string};
@@ -121,6 +134,7 @@ export interface ElementGuide {
     interpolate?: 'linear' | 'smooth' | 'smooth-keep-extremum' | 'step' | 'step-before' | 'step-after';
     split?: ScaleGuide;
     showGridLines?: 'x' | 'y' | 'xy';
+    utcTime?: boolean;
 }
 
 export interface ScaleFields {
@@ -148,6 +162,8 @@ export interface ScaleFunction extends ScaleFields {
     copy?: () => ScaleFunction;
     discrete?: boolean;
 }
+
+type ScaleFactoryMethod = (type: string, alias: string, dynamicProps) => ScaleFunction;
 
 type RatioArg = {[key: string]: number} | ((key: any, maxSize: number, keys: any[]) => number);
 
@@ -186,9 +202,7 @@ export interface Unit {
     identity?: string;
     label?: string;
     namespace?: string;
-    options?: {
-
-    };
+    options?: ElementOptions;
     size?: string;
     split?: string;
     stack?: boolean;
@@ -210,7 +224,7 @@ export interface Unit {
 
 export interface Expression {
     inherit?: boolean;
-    operator?: string;
+    operator?: string | false;
     params?: string[];
     source?: string;
 }

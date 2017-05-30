@@ -1,8 +1,8 @@
 import {TauChartError as Error, errorCodes} from './error';
-import {GrammarElement,ElementConfig} from './definitions';
+import {GrammarElement, Unit} from './definitions';
 
 interface ElementConsructor {
-    new (config: ElementConfig, Base?: ElementConsructor): GrammarElement;
+    new (config: Unit, Base?: ElementConsructor): GrammarElement;
     prototype: GrammarElement;
 }
 
@@ -12,7 +12,7 @@ var SeedsMap: {[type: string]: string} = {};
 interface UnitsRegistry {
     reg(unitType: string, xUnit: GrammarElement | ElementConsructor, xSeed?: string): UnitsRegistry;
     get(unitType: string): ElementConsructor;
-    create(unitType: string, unitConfig: ElementConfig): GrammarElement;
+    create(unitType: string, unitConfig: Unit): GrammarElement;
 }
 
 var unitsRegistry: UnitsRegistry = {
@@ -67,7 +67,7 @@ var unitsRegistry: UnitsRegistry = {
         return UnitsMap[unitType];
     },
 
-    create(unitType: string, unitConfig: ElementConfig) {
+    create(unitType: string, unitConfig: Unit) {
         var Unit = this.get(unitType);
         var node: GrammarElement;
         if (SeedsMap[unitType]) {
