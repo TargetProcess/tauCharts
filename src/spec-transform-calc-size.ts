@@ -1,13 +1,46 @@
 import * as utils from './utils/utils';
 import {SpecTransformOptimize} from './spec-transform-optimize';
+import {
+    ChartSettings,
+    DataFrameObject,
+    GPLSpec,
+    GPLSpecScale,
+    ScaleFields,
+    ScaleGuide,
+    Size,
+    SpecTransformer,
+    Unit
+} from './definitions';
+import {Plot} from './charts/tau.plot';
 
-var byOptimisticMaxText = ((gx) => gx.$maxTickTextW);
-var byPessimisticMaxText = ((gx) => ((gx.rotate == 0) ? gx.$maxTickTextW : gx.$maxTickTextH));
-var byDensity = ((gx) => gx.density);
-var getFacetCount = (specRef) => {
-    var xFacetKeys = [];
-    var yFacetKeys = [];
-    var getFacetKeys = (root) => {
+type StepSizeStrategy = (gx: ScaleGuide) => number;
+
+type FitModelStrategy = (
+    srcSize: Size,
+    calcSize: (
+        axis: 'x' | 'y',
+        unit: Unit,
+        stepStrategy: StepSizeStrategy,
+        frame?: DataFrameObject
+    ) => number,
+    specRef: GPLSpec,
+    tryOptimizeSpec: (unit: Unit, settings: ChartSettings) => void
+) => {
+        newW: number;
+        newH: number
+    };
+
+interface FitModelStrategies {
+    [strategy: string]: FitModelStrategy;
+}
+
+var byOptimisticMaxText: StepSizeStrategy = ((gx) => gx.$maxTickTextW);
+var byPessimisticMaxText: StepSizeStrategy = ((gx) => ((gx.rotate == 0) ? gx.$maxTickTextW : gx.$maxTickTextH));
+var byDensity: StepSizeStrategy = ((gx) => gx.density);
+var getFacetCount = (specRef: GPLSpec) => {
+    var xFacetKeys: string[] = [];
+    var yFacetKeys: string[] = [];
+    var getFacetKeys = (root: Unit) => {
         // TODO: Maybe there is an API to
         // determine X and Y facet keys.
         if (root.type === 'COORDS.RECT' &&
@@ -28,9 +61,9 @@ var getFacetCount = (specRef) => {
     };
     getFacetKeys(specRef.unit);
 
-    var xFacetGroups = {};
-    var yFacetGroups = {};
-    var getFacetGroups = (root) => {
+    var xFacetGroups: {[key: string]: any[]} = {};
+    var yFacetGroups: {[key: string]: any[]} = {};
+    var getFacetGroups = (root: Unit) => {
         if (root.type === 'COORDS.RECT') {
             root.frames.forEach((f) => {
                 if (f.key) {
@@ -68,7 +101,7 @@ var getFacetCount = (specRef) => {
     };
 };
 
-var fitModelStrategies = {
+var fitModelStrategies: FitModelStrategies = {
 
     'entire-view'(srcSize, calcSize, specRef, tryOptimizeSpec) {
 
@@ -194,14 +227,17 @@ var fitModelStrategies = {
     }
 };
 
-export class SpecTransformCalcSize {
+export class SpecTransformCalcSize implements SpecTransformer {
 
-    constructor(spec) {
+    spec: GPLSpec;
+    isApplicable: boolean;
+
+    constructor(spec: GPLSpec) {
         this.spec = spec;
         this.isApplicable = utils.isSpecRectCoordsOnly(spec.unit);
     }
 
-    transform(chart) {
+    transform(chart: Plot) {
 
         var specRef = this.spec;
 
@@ -217,7 +253,7 @@ export class SpecTransformCalcSize {
 
         var scales = specRef.scales;
 
-        var groupFramesBy = (frames, dim) => {
+        var groupFramesBy = (frames: DataFrameObject[], dim: string) => {
             return frames
                 .reduce((memo, f) => {
                     var fKey = f.key || {};
@@ -225,10 +261,10 @@ export class SpecTransformCalcSize {
                     memo[fVal] = memo[fVal] || [];
                     memo[fVal].push(f);
                     return memo;
-                }, {});
+                }, {} as {[val: string]: DataFrameObject[]});
         };
 
-        var calcScaleSize = (scaleInfo, maxTickText) => {
+        var calcScaleSize = (scaleInfo: ScaleFields, maxTickText: number) => {
 
             var r = 0;
 
@@ -241,7 +277,7 @@ export class SpecTransformCalcSize {
             return r;
         };
 
-        var calcSizeRecursively = (prop, root, takeStepSizeStrategy, frame = null) => {
+        var calcSizeRecursively = (prop: 'x' | 'y', root: Unit, takeStepSizeStrategy: StepSizeStrategy, frame: DataFrameObject = null) => {
 
             var xCfg = (prop === 'x') ? root.x : root.y;
             var yCfg = (prop === 'x') ? root.y : root.x;
@@ -297,7 +333,7 @@ export class SpecTransformCalcSize {
             newH = newSize.newH;
         }
 
-        var prettifySize = (srcSize, newSize, rScroll) => {
+        var prettifySize = (srcSize: Size, newSize: Size, rScroll: number) => {
 
             var scrollSize = specRef.settings.getScrollbarSize(chart.getLayout().contentContainer);
 

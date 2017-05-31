@@ -282,7 +282,7 @@ export interface ScaleGuide {
     max?: number;
     minSize?: number;
     maxSize?: number;
-    label?: string | {text: string; padding: number;};
+    label?: {text: string; padding: number; hide?: boolean; paddingNoTicks?: number};
     tickPeriod?: string;
     tickFormat?: string;
     brewer?: Brewer;
@@ -301,6 +301,13 @@ export interface ScaleGuide {
     tickFormatNullAlias?: string;
     padding?: number;
     paddingNoTicks?: number;
+    hide?: boolean;
+    hideTicks?: boolean;
+    rotate?: number;
+    textAnchor?: string;
+    $maxTickTextW?: number;
+    $maxTickTextH?: number;
+    density?: number;
 }
 
 export interface ScaleSettings {
@@ -327,6 +334,11 @@ export interface ChartDimensionsMap {
 export interface ChartSpec {
     dimensions?: ChartDimensionsMap;
     unit?: Unit;
+}
+
+export interface Size {
+    width?: number;
+    height?: number;
 }
 
 export interface ChartSettings {
@@ -376,10 +388,7 @@ export interface ChartSettings {
     'yDensityPadding:measure'?: number;
     utcTime?: boolean;
     defaultFormats?: {[name: string]: string};
-    size?: {
-        width?: number;
-        height?: number;
-    };
+    size?: Size;
     experimentalShouldAnimate?: (spec: GPLSpec) => boolean;
 }
 

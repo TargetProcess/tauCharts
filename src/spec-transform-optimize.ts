@@ -1,9 +1,15 @@
+import {
+    ChartSettings,
+    GPLSpec,
+    Unit
+} from './definitions';
+
 export class SpecTransformOptimize {
 
-    static optimizeXAxisLabel(root, settings) {
+    static optimizeXAxisLabel(root: Unit, settings: ChartSettings) {
         const {xAxisTickLabelLimit} = settings;
 
-        const enterSpec = (rootUnit) => {
+        const enterSpec = (rootUnit: Unit) => {
 
             if (!rootUnit.guide.x.hide &&
                 !rootUnit.guide.x.hideTicks &&
@@ -23,7 +29,7 @@ export class SpecTransformOptimize {
                 .forEach((u) => enterSpec(u));
         };
 
-        const improvePadding = ((unit, tickTextDelta) => {
+        const improvePadding = ((unit: Unit, tickTextDelta: number) => {
             if ((root !== unit) && (unit.guide.autoLayout === 'extract-axes')) {
                 root.guide.x.padding += tickTextDelta;
                 root.guide.padding.b += tickTextDelta;
@@ -36,8 +42,8 @@ export class SpecTransformOptimize {
         enterSpec(root);
     }
 
-    static hideAxisTicks(root, settings, axis) {
-        const enterSpec = (rootUnit) => {
+    static hideAxisTicks(root: Unit, settings: ChartSettings, axis: 'x' | 'y') {
+        const enterSpec = (rootUnit: Unit) => {
             const pad = (axis === 'x' ? 'b' : 'l');
             const g = rootUnit.guide;
 

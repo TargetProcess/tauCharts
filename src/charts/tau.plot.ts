@@ -40,14 +40,10 @@ import {
     GPLSpecScale,
     GrammarElement,
     PointerEventArgs,
+    Size,
     SpecTransformConstructor,
     Unit
 } from '../definitions';
-
-interface Size {
-    width?: number;
-    height?: number;
-}
 
 interface Filter {
     tag: string;
