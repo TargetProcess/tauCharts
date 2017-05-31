@@ -185,6 +185,8 @@ type d3Selection = d3.Selection<Element, any, Element, any>;
  * Searches for immediate child element by specified selector.
  * If missing, creates an element that matches the selector.
  */
+export function selectOrAppend(container: Element, selector: string): Element;
+export function selectOrAppend(container: d3Selection, selector: string): d3Selection;
 export function selectOrAppend(_container: Element | d3Selection, selector: string) {
     var delimitersActions = {
         '.': (text, el) => el.classed(text, true),
@@ -201,14 +203,14 @@ export function selectOrAppend(_container: Element | d3Selection, selector: stri
 
     var isElement = (_container instanceof Element);
     var container: d3Selection = isElement ? d3.select(_container as Element) : (_container as d3Selection);
-    var result = (d3El) => (isElement ? d3El.node() : d3El);
+    var result = (d3El: d3Selection) => (isElement ? d3El.node() : d3El);
 
     // Search for existing immediate child
     var child = container.selectAll(selector)
         .filter(function (this: Element) {
             return (this.parentNode === container.node());
         })
-        .filter((d, i) => i === 0);
+        .filter((d, i) => i === 0) as d3Selection;
     if (!child.empty()) {
         return result(child);
     }

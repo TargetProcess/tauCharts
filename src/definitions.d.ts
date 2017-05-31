@@ -1,6 +1,7 @@
 import {EventCallback, EventHandlerMap} from './event';
 import {Plot} from './charts/tau.plot';
 import {DataFrame} from './data-frame';
+import {PeriodGenerator} from './unit-domain-period-generator';
 import {Selection} from 'd3';
 
 export type global_Element = Element;
@@ -98,7 +99,14 @@ export interface GrammarElement {
     getGrammarRules?(): GrammarRule[];
     getAdjustScalesRules?(): GrammarRule[];
     createScreenModel?(grammarModel: GrammarModel): ScreenModel;
-    getClosestElement?(x: number, y: number): any;
+    getClosestElement?(x: number, y: number): {
+        data;
+        node: Element;
+        x: number;
+        y: number;
+        distance: number;
+        secondaryDistance: number;
+    };
     addInteraction?();
     draw?();
     data?(): any[];
@@ -141,6 +149,11 @@ export interface UnitGuide {
     split?: ScaleGuide;
     showGridLines?: 'x' | 'y' | 'xy';
     utcTime?: boolean;
+    paddingNoTicks?: {
+        b: number;
+        l: number;
+    };
+    autoLayout?: string;
 }
 
 export interface ScaleFields {
@@ -241,15 +254,6 @@ export interface Expression {
     source?: string;
 }
 
-export interface ScaleSettings {
-    references?: WeakMap<any, any>;
-    refCounter?: () => number;
-    defaultNiceColor?: boolean;
-    defaultColorBrewer?: string[];
-    defaultClassBrewer?: string[];
-    utcTime?: boolean;
-}
-
 export interface ChartConfig {
     type?: string;
     x?: string | string[];
@@ -269,6 +273,7 @@ export interface ChartConfig {
     data?: Object[];
     plugins?: PluginObject[];
     emptyContainer?: string;
+    autoResize?: boolean;
 }
 
 export interface ScaleGuide {
@@ -294,6 +299,17 @@ export interface ScaleGuide {
     hideEqualLabels?: boolean;
     position?: string[];
     tickFormatNullAlias?: string;
+    padding?: number;
+    paddingNoTicks?: number;
+}
+
+export interface ScaleSettings {
+    references?: WeakMap<any, any>;
+    refCounter?: () => number;
+    defaultNiceColor?: boolean;
+    defaultColorBrewer?: string[];
+    defaultClassBrewer?: string[];
+    utcTime?: boolean;
 }
 
 export interface Dimension {
@@ -301,6 +317,7 @@ export interface Dimension {
     scale?: 'ordinal' | 'period' | 'time' | 'linear' | 'logarithmic';
     order?: any[];
     value?: any;
+    hasNull?: boolean;
 }
 
 export interface ChartDimensionsMap {
@@ -375,7 +392,7 @@ export interface GPLSpec {
 }
 
 export interface GPLSpecScale {
-    type: string;
+    type?: string;
     source: string;
     dim?: string;
     brewer?: Brewer;
@@ -391,6 +408,15 @@ export interface GPLSpecScale {
     period?: string;
     fitToFrameByDims?: string[];
     ratio?: RatioArg;
+}
+
+export interface SpecTransformer {
+    transform(chart?: Plot): GPLSpec;
+    isApplicable: boolean;
+}
+
+export interface SpecTransformConstructor {
+    new (spec: GPLSpec): SpecTransformer;
 }
 
 export type PluginObject = Object & {

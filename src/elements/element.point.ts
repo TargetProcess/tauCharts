@@ -24,9 +24,17 @@ interface Bounds {
     bottom: number;
 }
 
+interface PointInfo {
+    node: Element;
+    data;
+    x: number;
+    y: number;
+    r: number;
+}
+
 interface BoundsInfo {
     bounds: Bounds;
-    tree: d3.Quadtree<{x: number; y: number;}>;
+    tree: d3.Quadtree<PointInfo[]>;
 }
 
 interface PointClass extends GrammarElement {
@@ -230,7 +238,7 @@ const Point: PointClass = {
         );
     },
 
-    _getBoundsInfo(dots) {
+    _getBoundsInfo(this: PointInstance, dots: Element[]) {
         if (dots.length === 0) {
             return null;
         }
@@ -239,12 +247,12 @@ const Point: PointClass = {
 
         const items = dots
             .map((node) => {
-                const data = d3.select(node).data()[0];
+                const data = d3.select(node).data()[0] as any;
                 const x = screenModel.x(data);
                 const y = screenModel.y(data);
                 const r = screenModel.size(data) / 2;
 
-                return {node, data, x, y, r};
+                return <PointInfo>{node, data, x, y, r};
             })
             // TODO: Removed elements should not be passed to this function.
             .filter((item) => !isNaN(item.x) && !isNaN(item.y));
@@ -274,11 +282,7 @@ const Point: PointClass = {
             return coordinates;
         }, {});
 
-        interface Point {
-            x: number;
-            y: number;
-        }
-        const tree = d3.quadtree<Point>()
+        const tree = d3.quadtree<PointInfo[]>()
             .x((d) => d[0].x)
             .y((d) => d[0].y)
             .addAll(Object.keys(coordinates).map((c) => coordinates[c]));
@@ -286,7 +290,7 @@ const Point: PointClass = {
         return {bounds, tree};
     },
 
-    getClosestElement(_cursorX, _cursorY) {
+    getClosestElement(this: PointInstance, _cursorX, _cursorY) {
         if (!this._boundsInfo) {
             return null;
         }
@@ -340,7 +344,7 @@ const Point: PointClass = {
         return closest;
     },
 
-    highlight(this: PointClass, filter) {
+    highlight(this: PointClass, filter: HighlightFilter) {
 
         const x = 'graphical-report__highlighted';
         const _ = 'graphical-report__dimmed';
@@ -362,7 +366,7 @@ const Point: PointClass = {
         this._sortElements(filter);
     },
 
-    _sortElements(this: PointInstance, filter) {
+    _sortElements(this: PointInstance, filter: HighlightFilter) {
 
         const container = this.node().config.options.container;
 

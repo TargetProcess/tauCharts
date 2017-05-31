@@ -1,4 +1,4 @@
-interface PeriodGenerator {
+export interface PeriodGenerator {
     cast: (this: PeriodGenerator, d: Date) => Date;
     next: (this: PeriodGenerator, d: Date) => Date;
 }

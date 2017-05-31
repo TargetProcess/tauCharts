@@ -1,5 +1,5 @@
 import {
-    DataFrame,
+    DataFrameObject,
     ScaleConfig,
     ScaleFunction,
     ScaleSettings
@@ -9,7 +9,7 @@ import {BaseScale} from './scales/base';
 type ConfigInterceptor = (config: ScaleConfig, settings: ScaleSettings) => ScaleConfig;
 
 interface BaseScaleConstructor {
-    new (dataFrame: DataFrame, config: ScaleConfig): BaseScale;
+    new (dataFrame: DataFrameObject, config: ScaleConfig): BaseScale;
 }
 
 var ScalesMap: {[scale: string]: BaseScaleConstructor} = {};
@@ -29,7 +29,7 @@ export const scalesRegistry = {
 
     instance(settings: ScaleSettings = {}) {
         return {
-            create: function (scaleType: string, dataFrame: DataFrame, scaleConfig: ScaleConfig) {
+            create: function (scaleType: string, dataFrame: DataFrameObject, scaleConfig: ScaleConfig) {
                 var ScaleClass = scalesRegistry.get(scaleType);
                 var configFunc = ConfigMap[scaleType];
                 return new ScaleClass(dataFrame, configFunc(scaleConfig, settings));
@@ -39,5 +39,5 @@ export const scalesRegistry = {
 }
 
 export interface ScaleConstructor {
-    create(scaleType: string, dataFrame: DataFrame, scaleConfig: ScaleConfig): BaseScale;
+    create(scaleType: string, dataFrame: DataFrameObject, scaleConfig: ScaleConfig): BaseScale;
 }

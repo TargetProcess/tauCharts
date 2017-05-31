@@ -1,6 +1,7 @@
 import {DataFrame} from './data-frame';
 import {ScaleConstructor} from './scales-registry';
 import {
+    DataFrameObject,
     DataSources,
     ScaleConfig
 } from './definitions';
@@ -21,7 +22,7 @@ export class ScalesFactory {
         this.scales = scales;
     }
 
-    createScaleInfo(scaleConfig: ScaleConfig, dataFrame: DataFrame = null) {
+    createScaleInfo(scaleConfig: ScaleConfig, dataFrame: DataFrameObject = null) {
 
         var dim = scaleConfig.dim;
         var src = scaleConfig.source;
@@ -36,7 +37,7 @@ export class ScalesFactory {
         return this.registry.create(scaleConfig.type, frame, scaleConfig);
     }
 
-    createScaleInfoByName(name, dataFrame: DataFrame = null) {
+    createScaleInfoByName(name, dataFrame: DataFrameObject = null) {
         return this.createScaleInfo(this.scales[name], dataFrame);
     }
 }

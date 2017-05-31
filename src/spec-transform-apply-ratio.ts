@@ -1,13 +1,23 @@
 import * as utils from './utils/utils';
+import {
+    GPLSpec,
+    GPLSpecScale,
+    SpecTransformer,
+    Unit
+} from './definitions';
+import {Plot} from './charts/tau.plot';
 
-export class SpecTransformApplyRatio {
+export class SpecTransformApplyRatio implements SpecTransformer {
 
-    constructor(spec) {
+    spec: GPLSpec;
+    isApplicable: boolean;
+
+    constructor(spec: GPLSpec) {
         this.spec = spec;
         this.isApplicable = spec.settings.autoRatio && utils.isSpecRectCoordsOnly(spec.unit);
     }
 
-    transform(chartInstance) {
+    transform(chartInstance: Plot) {
 
         var refSpec = this.spec;
 
@@ -26,7 +36,7 @@ export class SpecTransformApplyRatio {
         return refSpec;
     }
 
-    ruleApplyRatio(spec, chartInstance) {
+    ruleApplyRatio(spec: GPLSpec, chartInstance: Plot) {
 
         var isCoordsRect = (unitRef) => {
             return (unitRef.type === 'COORDS.RECT' || unitRef.type === 'RECT');
@@ -36,7 +46,7 @@ export class SpecTransformApplyRatio {
             return (unitRef.type.indexOf('ELEMENT.') === 0);
         };
 
-        var traverse = (root, enterFn, exitFn, level = 0) => {
+        var traverse = (root: Unit, enterFn: (unit?: Unit, lvl?: number) => boolean, exitFn: (unit?: Unit, lvl?: number) => any, level = 0) => {
 
             var shouldContinue = enterFn(root, level);
 
@@ -47,10 +57,10 @@ export class SpecTransformApplyRatio {
             exitFn(root, level);
         };
 
-        var xs = [];
-        var ys = [];
+        var xs: string[] = [];
+        var ys: string[] = [];
 
-        var enterIterator = (unitRef, level) => {
+        var enterIterator = (unitRef: Unit, level: number) => {
 
             if ((level > 1) || !isCoordsRect(unitRef)) {
                 throw new Error('Not applicable');
@@ -87,9 +97,9 @@ export class SpecTransformApplyRatio {
 
         var xyProd = 2;
         if ([realXs.length, realYs.length].some(l => l === xyProd)) {
-            let exDim = ((s) => s.dim);
-            let scalesIterator = ((s, i, list) => (s.fitToFrameByDims = list.slice(0, i).map(exDim)));
-            let tryApplyRatioToScales = (axis, scalesRef) => {
+            let exDim = ((s: GPLSpecScale) => s.dim);
+            let scalesIterator = ((s: GPLSpecScale, i: number, list: GPLSpecScale[]) => (s.fitToFrameByDims = list.slice(0, i).map(exDim)));
+            let tryApplyRatioToScales = (axis: string, scalesRef: GPLSpecScale[]) => {
                 if (scalesRef.filter(isOrdinalScale).length === xyProd) {
                     scalesRef.forEach(scalesIterator);
                     scalesRef[0].ratio = utils.generateRatioFunction(axis, scalesRef.map(exDim), chartInstance);

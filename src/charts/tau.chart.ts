@@ -1,10 +1,11 @@
 import {Plot} from './tau.plot';
 import * as utils from '../utils/utils';
 import {chartTypesRegistry} from '../chart-alias-registry';
+import {ChartConfig} from '../definitions';
 
 class Chart extends Plot {
 
-    constructor(config) {
+    constructor(config: ChartConfig) {
 
         var errors = chartTypesRegistry.validate(config.type, config);
 
@@ -32,6 +33,9 @@ class Chart extends Plot {
         }
         super.destroy();
     }
+
+    static winAware: Chart[];
+    static resizeOnWindowEvent: () => void;
 }
 
 Chart.winAware = [];

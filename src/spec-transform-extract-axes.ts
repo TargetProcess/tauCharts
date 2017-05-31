@@ -1,8 +1,17 @@
 import * as utils from './utils/utils';
+import {
+    GPLSpec,
+    SpecTransformer,
+    Unit
+} from './definitions';
+import {Plot} from './charts/tau.plot';
 
-export class SpecTransformExtractAxes {
+export class SpecTransformExtractAxes implements SpecTransformer {
 
-    constructor(spec) {
+    spec: GPLSpec;
+    isApplicable: boolean;
+
+    constructor(spec: GPLSpec) {
         this.spec = spec;
         this.isApplicable = (spec.settings.layoutEngine === 'EXTRACT') && utils.isSpecRectCoordsOnly(spec.unit);
     }
@@ -28,13 +37,13 @@ export class SpecTransformExtractAxes {
         return refSpec;
     }
 
-    ruleExtractAxes(spec) {
+    ruleExtractAxes(spec: GPLSpec) {
 
-        var isCoordsRect = (unitRef) => {
+        var isCoordsRect = (unitRef: Unit) => {
             return (unitRef.type === 'COORDS.RECT' || unitRef.type === 'RECT');
         };
 
-        var isElement = (unitRef) => {
+        var isElement = (unitRef: Unit) => {
             return (unitRef.type.indexOf('ELEMENT.') === 0);
         };
 
@@ -42,10 +51,10 @@ export class SpecTransformExtractAxes {
 
         var ttl = {l:0, r:10, t:10, b:0};
         var ttlNoTicks = {l:0, b:0};
-        var seq = [];
-        var seqNoTicks = [];
+        var seq: (typeof ttl)[] = [];
+        var seqNoTicks: (typeof ttlNoTicks)[] = [];
 
-        var enterIterator = (unitRef, level) => {
+        var enterIterator = (unitRef: Unit, level: number) => {
 
             if ((level > 1) || !isCoordsRect(unitRef)) {
                 throw new Error('Not applicable');
@@ -82,7 +91,7 @@ export class SpecTransformExtractAxes {
             return (rects.length === 1);
         };
 
-        var exitIterator = (unitRef) => {
+        var exitIterator = (unitRef: Unit) => {
 
             var lvl = seq.pop();
             var lvlNoTicks = seqNoTicks.pop();

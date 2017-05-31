@@ -10,7 +10,7 @@ import {
 export class TimeScale extends BaseScale {
 
     vars: Date[];
-    niceIntervalFn: (domain: [Date, Date]) => [Date, Date];
+    niceIntervalFn: d3.CountableTimeInterval;
 
     constructor(xSource: DataFrame, scaleConfig: ScaleConfig) {
 

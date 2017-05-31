@@ -22,6 +22,7 @@ import {SpecTransformExtractAxes} from '../spec-transform-extract-axes';
 import {CSS_PREFIX} from '../const';
 
 import {GPL} from './tau.gpl';
+import {UnitDomainPeriodGenerator, PeriodGenerator} from '../unit-domain-period-generator';
 import * as d3 from 'd3';
 import TaskRunner from './task-runner';
 var selectOrAppend = utilsDom.selectOrAppend;
@@ -31,11 +32,15 @@ import {
     ChartConfig,
     ChartDimensionsMap,
     ChartSettings,
+    ChartSpec,
+    DataFrameObject,
     DataSources,
     d3Selection,
     GPLSpec,
+    GPLSpecScale,
     GrammarElement,
     PointerEventArgs,
+    SpecTransformConstructor,
     Unit
 } from '../definitions';
 
@@ -44,18 +49,29 @@ interface Size {
     height?: number;
 }
 
+interface Filter {
+    tag: string;
+    src: string;
+    predicate: (row) => boolean;
+    id?: number;
+}
+
+interface ExcludeFilter {
+    excludeFilter?: string[];
+}
+
 export class Plot extends Emitter {
 
     protected _nodes: GrammarElement[];
     protected _svg: SVGSVGElement;
     protected _filtersStore: {
-        filters: any;
+        filters: {[tag: string]: Filter[]};
         tick: number;
     };
     protected _layout: ChartLayout;
     configGPL: GPLSpec;
-    transformers: any[];
-    onUnitsStructureExpandedTransformers: any[];
+    transformers: SpecTransformConstructor[];
+    onUnitsStructureExpandedTransformers: SpecTransformConstructor[];
     protected _originData: DataSources;
     protected _chartDataModel: (dataSources: DataSources) => DataSources;
     protected _liveSpec: GPLSpec;
@@ -140,7 +156,7 @@ export class Plot extends Emitter {
         super.destroy();
     }
 
-    setupChartSourceModel(fnModelTransformation) {
+    setupChartSourceModel(fnModelTransformation: (sources: DataSources) => DataSources) {
         this._chartDataModel = fnModelTransformation;
     }
 
@@ -150,7 +166,7 @@ export class Plot extends Emitter {
             throw new Error('Provide spec for plot');
         }
 
-        var resConfig = utils.defaults(
+        var resConfig: ChartConfig = utils.defaults(
             config,
             {
                 spec: {},
@@ -179,12 +195,18 @@ export class Plot extends Emitter {
     }
 
     static setupPeriodData(spec: GPLSpec) {
-        var tickPeriod = Plot.__api__.tickPeriod;
+        var tickPeriod: typeof UnitDomainPeriodGenerator = Plot.__api__.tickPeriod;
         var log = spec.settings.log;
 
         var scales = Object
             .keys(spec.scales)
             .map(s => spec.scales[s]);
+
+        interface PeriodScaleMeta {
+            source: string;
+            dim: string;
+            period: PeriodGenerator;
+        }
 
         var workPlan = scales
             .filter(s => (s.type === 'period'))
@@ -201,11 +223,11 @@ export class Plot extends Emitter {
                 }
 
                 return memo;
-            }, []);
+            }, [] as PeriodScaleMeta[]);
 
         var isNullOrUndefined = ((x) => ((x === null) || (x === undefined)));
 
-        var reducer = (refSources, metaDim) => {
+        var reducer = (refSources: DataSources, metaDim: PeriodScaleMeta) => {
             refSources[metaDim.source].data = refSources[metaDim.source]
                 .data
                 .map(row => {
@@ -299,7 +321,7 @@ export class Plot extends Emitter {
         this.fire('unitsstructureexpanded', specRef);
     }
 
-    _getClosestElementPerUnit(x0, y0) {
+    _getClosestElementPerUnit(x0: number, y0: number) {
         return this._renderedItems
             .filter((d) => d.getClosestElement)
             .map((item) => {
@@ -328,7 +350,7 @@ export class Plot extends Emitter {
         const isClick = (eventType === 'click');
         const dataEvent = (isClick ? 'data-click' : 'data-hover');
         var data = null;
-        var node = null;
+        var node: Element = null;
         const items = this._getClosestElementPerUnit(x, y);
         const nonEmpty = items
             .filter((d) => d.closest)
@@ -477,7 +499,7 @@ export class Plot extends Emitter {
         this._target = target;
         this._defaultSize = Object.assign({}, xSize);
 
-        var targetNode = d3.select(target as any).node();
+        var targetNode: Element = d3.select(target as any).node();
         if (targetNode === null) {
             throw new Error('Target element not found');
         }
@@ -538,7 +560,7 @@ export class Plot extends Emitter {
         const animationSpeed = (spec.settings.experimentalShouldAnimate(spec) ?
             (<any>spec.settings).initialAnimationSpeed : 0);
         spec.settings.animationSpeed = animationSpeed;
-        const setUnitAnimation = (u) => {
+        const setUnitAnimation = (u: Unit) => {
             u.guide = (u.guide || {});
             u.guide.animationSpeed = animationSpeed;
             if (u.units) {
@@ -599,10 +621,10 @@ export class Plot extends Emitter {
         if (!svg.attr('class')) {
             svg.attr('class', `${CSS_PREFIX}svg`);
         }
-        this._svg = svg.node();
+        this._svg = svg.node() as SVGSVGElement;
         this._initPointerEvents();
         this.fire('beforerender', this._svg);
-        var roots = svg.selectAll('g.frame-root')
+        var roots = (svg.selectAll('g.frame-root') as d3.Selection<SVGElement, string, SVGSVGElement, any>)
             .data([frameRootId], x => x);
 
         // NOTE: Fade out removed root, fade-in if removing interrupted.
@@ -686,13 +708,13 @@ export class Plot extends Emitter {
         );
     }
 
-    getScaleInfo(name: string, dataFrame = null) {
+    getScaleInfo(name: string, dataFrame: DataFrameObject = null) {
         return this
             .getScaleFactory()
             .createScaleInfoByName(name, dataFrame);
     }
 
-    getSourceFiltersIterator(rejectFiltersPredicate) {
+    getSourceFiltersIterator(rejectFiltersPredicate: (filter: Filter) => boolean) {
         var filters = utils.flatten(Object.keys(this._filtersStore.filters).map(key => this._filtersStore.filters[key]))
             .filter((f) => !rejectFiltersPredicate(f))
             .map(x => x.predicate);
@@ -700,9 +722,9 @@ export class Plot extends Emitter {
         return (row) => filters.reduce((prev, f) => (prev && f(row)), true);
     }
 
-    getDataSources(param: any = {}) {
-        var excludeFiltersByTagAndSource = (k) =>
-            ((f) => (param.excludeFilter && param.excludeFilter.indexOf(f.tag) !== -1) || f.src !== k);
+    getDataSources(param: ExcludeFilter = {}) {
+        var excludeFiltersByTagAndSource = (k: string) =>
+            ((f: Filter) => (param.excludeFilter && param.excludeFilter.indexOf(f.tag) !== -1) || f.src !== k);
 
         var chartDataModel = this._chartDataModel(this._originData);
 
@@ -720,10 +742,10 @@ export class Plot extends Emitter {
             },
             {
                 '?': chartDataModel['?']
-            });
+            } as DataSources);
     }
 
-    isEmptySources(sources) {
+    isEmptySources(sources: DataSources) {
 
         return !Object
             .keys(sources)
@@ -732,7 +754,7 @@ export class Plot extends Emitter {
             .length;
     }
 
-    getChartModelData(param = {}, src = '/') {
+    getChartModelData(param: ExcludeFilter = {}, src = '/') {
         var sources = this.getDataSources(param);
         return sources[src].data;
     }
@@ -745,7 +767,7 @@ export class Plot extends Emitter {
         return this._originData[src].data;
     }
 
-    setData(data, src = '/') {
+    setData(data: any[], src = '/') {
         this._originData[src].data = data;
         this.refresh();
     }
@@ -754,7 +776,7 @@ export class Plot extends Emitter {
         return this._svg;
     }
 
-    addFilter(filter) {
+    addFilter(filter: Filter) {
         filter.src = filter.src || '/';
         var tag = filter.tag;
         var filters = this._filtersStore.filters[tag] = this._filtersStore.filters[tag] || [];
@@ -764,7 +786,7 @@ export class Plot extends Emitter {
         return id;
     }
 
-    removeFilter(id) {
+    removeFilter(id: number) {
         Object.keys(this._filtersStore.filters).map((key) => {
             this._filtersStore.filters[key] = this._filtersStore.filters[key].filter((item) => item.id !== id);
         });
@@ -777,15 +799,15 @@ export class Plot extends Emitter {
         }
     }
 
-    resize(sizes = {}) {
+    resize(sizes: Size = {}) {
         this.renderTo(this._target, sizes);
     }
 
-    select(queryFilter) {
+    select(queryFilter: (unit?: Unit) => boolean) {
         return this._nodes.filter(queryFilter);
     }
 
-    traverseSpec(spec, iterator) {
+    traverseSpec(spec: ChartSpec, iterator: (node: Unit, parentNode: Unit, parentFrame: DataFrameObject) => void) {
 
         var traverse = (node, iterator, parentNode, parentFrame) => {
 
@@ -812,7 +834,7 @@ export class Plot extends Emitter {
         return this._layout;
     }
 
-    _displayTimeoutWarning({proceed, cancel, timeout}) {
+    _displayTimeoutWarning({proceed, cancel, timeout}: {proceed: () => void, cancel: () => void, timeout: number}) {
         var width = 200;
         var height = 100;
         var linesCount = 3;

@@ -1,5 +1,9 @@
 import {GenericCartesian} from '../elements/element.generic.cartesian';
 import * as d3 from 'd3';
+import {
+    Unit
+} from '../definitions';
+import {Plot} from '../charts/tau.plot';
 
 export function traverseJSON(
     srcObject,
@@ -19,7 +23,7 @@ export function traverseJSON(
     return rootRef;
 }
 
-export function traverseSpec(root, enterFn, exitFn, level = 0) {
+export function traverseSpec(root: Unit, enterFn: (node: Unit, level?: number) => any, exitFn: (node: Unit, level?: number) => any, level = 0) {
     var shouldContinue = enterFn(root, level);
     if (shouldContinue) {
         (root.units || []).map((rect) => traverseSpec(rect, enterFn, exitFn, level + 1));
@@ -339,7 +343,7 @@ export function niceZeroBased(domain: number[]) {
     ];
 }
 
-export function niceTimeDomain(domain: Date[], niceIntervalFn, {utc} = {utc: false}) {
+export function niceTimeDomain(domain: Date[], niceIntervalFn: d3.CountableTimeInterval, { utc } = { utc: false }) {
 
     var [low, top] = (d3.extent(domain) as [Date, Date]);
     var span = (+top - +low);
@@ -381,7 +385,7 @@ export function generateHash(str: string) {
     return hashMap[r];
 }
 
-export function generateRatioFunction(dimPropName: string, paramsList: string[], chartInstanceRef: any) {
+export function generateRatioFunction(dimPropName: string, paramsList: string[], chartInstanceRef: Plot) {
 
     var unify = (v) => isDate(v) ? v.getTime() : v;
 
@@ -405,7 +409,7 @@ export function generateRatioFunction(dimPropName: string, paramsList: string[],
             return `${keys.join('')}-${seed}`;
         });
 
-    return (key, size, varSet) => {
+    return (key: string, size: number, varSet: any[]) => {
 
         var facetSize = varSet.length;
 
@@ -423,12 +427,12 @@ export function generateRatioFunction(dimPropName: string, paramsList: string[],
             pad = level2Guide.padding.t + level2Guide.padding.b;
         }
 
-        var xTotal = (keys) => {
+        var xTotal = (keys: string[]) => {
             var arr = xHash(data, keys);
             return Object.keys(arr).reduce((sum, k) => (sum + arr[k]), 0);
         };
 
-        var xPart = ((keys, k) => (xHash(data, keys)[k]));
+        var xPart = ((keys: string[], k: string) => (xHash(data, keys)[k]));
 
         var totalItems = xTotal(paramsList);
 
@@ -439,7 +443,7 @@ export function generateRatioFunction(dimPropName: string, paramsList: string[],
     };
 }
 
-export function isSpecRectCoordsOnly(root) {
+export function isSpecRectCoordsOnly(root: Unit) {
 
     var isApplicable = true;
 
@@ -462,7 +466,7 @@ export function isSpecRectCoordsOnly(root) {
     return isApplicable;
 }
 
-export function throttleLastEvent(last, eventType, handler, limitFromPrev: string | number = 0) {
+export function throttleLastEvent(last: {e?: string, ts?: number}, eventType: string, handler: (...args) => void, limitFromPrev: 'requestAnimationFrame' | number = 0) {
 
     if (limitFromPrev === 'requestAnimationFrame') {
         var frameRequested = false;
@@ -477,7 +481,7 @@ export function throttleLastEvent(last, eventType, handler, limitFromPrev: strin
                 frameRequested = true;
             }
             last.e = eventType;
-            last.ts = new Date();
+            last.ts = Date.now();
         };
     }
 
@@ -542,7 +546,7 @@ export function range(start: number, end?: number) {
     return arr;
 }
 
-export function flatten<T>(array: T[] | T[][]): T[];
+export function flatten<T>(array: T[][]): T[];
 export function flatten(array: any): any[] {
     if (!Array.isArray(array)) {
         return array;
@@ -579,7 +583,7 @@ export function union<T>(arr1: T[], arr2: T[]): T[] {
     return unique(arr1.concat(arr2));
 }
 
-export function intersection(arr1, arr2) {
+export function intersection<T>(arr1: T[], arr2: T[]) {
     return arr1.filter(x => arr2.indexOf(x) !== -1);
 }
 

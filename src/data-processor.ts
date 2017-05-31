@@ -1,13 +1,8 @@
 import * as utils from './utils/utils';
-import {Dimension} from './definitions';
-
-interface XDim extends Dimension {
-    hasNull?: boolean;
-    value?: any;
-}
-interface DimTypeMap {
-    [dim: string]: XDim;
-};
+import {
+    ChartDimensionsMap,
+    Dimension
+} from './definitions';
 
 var DataProcessor = {
 
@@ -63,7 +58,7 @@ var DataProcessor = {
         };
     },
 
-    excludeNullValues: (dimensions: DimTypeMap, onExclude: (item: any) => void) => {
+    excludeNullValues: (dimensions: ChartDimensionsMap, onExclude: (item: any) => void) => {
         var fields = Object.keys(dimensions).reduce((fields, k) => {
             var d = dimensions[k];
             if ((!d.hasOwnProperty('hasNull') || d.hasNull) && ((d.type === 'measure') || (d.scale === 'period'))) {
@@ -81,7 +76,7 @@ var DataProcessor = {
         };
     },
 
-    autoAssignScales: function (dimensions: DimTypeMap) {
+    autoAssignScales: function (dimensions: ChartDimensionsMap) {
 
         var defaultType = 'category';
         var scaleMap = {
@@ -90,7 +85,7 @@ var DataProcessor = {
             measure: 'linear'
         };
 
-        var r: DimTypeMap = {};
+        var r: ChartDimensionsMap = {};
         Object.keys(dimensions).forEach((k) => {
             var item = dimensions[k];
             var type = (item.type || defaultType).toLowerCase();
@@ -107,7 +102,7 @@ var DataProcessor = {
         return r;
     },
 
-    autoDetectDimTypes: function (data: any[]): DimTypeMap {
+    autoDetectDimTypes: function (data: any[]): ChartDimensionsMap {
 
         var defaultDetect = {
             type: 'category',
@@ -162,7 +157,7 @@ var DataProcessor = {
         return data.reduce(reducer, {});
     },
 
-    sortByDim: function (data: any[], dimName: string, dimInfo: XDim) {
+    sortByDim: function (data: any[], dimName: string, dimInfo: Dimension) {
         var rows = data;
 
         var interceptor = (['period', 'time'].indexOf(dimInfo.scale) >= 0) ?
