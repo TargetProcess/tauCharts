@@ -1,10 +1,35 @@
 import * as utils from './utils/utils';
 import {FormatterRegistry} from './formatter-registry';
 import * as d3 from 'd3';
+import {
+    ChartSettings,
+    GPLSpec,
+    GPLSpecScale,
+    ScaleGuide,
+    SpecTransformer,
+    Unit,
+    UnitGuide
+} from './definitions';
+import {Plot} from './charts/tau.plot';
 
-var sum = ((arr) => arr.reduce((sum, x) => (sum + x), 0));
+interface EngineMeta {
+    dimension(scaleId: string): {
+        dimName: string;
+        dimType: string;
+        scaleType: string;
+    };
+    scaleMeta(scaleId: string, guide: ScaleGuide): {
+        dimName: string;
+        dimType: string;
+        scaleType: string;
+        values: any[];
+        isEmpty: boolean;
+    }
+}
 
-function extendGuide(guide, targetUnit, dimension, properties) {
+var sum = ((arr: number[]) => arr.reduce((sum, x) => (sum + x), 0));
+
+function extendGuide(guide: UnitGuide, targetUnit: Unit, dimension: string, properties: any[]) {
     var guide_dim = guide.hasOwnProperty(dimension) ? guide[dimension] : {};
     guide_dim = guide_dim || {};
     properties.forEach((prop) => {
@@ -12,7 +37,7 @@ function extendGuide(guide, targetUnit, dimension, properties) {
     });
 }
 
-var applyCustomProps = (targetUnit, customUnit) => {
+var applyCustomProps = (targetUnit: Unit, customUnit: Unit) => {
     var guide = customUnit.guide || {};
     var config = {
         x: ['label'],
@@ -36,7 +61,7 @@ var applyCustomProps = (targetUnit, customUnit) => {
     return targetUnit;
 };
 
-var extendLabel = function (guide, dimension, extend) {
+var extendLabel = function (guide: UnitGuide, dimension: string, extend?) {
     guide[dimension] = utils.defaults(guide[dimension] || {}, {
         label: ''
     });
@@ -57,7 +82,7 @@ var extendLabel = function (guide, dimension, extend) {
 
     return guide[dimension];
 };
-var extendAxis = function (guide, dimension, extend) {
+var extendAxis = function (guide: UnitGuide, dimension: 'x' | 'y', extend?) {
     guide[dimension] = utils.defaults(
         guide[dimension],
         extend || {},
@@ -78,7 +103,7 @@ var extendAxis = function (guide, dimension, extend) {
     return guide[dimension];
 };
 
-var applyNodeDefaults = (node) => {
+var applyNodeDefaults = (node: Unit) => {
     node.options = node.options || {};
     node.guide = node.guide || {};
     node.guide.padding = utils.defaults(node.guide.padding || {}, {l: 0, b: 0, r: 0, t: 0});
@@ -103,7 +128,7 @@ var applyNodeDefaults = (node) => {
     return node;
 };
 
-var inheritProps = (childUnit, root) => {
+var inheritProps = (childUnit: Unit, root: Unit) => {
 
     childUnit.guide = childUnit.guide || {};
     childUnit.guide.padding = childUnit.guide.padding || {l: 0, t: 0, r: 0, b: 0};
@@ -119,7 +144,7 @@ var inheritProps = (childUnit, root) => {
     return childUnit;
 };
 
-var createSelectorPredicates = (root) => {
+var createSelectorPredicates = (root: Unit) => {
 
     var children = root.units || [];
 
@@ -197,11 +222,11 @@ var rotateBox = ({width, height}, angle) => {
     };
 };
 
-var getTextAnchorByAngle = (xAngle, xOrY = 'x') => {
+var getTextAnchorByAngle = (xAngle: number, xOrY = 'x') => {
 
     var angle = utils.normalizeAngle(xAngle);
 
-    var xRules = (xOrY === 'x') ?
+    var xRules: [number, number, string][] = (xOrY === 'x') ?
         ([
             [0, 45, 'middle'],
             [45, 135, 'start'],
@@ -231,7 +256,7 @@ var wrapLine = (box, lineWidthLimit, linesCountLimit) => {
     };
 };
 
-var calcXYGuide = function (guide, settings, xMeta, yMeta, inlineLabels) {
+var calcXYGuide = function (guide: UnitGuide, settings: ChartSettings, xMeta, yMeta, inlineLabels?: boolean) {
 
     var xValues = xMeta.values;
     var yValues = yMeta.values;
@@ -363,7 +388,7 @@ var calcXYGuide = function (guide, settings, xMeta, yMeta, inlineLabels) {
     return guide;
 };
 
-var calcUnitGuide = function ({unit, meta, settings, allowXVertical, allowYVertical, inlineLabels}) {
+var calcUnitGuide = function ({unit, meta, settings, allowXVertical, allowYVertical, inlineLabels}: {unit: Unit, meta: EngineMeta, settings: ChartSettings, allowXVertical: boolean, allowYVertical: boolean, inlineLabels: boolean}) {
 
     var dimX = meta.dimension(unit.x);
     var dimY = meta.dimension(unit.y);
@@ -413,7 +438,13 @@ var calcUnitGuide = function ({unit, meta, settings, allowXVertical, allowYVerti
     return unit;
 };
 
-var SpecEngineTypeMap = {
+type SpecEngineFunction = (srcSpec: {unit: Unit}, meta: EngineMeta, settings: ChartSettings) => {unit: Unit};
+
+interface SpecEngines {
+    [engine: string]: SpecEngineFunction;
+}
+
+var SpecEngineTypeMap: SpecEngines = {
 
     NONE: (srcSpec, meta, settings) => {
 
@@ -522,7 +553,7 @@ var SpecEngineTypeMap = {
         fnTraverseSpec(
             utils.clone(spec.unit),
             spec.unit,
-            (selectorPredicates, unit) => {
+            (selectorPredicates, unit: Unit) => {
 
                 if (selectorPredicates.isLeaf) {
                     return unit;
@@ -674,7 +705,8 @@ var SpecEngineFactory = {
     get: (typeName, settings, srcSpec, fnCreateScale) => {
 
         var engine = (SpecEngineTypeMap[typeName] || SpecEngineTypeMap.NONE);
-        var meta = {
+
+        var meta: EngineMeta = {
 
             dimension: (scaleId) => {
                 var scaleCfg = srcSpec.scales[scaleId];
@@ -711,14 +743,17 @@ var SpecEngineFactory = {
     }
 };
 
-export class SpecTransformAutoLayout {
+export class SpecTransformAutoLayout implements SpecTransformer {
 
-    constructor(spec) {
+    spec: GPLSpec;
+    isApplicable: boolean;
+
+    constructor(spec: GPLSpec) {
         this.spec = spec;
         this.isApplicable = utils.isSpecRectCoordsOnly(spec.unit);
     }
 
-    transform(chart) {
+    transform(chart: Plot) {
 
         var spec = this.spec;
 

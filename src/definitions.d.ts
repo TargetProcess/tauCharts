@@ -282,7 +282,15 @@ export interface ScaleGuide {
     max?: number;
     minSize?: number;
     maxSize?: number;
-    label?: {text: string; padding: number; hide?: boolean; paddingNoTicks?: number};
+    label?: {
+        text: string;
+        padding: number;
+        hide?: boolean;
+        paddingNoTicks?: number;
+        cssClass?: string;
+        dock?: string;
+        textAnchor?: string;
+    };
     tickPeriod?: string;
     tickFormat?: string;
     brewer?: Brewer;
@@ -308,6 +316,11 @@ export interface ScaleGuide {
     $maxTickTextW?: number;
     $maxTickTextH?: number;
     density?: number;
+    cssClass?: string;
+    scaleOrient?: string;
+    tickFormatWordWrap?: boolean;
+    tickFormatWordWrapLines?: number;
+    avoidCollisions?: boolean;
 }
 
 export interface ScaleSettings {

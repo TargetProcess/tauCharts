@@ -5,11 +5,17 @@ import {
 } from '../definitions';
 import {Plot} from '../charts/tau.plot';
 
+interface JSONSelector {
+    type: string;
+    isLeaf: boolean;
+    isLeafParent: boolean;
+}
+
 export function traverseJSON(
     srcObject,
     byProperty: string,
-    fnSelectorPredicates: (obj) => boolean,
-    funcTransformRules: (selector: boolean, obj) => any) {
+    fnSelectorPredicates: (obj) => JSONSelector,
+    funcTransformRules: (selector: JSONSelector, obj) => any) {
 
     var rootRef = funcTransformRules(fnSelectorPredicates(srcObject), srcObject);
 
