@@ -1,7 +1,5 @@
 import tauCharts from 'taucharts';
 
-{
-
     var utils = tauCharts.api.utils;
 
     var MIN = 'minimum';
@@ -201,7 +199,7 @@ import tauCharts from 'taucharts';
                     var speed = self.node().config.guide.animationSpeed;
                     var part = that
                         .selectAll('.' + props.class)
-                        .data(function(row) {
+                        .data(function (row) {
                             return [row];
                         }, screenModel.id);
                     part.exit()
@@ -375,4 +373,3 @@ import tauCharts from 'taucharts';
     }
 
     tauCharts.api.plugins.add('box-whiskers', boxWhiskersPlot);
-}

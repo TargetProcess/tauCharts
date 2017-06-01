@@ -1,10 +1,8 @@
-import d3 from 'd3';
-import {utils} from '../utils/utils';
+import * as d3 from 'd3';
+import * as utils from '../utils/utils';
 import topojson from 'topojson';
 import {d3Labeler} from '../utils/d3-labeler';
 import {Element} from './element';
-
-d3.labeler = d3Labeler;
 
 const avgCharSize = 5.5;
 const iterationsCount = 10;
@@ -154,7 +152,7 @@ export class GeoMap extends Element {
 
             var anchors = labels.map(d => ({x: d.sx, y: d.sy, r: d.r}));
 
-            d3.labeler()
+            d3Labeler()
                 .label(labels)
                 .anchor(anchors)
                 .width(innerW)
@@ -352,7 +350,7 @@ export class GeoMap extends Element {
                             };
                         });
 
-                    d3.labeler()
+                    d3Labeler()
                         .label(labels)
                         .anchor(anchors)
                         .width(innerW)

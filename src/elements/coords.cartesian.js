@@ -1,8 +1,8 @@
-import d3 from 'd3';
+import * as d3 from 'd3';
 import {Element} from './element';
-import {utilsDom} from '../utils/utils-dom';
-import {utilsDraw} from '../utils/utils-draw';
-import {utils} from '../utils/utils';
+import * as utilsDom from '../utils/utils-dom';
+import * as utilsDraw from '../utils/utils-draw';
+import * as utils from '../utils/utils';
 import {CSS_PREFIX} from '../const';
 import {FormatterRegistry} from '../formatter-registry';
 import {

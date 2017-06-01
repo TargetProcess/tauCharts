@@ -1,6 +1,6 @@
 import tauCharts from 'taucharts';
+import * as d3 from 'd3';
 
-{
     // jscs:disable
     var regressionsHub = (function () {
 
@@ -312,7 +312,6 @@ import tauCharts from 'taucharts';
     }());
     // jscs:enable
     var utils = tauCharts.api.utils;
-    var d3 = tauCharts.api.d3;
 
     function trendline(xSettings) {
 
@@ -595,4 +594,3 @@ import tauCharts from 'taucharts';
     }
 
     tauCharts.api.plugins.add('trendline', trendline);
-}

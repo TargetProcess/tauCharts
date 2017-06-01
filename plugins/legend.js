@@ -1,8 +1,6 @@
 import tauCharts from 'taucharts';
+import * as d3 from 'd3';
 
-{
-
-    var d3 = tauCharts.api.d3;
     var utils = tauCharts.api.utils;
     var pluginsSDK = tauCharts.api.pluginsSDK;
     var RESET_SELECTOR = '.graphical-report__legend__reset';
@@ -1004,4 +1002,3 @@ import tauCharts from 'taucharts';
     }
 
     tauCharts.api.plugins.add('legend', ChartLegend);
-}

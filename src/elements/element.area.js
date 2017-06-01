@@ -1,6 +1,6 @@
-import d3 from 'd3';
+import * as d3 from 'd3';
 import {CSS_PREFIX} from '../const';
-import {utils} from '../utils/utils';
+import * as utils from '../utils/utils';
 import {BasePath} from './element.path.base';
 import {getLineClassesByCount} from '../utils/css-class-map';
 import {GrammarRegistry} from '../grammar-registry';

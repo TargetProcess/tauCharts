@@ -1,9 +1,7 @@
 import tauCharts from 'taucharts';
-
-{
+import * as d3 from 'd3';
 
     var utils = tauCharts.api.utils;
-    var d3 = tauCharts.api.d3;
 
     var SHADOW_SIZE = 16;
     var SHADOW_COLOR_0 = '#E5E7EB';
@@ -628,4 +626,3 @@ import tauCharts from 'taucharts';
     };
 
     tauCharts.api.plugins.add('floating-axes', floatingAxes);
-}

@@ -1,2 +1,3 @@
 build/* binary
 *.js    eol=lf
+*.ts    eol=lf

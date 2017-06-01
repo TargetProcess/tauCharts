@@ -1,7 +1,7 @@
-import {utils} from './utils';
-import {utilsDom} from './utils-dom';
-import {utilsDraw} from './utils-draw';
-import d3 from 'd3';
+import * as utils from './utils';
+import * as utilsDom from './utils-dom';
+import * as utilsDraw from './utils-draw';
+import * as d3 from 'd3';
 import interpolatePathPoints from './path/interpolators/path-points';
 import {getLineInterpolator, getInterpolatorSplineType} from './path/interpolators/interpolators-registry';
 

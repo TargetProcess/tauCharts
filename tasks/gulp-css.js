@@ -17,7 +17,7 @@ const themes = [
     'default'
 ];
 
-module.exports = (gulp, { connect }) => {
+module.exports = (gulp, {connect}) => {
 
     const getSrc = (name, isPlugin = false) => {
         return `./less${isPlugin ? '/plugins' : ''}/${name}.less`;
@@ -32,7 +32,7 @@ module.exports = (gulp, { connect }) => {
         return `${isPlugin ? 'tauCharts.' : ''}${name}${themePrefix}.css`;
     };
 
-    const createStream = ({ name, theme, isPlugin }) => {
+    const createStream = ({name, theme, isPlugin}) => {
         const src = getSrc(name, isPlugin);
         const destDir = getDestDir(isPlugin);
         const destFile = getDestFile(name, theme, isPlugin);
