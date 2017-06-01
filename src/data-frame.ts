@@ -1,11 +1,5 @@
 import * as utils from './utils/utils';
-import {
-    DataFilter,
-    DataFrameObject,
-    DataKey,
-    DataTransformations,
-    Unit
-} from './definitions';
+import {DataFilter, DataFrameObject, DataKey, DataTransformations, Unit} from './definitions';
 
 export class DataFrame implements DataFrameObject {
 
@@ -46,11 +40,7 @@ export class DataFrame implements DataFrameObject {
     source: string;
     units: Unit[];
 
-    _frame: {
-        key: DataKey;
-        source: string;
-        pipe: DataFilter[];
-    };
+    _frame: DataFrameObject;
     _data: any[];
     _pipeReducer: (data: any[], pipeCfg: DataFilter) => any[];
 }
