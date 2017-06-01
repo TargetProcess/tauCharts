@@ -1,20 +1,33 @@
-var ScalesMap = {};
-var ConfigMap = {};
-import {DataFrameObject, ScaleConfig, ScaleSettings} from './definitions'; import {BaseScale} from './scales/base'; export interface ScaleConstructor {create(scaleType: string, dataFrame: DataFrameObject, scaleConfig: ScaleConfig): BaseScale;} type ConfigInterceptor = (config: ScaleConfig, settings: ScaleSettings) => ScaleConfig; interface BaseScaleConstructor {new (dataFrame: DataFrameObject, config: ScaleConfig): BaseScale;}
+import {
+    DataFrameObject,
+    ScaleConfig,
+    ScaleFunction,
+    ScaleSettings
+} from './definitions';
+import {BaseScale} from './scales/base';
 
-export class scalesRegistry {
+type ConfigInterceptor = (config: ScaleConfig, settings: ScaleSettings) => ScaleConfig;
 
-    static reg(scaleType: string, scaleClass: BaseScaleConstructor, configInterceptor: ConfigInterceptor = (x => x)) {
+interface BaseScaleConstructor {
+    new (dataFrame: DataFrameObject, config: ScaleConfig): BaseScale;
+}
+
+var ScalesMap: {[scale: string]: BaseScaleConstructor} = {};
+var ConfigMap: {[scale: string]: ConfigInterceptor} = {};
+
+export const scalesRegistry = {
+
+    reg(scaleType: string, scaleClass: BaseScaleConstructor, configInterceptor: ConfigInterceptor = (x => x)) {
         ScalesMap[scaleType] = scaleClass;
         ConfigMap[scaleType] = configInterceptor;
-        return this;
-    }
+        return scalesRegistry;
+    },
 
-    static get(scaleType: string): BaseScaleConstructor {
+    get(scaleType: string) {
         return ScalesMap[scaleType];
-    }
+    },
 
-    static instance(settings: ScaleSettings = {}) {
+    instance(settings: ScaleSettings = {}) {
         return {
             create: function (scaleType: string, dataFrame: DataFrameObject, scaleConfig: ScaleConfig) {
                 var ScaleClass = scalesRegistry.get(scaleType);
@@ -23,4 +36,8 @@ export class scalesRegistry {
             }
         };
     }
+}
+
+export interface ScaleConstructor {
+    create(scaleType: string, dataFrame: DataFrameObject, scaleConfig: ScaleConfig): BaseScale;
 }
