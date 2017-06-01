@@ -2,6 +2,7 @@ import * as utils from './utils';
 import * as utilsDom from './utils-dom';
 import * as utilsDraw from './utils-draw';
 import * as d3 from 'd3';
+import * as axis from '../elements/coords.cartesian.axis';
 import interpolatePathPoints from './path/interpolators/path-points';
 import {getLineInterpolator, getInterpolatorSplineType} from './path/interpolators/interpolators-registry';
 
@@ -679,15 +680,6 @@ var d3_createPathTween = (
     };
 };
 
-var d3_axis = (orient) => {
-    return ({
-        'left': d3.axisLeft,
-        'right': d3.axisRight,
-        'top': d3.axisTop,
-        'bottom': d3.axisBottom
-    }[orient]);
-};
-
 var d3_setAttrs = (attrs) => {
     return (sel) => {
         Object.keys(attrs).forEach((k) => sel.attr(k, attrs[k]));
@@ -704,7 +696,6 @@ var d3_setClasses = (classMap) => {
 
 export {
     d3_animationInterceptor,
-    d3_axis,
     d3_createPathTween,
     d3_decorator_wrap_tick_label,
     d3_decorator_prettify_axis_label,
