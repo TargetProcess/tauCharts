@@ -1,43 +1,26 @@
-import {
-    DataFrameObject,
-    ScaleConfig,
-    ScaleFunction,
-    ScaleSettings
-} from './definitions';
-import {BaseScale} from './scales/base';
+var ScalesMap = {};
+var ConfigMap = {};
+export interface ScaleConstructor {create(scaleType: string, dataFrame: any, scaleConfig: any): any;}
 
-type ConfigInterceptor = (config: ScaleConfig, settings: ScaleSettings) => ScaleConfig;
+export class scalesRegistry {
 
-interface BaseScaleConstructor {
-    new (dataFrame: DataFrameObject, config: ScaleConfig): BaseScale;
-}
-
-var ScalesMap: {[scale: string]: BaseScaleConstructor} = {};
-var ConfigMap: {[scale: string]: ConfigInterceptor} = {};
-
-export const scalesRegistry = {
-
-    reg(scaleType: string, scaleClass: BaseScaleConstructor, configInterceptor: ConfigInterceptor = (x => x)) {
+    static reg(scaleType: string, scaleClass, configInterceptor) {
         ScalesMap[scaleType] = scaleClass;
         ConfigMap[scaleType] = configInterceptor;
-        return scalesRegistry;
-    },
+        return this;
+    }
 
-    get(scaleType: string) {
+    static get(scaleType: string) {
         return ScalesMap[scaleType];
-    },
+    }
 
-    instance(settings: ScaleSettings = {}) {
+    static instance(settings: any = {}) {
         return {
-            create: function (scaleType: string, dataFrame: DataFrameObject, scaleConfig: ScaleConfig) {
+            create: function (scaleType: string, dataFrame, scaleConfig) {
                 var ScaleClass = scalesRegistry.get(scaleType);
                 var configFunc = ConfigMap[scaleType];
                 return new ScaleClass(dataFrame, configFunc(scaleConfig, settings));
             }
         };
     }
-}
-
-export interface ScaleConstructor {
-    create(scaleType: string, dataFrame: DataFrameObject, scaleConfig: ScaleConfig): BaseScale;
 }
