@@ -1,6 +1,6 @@
 import {DataFrameObject, ScaleConfig, ScaleFunction, ScaleSettings} from './definitions'; import {BaseScale} from './scales/base';
-var ScalesMap: {[scale: string]: BaseScaleConstructor} = {};
-var ConfigMap: {[scale: string]: ConfigInterceptor} = {};
+var ScalesMap = {};
+var ConfigMap = {};
 
 export class scalesRegistry {
 
@@ -10,7 +10,7 @@ export class scalesRegistry {
         return this;
     }
 
-    static get(scaleType: string) {
+    static get(scaleType: string): BaseScaleConstructor {
         return ScalesMap[scaleType];
     }
 
