@@ -278,9 +278,9 @@
                         var xSameSign = unit.data().filter(function (d) {
                             var dy = d[scaleY.dim];
                             return (
+                                (d === e.data) ||
                                 ((dy === yValue) || (dy - yValue === 0)) &&
-                                ((unit.screenModel.x(e.data) - unit.screenModel.x(d)) *
-                                    d[scaleX.dim] >= 0)
+                                ((unit.screenModel.x(e.data) - unit.screenModel.x(d)) * d[scaleX.dim] > 0)
                             );
                         });
                         ex = (xValue < 0 ? Math.min : Math.max).apply(null, xSameSign.map(function (d) {
@@ -293,9 +293,9 @@
                         var ySameSign = unit.data().filter(function (d) {
                             var dx = d[scaleX.dim];
                             return (
+                                (d === e.data) ||
                                 ((dx === xValue) || (dx - xValue === 0)) &&
-                                ((unit.screenModel.y(d) - unit.screenModel.y(e.data)) *
-                                    d[scaleY.dim] >= 0)
+                                ((unit.screenModel.y(d) - unit.screenModel.y(e.data)) * d[scaleY.dim] > 0)
                             );
                         });
                         ey = (yValue < 0 ? Math.max : Math.min).apply(null, ySameSign.map(function (d) {
