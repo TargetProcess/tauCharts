@@ -1,6 +1,6 @@
-import {DataFrameObject, ScaleConfig, ScaleFunction, ScaleSettings} from './definitions'; import {BaseScale} from './scales/base';
 var ScalesMap = {};
 var ConfigMap = {};
+import {DataFrameObject, ScaleConfig, ScaleFunction, ScaleSettings} from './definitions'; import {BaseScale} from './scales/base';
 
 export class scalesRegistry {
 
