@@ -9,19 +9,6 @@ import {
 
 export class DataFrame implements DataFrameObject {
 
-    key: DataKey;
-    pipe: DataFilter[];
-    source: string;
-    units: Unit[];
-
-    _frame: {
-        key: DataKey;
-        source: string;
-        pipe: DataFilter[];
-    };
-    _data: any[];
-    _pipeReducer: (data: any[], pipeCfg: DataFilter) => any[];
-
     constructor({key, pipe, source, units}: DataFrameObject, dataSource, transformations: DataTransformations = {}) {
 
         this.key = key;
@@ -53,4 +40,17 @@ export class DataFrame implements DataFrameObject {
             .map(pipeMapper)
             .reduce(this._pipeReducer, this._data);
     }
+
+    key: DataKey;
+    pipe: DataFilter[];
+    source: string;
+    units: Unit[];
+
+    _frame: {
+        key: DataKey;
+        source: string;
+        pipe: DataFilter[];
+    };
+    _data: any[];
+    _pipeReducer: (data: any[], pipeCfg: DataFilter) => any[];
 }
