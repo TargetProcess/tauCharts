@@ -2,15 +2,23 @@ import {defaults, take} from '../utils/utils';
 import * as d3 from 'd3';
 
 type AxisOrient = 'top' | 'right' | 'bottom' | 'left';
+type GridOrient = 'horizontal' | 'vertical';
 
 interface AxisConfig {
     orient: AxisOrient;
     scale: AxisScale;
-    ticks: any[];
     tickArguments: any[];
-    tickFormat: (x) => string;
+    tickFormat?: (x) => string;
+    tickSize?: number;
+    tickPadding?: number;
+    hideText?: boolean;
+}
+
+interface GridConfig {
+    orient: GridOrient;
+    scale: AxisScale;
+    tickArguments: any[];
     tickSize: number;
-    tickPadding: number;
 }
 
 type d3Selection = d3.Selection<any, any, any, any>;
@@ -22,11 +30,14 @@ interface AxisScale {
     range(): number[];
     copy(): AxisScale;
     bandwidth?(): number;
+    round?(): number;
     ticks?(...args: any[]): any[];
     tickFormat?(...args: any[]): (x) => string;
 }
 
-const identity = (<T>(x: T) => x);
+function identity<T>(x: T) {
+    return x;
+}
 
 const epsilon = 1e-6;
 
@@ -38,7 +49,7 @@ function translateY(y: number) {
     return `translate(0,${y + 0.5})`;;
 }
 
-function center(scale) {
+function center(scale: AxisScale) {
     var offset = Math.max(0, scale.bandwidth() - 1) / 2; // Adjust for 0.5px offset.
     if (scale.round()) {
         offset = Math.round(offset)
@@ -64,12 +75,14 @@ function createAxis(config: AxisConfig) {
         tickArguments,
         tickFormat,
         tickSize,
-        tickPadding
+        tickPadding,
+        hideText
     } = defaults(config, {
             tickArguments: [],
             tickFormat: null as any[],
             tickSize: 6,
-            tickPadding: 3
+            tickPadding: 3,
+            hideText: false
         });
     const k = (orient === Orient.top || orient === Orient.left ? -1 : 1);
     const x = (orient === Orient.left || orient === Orient.right ? 'x' : 'y');
@@ -207,8 +220,8 @@ function createAxis(config: AxisConfig) {
                     }),
 
                 // Draw tick text
-                (branch) => branch
-                    .next(({tick, tickEnter}) => {
+                (hideText ? null : (branch) => branch
+                    .next(({ tick, tickEnter }) => {
                         const text = tick.select('text');
                         const textEnter = tickEnter.append('text')
                             .attr('fill', '#000')
@@ -227,7 +240,7 @@ function createAxis(config: AxisConfig) {
                         text
                             .attr(x, k * spacing)
                             .text(format);
-                    })
+                    }))
             ]);
 
     });
@@ -235,4 +248,14 @@ function createAxis(config: AxisConfig) {
 
 export function cartesianAxis(config: AxisConfig) {
     return createAxis(config);
+}
+
+export function cartesianGrid(config: GridConfig) {
+    return createAxis({
+        scale: config.scale,
+        orient: (config.orient === 'horizontal' ? 'left' : 'bottom'),
+        tickArguments: config.tickArguments,
+        tickSize: config.tickSize,
+        hideText: true
+    });
 }

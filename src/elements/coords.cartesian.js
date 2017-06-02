@@ -5,7 +5,7 @@ import * as utilsDraw from '../utils/utils-draw';
 import * as utils from '../utils/utils';
 import {CSS_PREFIX} from '../const';
 import {FormatterRegistry} from '../formatter-registry';
-import {cartesianAxis} from './coords.cartesian.axis';
+import {cartesianAxis, cartesianGrid} from './coords.cartesian.axis';
 import {
     d3_transition as transition,
     d3_selectAllImmediate as selectAllImmediate,
@@ -374,14 +374,12 @@ export class Cartesian extends Element {
 
                     if ((linesOptions.indexOf('x') > -1)) {
                         let xScale = node.x;
-                        let xOrientKoeff = ((xScale.guide.scaleOrient === 'top') ? (-1) : (1));
                         let formatter = FormatterRegistry.get(xScale.guide.tickFormat);
-                        var xGridAxis = cartesianAxis({
+                        var xGridAxis = cartesianGrid({
                             scale: xScale.scaleObj,
-                            orient: xScale.guide.scaleOrient,
-                            tickSize: (xOrientKoeff * height),
-                            tickArguments: [(formatter ? calcTicks(width / xScale.guide.density) : null)],
-                            tickFormat: (formatter || null)
+                            orient: 'vertical',
+                            tickSize: height,
+                            tickArguments: [(formatter ? calcTicks(width / xScale.guide.density) : null)]
                         });
 
                         var xGridLines = selectOrAppend(gridLines, 'g.grid-lines-x');
@@ -421,14 +419,12 @@ export class Cartesian extends Element {
 
                     if ((linesOptions.indexOf('y') > -1)) {
                         let yScale = node.y;
-                        let yOrientKoeff = ((yScale.guide.scaleOrient === 'right') ? (1) : (-1));
                         let formatter = FormatterRegistry.get(yScale.guide.tickFormat);
-                        var yGridAxis = cartesianAxis({
+                        var yGridAxis = cartesianGrid({
                             scale: yScale.scaleObj,
-                            orient: yScale.guide.scaleOrient,
-                            tickSize: (yOrientKoeff * width),
-                            tickArguments: [(formatter ? calcTicks(height / yScale.guide.density) : null)],
-                            tickFormat: (formatter || null)
+                            orient: 'horizontal',
+                            tickSize: -width,
+                            tickArguments: [(formatter ? calcTicks(height / yScale.guide.density) : null)]
                         });
 
                         var yGridLines = selectOrAppend(gridLines, 'g.grid-lines-y');
@@ -469,8 +465,6 @@ export class Cartesian extends Element {
                                 .remove();
                         }
                     }
-
-                    gridLines.selectAll('text').remove();
                 }
             });
 

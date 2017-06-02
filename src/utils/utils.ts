@@ -780,9 +780,11 @@ export function take<T>(src?: T) {
             return result as T;
         },
         branch(branches: ((next: NextObj<T>) => void)[]) {
-            branches.forEach((fn) => {
-                fn(take(result));
-            });
+            branches
+                .filter((x) => x)
+                .forEach((fn) => {
+                    fn(take(result));
+                });
         }
     };
     return obj;
