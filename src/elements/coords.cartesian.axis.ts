@@ -1,24 +1,29 @@
-interface Axis {
-    (context): void;
+import {defaults, take} from '../utils/utils';
+import * as d3 from 'd3';
 
-    scale(): AxisScale;
-    scale(scale: AxisScale): Axis;
-    ticks(): any;
-    ticks(ticks): Axis;
-    tickFormat(): any;
-    tickFormat(format): Axis;
-    tickSize(): any;
-    tickSize(tickSize): Axis;
+type AxisOrient = 'top' | 'right' | 'bottom' | 'left';
+
+interface AxisConfig {
+    orient: AxisOrient;
+    scale: AxisScale;
+    ticks: any[];
+    tickArguments: any[];
+    tickFormat: (x) => string;
+    tickSize: number;
+    tickPadding: number;
 }
+
+type d3Selection = d3.Selection<any, any, any, any>;
+type d3Transition = d3.Transition<any, any, any, any>;
 
 interface AxisScale {
     (x: any): number | undefined;
     domain(): any[];
     range(): number[];
-    copy(): this;
+    copy(): AxisScale;
     bandwidth?(): number;
-    ticks?(...args: any[]): any;
-    tickFormat?(...args: any[]): any;
+    ticks?(...args: any[]): any[];
+    tickFormat?(...args: any[]): (x) => string;
 }
 
 const identity = (<T>(x: T) => x);
@@ -43,7 +48,7 @@ function center(scale) {
     };
 }
 
-const axisStoreProp = '__axis';
+const axisPositionStore = '__axis';
 
 const Orient: {[orient: string]: number} = {
     'top': 1,
@@ -52,155 +57,182 @@ const Orient: {[orient: string]: number} = {
     'left': 4
 };
 
-function entering(this: SVGElement) {
-    return !this[axisStoreProp];
-}
+function createAxis(config: AxisConfig) {
+    const orient = Orient[config.orient];
+    const scale = config.scale;
+    const {
+        tickArguments,
+        tickFormat,
+        tickSize,
+        tickPadding
+    } = defaults(config, {
+            tickArguments: [],
+            tickFormat: null as any[],
+            tickSize: 6,
+            tickPadding: 3
+        });
+    const k = (orient === Orient.top || orient === Orient.left ? -1 : 1);
+    const x = (orient === Orient.left || orient === Orient.right ? 'x' : 'y');
+    const transform = (orient === Orient.top || orient === Orient.bottom ? translateX : translateY);
 
-function createAxis(orient: number, scale?: AxisScale) {
-    var tickArguments = [];
-    var tickValues = null;
-    var tickFormat = null;
-    var tickSizeInner = 6;
-    var tickSizeOuter = 6;
-    var tickPadding = 3;
-    var k = (orient === Orient.top || orient === Orient.left ? -1 : 1);
-    var x = (orient === Orient.left || orient === Orient.right ? 'x' : 'y');
-    var transform = (orient === Orient.top || orient === Orient.bottom ? translateX : translateY);
+    return ((context: d3Selection | d3Transition) => {
 
-    const axis: Axis = ((context) => {
-        var values = tickValues == null ? (scale.ticks ? scale.ticks(...tickArguments) : scale.domain()) : tickValues;
-        var format = tickFormat == null ? (scale.tickFormat ? scale.tickFormat(...tickArguments) : identity) : tickFormat;
-        var spacing = Math.max(tickSizeInner, 0) + tickPadding;
-        var range = scale.range();
-        var range0 = range[0] + 0.5;
-        var range1 = range[range.length - 1] + 0.5;
-        var position = (scale.bandwidth ? center : identity)(scale.copy());
-        var selection = context.selection ? context.selection() : context;
-        var path = selection.selectAll('.domain').data([null]);
-        var tick = selection.selectAll('.tick').data(values, scale).order();
-        var tickExit = tick.exit();
-        var tickEnter = tick.enter().append('g').attr('class', 'tick');
-        var line = tick.select('line');
-        var text = tick.select('text');
+        const values = (scale.ticks ? scale.ticks(...tickArguments) : scale.domain());
+        const format = (tickFormat == null ? (scale.tickFormat ? scale.tickFormat(...tickArguments) : identity) : tickFormat);
+        const spacing = (Math.max(tickSize, 0) + tickPadding);
+        const range = scale.range();
+        const range0 = (range[0] + 0.5);
+        const range1 = (range[range.length - 1] + 0.5);
+        const position = (scale.bandwidth ? center : identity)(scale.copy());
 
-        path = path.merge(path.enter().insert('path', '.tick')
-            .attr('class', 'domain')
-            .attr('stroke', '#000'));
+        const transition = ((context as d3Transition).selection ? (context as d3Transition) : null);
+        const selection = (transition ? transition.selection() : context as d3Selection);
 
-        tick = tick.merge(tickEnter);
-
-        line = line.merge(tickEnter.append('line')
-            .attr('stroke', '#000')
-            .attr(x + '2', k * tickSizeInner));
-
-        text = text.merge(tickEnter.append('text')
-            .attr('fill', '#000')
-            .attr(x, k * spacing)
-            .attr('dy', orient === Orient.top ? '0em' : orient === Orient.bottom ? '0.71em' : '0.32em'));
-
-        if (context !== selection) {
-            path = path.transition(context);
-            tick = tick.transition(context);
-            line = line.transition(context);
-            text = text.transition(context);
-
-            tickExit = tickExit.transition(context)
-                .attr('opacity', epsilon)
-                .attr('transform', function (d) {
-                    return isFinite(d = position(d)) ? transform(d) : this.getAttribute('transform');
-                });
-
-            tickEnter
-                .attr('opacity', epsilon)
-                .attr('transform', function (d) {
-                    var p = this.parentNode[axisStoreProp];
-                    return transform(p && isFinite(p = p(d)) ? p : position(d));
-                });
-        }
-
-        tickExit.remove();
-
-        path
-            .attr('d', orient === Orient.left || orient == Orient.right
-                ? `M${k * tickSizeOuter},${range0}H0.5V${range1}H${k * tickSizeOuter}`
-                : `M${range0},${k * tickSizeOuter}V0.5H${range1}V${k * tickSizeOuter}`);
-
-        tick
-            .attr('opacity', 1)
-            .attr('transform', function (d) { return transform(position(d)); });
-
-        line
-            .attr(`${x}2`, k * tickSizeInner);
-
-        text
-            .attr(x, k * spacing)
-            .text(format);
-
-        selection.filter(entering)
+        // Set default style
+        selection
+            .each(function () {
+                // Note: In case of transition interrupt use old scale.
+                this[axisPositionStore] = position;
+            })
             .attr('fill', 'none')
             .attr('font-size', 10)
             .attr('font-family', 'sans-serif')
             .attr('text-anchor', orient === Orient.right ? 'start' : orient === Orient.left ? 'end' : 'middle');
 
-        selection
-            .each(function () {
-                this[axisStoreProp] = position;
+        // Draw domain line
+        take(selection.selectAll('.domain').data([null]))
+            .next((path) => {
+                return path.merge(
+                    path.enter().insert('path', '.tick')
+                        .attr('class', 'domain')
+                        .attr('stroke', '#000'));
+            })
+            .next((path) => {
+                return (transition ?
+                    path.transition(transition) :
+                    path);
+            })
+            .next((path) => {
+                path.attr('d', orient === Orient.left || orient == Orient.right ?
+                    `M${k * tickSize},${range0}H0.5V${range1}H${k * tickSize}` :
+                    `M${range0},${k * tickSize}V0.5H${range1}V${k * tickSize}`);
             });
 
-    }) as Axis;
+        // Draw ticks
+        take((selection
+            .selectAll('.tick') as d3Selection)
+            .data(values, (x) => String(scale(x)))
+            .order())
 
-    axis.scale = function (s?: AxisScale): any {
-        if (arguments.length) {
-            scale = s;
-            return axis;
-        }
-        return scale;
-    };
+            .next((tick) => {
+                const tickExit = tick.exit<any>();
+                const tickEnter = tick.enter().append('g').attr('class', 'tick');
 
-    axis.ticks = function () {
-        tickArguments = Array.from(arguments)
-        return axis;
-    };
+                return {
+                    tickExit,
+                    tickEnter,
+                    tick: tick.merge(tickEnter)
+                };
+            })
 
-    // axis.tickArguments = function (_?) {
-    //     return arguments.length ? (tickArguments = _ == null ? [] : slice.call(_), axis) : tickArguments.slice();
-    // };
+            .branch([
 
-    // axis.tickValues = function (_) {
-    //     return arguments.length ? (tickValues = _ == null ? null : slice.call(_), axis) : tickValues && tickValues.slice();
-    // };
+                // Tick group
+                (branch) => branch
 
-    axis.tickFormat = function (format?) {
-        if (arguments.length) {
-            tickFormat = format;
-            return axis;
-        }
-        return tickFormat;
-    };
+                    .next(({tickEnter, tickExit, tick}) => {
 
-    axis.tickSize = function (size?): any {
-        if (arguments.length) {
-            tickSizeInner = tickSizeOuter = Number(size);
-            return axis;
-        }
-        return tickSizeInner;
-    };
+                        if (!transition) {
+                            return {tick, tickExit};
+                        }
 
-    // axis.tickSizeInner = function (_) {
-    //     return arguments.length ? (tickSizeInner = +_, axis) : tickSizeInner;
-    // };
+                        tickEnter
+                            .attr('opacity', epsilon)
+                            .attr('transform', function (d) {
+                                const prevPosition: AxisScale = (this as SVGElement).parentNode[axisPositionStore];
+                                var p: number;
+                                if (prevPosition) {
+                                    p = prevPosition(d);
+                                }
+                                if (!prevPosition || !isFinite(p)) {
+                                    p = position(d);
+                                }
+                                return transform(p);
+                            });
 
-    // axis.tickSizeOuter = function (_) {
-    //     return arguments.length ? (tickSizeOuter = +_, axis) : tickSizeOuter;
-    // };
+                        return {
+                            tick: tick.transition(transition),
+                            tickExit: tickExit.transition(transition)
+                                .attr('opacity', epsilon)
+                                .attr('transform', function (d) {
+                                    const p = position(d);
+                                    if (isFinite(p)) {
+                                        return transform(p);
+                                    }
+                                    return (this as SVGElement).getAttribute('transform');
+                                })
+                        };
 
-    // axis.tickPadding = function (_) {
-    //     return arguments.length ? (tickPadding = +_, axis) : tickPadding;
-    // };
+                    })
 
-    return axis;
+                    .next(({tick, tickExit}) => {
+
+                        tickExit.remove();
+
+                        tick
+                            .attr('opacity', 1)
+                            .attr('transform', (d) => transform(position(d)));
+
+                    }),
+
+                // Draw tick lines
+                (branch) => branch
+                    .next(({tick, tickEnter}) => {
+                        const line = tick.select('line');
+                        const lineEnter = tickEnter.append('line')
+                            .attr('stroke', '#000')
+                            .attr(x + '2', k * tickSize);
+
+                        return line.merge(lineEnter);
+                    })
+                    .next((line) => {
+                        if (transition) {
+                            return line.transition(transition);
+                        }
+                        return line;
+                    })
+                    .next((line) => {
+                        line
+                            .attr(`${x}2`, k * tickSize);
+                    }),
+
+                // Draw tick text
+                (branch) => branch
+                    .next(({tick, tickEnter}) => {
+                        const text = tick.select('text');
+                        const textEnter = tickEnter.append('text')
+                            .attr('fill', '#000')
+                            .attr(x, k * spacing)
+                            .attr('dy', orient === Orient.top ? '0em' : orient === Orient.bottom ? '0.71em' : '0.32em');
+
+                        return text.merge(textEnter);
+                    })
+                    .next((text) => {
+                        if (transition) {
+                            return text.transition(transition);
+                        }
+                        return text;
+                    })
+                    .next((text) => {
+                        text
+                            .attr(x, k * spacing)
+                            .text(format);
+                    })
+            ]);
+
+    });
 }
 
-export function cartesianAxis(orient, scale) {
-    return createAxis(Orient[orient], scale);
+export function cartesianAxis(config: AxisConfig) {
+    return createAxis(config);
 }

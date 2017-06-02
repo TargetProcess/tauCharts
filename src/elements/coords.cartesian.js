@@ -253,14 +253,14 @@ export class Cartesian extends Element {
 
     _drawDimAxis(container, scale, position, size) {
 
-        var axisScale = cartesianAxis(scale.guide.scaleOrient)
-            .scale(scale.scaleObj);
-
         var formatter = FormatterRegistry.get(scale.guide.tickFormat, scale.guide.tickFormatNullAlias);
-        if (formatter !== null) {
-            axisScale.ticks(calcTicks(size / scale.guide.density));
-            axisScale.tickFormat(formatter);
-        }
+
+        var axisScale = cartesianAxis({
+            scale: scale.scaleObj,
+            orient: scale.guide.scaleOrient,
+            tickArguments: [(formatter ? calcTicks(size / scale.guide.density) : null)],
+            tickFormat: (formatter || null)
+        });
 
         var animationSpeed = this.config.guide.animationSpeed;
 
@@ -375,15 +375,14 @@ export class Cartesian extends Element {
                     if ((linesOptions.indexOf('x') > -1)) {
                         let xScale = node.x;
                         let xOrientKoeff = ((xScale.guide.scaleOrient === 'top') ? (-1) : (1));
-                        var xGridAxis = cartesianAxis(xScale.guide.scaleOrient)
-                            .scale(xScale.scaleObj)
-                            .tickSize(xOrientKoeff * height);
-
                         let formatter = FormatterRegistry.get(xScale.guide.tickFormat);
-                        if (formatter !== null) {
-                            xGridAxis.ticks(calcTicks(width / xScale.guide.density));
-                            xGridAxis.tickFormat(formatter);
-                        }
+                        var xGridAxis = cartesianAxis({
+                            scale: xScale.scaleObj,
+                            orient: xScale.guide.scaleOrient,
+                            tickSize: (xOrientKoeff * height),
+                            tickArguments: [(formatter ? calcTicks(width / xScale.guide.density) : null)],
+                            tickFormat: (formatter || null)
+                        });
 
                         var xGridLines = selectOrAppend(gridLines, 'g.grid-lines-x');
                         var xGridLinesTrans = transition(xGridLines, animationSpeed)
@@ -423,15 +422,14 @@ export class Cartesian extends Element {
                     if ((linesOptions.indexOf('y') > -1)) {
                         let yScale = node.y;
                         let yOrientKoeff = ((yScale.guide.scaleOrient === 'right') ? (1) : (-1));
-                        var yGridAxis = cartesianAxis(yScale.guide.scaleOrient)
-                            .scale(yScale.scaleObj)
-                            .tickSize(yOrientKoeff * width);
-
                         let formatter = FormatterRegistry.get(yScale.guide.tickFormat);
-                        if (formatter !== null) {
-                            yGridAxis.ticks(calcTicks(height / yScale.guide.density));
-                            yGridAxis.tickFormat(formatter);
-                        }
+                        var yGridAxis = cartesianAxis({
+                            scale: yScale.scaleObj,
+                            orient: yScale.guide.scaleOrient,
+                            tickSize: (yOrientKoeff * width),
+                            tickArguments: [(formatter ? calcTicks(height / yScale.guide.density) : null)],
+                            tickFormat: (formatter || null)
+                        });
 
                         var yGridLines = selectOrAppend(gridLines, 'g.grid-lines-y');
                         var yGridLinesTrans = transition(yGridLines, animationSpeed)
