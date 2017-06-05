@@ -3,42 +3,33 @@ import {selectOrAppend, classes} from '../utils/utils-dom';
 import * as utilsDraw from '../utils/utils-draw';
 import * as d3 from 'd3';
 
-import {AxisLabelGuide} from '../definitions';
+import {AxisLabelGuide, ScaleFunction} from '../definitions';
 
 type AxisOrient = 'top' | 'right' | 'bottom' | 'left';
 type GridOrient = 'horizontal' | 'vertical';
 
 interface AxisConfig {
     orient: AxisOrient;
-    scale: AxisScale;
+    scale: ScaleFunction;
     ticksCount?: number;
     tickFormat?: (x) => string;
     tickSize?: number;
     tickPadding?: number;
     hideText?: boolean;
     labelGuide?: AxisLabelGuide;
+    hideTicks?: boolean;
 }
 
 interface GridConfig {
     orient: GridOrient;
-    scale: AxisScale;
+    scale: ScaleFunction;
     ticksCount: number;
     tickSize: number;
+    hideTicks?: boolean;
 }
 
 type d3Selection = d3.Selection<any, any, any, any>;
 type d3Transition = d3.Transition<any, any, any, any>;
-
-interface AxisScale {
-    (x: any): number | undefined;
-    domain(): any[];
-    range(): number[];
-    copy(): AxisScale;
-    bandwidth?(): number;
-    round?(): number;
-    ticks?(...args: any[]): any[];
-    tickFormat?(...args: any[]): (x) => string;
-}
 
 function identity<T>(x: T) {
     return x;
@@ -54,7 +45,7 @@ function translateY(y: number) {
     return `translate(0,${y + 0.5})`;;
 }
 
-function center(scale: AxisScale) {
+function center(scale: ScaleFunction) {
     var offset = Math.max(0, scale.bandwidth() - 1) / 2; // Adjust for 0.5px offset.
     if (scale.round()) {
         offset = Math.round(offset)
@@ -82,15 +73,20 @@ function createAxis(config: AxisConfig) {
         tickSize,
         tickPadding,
         hideText,
-        labelGuide
+        labelGuide,
+        hideTicks
     } = defaults(config, {
             tickSize: 6,
             tickPadding: 3,
             hideText: false
         });
-    const k = (orient === Orient.top || orient === Orient.left ? -1 : 1);
-    const x = (orient === Orient.left || orient === Orient.right ? 'x' : 'y');
+    const isHorizontal = (orient === Orient.top || orient === Orient.bottom);
+    const ko = (orient === Orient.top || orient === Orient.left ? -1 : 1);
+    const y = (isHorizontal ? 'y' : 'x');
+    const x = (isHorizontal ? 'x' : 'y');
     const transform = (orient === Orient.top || orient === Orient.bottom ? translateX : translateY);
+    const isOrdinalScale = (scale.scaleType === 'ordinal' || scale.scaleType === 'period');
+    const kh = (isHorizontal ? 1 : -1);
 
     return ((context: d3Selection | d3Transition) => {
 
@@ -116,29 +112,30 @@ function createAxis(config: AxisConfig) {
             .attr('font-family', 'sans-serif')
             .attr('text-anchor', orient === Orient.right ? 'start' : orient === Orient.left ? 'end' : 'middle');
 
-        // Draw domain line
-        take(selection.selectAll('.domain').data([null]))
-            .next((path) => {
-                return path.merge(
-                    path.enter().insert('path', '.tick')
-                        .attr('class', 'domain')
-                        .attr('stroke', '#000'));
-            })
-            .next((path) => {
-                return (transition ?
-                    path.transition(transition) :
-                    path);
-            })
-            .next((path) => {
-                path.attr('d', orient === Orient.left || orient == Orient.right ?
-                    `M${k * tickSize},${range0}H0.5V${range1}H${k * tickSize}` :
-                    `M${range0},${k * tickSize}V0.5H${range1}V${k * tickSize}`);
-            });
-
         interface TickDataBinding {
             tickExit: d3Selection;
             tickEnter: d3Selection;
             tick: d3Selection;
+        }
+
+        function drawDomain() {
+            take(selection.selectAll('.domain').data([null]))
+                .next((path) => {
+                    return path.merge(
+                        path.enter().insert('path', '.tick')
+                            .attr('class', 'domain')
+                            .attr('stroke', '#000'));
+                })
+                .next((path) => {
+                    return (transition ?
+                        path.transition(transition) :
+                        path);
+                })
+                .next((path) => {
+                    path.attr('d', orient === Orient.left || orient == Orient.right ?
+                        `M${ko * tickSize},${range0}H0.5V${range1}H${ko * tickSize}` :
+                        `M${range0},${ko * tickSize}V0.5H${range1}V${ko * tickSize}`);
+                });
         }
 
         function createTicks(): TickDataBinding {
@@ -167,13 +164,13 @@ function createAxis(config: AxisConfig) {
                 .next(({tickEnter, tickExit, tick}) => {
 
                     if (!transition) {
-                        return { tick, tickExit };
+                        return {tick, tickExit};
                     }
 
                     tickEnter
                         .attr('opacity', epsilon)
                         .attr('transform', function (d) {
-                            const prevPosition: AxisScale = (this as SVGElement).parentNode[axisPositionStore];
+                            const prevPosition: ScaleFunction = (this as SVGElement).parentNode[axisPositionStore];
                             var p: number;
                             if (prevPosition) {
                                 p = prevPosition(d);
@@ -211,12 +208,21 @@ function createAxis(config: AxisConfig) {
         }
 
         function drawLines(ticks: TickDataBinding) {
+            const ly = (ko * tickSize);
+            const lx = (kh * scale.stepSize() / 2);
+
             take(ticks)
                 .next(({tick, tickEnter}) => {
                     const line = tick.select('line');
                     const lineEnter = tickEnter.append('line')
                         .attr('stroke', '#000')
-                        .attr(x + '2', k * tickSize);
+                        .attr(`${y}2`, ly);
+
+                    if (isOrdinalScale) {
+                        lineEnter
+                            .attr(`${x}1`, lx)
+                            .attr(`${x}2`, lx);
+                    }
 
                     return line.merge(lineEnter);
                 })
@@ -228,7 +234,13 @@ function createAxis(config: AxisConfig) {
                 })
                 .next((line) => {
                     line
-                        .attr(`${x}2`, k * tickSize);
+                        .attr(`${y}2`, ly);
+
+                    if (isOrdinalScale) {
+                        line
+                            .attr(`${x}1`, lx)
+                            .attr(`${x}2`, lx);
+                    }
                 });
         }
 
@@ -238,7 +250,7 @@ function createAxis(config: AxisConfig) {
                     const text = tick.select('text');
                     const textEnter = tickEnter.append('text')
                         .attr('fill', '#000')
-                        .attr(x, k * spacing)
+                        .attr(y, ko * spacing)
                         .attr('dy', orient === Orient.top ? '0em' : orient === Orient.bottom ? '0.71em' : '0.32em');
 
                     return text.merge(textEnter);
@@ -251,20 +263,18 @@ function createAxis(config: AxisConfig) {
                 })
                 .next((text) => {
                     text
-                        .attr(x, k * spacing)
+                        .attr(y, ko * spacing)
                         .text(format);
                 });
         }
 
         function drawAxisLabel() {
             const guide = labelGuide;
-            const isHorizontal = (orient === Orient.top || orient === Orient.bottom);
-            const k = (isHorizontal ? 1 : -1);
 
             const labelTextNode = selectOrAppend(selection, `text.label`)
                 .attr('class', classes('label', guide.cssClass))
                 .attr('transform', utilsDraw.rotate(guide.rotate))
-                .style('text-anchor', guide.textAnchor);
+                .attr('text-anchor', guide.textAnchor);
 
             take(labelTextNode)
                 .next((label) => {
@@ -275,19 +285,19 @@ function createAxis(config: AxisConfig) {
                 })
                 .next((label) => {
 
-                    const y = (k * guide.padding);
+                    const ly = (kh * guide.padding);
                     const size = (range1 - range0);
-                    var x = (k * size * 0.5);
+                    var lx = (kh * size * 0.5);
                     if (guide.dock === 'left' || guide.dock === 'right') {
-                        x = (guide.dock === 'left' ?
+                        lx = (guide.dock === 'left' ?
                             (isHorizontal ? 0 : -size) :
                             (isHorizontal ? size : 0)
                         );
                     }
 
                     label
-                        .attr('x', x)
-                        .attr('y', y);
+                        .attr('x', lx)
+                        .attr('y', ly);
                 });
 
             const delimiter = ' \u2192 ';
@@ -308,6 +318,9 @@ function createAxis(config: AxisConfig) {
                 .remove();
         }
 
+        if (!hideText) {
+            drawDomain();
+        }
         const ticks = createTicks();
         drawTicks(ticks);
         drawLines(ticks);
@@ -331,6 +344,7 @@ export function cartesianGrid(config: GridConfig) {
         orient: (config.orient === 'horizontal' ? 'left' : 'bottom'),
         ticksCount: config.ticksCount,
         tickSize: config.tickSize,
-        hideText: true
+        hideText: true,
+        hideTicks: config.hideTicks
     });
 }

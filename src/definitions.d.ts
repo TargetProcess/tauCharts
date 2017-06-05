@@ -177,11 +177,15 @@ export interface ScaleFunction extends ScaleFields {
     getHash: () => string;
     value: (x, row?) => any;
     stepSize?: (x?) => number;
-    ticks?: () => any[];
+    range?: (...args: any[]) => any[];
+    ticks?: (...args: any[]) => any[];
+    tickFormat?(...args: any[]): (x) => string;
     copy?: () => ScaleFunction;
     discrete?: boolean;
     toColor?: (color: string) => string;
     toClass?: (color: string) => string;
+    bandwidth?(): number;
+    round?(): number;
 }
 
 type ScaleFactoryMethod = (type: string, alias: string, dynamicProps) => ScaleFunction;

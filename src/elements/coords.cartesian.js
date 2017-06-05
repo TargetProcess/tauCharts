@@ -13,7 +13,6 @@ import {
     d3_decorator_fix_axis_start_line,
     d3_decorator_fixHorizontalAxisTicksOverflow,
     d3_decorator_fixEdgeAxisTicksOverflow,
-    d3_decorator_prettify_categorical_axis_ticks,
     d3_decorator_highlightZeroTick,
     d3_decorator_avoidLabelsCollisions
 } from '../utils/d3-decorators';
@@ -280,14 +279,6 @@ export class Cartesian extends Element {
 
                 var isHorizontal = (utilsDraw.getOrientation(scale.guide.scaleOrient) === 'h');
                 var prettifyTick = (scale.scaleType === 'ordinal' || scale.scaleType === 'period');
-                if (prettifyTick && !scale.guide.hideTicks) {
-                    d3_decorator_prettify_categorical_axis_ticks(
-                        transAxis,
-                        scale,
-                        isHorizontal,
-                        animationSpeed
-                    );
-                }
 
                 if (scale.scaleType === 'linear') {
                     d3_decorator_highlightZeroTick(axis, scale.scaleObj);
@@ -377,15 +368,6 @@ export class Cartesian extends Element {
                             .call(xGridAxis);
 
                         let isHorizontal = (utilsDraw.getOrientation(xScale.guide.scaleOrient) === 'h');
-                        let prettifyTick = (xScale.scaleType === 'ordinal' || xScale.scaleType === 'period');
-                        if (prettifyTick) {
-                            d3_decorator_prettify_categorical_axis_ticks(
-                                xGridLinesTrans,
-                                xScale,
-                                isHorizontal,
-                                animationSpeed
-                            );
-                        }
 
                         if (xScale.scaleType === 'linear' && !xScale.guide.hideTicks) {
                             d3_decorator_highlightZeroTick(xGridLines, xScale.scaleObj);
@@ -422,15 +404,6 @@ export class Cartesian extends Element {
                             .call(yGridAxis);
 
                         let isHorizontal = (utilsDraw.getOrientation(yScale.guide.scaleOrient) === 'h');
-                        let prettifyTick = (yScale.scaleType === 'ordinal' || yScale.scaleType === 'period');
-                        if (prettifyTick) {
-                            d3_decorator_prettify_categorical_axis_ticks(
-                                yGridLinesTrans,
-                                yScale,
-                                isHorizontal,
-                                animationSpeed
-                            );
-                        }
 
                         if (yScale.scaleType === 'linear' && !yScale.guide.hideTicks) {
                             d3_decorator_highlightZeroTick(yGridLines, yScale.scaleObj);

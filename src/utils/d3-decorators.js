@@ -119,43 +119,6 @@ var wrapText = (textNode, getScaleStepSize, linesLimit, tickLabelFontHeight, isY
     });
 };
 
-/**
- * Moves ticks from categories middle to categories top.
- */
-var d3_decorator_prettify_categorical_axis_ticks = (nodeAxis, logicalScale, isHorizontal, animationSpeed) => {
-
-    nodeAxis
-        .selectAll('.tick')
-        .each(function (tickData) {
-            // NOTE: Skip ticks removed by D3 axis call during transition.
-            if (logicalScale(tickData)) {
-
-                var tickNode = d3.select(this);
-
-                var setAttr = function (selection) {
-                    var tickCoord = logicalScale(tickData);
-                    var tx = isHorizontal ? tickCoord : 0;
-                    var ty = isHorizontal ? 0 : tickCoord;
-                    selection.attr('transform', `translate(${tx},${ty})`);
-
-                    var offset = logicalScale.stepSize(tickData) * 0.5;
-                    var key = (isHorizontal) ? 'x' : 'y';
-                    var val = (isHorizontal) ? offset : (-offset);
-                    selection
-                        .select('line')
-                        .attr(key + '1', val).attr(key + '2', val);
-                };
-
-                if (!tickNode.classed('tau-enter')) {
-                    tickNode.call(setAttr);
-                    tickNode.classed('tau-enter', true);
-                }
-
-                d3_transition(tickNode, animationSpeed).call(setAttr);
-            }
-        });
-};
-
 var d3_decorator_fixHorizontalAxisTicksOverflow = function (axisNode, activeTicks) {
 
     var isDate = activeTicks.length && activeTicks[0] instanceof Date;
@@ -655,7 +618,6 @@ export {
     d3_decorator_fixHorizontalAxisTicksOverflow,
     d3_decorator_fixEdgeAxisTicksOverflow,
     d3_decorator_highlightZeroTick,
-    d3_decorator_prettify_categorical_axis_ticks,
     d3_decorator_avoidLabelsCollisions,
     d3_selectAllImmediate,
     d3_setAttrs,
