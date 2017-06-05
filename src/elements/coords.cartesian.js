@@ -12,7 +12,6 @@ import {
     d3_decorator_wrap_tick_label,
     d3_decorator_fixHorizontalAxisTicksOverflow,
     d3_decorator_fixEdgeAxisTicksOverflow,
-    d3_decorator_highlightZeroTick,
     d3_decorator_avoidLabelsCollisions
 } from '../utils/d3-decorators';
 var selectOrAppend = utilsDom.selectOrAppend;
@@ -279,10 +278,6 @@ export class Cartesian extends Element {
                 var isHorizontal = (utilsDraw.getOrientation(scale.guide.scaleOrient) === 'h');
                 var prettifyTick = (scale.scaleType === 'ordinal' || scale.scaleType === 'period');
 
-                if (scale.scaleType === 'linear') {
-                    d3_decorator_highlightZeroTick(axis, scale.scaleObj);
-                }
-
                 d3_decorator_wrap_tick_label(axis, animationSpeed, scale.guide, isHorizontal, scale);
 
                 if (scale.guide.hideTicks) {
@@ -366,12 +361,6 @@ export class Cartesian extends Element {
                         var xGridLinesTrans = transition(xGridLines, animationSpeed)
                             .call(xGridAxis);
 
-                        let isHorizontal = (utilsDraw.getOrientation(xScale.guide.scaleOrient) === 'h');
-
-                        if (xScale.scaleType === 'linear' && !xScale.guide.hideTicks) {
-                            d3_decorator_highlightZeroTick(xGridLines, xScale.scaleObj);
-                        }
-
                         if (xScale.guide.hideTicks) {
                             xGridLines.selectAll('.tick')
                                 .filter(d => d != 0)
@@ -392,12 +381,6 @@ export class Cartesian extends Element {
                         var yGridLines = selectOrAppend(gridLines, 'g.grid-lines-y');
                         var yGridLinesTrans = transition(yGridLines, animationSpeed)
                             .call(yGridAxis);
-
-                        let isHorizontal = (utilsDraw.getOrientation(yScale.guide.scaleOrient) === 'h');
-
-                        if (yScale.scaleType === 'linear' && !yScale.guide.hideTicks) {
-                            d3_decorator_highlightZeroTick(yGridLines, yScale.scaleObj);
-                        }
 
                         if (yScale.guide.hideTicks) {
                             yGridLines.selectAll('.tick')

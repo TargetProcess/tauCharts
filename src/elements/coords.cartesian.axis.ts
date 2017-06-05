@@ -65,6 +65,7 @@ const Orient = {
 };
 
 function createAxis(config: AxisConfig) {
+
     const orient = Orient[config.orient];
     const scale = config.scale;
     const {
@@ -80,12 +81,14 @@ function createAxis(config: AxisConfig) {
             tickPadding: 3,
             hideText: false
         });
+
+    const isLinearScale = (scale.scaleType === 'linear');
+    const isOrdinalScale = (scale.scaleType === 'ordinal' || scale.scaleType === 'period');
     const isHorizontal = (orient === Orient.top || orient === Orient.bottom);
     const ko = (orient === Orient.top || orient === Orient.left ? -1 : 1);
-    const y = (isHorizontal ? 'y' : 'x');
     const x = (isHorizontal ? 'x' : 'y');
-    const transform = (orient === Orient.top || orient === Orient.bottom ? translateX : translateY);
-    const isOrdinalScale = (scale.scaleType === 'ordinal' || scale.scaleType === 'period');
+    const y = (isHorizontal ? 'y' : 'x');
+    const transform = (isHorizontal ? translateX : translateY);
     const kh = (isHorizontal ? 1 : -1);
 
     return ((context: d3Selection | d3Transition) => {
@@ -153,6 +156,27 @@ function createAxis(config: AxisConfig) {
                         tickEnter,
                         tick: tick.merge(tickEnter)
                     };
+                })
+                .next((result) => {
+                    if (isLinearScale) {
+                        const ticks = scale.ticks();
+                        const domain = scale.domain();
+                        const last = (values.length - 1);
+                        const shouldHighlightZero = (
+                            (ticks.length > 1) &&
+                            (domain[0] * domain[1] < 0) &&
+                            (-domain[0] > (ticks[1] - ticks[0]) / 2) &&
+                            (domain[1] > (ticks[last] - ticks[last - 1]) / 2)
+                        );
+                        result.tick
+                            .classed('zero-tick', (d) => {
+                                return (
+                                    (d == 0) &&
+                                    shouldHighlightZero
+                                );
+                            });
+                    }
+                    return result;
                 })
                 .result();
         }

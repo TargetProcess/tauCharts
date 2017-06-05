@@ -365,23 +365,6 @@ var d3_decorator_avoidLabelsCollisions = function (nodeScale, isHorizontal, acti
     });
 };
 
-var d3_decorator_highlightZeroTick = (axisNode, scale) => {
-    var ticks = scale.ticks();
-    var domain = scale.domain();
-    var last = (ticks.length - 1);
-    var shouldHighlightZero = (
-        (ticks.length > 1) &&
-        (domain[0] * domain[1] < 0) &&
-        (-domain[0] > (ticks[1] - ticks[0]) / 2) &&
-        (domain[1] > (ticks[last] - ticks[last - 1]) / 2)
-    );
-    axisNode.selectAll('.tick')
-        .classed('zero-tick', (d) => (
-            d === 0 &&
-            shouldHighlightZero
-        ));
-};
-
 var d3_transition = (selection, animationSpeed, nameSpace) => {
     if (animationSpeed > 0) {
         selection = selection.transition(nameSpace).duration(animationSpeed);
@@ -581,7 +564,6 @@ export {
     d3_decorator_wrap_tick_label,
     d3_decorator_fixHorizontalAxisTicksOverflow,
     d3_decorator_fixEdgeAxisTicksOverflow,
-    d3_decorator_highlightZeroTick,
     d3_decorator_avoidLabelsCollisions,
     d3_selectAllImmediate,
     d3_setAttrs,
