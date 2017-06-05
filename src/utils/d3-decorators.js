@@ -265,53 +265,6 @@ var d3_decorator_fix_axis_start_line = (
     d3_transition(extraLine, animationSpeed).call(setLineSize);
 };
 
-var d3_decorator_prettify_axis_label = (
-    axisNode,
-    guide,
-    isHorizontal,
-    size,
-    animationSpeed
-) => {
-
-    var koeff = (isHorizontal) ? 1 : -1;
-    var labelTextNode = utilsDom.selectOrAppend(axisNode, `text.label`)
-        .attr('class', utilsDom.classes('label', guide.cssClass))
-        .attr('transform', utilsDraw.rotate(guide.rotate));
-
-    var labelTextTrans = d3_transition(labelTextNode, animationSpeed)
-        .attr('x', koeff * guide.size * 0.5)
-        .attr('y', koeff * guide.padding)
-        .style('text-anchor', guide.textAnchor);
-
-    var delimiter = ' \u2192 ';
-    var texts = ((parts) => {
-        var result = [];
-        for (var i = 0; i < parts.length - 1; i++) {
-            result.push(parts[i], delimiter);
-        }
-        result.push(parts[i]);
-        return result;
-    })(guide.text.split(delimiter));
-
-    var tspans = labelTextNode.selectAll('tspan')
-        .data(texts);
-    tspans.enter()
-        .append('tspan')
-        .attr('class', (d, i) => i % 2 ?
-            ('label-token-delimiter label-token-delimiter-' + i) :
-            ('label-token label-token-' + i))
-        .text((d) => d);
-    tspans.exit().remove();
-
-    if (['left', 'right'].indexOf(guide.dock) >= 0) {
-        let labelX = {
-            left: [-size, 0],
-            right: [0, size]
-        };
-        labelTextTrans.attr('x', labelX[guide.dock][Number(isHorizontal)]);
-    }
-};
-
 var d3_decorator_wrap_tick_label = function (
     nodeScale,
     animationSpeed,
@@ -698,7 +651,6 @@ export {
     d3_animationInterceptor,
     d3_createPathTween,
     d3_decorator_wrap_tick_label,
-    d3_decorator_prettify_axis_label,
     d3_decorator_fix_axis_start_line,
     d3_decorator_fixHorizontalAxisTicksOverflow,
     d3_decorator_fixEdgeAxisTicksOverflow,

@@ -10,7 +10,6 @@ import {
     d3_transition as transition,
     d3_selectAllImmediate as selectAllImmediate,
     d3_decorator_wrap_tick_label,
-    d3_decorator_prettify_axis_label,
     d3_decorator_fix_axis_start_line,
     d3_decorator_fixHorizontalAxisTicksOverflow,
     d3_decorator_fixEdgeAxisTicksOverflow,
@@ -258,8 +257,9 @@ export class Cartesian extends Element {
         var axisScale = cartesianAxis({
             scale: scale.scaleObj,
             orient: scale.guide.scaleOrient,
-            tickArguments: [(formatter ? calcTicks(size / scale.guide.density) : null)],
-            tickFormat: (formatter || null)
+            ticksCount: (formatter ? calcTicks(size / scale.guide.density) : null),
+            tickFormat: (formatter || null),
+            labelGuide: scale.guide.label
         });
 
         var animationSpeed = this.config.guide.animationSpeed;
@@ -294,16 +294,6 @@ export class Cartesian extends Element {
                 }
 
                 d3_decorator_wrap_tick_label(axis, animationSpeed, scale.guide, isHorizontal, scale);
-
-                if (!scale.guide.label.hide) {
-                    d3_decorator_prettify_axis_label(
-                        axis,
-                        scale.guide.label,
-                        isHorizontal,
-                        size,
-                        animationSpeed
-                    );
-                }
 
                 if (scale.guide.hideTicks) {
                     axis.selectAll('.tick').remove();
@@ -379,7 +369,7 @@ export class Cartesian extends Element {
                             scale: xScale.scaleObj,
                             orient: 'vertical',
                             tickSize: height,
-                            tickArguments: [(formatter ? calcTicks(width / xScale.guide.density) : null)]
+                            ticksCount: (formatter ? calcTicks(width / xScale.guide.density) : null)
                         });
 
                         var xGridLines = selectOrAppend(gridLines, 'g.grid-lines-x');
@@ -424,7 +414,7 @@ export class Cartesian extends Element {
                             scale: yScale.scaleObj,
                             orient: 'horizontal',
                             tickSize: -width,
-                            tickArguments: [(formatter ? calcTicks(height / yScale.guide.density) : null)]
+                            ticksCount: (formatter ? calcTicks(height / yScale.guide.density) : null)
                         });
 
                         var yGridLines = selectOrAppend(gridLines, 'g.grid-lines-y');

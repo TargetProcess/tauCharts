@@ -282,15 +282,7 @@ export interface ScaleGuide {
     max?: number;
     minSize?: number;
     maxSize?: number;
-    label?: {
-        text: string;
-        padding: number;
-        hide?: boolean;
-        paddingNoTicks?: number;
-        cssClass?: string;
-        dock?: string;
-        textAnchor?: string;
-    };
+    label?: AxisLabelGuide;
     tickPeriod?: string;
     tickFormat?: string;
     brewer?: Brewer;
@@ -321,6 +313,18 @@ export interface ScaleGuide {
     tickFormatWordWrap?: boolean;
     tickFormatWordWrapLines?: number;
     avoidCollisions?: boolean;
+}
+
+export interface AxisLabelGuide {
+    text: string;
+    padding: number;
+    hide?: boolean;
+    paddingNoTicks?: number;
+    cssClass?: string;
+    dock?: string;
+    textAnchor?: string;
+    size?: number;
+    rotate?: number;
 }
 
 export interface ScaleSettings {
