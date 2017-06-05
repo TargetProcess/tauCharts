@@ -193,41 +193,6 @@ var d3_decorator_fixEdgeAxisTicksOverflow = function (axisNode, activeTicks) {
     fixText(texts[texts.length - 1], 1);
 };
 
-/**
- * Adds extra tick to axis container.
- */
-var d3_decorator_fix_axis_start_line = (
-    axisNode,
-    isHorizontal,
-    width,
-    height,
-    animationSpeed
-) => {
-
-    var setTransform = (selection) => {
-        selection.attr('transform', utilsDraw.translate(0, isHorizontal ? height : 0));
-        return selection;
-    };
-
-    var setLineSize = (selection) => {
-        if (isHorizontal) {
-            selection.attr('x2', width);
-        } else {
-            selection.attr('y2', height);
-        }
-        return selection;
-    };
-
-    var tickClass = `tau-extra${isHorizontal ? 'Y' : 'X'}Tick`;
-    var extraTick = utilsDom.selectOrAppend(axisNode, `g.${tickClass}`);
-    var extraLine = utilsDom.selectOrAppend(extraTick, 'line');
-    if (!extraTick.node().hasAttribute('opacity')) {
-        extraTick.attr('opacity', 1e-6);
-    }
-    d3_transition(extraTick, animationSpeed).call(setTransform);
-    d3_transition(extraLine, animationSpeed).call(setLineSize);
-};
-
 var d3_decorator_wrap_tick_label = function (
     nodeScale,
     animationSpeed,
@@ -614,7 +579,6 @@ export {
     d3_animationInterceptor,
     d3_createPathTween,
     d3_decorator_wrap_tick_label,
-    d3_decorator_fix_axis_start_line,
     d3_decorator_fixHorizontalAxisTicksOverflow,
     d3_decorator_fixEdgeAxisTicksOverflow,
     d3_decorator_highlightZeroTick,

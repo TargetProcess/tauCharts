@@ -10,7 +10,6 @@ import {
     d3_transition as transition,
     d3_selectAllImmediate as selectAllImmediate,
     d3_decorator_wrap_tick_label,
-    d3_decorator_fix_axis_start_line,
     d3_decorator_fixHorizontalAxisTicksOverflow,
     d3_decorator_fixEdgeAxisTicksOverflow,
     d3_decorator_highlightZeroTick,
@@ -373,15 +372,6 @@ export class Cartesian extends Element {
                             d3_decorator_highlightZeroTick(xGridLines, xScale.scaleObj);
                         }
 
-                        let extraGridLines = selectOrAppend(gridLines, 'g.tau-extraGridLines');
-                        d3_decorator_fix_axis_start_line(
-                            extraGridLines,
-                            isHorizontal,
-                            width,
-                            height,
-                            animationSpeed
-                        );
-
                         if (xScale.guide.hideTicks) {
                             xGridLines.selectAll('.tick')
                                 .filter(d => d != 0)
@@ -407,19 +397,6 @@ export class Cartesian extends Element {
 
                         if (yScale.scaleType === 'linear' && !yScale.guide.hideTicks) {
                             d3_decorator_highlightZeroTick(yGridLines, yScale.scaleObj);
-                        }
-
-                        let fixLineScales = ['time', 'ordinal', 'period'];
-                        let fixBottomLine = fixLineScales.indexOf(yScale.scaleType) !== -1;
-                        if (fixBottomLine) {
-                            let extraGridLines = selectOrAppend(gridLines, 'g.tau-extraGridLines');
-                            d3_decorator_fix_axis_start_line(
-                                extraGridLines,
-                                isHorizontal,
-                                width,
-                                height,
-                                animationSpeed
-                            );
                         }
 
                         if (yScale.guide.hideTicks) {

@@ -209,7 +209,7 @@ function createAxis(config: AxisConfig) {
 
         function drawLines(ticks: TickDataBinding) {
             const ly = (ko * tickSize);
-            const lx = (kh * scale.stepSize() / 2);
+            const lx = (isOrdinalScale ? ((d) => (kh * scale.stepSize(d) / 2)) : null);
 
             take(ticks)
                 .next(({tick, tickEnter}) => {
@@ -241,6 +241,32 @@ function createAxis(config: AxisConfig) {
                             .attr(`${x}1`, lx)
                             .attr(`${x}2`, lx);
                     }
+                });
+        }
+
+        function drawExtraOrdinalLine() {
+            if (!isOrdinalScale || !values || !values.length) {
+                return;
+            }
+
+            take(selection.selectAll('.extra-tick-line').data([null]))
+                .next((extra) => {
+                    return extra.merge(
+                        extra.enter().insert('line', '.tick')
+                            .attr('class', 'extra-tick-line')
+                            .attr('stroke', '#000'));
+                })
+                .next((extra) => {
+                    return (transition ?
+                        extra.transition(transition) :
+                        extra);
+                })
+                .next((extra) => {
+                    extra
+                        .attr(`${x}1`, range0)
+                        .attr(`${x}2`, range0)
+                        .attr(`${y}1`, 0)
+                        .attr(`${y}2`, ko * tickSize);
                 });
         }
 
@@ -324,6 +350,9 @@ function createAxis(config: AxisConfig) {
         const ticks = createTicks();
         drawTicks(ticks);
         drawLines(ticks);
+        if (isOrdinalScale && hideText) { // Todo: Explicitly determine if grid 
+            drawExtraOrdinalLine();
+        }
         if (!hideText) {
             drawText(ticks);
         }
