@@ -252,8 +252,7 @@ export class Cartesian extends Element {
             scale: scale.scaleObj,
             scaleGuide: scale.guide,
             ticksCount: (formatter ? calcTicks(size / scale.guide.density) : null),
-            tickFormat: (formatter || null),
-            labelGuide: scale.guide.label
+            tickFormat: (formatter || null)
         });
 
         var animationSpeed = this.config.guide.animationSpeed;
@@ -271,12 +270,6 @@ export class Cartesian extends Element {
                 }
                 transAxis.call(axisScale);
                 transAxis.attr('opacity', 1);
-
-                if (scale.guide.hideTicks) {
-                    axis.selectAll('.tick').remove();
-                    axis.selectAll('.domain').remove();
-                    return;
-                }
             });
     }
 
@@ -321,12 +314,6 @@ export class Cartesian extends Element {
                         var xGridLines = selectOrAppend(gridLines, 'g.grid-lines-x');
                         var xGridLinesTrans = transition(xGridLines, animationSpeed)
                             .call(xGridAxis);
-
-                        if (xScale.guide.hideTicks) {
-                            xGridLines.selectAll('.tick')
-                                .filter(d => d != 0)
-                                .remove();
-                        }
                     }
 
                     if ((linesOptions.indexOf('y') > -1)) {
@@ -342,12 +329,6 @@ export class Cartesian extends Element {
                         var yGridLines = selectOrAppend(gridLines, 'g.grid-lines-y');
                         var yGridLinesTrans = transition(yGridLines, animationSpeed)
                             .call(yGridAxis);
-
-                        if (yScale.guide.hideTicks) {
-                            yGridLines.selectAll('.tick')
-                                .filter(d => d != 0)
-                                .remove();
-                        }
                     }
                 }
             });

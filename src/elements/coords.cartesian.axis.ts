@@ -18,8 +18,7 @@ interface AxisConfig {
     tickSize?: number;
     tickPadding?: number;
     hideText?: boolean;
-    labelGuide?: AxisLabelGuide;
-    hideTicks?: boolean;
+    hideLabel?: boolean;
 }
 
 interface GridConfig {
@@ -27,7 +26,6 @@ interface GridConfig {
     scaleGuide: ScaleGuide;
     ticksCount: number;
     tickSize: number;
-    hideTicks?: boolean;
 }
 
 type d3Selection = d3.Selection<any, any, any, any>;
@@ -69,17 +67,18 @@ function createAxis(config: AxisConfig) {
     const orient = Orient[config.scaleGuide.scaleOrient];
     const scale = config.scale;
     const scaleGuide = config.scaleGuide;
+    const labelGuide = scaleGuide.label;
     const {
         ticksCount,
         tickFormat,
         tickSize,
         tickPadding,
         hideText,
-        labelGuide,
-        hideTicks
+        hideLabel
     } = defaults(config, {
             tickSize: 6,
             tickPadding: 3,
+            hideLabel: false,
             hideText: false
         });
 
@@ -94,7 +93,10 @@ function createAxis(config: AxisConfig) {
 
     return ((context: d3Selection | d3Transition) => {
 
-        const values = (scale.ticks ? scale.ticks(ticksCount) : scale.domain());
+        var values = (scale.ticks ? scale.ticks(ticksCount) : scale.domain());
+        if (scaleGuide.hideTicks) {
+            values = values.filter((d => d == 0));
+        }
         const format = (tickFormat == null ? (scale.tickFormat ? scale.tickFormat(ticksCount) : identity) : tickFormat);
         const spacing = (Math.max(tickSize, 0) + tickPadding);
         const range = scale.range();
@@ -521,7 +523,7 @@ function createAxis(config: AxisConfig) {
         if (!hideText) {
             drawText(ticks);
         }
-        if (labelGuide && !labelGuide.hide) {
+        if (!hideLabel) {
             drawAxisLabel();
         }
 
@@ -539,6 +541,6 @@ export function cartesianGrid(config: GridConfig) {
         ticksCount: config.ticksCount,
         tickSize: config.tickSize,
         hideText: true,
-        hideTicks: config.hideTicks
+        hideLabel: true
     });
 }
