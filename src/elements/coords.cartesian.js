@@ -9,7 +9,6 @@ import {cartesianAxis, cartesianGrid} from './coords.cartesian.axis';
 import {
     d3_transition as transition,
     d3_selectAllImmediate as selectAllImmediate,
-    d3_decorator_fixHorizontalAxisTicksOverflow,
     d3_decorator_fixEdgeAxisTicksOverflow,
     d3_decorator_avoidLabelsCollisions
 } from '../utils/d3-decorators';
@@ -287,10 +286,6 @@ export class Cartesian extends Element {
                 var fixAxesCollision = () => {
                     if (prettifyTick && scale.guide.avoidCollisions) {
                         d3_decorator_avoidLabelsCollisions(axis, isHorizontal, activeTicks);
-                    }
-
-                    if (isHorizontal && (scale.scaleType === 'time')) {
-                        d3_decorator_fixHorizontalAxisTicksOverflow(axis, activeTicks);
                     }
                 };
                 var fixTickTextOverflow = () => {

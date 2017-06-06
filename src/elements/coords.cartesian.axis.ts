@@ -1,6 +1,7 @@
 import {defaults, take, normalizeAngle} from '../utils/utils';
 import {selectOrAppend, classes} from '../utils/utils-dom';
 import {cutText, wrapText} from '../utils/d3-decorators';
+import {CSS_PREFIX} from '../const';
 import * as utilsDraw from '../utils/utils-draw';
 import * as d3 from 'd3';
 
@@ -318,7 +319,11 @@ function createAxis(config: AxisConfig) {
                         // Todo: Rotate around rotation point (text anchor?)
                         .attr('transform', utilsDraw.rotate(angle));
 
-                    multilineText(text);
+                    fixLongText(text);
+
+                    if (isHorizontal && (scale.scaleType === 'time')) {
+                        fixHorizontalTextOverflow(text);
+                    }
 
                     return text;
                 })
@@ -332,6 +337,7 @@ function createAxis(config: AxisConfig) {
                     text
                         .attr(y, ty);
 
+                    // Todo: Unpredictable behavior, need review
                     if ((Math.abs(angle / 90) % 2) > 0) {
                         let kRot = (angle < 180 ? 1 : -1);
                         let k = isHorizontal ? 0.5 : -2;
@@ -349,7 +355,7 @@ function createAxis(config: AxisConfig) {
                 });
         }
 
-        function multilineText(text: d3Selection) {
+        function fixLongText(text: d3Selection) {
             const stepSize = (d) => Math.max(scale.stepSize(d), scale.guide.tickFormatWordWrapLimit);
 
             if (scale.guide.tickFormatWordWrap) {
@@ -366,6 +372,32 @@ function createAxis(config: AxisConfig) {
                     stepSize
                 );
             }
+        }
+
+        function fixHorizontalTextOverflow(text: d3Selection) {
+            if (values.length < 2) {
+                return;
+            }
+            var maxTextLn = 0;
+            var iMaxTexts = -1;
+            const nodes: Element[] = text.nodes();
+            nodes.forEach((textNode, i) => {
+                const textContent = (textNode.textContent || '');
+                var textLength = textContent.length;
+                if (textLength > maxTextLn) {
+                    maxTextLn = textLength;
+                    iMaxTexts = i;
+                }
+            });
+
+            const tickStep = (position(values[1]) - position(values[0]));
+
+            var hasOverflow = false;
+            if (iMaxTexts >= 0) {
+                var rect = nodes[iMaxTexts].getBoundingClientRect();
+                hasOverflow = (tickStep - rect.width) < 8; // 2px from each side
+            }
+            selection.classed(`${CSS_PREFIX}time-axis-overflow`, hasOverflow);
         }
 
         function drawAxisLabel() {

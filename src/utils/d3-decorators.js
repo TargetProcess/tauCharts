@@ -119,47 +119,6 @@ var wrapText = (textNode, getScaleStepSize, linesLimit, tickLabelFontHeight, isY
     });
 };
 
-var d3_decorator_fixHorizontalAxisTicksOverflow = function (axisNode, activeTicks) {
-
-    var isDate = activeTicks.length && activeTicks[0] instanceof Date;
-    if (isDate) {
-        activeTicks = activeTicks.map(d => Number(d));
-    }
-
-    var timeTicks = axisNode.selectAll('.tick')
-        .filter(d => activeTicks.indexOf(isDate ? Number(d) : d) >= 0)
-        .nodes();
-    if (timeTicks.length < 2) {
-        return;
-    }
-
-    var tick0 = parseFloat(timeTicks[0].attributes.transform.value.replace('translate(', ''));
-    var tick1 = parseFloat(timeTicks[1].attributes.transform.value.replace('translate(', ''));
-
-    var tickStep = tick1 - tick0;
-
-    var maxTextLn = 0;
-    var iMaxTexts = -1;
-    var timeTexts = axisNode.selectAll('.tick text')
-        .filter(d => activeTicks.indexOf(isDate ? Number(d) : d) >= 0)
-        .nodes();
-    timeTexts.forEach((textNode, i) => {
-        var innerHTML = textNode.textContent || '';
-        var textLength = innerHTML.length;
-        if (textLength > maxTextLn) {
-            maxTextLn = textLength;
-            iMaxTexts = i;
-        }
-    });
-
-    var hasOverflow = false;
-    if (iMaxTexts >= 0) {
-        var rect = timeTexts[iMaxTexts].getBoundingClientRect();
-        hasOverflow = (tickStep - rect.width) < 8; // 2px from each side
-    }
-    axisNode.classed({'graphical-report__d3-time-overflown': hasOverflow});
-};
-
 var d3_decorator_fixEdgeAxisTicksOverflow = function (axisNode, activeTicks) {
 
     activeTicks = activeTicks.map(d => Number(d));
@@ -508,7 +467,6 @@ var d3_setClasses = (classMap) => {
 export {
     d3_animationInterceptor,
     d3_createPathTween,
-    d3_decorator_fixHorizontalAxisTicksOverflow,
     d3_decorator_fixEdgeAxisTicksOverflow,
     d3_decorator_avoidLabelsCollisions,
     d3_selectAllImmediate,
