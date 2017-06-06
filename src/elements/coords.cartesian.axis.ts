@@ -5,14 +5,14 @@ import {CSS_PREFIX} from '../const';
 import * as utilsDraw from '../utils/utils-draw';
 import * as d3 from 'd3';
 
-import {AxisLabelGuide, ScaleFunction} from '../definitions';
+import {AxisLabelGuide, ScaleFunction, ScaleGuide} from '../definitions';
 
 type AxisOrient = 'top' | 'right' | 'bottom' | 'left';
 type GridOrient = 'horizontal' | 'vertical';
 
 interface AxisConfig {
-    orient: AxisOrient;
     scale: ScaleFunction;
+    scaleGuide: ScaleGuide;
     ticksCount?: number;
     tickFormat?: (x) => string;
     tickSize?: number;
@@ -23,8 +23,8 @@ interface AxisConfig {
 }
 
 interface GridConfig {
-    orient: GridOrient;
     scale: ScaleFunction;
+    scaleGuide: ScaleGuide;
     ticksCount: number;
     tickSize: number;
     hideTicks?: boolean;
@@ -68,8 +68,9 @@ const Orient = {
 
 function createAxis(config: AxisConfig) {
 
-    const orient = Orient[config.orient];
+    const orient = Orient[config.scaleGuide.scaleOrient];
     const scale = config.scale;
+    const scaleGuide = config.scaleGuide;
     const {
         ticksCount,
         tickFormat,
@@ -297,7 +298,7 @@ function createAxis(config: AxisConfig) {
         }
 
         function drawText(ticks: TickDataBinding) {
-            const textAnchor = scale.guide.textAnchor;
+            const textAnchor = scaleGuide.textAnchor;
             const ty = (ko * spacing);
             const tdy = (orient === Orient.top ? '0em' : orient === Orient.bottom ? '0.71em' : '0.32em');
 
@@ -339,7 +340,7 @@ function createAxis(config: AxisConfig) {
 
                     rotateText(text);
 
-                    if (isOrdinalScale && scale.guide.avoidCollisions) {
+                    if (isOrdinalScale && scaleGuide.avoidCollisions) {
                         if (transition) {
                             transition.on('end.fixTickTextCollision', () => fixTickTextCollision(ticks.tick));
                         } else {
@@ -350,7 +351,7 @@ function createAxis(config: AxisConfig) {
         }
 
         function rotateText(text: d3Selection | d3Transition) {
-            const angle = normalizeAngle(scale.guide.rotate);
+            const angle = normalizeAngle(scaleGuide.rotate);
 
             // Todo: Rotate around rotation point (text anchor?)
             text
@@ -374,14 +375,14 @@ function createAxis(config: AxisConfig) {
         }
 
         function fixLongText(text: d3Selection) {
-            const stepSize = (d) => Math.max(scale.stepSize(d), scale.guide.tickFormatWordWrapLimit);
+            const stepSize = (d) => Math.max(scale.stepSize(d), scaleGuide.tickFormatWordWrapLimit);
 
-            if (scale.guide.tickFormatWordWrap) {
+            if (scaleGuide.tickFormatWordWrap) {
                 wrapText(
                     text,
                     stepSize,
-                    scale.guide.tickFormatWordWrapLines,
-                    scale.guide.tickFontHeight,
+                    scaleGuide.tickFormatWordWrapLines,
+                    scaleGuide.tickFontHeight,
                     !isHorizontal
                 );
             } else {
@@ -545,7 +546,7 @@ export function cartesianAxis(config: AxisConfig) {
 export function cartesianGrid(config: GridConfig) {
     return createAxis({
         scale: config.scale,
-        orient: (config.orient === 'horizontal' ? 'left' : 'bottom'),
+        scaleGuide: config.scaleGuide,
         ticksCount: config.ticksCount,
         tickSize: config.tickSize,
         hideText: true,

@@ -186,7 +186,6 @@ export interface ScaleFunction extends ScaleFields {
     toClass?: (color: string) => string;
     bandwidth?(): number;
     round?(): number;
-    guide?: ScaleGuide;
 }
 
 type ScaleFactoryMethod = (type: string, alias: string, dynamicProps) => ScaleFunction;

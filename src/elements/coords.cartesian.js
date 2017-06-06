@@ -250,7 +250,7 @@ export class Cartesian extends Element {
 
         var axisScale = cartesianAxis({
             scale: scale.scaleObj,
-            orient: scale.guide.scaleOrient,
+            scaleGuide: scale.guide,
             ticksCount: (formatter ? calcTicks(size / scale.guide.density) : null),
             tickFormat: (formatter || null),
             labelGuide: scale.guide.label
@@ -313,7 +313,7 @@ export class Cartesian extends Element {
                         let formatter = FormatterRegistry.get(xScale.guide.tickFormat);
                         var xGridAxis = cartesianGrid({
                             scale: xScale.scaleObj,
-                            orient: 'vertical',
+                            scaleGuide: xScale.guide,
                             tickSize: height,
                             ticksCount: (formatter ? calcTicks(width / xScale.guide.density) : null)
                         });
@@ -334,7 +334,7 @@ export class Cartesian extends Element {
                         let formatter = FormatterRegistry.get(yScale.guide.tickFormat);
                         var yGridAxis = cartesianGrid({
                             scale: yScale.scaleObj,
-                            orient: 'horizontal',
+                            scaleGuide: yScale.guide,
                             tickSize: -width,
                             ticksCount: (formatter ? calcTicks(height / yScale.guide.density) : null)
                         });
