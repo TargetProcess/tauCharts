@@ -297,7 +297,6 @@ function createAxis(config: AxisConfig) {
         }
 
         function drawText(ticks: TickDataBinding) {
-            const angle = normalizeAngle(scale.guide.rotate);
             const textAnchor = scale.guide.textAnchor;
             const ty = (ko * spacing);
             const tdy = (orient === Orient.top ? '0em' : orient === Orient.bottom ? '0.71em' : '0.32em');
@@ -309,18 +308,16 @@ function createAxis(config: AxisConfig) {
                         .attr('fill', '#000')
                         .attr(y, ty)
                         .attr('dy', tdy);
+                    rotateText(textEnter);
 
                     return text.merge(textEnter);
                 })
                 .next((text) => {
                     text
                         .text(format)
-                        .attr('text-anchor', textAnchor)
-                        // Todo: Rotate around rotation point (text anchor?)
-                        .attr('transform', utilsDraw.rotate(angle));
+                        .attr('text-anchor', textAnchor);
 
                     fixLongText(text);
-
                     if (isHorizontal && (scale.scaleType === 'time')) {
                         fixHorizontalTextOverflow(text);
                     }
@@ -337,22 +334,32 @@ function createAxis(config: AxisConfig) {
                     text
                         .attr(y, ty);
 
-                    // Todo: Unpredictable behavior, need review
-                    if ((Math.abs(angle / 90) % 2) > 0) {
-                        let kRot = (angle < 180 ? 1 : -1);
-                        let k = isHorizontal ? 0.5 : -2;
-                        let sign = (orient === Orient.top || orient === Orient.left ? -1 : 1);
-                        let dy = (k * (orient === Orient.top || orient === Orient.bottom ?
-                            (sign < 0 ? 0 : 0.71) :
-                            0.32));
-
-                        text
-                            .attr('x', 9 * kRot)
-                            .attr('y', 0)
-                            .attr('dx', isHorizontal ? null : `${dy}em`)
-                            .attr('dy', `${dy}em`);
-                    }
+                    rotateText(text);
                 });
+        }
+
+        function rotateText(text: d3Selection | d3Transition) {
+            const angle = normalizeAngle(scale.guide.rotate);
+
+            // Todo: Rotate around rotation point (text anchor?)
+            text
+                .attr('transform', utilsDraw.rotate(angle));
+
+            // Todo: Unpredictable behavior, need review
+            if ((Math.abs(angle / 90) % 2) > 0) {
+                let kRot = (angle < 180 ? 1 : -1);
+                let k = isHorizontal ? 0.5 : -2;
+                let sign = (orient === Orient.top || orient === Orient.left ? -1 : 1);
+                let dy = (k * (orient === Orient.top || orient === Orient.bottom ?
+                    (sign < 0 ? 0 : 0.71) :
+                    0.32));
+
+                text
+                    .attr('x', 9 * kRot)
+                    .attr('y', 0)
+                    .attr('dx', isHorizontal ? null : `${dy}em`)
+                    .attr('dy', `${dy}em`);
+            }
         }
 
         function fixLongText(text: d3Selection) {
