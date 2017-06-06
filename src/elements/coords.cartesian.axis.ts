@@ -57,8 +57,6 @@ function center(scale: ScaleFunction) {
     };
 }
 
-const axisPositionStore = '__axis';
-
 const Orient = {
     'top': 1,
     'right': 2,
@@ -102,17 +100,15 @@ function createAxis(config: AxisConfig) {
         const range = scale.range();
         const range0 = (range[0] + 0.5);
         const range1 = (range[range.length - 1] + 0.5);
-        const position = (scale.bandwidth ? center : identity)(scale.copy());
+        const position = (scale.bandwidth ? center : identity)(scale);
+        // Todo: Determine if scale copy is necessary. Fails on ordinal scales with ratio.
+        // const position = (scale.bandwidth ? center : identity)(scale.copy());
 
         const transition = ((context as d3Transition).selection ? (context as d3Transition) : null);
         const selection = (transition ? transition.selection() : context as d3Selection);
 
         // Set default style
         selection
-            .each(function () {
-                // Note: In case of transition interrupt use old scale.
-                this[axisPositionStore] = position;
-            })
             .attr('fill', 'none')
             .attr('font-size', 10)
             .attr('font-family', 'sans-serif')
@@ -197,14 +193,7 @@ function createAxis(config: AxisConfig) {
                     tickEnter
                         .attr('opacity', epsilon)
                         .attr('transform', function (d) {
-                            const prevPosition: ScaleFunction = (this as SVGElement).parentNode[axisPositionStore];
-                            var p: number;
-                            if (prevPosition) {
-                                p = prevPosition(d);
-                            }
-                            if (!prevPosition || !isFinite(p)) {
-                                p = position(d);
-                            }
+                            const p: number = position(d);
                             return transform(p);
                         });
 
