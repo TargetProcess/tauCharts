@@ -193,59 +193,6 @@ var d3_decorator_fixEdgeAxisTicksOverflow = function (axisNode, activeTicks) {
     fixText(texts[texts.length - 1], 1);
 };
 
-var d3_decorator_wrap_tick_label = function (
-    nodeScale,
-    animationSpeed,
-    guide,
-    isHorizontal,
-    logicalScale
-) {
-
-    var angle = utils.normalizeAngle(guide.rotate);
-
-    var tick = nodeScale.selectAll('.tick text')
-        .attr('transform', utilsDraw.rotate(angle))
-        .style('text-anchor', guide.textAnchor);
-
-    // TODO: Improve indent calculation for ratated text.
-    var segment = Math.abs(angle / 90);
-    if ((segment % 2) > 0) {
-        let kRot = angle < 180 ? 1 : -1;
-        let k = isHorizontal ? 0.5 : -2;
-        let sign = (guide.scaleOrient === 'top' || guide.scaleOrient === 'left' ? -1 : 1);
-        let dy = (k * (guide.scaleOrient === 'bottom' || guide.scaleOrient === 'top' ?
-            (sign < 0 ? 0 : 0.71) :
-            0.32));
-
-        let texts = nodeScale.selectAll('.tick text');
-        let attrs = {
-            x: 9 * kRot,
-            y: 0,
-            dx: (isHorizontal) ? null : `${dy}em`,
-            dy: `${dy}em`
-        };
-
-        // NOTE: Override d3 axis transition.
-        texts.transition();
-        texts.attr(attrs);
-        d3_transition(texts, animationSpeed, 'axisTransition').attr(attrs);
-    }
-
-    var limitFunc = (d) => Math.max(logicalScale.stepSize(d), guide.tickFormatWordWrapLimit);
-
-    if (guide.tickFormatWordWrap) {
-        tick.call(
-            wrapText,
-            limitFunc,
-            guide.tickFormatWordWrapLines,
-            guide.tickFontHeight,
-            !isHorizontal
-        );
-    } else {
-        tick.call(cutText, limitFunc, d3getComputedTextLength());
-    }
-};
-
 var d3_decorator_avoidLabelsCollisions = function (nodeScale, isHorizontal, activeTicks) {
     var isDate = activeTicks.length && activeTicks[0] instanceof Date;
     if (isDate) {
@@ -561,7 +508,6 @@ var d3_setClasses = (classMap) => {
 export {
     d3_animationInterceptor,
     d3_createPathTween,
-    d3_decorator_wrap_tick_label,
     d3_decorator_fixHorizontalAxisTicksOverflow,
     d3_decorator_fixEdgeAxisTicksOverflow,
     d3_decorator_avoidLabelsCollisions,

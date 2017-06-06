@@ -9,7 +9,6 @@ import {cartesianAxis, cartesianGrid} from './coords.cartesian.axis';
 import {
     d3_transition as transition,
     d3_selectAllImmediate as selectAllImmediate,
-    d3_decorator_wrap_tick_label,
     d3_decorator_fixHorizontalAxisTicksOverflow,
     d3_decorator_fixEdgeAxisTicksOverflow,
     d3_decorator_avoidLabelsCollisions
@@ -277,8 +276,6 @@ export class Cartesian extends Element {
 
                 var isHorizontal = (utilsDraw.getOrientation(scale.guide.scaleOrient) === 'h');
                 var prettifyTick = (scale.scaleType === 'ordinal' || scale.scaleType === 'period');
-
-                d3_decorator_wrap_tick_label(axis, animationSpeed, scale.guide, isHorizontal, scale);
 
                 if (scale.guide.hideTicks) {
                     axis.selectAll('.tick').remove();

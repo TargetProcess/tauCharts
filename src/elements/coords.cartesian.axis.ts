@@ -1,5 +1,6 @@
-import {defaults, take} from '../utils/utils';
+import {defaults, take, normalizeAngle} from '../utils/utils';
 import {selectOrAppend, classes} from '../utils/utils-dom';
+import {cutText, wrapText} from '../utils/d3-decorators';
 import * as utilsDraw from '../utils/utils-draw';
 import * as d3 from 'd3';
 
@@ -181,7 +182,7 @@ function createAxis(config: AxisConfig) {
                 .result();
         }
 
-        function drawTicks(ticks: TickDataBinding) {
+        function updateTicks(ticks: TickDataBinding) {
 
             take(ticks)
 
@@ -295,15 +296,31 @@ function createAxis(config: AxisConfig) {
         }
 
         function drawText(ticks: TickDataBinding) {
+            const angle = normalizeAngle(scale.guide.rotate);
+            const textAnchor = scale.guide.textAnchor;
+            const ty = (ko * spacing);
+            const tdy = (orient === Orient.top ? '0em' : orient === Orient.bottom ? '0.71em' : '0.32em');
+
             take(ticks)
                 .next(({tick, tickEnter}) => {
                     const text = tick.select('text');
                     const textEnter = tickEnter.append('text')
                         .attr('fill', '#000')
-                        .attr(y, ko * spacing)
-                        .attr('dy', orient === Orient.top ? '0em' : orient === Orient.bottom ? '0.71em' : '0.32em');
+                        .attr(y, ty)
+                        .attr('dy', tdy);
 
                     return text.merge(textEnter);
+                })
+                .next((text) => {
+                    text
+                        .text(format)
+                        .attr('text-anchor', textAnchor)
+                        // Todo: Rotate around rotation point (text anchor?)
+                        .attr('transform', utilsDraw.rotate(angle));
+
+                    multilineText(text);
+
+                    return text;
                 })
                 .next((text) => {
                     if (transition) {
@@ -313,9 +330,42 @@ function createAxis(config: AxisConfig) {
                 })
                 .next((text) => {
                     text
-                        .attr(y, ko * spacing)
-                        .text(format);
+                        .attr(y, ty);
+
+                    if ((Math.abs(angle / 90) % 2) > 0) {
+                        let kRot = (angle < 180 ? 1 : -1);
+                        let k = isHorizontal ? 0.5 : -2;
+                        let sign = (orient === Orient.top || orient === Orient.left ? -1 : 1);
+                        let dy = (k * (orient === Orient.top || orient === Orient.bottom ?
+                            (sign < 0 ? 0 : 0.71) :
+                            0.32));
+
+                        text
+                            .attr('x', 9 * kRot)
+                            .attr('y', 0)
+                            .attr('dx', isHorizontal ? null : `${dy}em`)
+                            .attr('dy', `${dy}em`);
+                    }
                 });
+        }
+
+        function multilineText(text: d3Selection) {
+            const stepSize = (d) => Math.max(scale.stepSize(d), scale.guide.tickFormatWordWrapLimit);
+
+            if (scale.guide.tickFormatWordWrap) {
+                wrapText(
+                    text,
+                    stepSize,
+                    scale.guide.tickFormatWordWrapLines,
+                    scale.guide.tickFontHeight,
+                    !isHorizontal
+                );
+            } else {
+                cutText(
+                    text,
+                    stepSize
+                );
+            }
         }
 
         function drawAxisLabel() {
@@ -372,7 +422,7 @@ function createAxis(config: AxisConfig) {
             drawDomain();
         }
         const ticks = createTicks();
-        drawTicks(ticks);
+        updateTicks(ticks);
         drawLines(ticks);
         if (isOrdinalScale && hideText) { // Todo: Explicitly determine if grid 
             drawExtraOrdinalLine();
