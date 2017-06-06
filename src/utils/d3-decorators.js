@@ -119,39 +119,6 @@ var wrapText = (textNode, getScaleStepSize, linesLimit, tickLabelFontHeight, isY
     });
 };
 
-var d3_decorator_fixEdgeAxisTicksOverflow = function (axisNode, activeTicks) {
-
-    activeTicks = activeTicks.map(d => Number(d));
-    var texts = axisNode
-        .selectAll('.tick text')
-        .filter(d => activeTicks.indexOf(Number(d)) >= 0)
-        .nodes();
-    if (texts.length === 0) {
-        return;
-    }
-
-    var svg = axisNode.node();
-    while (svg.tagName !== 'svg') {
-        svg = svg.parentNode;
-    }
-    var svgRect = svg.getBoundingClientRect();
-
-    texts.forEach((n) => {
-        var t = d3.select(n);
-        t.attr('dx', 0);
-    });
-
-    var fixText = (node, dir) => {
-        var d3Node = d3.select(node);
-        var rect = node.getBoundingClientRect();
-        var side = (dir > 0 ? 'right' : 'left');
-        var diff = dir * (rect[side] - svgRect[side]);
-        d3Node.attr('dx', (diff > 0 ? -dir * diff : 0));
-    };
-    fixText(texts[0], -1);
-    fixText(texts[texts.length - 1], 1);
-};
-
 var d3_decorator_avoidLabelsCollisions = function (nodeScale, isHorizontal, activeTicks) {
     var isDate = activeTicks.length && activeTicks[0] instanceof Date;
     if (isDate) {
@@ -467,7 +434,6 @@ var d3_setClasses = (classMap) => {
 export {
     d3_animationInterceptor,
     d3_createPathTween,
-    d3_decorator_fixEdgeAxisTicksOverflow,
     d3_decorator_avoidLabelsCollisions,
     d3_selectAllImmediate,
     d3_setAttrs,

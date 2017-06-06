@@ -9,7 +9,6 @@ import {cartesianAxis, cartesianGrid} from './coords.cartesian.axis';
 import {
     d3_transition as transition,
     d3_selectAllImmediate as selectAllImmediate,
-    d3_decorator_fixEdgeAxisTicksOverflow,
     d3_decorator_avoidLabelsCollisions
 } from '../utils/d3-decorators';
 var selectOrAppend = utilsDom.selectOrAppend;
@@ -288,14 +287,8 @@ export class Cartesian extends Element {
                         d3_decorator_avoidLabelsCollisions(axis, isHorizontal, activeTicks);
                     }
                 };
-                var fixTickTextOverflow = () => {
-                    if (isHorizontal && (scale.scaleType === 'time' || scale.scaleType === 'linear')) {
-                        d3_decorator_fixEdgeAxisTicksOverflow(axis, activeTicks);
-                    }
-                };
                 var fixAxesTicks = function () {
                     fixAxesCollision();
-                    fixTickTextOverflow();
                 };
                 fixAxesCollision();
                 // NOTE: As far as floating axes transition overrides current,
@@ -305,8 +298,6 @@ export class Cartesian extends Element {
                 clearTimeout(this[timeoutField]);
                 if (animationSpeed > 0) {
                     this[timeoutField] = setTimeout(fixAxesTicks, animationSpeed * 1.5);
-                } else {
-                    fixTickTextOverflow();
                 }
             });
     }

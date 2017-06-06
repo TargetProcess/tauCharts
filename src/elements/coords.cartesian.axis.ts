@@ -1,7 +1,6 @@
 import {defaults, take, normalizeAngle} from '../utils/utils';
 import {selectOrAppend, classes} from '../utils/utils-dom';
 import {cutText, wrapText} from '../utils/d3-decorators';
-import {CSS_PREFIX} from '../const';
 import * as utilsDraw from '../utils/utils-draw';
 import * as d3 from 'd3';
 
@@ -321,6 +320,9 @@ function createAxis(config: AxisConfig) {
                     if (isHorizontal && (scale.scaleType === 'time')) {
                         fixHorizontalTextOverflow(text);
                     }
+                    if (isHorizontal && (scale.scaleType === 'time' || scale.scaleType === 'linear')) {
+                        fixOuterTicksOverflow(text);
+                    }
 
                     return text;
                 })
@@ -405,6 +407,53 @@ function createAxis(config: AxisConfig) {
                 hasOverflow = (tickStep - rect.width) < 8; // 2px from each side
             }
             selection.classed(`${CSS_PREFIX}time-axis-overflow`, hasOverflow);
+        }
+
+        function fixOuterTicksOverflow(text: d3Selection) {
+            if (values.length === 0) {
+                return;
+            }
+
+            const value0 = values[0];
+            const value1 = values[values.length - 1];
+
+            var svg: SVGElement = selection.node();
+            while (svg && svg.tagName !== 'svg') {
+                svg = svg.parentNode as SVGElement;
+            }
+            const svgRect = svg.getBoundingClientRect();
+            const tempLeft = selection
+                .append('line')
+                .attr('x1', position(value0))
+                .attr('x2', position(value0))
+                .attr('y1', 0)
+                .attr('y2', 1) as d3.Selection<SVGLineElement, any, any, any>;
+            const tempRight = selection
+                .append('line')
+                .attr('x1', position(value1))
+                .attr('x2', position(value1))
+                .attr('y1', 0)
+                .attr('y2', 1) as d3.Selection<SVGLineElement, any, any, any>;
+            const available = {
+                left: (tempLeft.node().getBoundingClientRect().left - svgRect.left),
+                right: (svgRect.right - tempRight.node().getBoundingClientRect().right)
+            };
+            tempLeft.remove();
+            tempRight.remove();
+
+            const fixText = (node: SVGElement, dir: -1 | 1, value) => {
+                const rect = node.getBoundingClientRect();
+                const side = (dir > 0 ? 'right' : 'left');
+                const tx = position(value);
+                const limit = available[side];
+                const diff = (rect.width / 2 - limit);
+                node.setAttribute('dx', String(diff > 0 ? -dir * diff : 0));
+            };
+            const tick0 = text.filter((d) => d === value0).node();
+            const tick1 = text.filter((d) => d === value1).node();
+            text.attr('dx', null);
+            fixText(tick0, -1, value0);
+            fixText(tick1, 1, value1);
         }
 
         function drawAxisLabel() {
