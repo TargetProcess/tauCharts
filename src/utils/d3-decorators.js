@@ -119,19 +119,14 @@ var wrapText = (textNode, getScaleStepSize, linesLimit, tickLabelFontHeight, isY
     });
 };
 
-var d3_decorator_avoidLabelsCollisions = function (nodeScale, isHorizontal, activeTicks) {
-    var isDate = activeTicks.length && activeTicks[0] instanceof Date;
-    if (isDate) {
-        activeTicks = activeTicks.map(d => Number(d));
-    }
+export function avoidTickTextCollision(ticks, isHorizontal) {
+
     const textOffsetStep = 11;
     const refOffsetStart = isHorizontal ? -10 : 20;
     const translateParam = isHorizontal ? 0 : 1;
     const directionKoeff = isHorizontal ? 1 : -1;
     var layoutModel = [];
-    nodeScale
-        .selectAll('.tick')
-        .filter(d => activeTicks.indexOf(isDate ? Number(d) : d) >= 0)
+    ticks
         .each(function () {
             var tick = d3.select(this);
 
@@ -143,7 +138,7 @@ var d3_decorator_avoidLabelsCollisions = function (nodeScale, isHorizontal, acti
             [translateParam];
 
             var translateX = directionKoeff * parseFloat(translateXStr);
-            var tNode = tick.selectAll('text');
+            var tNode = tick.select('text');
 
             var textWidth = tNode.node().getBBox().width;
 
@@ -236,7 +231,7 @@ var d3_decorator_avoidLabelsCollisions = function (nodeScale, isHorizontal, acti
 
         return curr;
     });
-};
+}
 
 var d3_transition = (selection, animationSpeed, nameSpace) => {
     if (animationSpeed > 0) {
@@ -434,7 +429,6 @@ var d3_setClasses = (classMap) => {
 export {
     d3_animationInterceptor,
     d3_createPathTween,
-    d3_decorator_avoidLabelsCollisions,
     d3_selectAllImmediate,
     d3_setAttrs,
     d3_setClasses,

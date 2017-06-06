@@ -1,6 +1,7 @@
 import {defaults, take, normalizeAngle} from '../utils/utils';
 import {selectOrAppend, classes} from '../utils/utils-dom';
-import {cutText, wrapText} from '../utils/d3-decorators';
+import {cutText, wrapText, avoidTickTextCollision} from '../utils/d3-decorators';
+import {CSS_PREFIX} from '../const';
 import * as utilsDraw from '../utils/utils-draw';
 import * as d3 from 'd3';
 
@@ -337,6 +338,14 @@ function createAxis(config: AxisConfig) {
                         .attr(y, ty);
 
                     rotateText(text);
+
+                    if (isOrdinalScale && scale.guide.avoidCollisions) {
+                        if (transition) {
+                            transition.on('end.fixTickTextCollision', () => fixTickTextCollision(ticks.tick));
+                        } else {
+                            fixTickTextCollision(ticks.tick);
+                        }
+                    }
                 });
         }
 
@@ -454,6 +463,10 @@ function createAxis(config: AxisConfig) {
             text.attr('dx', null);
             fixText(tick0, -1, value0);
             fixText(tick1, 1, value1);
+        }
+
+        function fixTickTextCollision(tick: d3Selection) {
+            avoidTickTextCollision(tick, isHorizontal);
         }
 
         function drawAxisLabel() {

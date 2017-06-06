@@ -272,32 +272,10 @@ export class Cartesian extends Element {
                 transAxis.call(axisScale);
                 transAxis.attr('opacity', 1);
 
-                var isHorizontal = (utilsDraw.getOrientation(scale.guide.scaleOrient) === 'h');
-                var prettifyTick = (scale.scaleType === 'ordinal' || scale.scaleType === 'period');
-
                 if (scale.guide.hideTicks) {
                     axis.selectAll('.tick').remove();
                     axis.selectAll('.domain').remove();
                     return;
-                }
-
-                var activeTicks = scale.scaleObj.ticks ? scale.scaleObj.ticks() : scale.scaleObj.domain();
-                var fixAxesCollision = () => {
-                    if (prettifyTick && scale.guide.avoidCollisions) {
-                        d3_decorator_avoidLabelsCollisions(axis, isHorizontal, activeTicks);
-                    }
-                };
-                var fixAxesTicks = function () {
-                    fixAxesCollision();
-                };
-                fixAxesCollision();
-                // NOTE: As far as floating axes transition overrides current,
-                // transition `end` event cannot be used. So using `setTimeout`.
-                // transAxis.onTransitionEnd(fixAxesCollision);
-                var timeoutField = '_transitionEndTimeout_' + (isHorizontal ? 'h' : 'v');
-                clearTimeout(this[timeoutField]);
-                if (animationSpeed > 0) {
-                    this[timeoutField] = setTimeout(fixAxesTicks, animationSpeed * 1.5);
                 }
             });
     }
