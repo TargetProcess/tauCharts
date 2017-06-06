@@ -233,7 +233,8 @@ api.unitsRegistry
     .reg('ELEMENT.AREA', Area, 'ELEMENT.GENERIC.CARTESIAN')
     .reg('ELEMENT.INTERVAL', Interval, 'ELEMENT.GENERIC.CARTESIAN')
     .reg('ELEMENT.INTERVAL.STACKED', Interval, 'ELEMENT.GENERIC.CARTESIAN')
-    .reg('ELEMENT.INTERVAL.STACKED', Interval, 'ELEMENT.GENERIC.CARTESIAN');
+    .reg('ELEMENT.INTERVAL.STACKED', Interval, 'ELEMENT.GENERIC.CARTESIAN')
+    .reg('PARALLEL/ELEMENT.LINE', ParallelLine);
 
 api.scalesRegistry
     .reg('identity', IdentityScale, ((config, settings) => utils.defaults(
