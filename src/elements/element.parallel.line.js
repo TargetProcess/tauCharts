@@ -27,7 +27,7 @@ export class ParallelLine extends Element {
         this.color = fnCreateScale('color', config.color, {});
         this.scalesMap = config.columns.reduce(
             (memo, xi) => {
-                memo[xi] = fnCreateScale('pos', xi, [options.height, 0]);
+                memo[xi] = fnCreateScale('pos', xi, [0, options.height]);
                 return memo;
             },
             {});
