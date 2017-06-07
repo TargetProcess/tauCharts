@@ -177,11 +177,15 @@ export interface ScaleFunction extends ScaleFields {
     getHash: () => string;
     value: (x, row?) => any;
     stepSize?: (x?) => number;
-    ticks?: () => any[];
+    range?: (...args: any[]) => any[];
+    ticks?: (...args: any[]) => any[];
+    tickFormat?(...args: any[]): (x) => string;
     copy?: () => ScaleFunction;
     discrete?: boolean;
     toColor?: (color: string) => string;
     toClass?: (color: string) => string;
+    bandwidth?(): number;
+    round?(): number;
 }
 
 type ScaleFactoryMethod = (type: string, alias: string, dynamicProps) => ScaleFunction;
@@ -282,15 +286,7 @@ export interface ScaleGuide {
     max?: number;
     minSize?: number;
     maxSize?: number;
-    label?: {
-        text: string;
-        padding: number;
-        hide?: boolean;
-        paddingNoTicks?: number;
-        cssClass?: string;
-        dock?: string;
-        textAnchor?: string;
-    };
+    label?: AxisLabelGuide;
     tickPeriod?: string;
     tickFormat?: string;
     brewer?: Brewer;
@@ -320,7 +316,21 @@ export interface ScaleGuide {
     scaleOrient?: string;
     tickFormatWordWrap?: boolean;
     tickFormatWordWrapLines?: number;
+    tickFormatWordWrapLimit?: number;
+    tickFontHeight?: number;
     avoidCollisions?: boolean;
+}
+
+export interface AxisLabelGuide {
+    text: string;
+    padding: number;
+    hide?: boolean;
+    paddingNoTicks?: number;
+    cssClass?: string;
+    dock?: string;
+    textAnchor?: string;
+    size?: number;
+    rotate?: number;
 }
 
 export interface ScaleSettings {

@@ -762,3 +762,30 @@ let templateSettings = {
 
         return template;
     }
+
+interface NextObj<T> {
+    next<K>(fn: (x: T) => K): NextObj<K>;
+    result(): T;
+    branch(branches: ((next: NextObj<T>) => void)[]): void;
+}
+
+export function take<T>(src?: T) {
+    var result: any = src;
+    const obj: NextObj<T> = {
+        next<K>(fn: (x: T) => K) {
+            result = fn(result);
+            return (<any>obj) as NextObj<K>;
+        },
+        result() {
+            return result as T;
+        },
+        branch(branches: ((next: NextObj<T>) => void)[]) {
+            branches
+                .filter((x) => x)
+                .forEach((fn) => {
+                    fn(take(result));
+                });
+        }
+    };
+    return obj;
+}

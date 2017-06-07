@@ -64,7 +64,7 @@
         }
     }
 
-    &__d3-time-overflown {
+    &__time-axis-overflow {
         .tick:nth-child(even) {
             display: none;
         }
@@ -186,16 +186,14 @@
                 path {
                     shape-rendering: crispEdges;
                 }
-                .domain {
-                    display: none;
-                }
             }
             .line path,
             path.line,
             path.domain {
                 fill: none;
             }
-            .tick > line {
+            .tick > line,
+            .extra-tick-line {
                 fill: none;
                 stroke: @axis-color;
                 stroke-width: 1px;

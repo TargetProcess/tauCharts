@@ -2,6 +2,7 @@ import * as utils from './utils';
 import * as utilsDom from './utils-dom';
 import * as utilsDraw from './utils-draw';
 import * as d3 from 'd3';
+import * as axis from '../elements/coords.cartesian.axis';
 import interpolatePathPoints from './path/interpolators/path-points';
 import {getLineInterpolator, getInterpolatorSplineType} from './path/interpolators/interpolators-registry';
 
@@ -118,265 +119,14 @@ var wrapText = (textNode, getScaleStepSize, linesLimit, tickLabelFontHeight, isY
     });
 };
 
-/**
- * Moves ticks from categories middle to categories top.
- */
-var d3_decorator_prettify_categorical_axis_ticks = (nodeAxis, logicalScale, isHorizontal, animationSpeed) => {
+export function avoidTickTextCollision(ticks, isHorizontal) {
 
-    nodeAxis
-        .selectAll('.tick')
-        .each(function (tickData) {
-            // NOTE: Skip ticks removed by D3 axis call during transition.
-            if (logicalScale(tickData)) {
-
-                var tickNode = d3.select(this);
-
-                var setAttr = function (selection) {
-                    var tickCoord = logicalScale(tickData);
-                    var tx = isHorizontal ? tickCoord : 0;
-                    var ty = isHorizontal ? 0 : tickCoord;
-                    selection.attr('transform', `translate(${tx},${ty})`);
-
-                    var offset = logicalScale.stepSize(tickData) * 0.5;
-                    var key = (isHorizontal) ? 'x' : 'y';
-                    var val = (isHorizontal) ? offset : (-offset);
-                    selection
-                        .select('line')
-                        .attr(key + '1', val).attr(key + '2', val);
-                };
-
-                if (!tickNode.classed('tau-enter')) {
-                    tickNode.call(setAttr);
-                    tickNode.classed('tau-enter', true);
-                }
-
-                d3_transition(tickNode, animationSpeed).call(setAttr);
-            }
-        });
-};
-
-var d3_decorator_fixHorizontalAxisTicksOverflow = function (axisNode, activeTicks) {
-
-    var isDate = activeTicks.length && activeTicks[0] instanceof Date;
-    if (isDate) {
-        activeTicks = activeTicks.map(d => Number(d));
-    }
-
-    var timeTicks = axisNode.selectAll('.tick')
-        .filter(d => activeTicks.indexOf(isDate ? Number(d) : d) >= 0)
-        .nodes();
-    if (timeTicks.length < 2) {
-        return;
-    }
-
-    var tick0 = parseFloat(timeTicks[0].attributes.transform.value.replace('translate(', ''));
-    var tick1 = parseFloat(timeTicks[1].attributes.transform.value.replace('translate(', ''));
-
-    var tickStep = tick1 - tick0;
-
-    var maxTextLn = 0;
-    var iMaxTexts = -1;
-    var timeTexts = axisNode.selectAll('.tick text')
-        .filter(d => activeTicks.indexOf(isDate ? Number(d) : d) >= 0)
-        .nodes();
-    timeTexts.forEach((textNode, i) => {
-        var innerHTML = textNode.textContent || '';
-        var textLength = innerHTML.length;
-        if (textLength > maxTextLn) {
-            maxTextLn = textLength;
-            iMaxTexts = i;
-        }
-    });
-
-    var hasOverflow = false;
-    if (iMaxTexts >= 0) {
-        var rect = timeTexts[iMaxTexts].getBoundingClientRect();
-        hasOverflow = (tickStep - rect.width) < 8; // 2px from each side
-    }
-    axisNode.classed({'graphical-report__d3-time-overflown': hasOverflow});
-};
-
-var d3_decorator_fixEdgeAxisTicksOverflow = function (axisNode, activeTicks) {
-
-    activeTicks = activeTicks.map(d => Number(d));
-    var texts = axisNode
-        .selectAll('.tick text')
-        .filter(d => activeTicks.indexOf(Number(d)) >= 0)
-        .nodes();
-    if (texts.length === 0) {
-        return;
-    }
-
-    var svg = axisNode.node();
-    while (svg.tagName !== 'svg') {
-        svg = svg.parentNode;
-    }
-    var svgRect = svg.getBoundingClientRect();
-
-    texts.forEach((n) => {
-        var t = d3.select(n);
-        t.attr('dx', 0);
-    });
-
-    var fixText = (node, dir) => {
-        var d3Node = d3.select(node);
-        var rect = node.getBoundingClientRect();
-        var side = (dir > 0 ? 'right' : 'left');
-        var diff = dir * (rect[side] - svgRect[side]);
-        d3Node.attr('dx', (diff > 0 ? -dir * diff : 0));
-    };
-    fixText(texts[0], -1);
-    fixText(texts[texts.length - 1], 1);
-};
-
-/**
- * Adds extra tick to axis container.
- */
-var d3_decorator_fix_axis_start_line = (
-    axisNode,
-    isHorizontal,
-    width,
-    height,
-    animationSpeed
-) => {
-
-    var setTransform = (selection) => {
-        selection.attr('transform', utilsDraw.translate(0, isHorizontal ? height : 0));
-        return selection;
-    };
-
-    var setLineSize = (selection) => {
-        if (isHorizontal) {
-            selection.attr('x2', width);
-        } else {
-            selection.attr('y2', height);
-        }
-        return selection;
-    };
-
-    var tickClass = `tau-extra${isHorizontal ? 'Y' : 'X'}Tick`;
-    var extraTick = utilsDom.selectOrAppend(axisNode, `g.${tickClass}`);
-    var extraLine = utilsDom.selectOrAppend(extraTick, 'line');
-    if (!extraTick.node().hasAttribute('opacity')) {
-        extraTick.attr('opacity', 1e-6);
-    }
-    d3_transition(extraTick, animationSpeed).call(setTransform);
-    d3_transition(extraLine, animationSpeed).call(setLineSize);
-};
-
-var d3_decorator_prettify_axis_label = (
-    axisNode,
-    guide,
-    isHorizontal,
-    size,
-    animationSpeed
-) => {
-
-    var koeff = (isHorizontal) ? 1 : -1;
-    var labelTextNode = utilsDom.selectOrAppend(axisNode, `text.label`)
-        .attr('class', utilsDom.classes('label', guide.cssClass))
-        .attr('transform', utilsDraw.rotate(guide.rotate));
-
-    var labelTextTrans = d3_transition(labelTextNode, animationSpeed)
-        .attr('x', koeff * guide.size * 0.5)
-        .attr('y', koeff * guide.padding)
-        .style('text-anchor', guide.textAnchor);
-
-    var delimiter = ' \u2192 ';
-    var texts = ((parts) => {
-        var result = [];
-        for (var i = 0; i < parts.length - 1; i++) {
-            result.push(parts[i], delimiter);
-        }
-        result.push(parts[i]);
-        return result;
-    })(guide.text.split(delimiter));
-
-    var tspans = labelTextNode.selectAll('tspan')
-        .data(texts);
-    tspans.enter()
-        .append('tspan')
-        .attr('class', (d, i) => i % 2 ?
-            ('label-token-delimiter label-token-delimiter-' + i) :
-            ('label-token label-token-' + i))
-        .text((d) => d);
-    tspans.exit().remove();
-
-    if (['left', 'right'].indexOf(guide.dock) >= 0) {
-        let labelX = {
-            left: [-size, 0],
-            right: [0, size]
-        };
-        labelTextTrans.attr('x', labelX[guide.dock][Number(isHorizontal)]);
-    }
-};
-
-var d3_decorator_wrap_tick_label = function (
-    nodeScale,
-    animationSpeed,
-    guide,
-    isHorizontal,
-    logicalScale
-) {
-
-    var angle = utils.normalizeAngle(guide.rotate);
-
-    var tick = nodeScale.selectAll('.tick text')
-        .attr('transform', utilsDraw.rotate(angle))
-        .style('text-anchor', guide.textAnchor);
-
-    // TODO: Improve indent calculation for ratated text.
-    var segment = Math.abs(angle / 90);
-    if ((segment % 2) > 0) {
-        let kRot = angle < 180 ? 1 : -1;
-        let k = isHorizontal ? 0.5 : -2;
-        let sign = (guide.scaleOrient === 'top' || guide.scaleOrient === 'left' ? -1 : 1);
-        let dy = (k * (guide.scaleOrient === 'bottom' || guide.scaleOrient === 'top' ?
-            (sign < 0 ? 0 : 0.71) :
-            0.32));
-
-        let texts = nodeScale.selectAll('.tick text');
-        let attrs = {
-            x: 9 * kRot,
-            y: 0,
-            dx: (isHorizontal) ? null : `${dy}em`,
-            dy: `${dy}em`
-        };
-
-        // NOTE: Override d3 axis transition.
-        texts.transition();
-        texts.attr(attrs);
-        d3_transition(texts, animationSpeed, 'axisTransition').attr(attrs);
-    }
-
-    var limitFunc = (d) => Math.max(logicalScale.stepSize(d), guide.tickFormatWordWrapLimit);
-
-    if (guide.tickFormatWordWrap) {
-        tick.call(
-            wrapText,
-            limitFunc,
-            guide.tickFormatWordWrapLines,
-            guide.tickFontHeight,
-            !isHorizontal
-        );
-    } else {
-        tick.call(cutText, limitFunc, d3getComputedTextLength());
-    }
-};
-
-var d3_decorator_avoidLabelsCollisions = function (nodeScale, isHorizontal, activeTicks) {
-    var isDate = activeTicks.length && activeTicks[0] instanceof Date;
-    if (isDate) {
-        activeTicks = activeTicks.map(d => Number(d));
-    }
     const textOffsetStep = 11;
     const refOffsetStart = isHorizontal ? -10 : 20;
     const translateParam = isHorizontal ? 0 : 1;
     const directionKoeff = isHorizontal ? 1 : -1;
     var layoutModel = [];
-    nodeScale
-        .selectAll('.tick')
-        .filter(d => activeTicks.indexOf(isDate ? Number(d) : d) >= 0)
+    ticks
         .each(function () {
             var tick = d3.select(this);
 
@@ -388,7 +138,7 @@ var d3_decorator_avoidLabelsCollisions = function (nodeScale, isHorizontal, acti
             [translateParam];
 
             var translateX = directionKoeff * parseFloat(translateXStr);
-            var tNode = tick.selectAll('text');
+            var tNode = tick.select('text');
 
             var textWidth = tNode.node().getBBox().width;
 
@@ -481,24 +231,7 @@ var d3_decorator_avoidLabelsCollisions = function (nodeScale, isHorizontal, acti
 
         return curr;
     });
-};
-
-var d3_decorator_highlightZeroTick = (axisNode, scale) => {
-    var ticks = scale.ticks();
-    var domain = scale.domain();
-    var last = (ticks.length - 1);
-    var shouldHighlightZero = (
-        (ticks.length > 1) &&
-        (domain[0] * domain[1] < 0) &&
-        (-domain[0] > (ticks[1] - ticks[0]) / 2) &&
-        (domain[1] > (ticks[last] - ticks[last - 1]) / 2)
-    );
-    axisNode.selectAll('.tick')
-        .classed('zero-tick', (d) => (
-            d === 0 &&
-            shouldHighlightZero
-        ));
-};
+}
 
 var d3_transition = (selection, animationSpeed, nameSpace) => {
     if (animationSpeed > 0) {
@@ -679,15 +412,6 @@ var d3_createPathTween = (
     };
 };
 
-var d3_axis = (orient) => {
-    return ({
-        'left': d3.axisLeft,
-        'right': d3.axisRight,
-        'top': d3.axisTop,
-        'bottom': d3.axisBottom
-    }[orient]);
-};
-
 var d3_setAttrs = (attrs) => {
     return (sel) => {
         Object.keys(attrs).forEach((k) => sel.attr(k, attrs[k]));
@@ -704,16 +428,7 @@ var d3_setClasses = (classMap) => {
 
 export {
     d3_animationInterceptor,
-    d3_axis,
     d3_createPathTween,
-    d3_decorator_wrap_tick_label,
-    d3_decorator_prettify_axis_label,
-    d3_decorator_fix_axis_start_line,
-    d3_decorator_fixHorizontalAxisTicksOverflow,
-    d3_decorator_fixEdgeAxisTicksOverflow,
-    d3_decorator_highlightZeroTick,
-    d3_decorator_prettify_categorical_axis_ticks,
-    d3_decorator_avoidLabelsCollisions,
     d3_selectAllImmediate,
     d3_setAttrs,
     d3_setClasses,

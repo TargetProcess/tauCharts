@@ -5,17 +5,10 @@ import * as utilsDraw from '../utils/utils-draw';
 import * as utils from '../utils/utils';
 import {CSS_PREFIX} from '../const';
 import {FormatterRegistry} from '../formatter-registry';
+import {cartesianAxis, cartesianGrid} from './coords.cartesian.axis';
 import {
-    d3_axis,
     d3_transition as transition,
     d3_selectAllImmediate as selectAllImmediate,
-    d3_decorator_wrap_tick_label,
-    d3_decorator_prettify_axis_label,
-    d3_decorator_fix_axis_start_line,
-    d3_decorator_fixHorizontalAxisTicksOverflow,
-    d3_decorator_fixEdgeAxisTicksOverflow,
-    d3_decorator_prettify_categorical_axis_ticks,
-    d3_decorator_highlightZeroTick,
     d3_decorator_avoidLabelsCollisions
 } from '../utils/d3-decorators';
 var selectOrAppend = utilsDom.selectOrAppend;
@@ -253,14 +246,14 @@ export class Cartesian extends Element {
 
     _drawDimAxis(container, scale, position, size) {
 
-        var axisScale = d3_axis(scale.guide.scaleOrient)()
-            .scale(scale.scaleObj);
-
         var formatter = FormatterRegistry.get(scale.guide.tickFormat, scale.guide.tickFormatNullAlias);
-        if (formatter !== null) {
-            axisScale.ticks(calcTicks(size / scale.guide.density));
-            axisScale.tickFormat(formatter);
-        }
+
+        var axisScale = cartesianAxis({
+            scale: scale.scaleObj,
+            scaleGuide: scale.guide,
+            ticksCount: (formatter ? calcTicks(size / scale.guide.density) : null),
+            tickFormat: (formatter || null)
+        });
 
         var animationSpeed = this.config.guide.animationSpeed;
 
@@ -277,70 +270,6 @@ export class Cartesian extends Element {
                 }
                 transAxis.call(axisScale);
                 transAxis.attr('opacity', 1);
-
-                var isHorizontal = (utilsDraw.getOrientation(scale.guide.scaleOrient) === 'h');
-                var prettifyTick = (scale.scaleType === 'ordinal' || scale.scaleType === 'period');
-                if (prettifyTick && !scale.guide.hideTicks) {
-                    d3_decorator_prettify_categorical_axis_ticks(
-                        transAxis,
-                        scale,
-                        isHorizontal,
-                        animationSpeed
-                    );
-                }
-
-                if (scale.scaleType === 'linear') {
-                    d3_decorator_highlightZeroTick(axis, scale.scaleObj);
-                }
-
-                d3_decorator_wrap_tick_label(axis, animationSpeed, scale.guide, isHorizontal, scale);
-
-                if (!scale.guide.label.hide) {
-                    d3_decorator_prettify_axis_label(
-                        axis,
-                        scale.guide.label,
-                        isHorizontal,
-                        size,
-                        animationSpeed
-                    );
-                }
-
-                if (scale.guide.hideTicks) {
-                    axis.selectAll('.tick').remove();
-                    axis.selectAll('.domain').remove();
-                    return;
-                }
-
-                var activeTicks = scale.scaleObj.ticks ? scale.scaleObj.ticks() : scale.scaleObj.domain();
-                var fixAxesCollision = () => {
-                    if (prettifyTick && scale.guide.avoidCollisions) {
-                        d3_decorator_avoidLabelsCollisions(axis, isHorizontal, activeTicks);
-                    }
-
-                    if (isHorizontal && (scale.scaleType === 'time')) {
-                        d3_decorator_fixHorizontalAxisTicksOverflow(axis, activeTicks);
-                    }
-                };
-                var fixTickTextOverflow = () => {
-                    if (isHorizontal && (scale.scaleType === 'time' || scale.scaleType === 'linear')) {
-                        d3_decorator_fixEdgeAxisTicksOverflow(axis, activeTicks);
-                    }
-                };
-                var fixAxesTicks = function () {
-                    fixAxesCollision();
-                    fixTickTextOverflow();
-                };
-                fixAxesCollision();
-                // NOTE: As far as floating axes transition overrides current,
-                // transition `end` event cannot be used. So using `setTimeout`.
-                // transAxis.onTransitionEnd(fixAxesCollision);
-                var timeoutField = '_transitionEndTimeout_' + (isHorizontal ? 'h' : 'v');
-                clearTimeout(this[timeoutField]);
-                if (animationSpeed > 0) {
-                    this[timeoutField] = setTimeout(fixAxesTicks, animationSpeed * 1.5);
-                } else {
-                    fixTickTextOverflow();
-                }
             });
     }
 
@@ -374,105 +303,33 @@ export class Cartesian extends Element {
 
                     if ((linesOptions.indexOf('x') > -1)) {
                         let xScale = node.x;
-                        let xOrientKoeff = ((xScale.guide.scaleOrient === 'top') ? (-1) : (1));
-                        var xGridAxis = d3_axis(xScale.guide.scaleOrient)()
-                            .scale(xScale.scaleObj)
-                            .tickSize(xOrientKoeff * height);
-
                         let formatter = FormatterRegistry.get(xScale.guide.tickFormat);
-                        if (formatter !== null) {
-                            xGridAxis.ticks(calcTicks(width / xScale.guide.density));
-                            xGridAxis.tickFormat(formatter);
-                        }
+                        var xGridAxis = cartesianGrid({
+                            scale: xScale.scaleObj,
+                            scaleGuide: xScale.guide,
+                            tickSize: height,
+                            ticksCount: (formatter ? calcTicks(width / xScale.guide.density) : null)
+                        });
 
                         var xGridLines = selectOrAppend(gridLines, 'g.grid-lines-x');
                         var xGridLinesTrans = transition(xGridLines, animationSpeed)
                             .call(xGridAxis);
-
-                        let isHorizontal = (utilsDraw.getOrientation(xScale.guide.scaleOrient) === 'h');
-                        let prettifyTick = (xScale.scaleType === 'ordinal' || xScale.scaleType === 'period');
-                        if (prettifyTick) {
-                            d3_decorator_prettify_categorical_axis_ticks(
-                                xGridLinesTrans,
-                                xScale,
-                                isHorizontal,
-                                animationSpeed
-                            );
-                        }
-
-                        if (xScale.scaleType === 'linear' && !xScale.guide.hideTicks) {
-                            d3_decorator_highlightZeroTick(xGridLines, xScale.scaleObj);
-                        }
-
-                        let extraGridLines = selectOrAppend(gridLines, 'g.tau-extraGridLines');
-                        d3_decorator_fix_axis_start_line(
-                            extraGridLines,
-                            isHorizontal,
-                            width,
-                            height,
-                            animationSpeed
-                        );
-
-                        if (xScale.guide.hideTicks) {
-                            xGridLines.selectAll('.tick')
-                                .filter(d => d != 0)
-                                .remove();
-                        }
                     }
 
                     if ((linesOptions.indexOf('y') > -1)) {
                         let yScale = node.y;
-                        let yOrientKoeff = ((yScale.guide.scaleOrient === 'right') ? (1) : (-1));
-                        var yGridAxis = d3_axis(yScale.guide.scaleOrient)()
-                            .scale(yScale.scaleObj)
-                            .tickSize(yOrientKoeff * width);
-
                         let formatter = FormatterRegistry.get(yScale.guide.tickFormat);
-                        if (formatter !== null) {
-                            yGridAxis.ticks(calcTicks(height / yScale.guide.density));
-                            yGridAxis.tickFormat(formatter);
-                        }
+                        var yGridAxis = cartesianGrid({
+                            scale: yScale.scaleObj,
+                            scaleGuide: yScale.guide,
+                            tickSize: -width,
+                            ticksCount: (formatter ? calcTicks(height / yScale.guide.density) : null)
+                        });
 
                         var yGridLines = selectOrAppend(gridLines, 'g.grid-lines-y');
                         var yGridLinesTrans = transition(yGridLines, animationSpeed)
                             .call(yGridAxis);
-
-                        let isHorizontal = (utilsDraw.getOrientation(yScale.guide.scaleOrient) === 'h');
-                        let prettifyTick = (yScale.scaleType === 'ordinal' || yScale.scaleType === 'period');
-                        if (prettifyTick) {
-                            d3_decorator_prettify_categorical_axis_ticks(
-                                yGridLinesTrans,
-                                yScale,
-                                isHorizontal,
-                                animationSpeed
-                            );
-                        }
-
-                        if (yScale.scaleType === 'linear' && !yScale.guide.hideTicks) {
-                            d3_decorator_highlightZeroTick(yGridLines, yScale.scaleObj);
-                        }
-
-                        let fixLineScales = ['time', 'ordinal', 'period'];
-                        let fixBottomLine = fixLineScales.indexOf(yScale.scaleType) !== -1;
-                        if (fixBottomLine) {
-                            let extraGridLines = selectOrAppend(gridLines, 'g.tau-extraGridLines');
-                            d3_decorator_fix_axis_start_line(
-                                extraGridLines,
-                                isHorizontal,
-                                width,
-                                height,
-                                animationSpeed
-                            );
-                        }
-
-                        if (yScale.guide.hideTicks) {
-                            yGridLines.selectAll('.tick')
-                                .filter(d => d != 0)
-                                .remove();
-                        }
                     }
-
-                    gridLines.selectAll('text').remove();
                 }
             });
 
