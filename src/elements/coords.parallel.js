@@ -21,6 +21,7 @@ export class Parallel extends Element {
             });
 
         this.columnsBrushes = {};
+        this.columnsSelections = {};
 
         this.on('force-brush', (sender, e) => this._forceBrushing(e));
 
@@ -41,7 +42,7 @@ export class Parallel extends Element {
 
         this.columnsScalesMap = cfg.columns.reduce(
             (memo, xi) => {
-                memo[xi] = fnCreateScale('pos', xi, [innerHeight, 0]);
+                memo[xi] = fnCreateScale('pos', xi, [0, innerHeight]);
                 return memo;
             },
             {});
@@ -184,17 +185,30 @@ export class Parallel extends Element {
 
         const brushWidth = 16;
 
+        var columnsSelections = this.columnsSelections;
         var columnsScalesMap = this.columnsScalesMap;
         var columnsBrushes = this.columnsBrushes;
+
+        var fireBrushEvents = true;
 
         var onBrushStartEventHandler = (e) => e;
         var onBrushEndEventHandler = (e) => e;
         var onBrushEventHandler = () => {
+            
+            var targetKey = Object.keys(columnsBrushes)
+                .find((k) => columnsBrushes[k] === d3.event.target);
+
+            columnsSelections[targetKey] = d3.event.selection;
+
+            if (!fireBrushEvents) {
+                return;
+            }
+
             var eventBrush = Object
                 .keys(columnsBrushes)
-                .filter((k) => !columnsBrushes[k].empty())
+                .filter((k) => columnsSelections[k])
                 .map((k) => {
-                    var ext = columnsBrushes[k].extent();
+                    var ext = columnsSelections[k].map(columnsScalesMap[k].invert);
                     var rng = [];
                     if (columnsScalesMap[k].discrete) {
                         rng = columnsScalesMap[k]
@@ -222,9 +236,10 @@ export class Parallel extends Element {
         cols.append('g')
             .attr('class', 'brush')
             .each(function (d) {
+                var range = columnsScalesMap[d].range();
                 columnsBrushes[d] = d3
-                    .brushY() // TODO: Fix using brush https://github.com/d3/d3-brush/blob/master/README.md
-                    // .y(columnsScalesMap[d])
+                    .brushY()
+                    .extent([[0, range[0]], [brushWidth, range[1]]])
                     .on('start', onBrushStartEventHandler)
                     .on('brush', onBrushEventHandler)
                     .on('end', onBrushEndEventHandler);
@@ -232,9 +247,13 @@ export class Parallel extends Element {
                 d3.select(this)
                     .classed(`brush-${utils.generateHash(d)}`, true)
                     .call(columnsBrushes[d]);
+
+                fireBrushEvents = false;
+                columnsBrushes[d].move(d3.select(this), range);
+                fireBrushEvents = true;
             })
             .selectAll('rect')
-            .attr('x', (brushWidth / 2) * -1)
+            .attr('transform', `translate(${(brushWidth / 2) * -1},0)`)
             .attr('width', brushWidth);
 
         return cols;
@@ -244,6 +263,7 @@ export class Parallel extends Element {
 
         var columnsBrushes = this.columnsBrushes;
         var columnsScalesMap = this.columnsScalesMap;
+        var columnsSelections = this.columnsSelections;
 
         Object
             .keys(colsBrushSettings)
@@ -259,9 +279,8 @@ export class Parallel extends Element {
                     ext = [brushExt[0], brushExt[1]];
                 }
                 var hashK = utils.generateHash(k);
-                columnsBrushes[k].extent(ext);
                 columnsBrushes[k](d3.select(`.brush-${hashK}`));
-                columnsBrushes[k].event(d3.select(`.brush-${hashK}`));
+                columnsBrushes[k].move(d3.select(`.brush-${hashK}`), ext.map(columnsScalesMap[k]));
             });
     }
 }
