@@ -224,7 +224,7 @@ export function avoidTickTextCollision(ticks, isHorizontal) {
             }
 
             utilsDom.selectOrAppend(curr.tickRef, 'line.label-ref')
-                .attr(attrs);
+                .call(d3_setAttrs(attrs));
         } else {
             curr.tickRef.selectAll('line.label-ref').remove();
         }
