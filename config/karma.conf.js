@@ -15,7 +15,12 @@ module.exports = function (config) {
             'node_modules/topojson/build/topojson.js',
             'test/utils/test.css',
             'test/utils/polyfills.js',
-            'test/tests-main.js'
+            'dist/tauCharts.js',
+            'test/tests-main.js',
+            {included: false, pattern: 'test/**/*.*'},
+            {included: false, pattern: 'src/**/*.*'},
+            {included: false, pattern: 'plugins/**/*.*'},
+            {included: false, pattern: 'less/**/*.*'}
         ],
         browsers: process.env.TRAVIS ? ['ChromeTravisCI'] : ['Chrome'],
         customLaunchers: {
@@ -51,19 +56,23 @@ module.exports = function (config) {
 function getTestRollupConfig() {
     return {
         entry: './test/tests-main.js',
+        moduleName: 'taucharts-tests',
         format: 'iife',
         useStrict: true,
         external: [
             'd3',
-            'topojson'
+            'topojson',
+            'taucharts'
         ],
         globals: {
             'd3': 'd3',
-            'topojson': 'topojson'
+            'topojson': 'topojson',
+            'taucharts': 'tauCharts'
         },
         plugins: [
             require('rollup-plugin-alias')({
-                'tau-tooltip': 'node_modules/tau-tooltip/src/tooltip.js'
+                'tau-tooltip': 'node_modules/tau-tooltip/src/tooltip.js',
+                'taucharts': 'src/tau.charts.ts'
             }),
             require('rollup-plugin-replace')({
                 '{{VERSION}}': `${require('../package.json').version}`
@@ -83,10 +92,8 @@ function getTestRollupConfig() {
                     'dom'
                 ],
                 include: [
-                    'src/**/*.ts',
-                    'src/**/*.js',
-                    'plugins/**/*.ts',
-                    'plugins/**/*.js'
+                    '**/*.ts',
+                    '**/*.js'
                 ],
                 exclude: [
                     'node_modules/**',
@@ -94,6 +101,6 @@ function getTestRollupConfig() {
                 ]
             })
         ],
-        sourceMap: true
+        sourceMap: 'inline'
     };
 }

@@ -49,7 +49,7 @@ const mainConfig = {
 };
 
 const pluginsCommonConfig = {
-    exports: 'none',
+    exports: 'default',
     format: 'umd',
     useStrict: true,
     external: [
@@ -68,6 +68,7 @@ const pluginsCommonConfig = {
 
 const plugins = [
     'annotations',
+    'bar-as-span',
     'box-whiskers',
     'crosshair',
     ['export', {
@@ -172,7 +173,11 @@ module.exports = (gulp, {connect}) => {
                     {},
                     pluginsCommonConfig,
                     pluginConfig,
-                    {entry: `./plugins/${plugin}.js`}
+                    {
+                        entry: `./plugins/${plugin}.js`,
+                        moduleId: `taucharts-${plugin}`,
+                        moduleName: `taucharts${spinalCaseToCamelCase(plugin)}`
+                    }
                 ),
                 production: false
             });
@@ -184,3 +189,10 @@ module.exports = (gulp, {connect}) => {
 
     });
 };
+
+function spinalCaseToCamelCase(spinal) {
+    return spinal
+        .split('-')
+        .map((s) => s.slice(0, 1).toUpperCase() + s.slice(1))
+        .join('');
+}

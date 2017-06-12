@@ -1002,3 +1002,5 @@ import * as d3 from 'd3';
     }
 
     tauCharts.api.plugins.add('legend', ChartLegend);
+
+export default ChartLegend;

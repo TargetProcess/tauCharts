@@ -46,7 +46,7 @@ export abstract class Element extends Emitter implements GrammarElement {
     subscribe(sel: GrammarElement, dataInterceptor = ((x: any) => x), eventInterceptor = ((x: Event) => x)) {
         var self = this;
         var last = {};
-        [
+        ([
             {
                 event: 'mouseover',
                 limit: 0
@@ -63,7 +63,7 @@ export abstract class Element extends Emitter implements GrammarElement {
                 event: 'mousemove',
                 limit: 'requestAnimationFrame'
             }
-        ].forEach((item) => {
+        ] as {event: string; limit: 'requestAnimationFrame' | number}[]).forEach((item) => {
             var eventName = item.event;
             var limit = item.limit;
 

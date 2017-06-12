@@ -274,3 +274,5 @@ import tauCharts from 'taucharts';
     }
 
     tauCharts.api.plugins.add('quick-filter', QuickFilter);
+
+export default QuickFilter;

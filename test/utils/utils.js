@@ -1,8 +1,15 @@
-define(function (require) {
-    var tauCharts = require('src/tau.charts'),
-        $ = require('jquery'),
-        utils = require('src/utils/utils').utils,
-        d3 = require('d3');
+import tauCharts from 'taucharts';
+import $ from 'jquery';
+import * as utils from '../../src/utils/utils';
+import * as d3 from 'd3';
+
+
+tauCharts.api.globalSettings.animationSpeed = 0;
+tauCharts.api.globalSettings.renderingTimeout = 0;
+tauCharts.api.globalSettings.asyncRendering = false;
+tauCharts.api.globalSettings.avoidScrollAtRatio = 1;
+tauCharts.api.globalSettings.syncPointerEvents = true;
+tauCharts.api.globalSettings.handleRenderingErrors = false;
 
     var testChartSettings = {
         getAxisTickLabelSize: function (text) {
@@ -234,7 +241,7 @@ define(function (require) {
         return el;
     }
 
-    return {
+export default {
         toLocalDate: toLocalDate,
         roundNumbersInString: roundNumbersInString,
         describePlot: describePlot,
@@ -259,4 +266,3 @@ define(function (require) {
         noScrollStyle,
         destroyCharts
     };
-});

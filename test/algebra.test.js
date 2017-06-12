@@ -1,6 +1,5 @@
-define(function (require) {
-    var expect = require('chai').expect;
-    var algebra = require('src/algebra').FramesAlgebra;
+import {expect} from 'chai';
+import {FramesAlgebra as algebra} from '../src/algebra';
 
     describe("operator:cross", function () {
 
@@ -104,4 +103,3 @@ define(function (require) {
             expect(tuples1.length).to.equal(9);
         });
     });
-});

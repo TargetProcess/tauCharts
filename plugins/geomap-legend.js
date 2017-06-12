@@ -314,3 +314,5 @@ import tauCharts from 'taucharts';
     }
 
     tauCharts.api.plugins.add('geomap-legend', ChartGeoMapLegend);
+
+export default ChartGeoMapLegend;

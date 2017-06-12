@@ -9,7 +9,8 @@
     },
     "include": [
         "plugins/**/*",
-        "src/**/*"
+        "src/**/*",
+        "test/**/*"
     ],
     "exclude": [
         "bower_components",

@@ -1,15 +1,11 @@
-define(function (require) {
+import {assert, expect} from 'chai';
+import {Tooltip as Balloon} from '../src/api/balloon';
+import utils from './utils/utils';
+import $ from 'jquery';
+import tauCharts from 'taucharts';
+import {Plot} from '../src/charts/tau.plot';
+import layers from '../plugins/layers';
 
-    var assert = require('chai').assert;
-
-    var modernizer = require('bower_components/modernizer/modernizr');
-    var Balloon = require('src/api/balloon').Tooltip;
-    var expect = require('chai').expect;
-    var schemes = require('schemes');
-    var utils = require('testUtils');
-    var $ = require('jquery');
-    var tauCharts = require('src/tau.charts');
-    var layers = require('plugins/layers');
     var div, spec;
     var config = {
         layoutEngine: 'DEFAULT',
@@ -582,9 +578,9 @@ define(function (require) {
                 });
             });
 
-            simulateEvent('click', $('circle')[0]);
-            simulateEvent('mouseover', $('circle')[0]);
-            simulateEvent('mouseout', $('circle')[0]);
+            simulateEvent('click', document.querySelector('circle'));
+            simulateEvent('mouseover', document.querySelector('circle'));
+            simulateEvent('mouseout', document.querySelector('circle'));
         });
 
         it('api plugins', function () {
@@ -797,7 +793,7 @@ define(function (require) {
         });
 
         it('api test add balloon', function () {
-            var plot = new tauCharts.Plot(config);
+            var plot = new Plot(config);
             var balloon = plot.addBalloon();
             expect(balloon).to.be.instanceof(Balloon);
         });
@@ -815,4 +811,3 @@ define(function (require) {
             }).to.throw(Error);
         });
     });
-});

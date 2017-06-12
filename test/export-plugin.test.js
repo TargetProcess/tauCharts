@@ -1,14 +1,13 @@
-define(function (require) {
-    var expect = require('chai').expect;
-    var testUtils = require('testUtils');
-    var stubTimeout = testUtils.stubTimeout;
-    var legend = require('plugins/legend');
-    var trendline = require('plugins/trendline');
-    var mock = require('test/utils/mock.window');
-    var saveAs = require('test/utils/saveAs');
-    var exportTo = require('plugins/export');
-    var $ = require('jquery');
-    var describeChart = testUtils.describeChart;
+import {expect} from 'chai';
+import testUtils from './utils/utils';
+const stubTimeout = testUtils.stubTimeout;
+import legend from '../plugins/legend';
+import trendline from '../plugins/trendline';
+import mock from './utils/mock.window';
+import saveAs from './utils/saveAs';
+import exportTo from '../plugins/export';
+import $ from 'jquery';
+const describeChart = testUtils.describeChart;
 
     describeChart(
         'export plugin should work',
@@ -104,4 +103,3 @@ define(function (require) {
             autoWidth: false
         }
     );
-});
