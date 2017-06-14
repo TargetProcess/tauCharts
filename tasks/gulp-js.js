@@ -84,7 +84,7 @@ const plugins = [
                 include: 'plugins/**/*.css'
             }),
             require('rollup-plugin-alias')({
-                'rgbcolor': 'bower_components/rgb-color/index.js',
+                'rgbcolor': 'bower_components/canvg/rgbcolor.js',
                 'stackblur': 'bower_components/canvg/StackBlur.js',
                 'canvg': 'bower_components/canvg/canvg.js',
                 'file-saver': 'bower_components/file-saver/FileSaver.js',

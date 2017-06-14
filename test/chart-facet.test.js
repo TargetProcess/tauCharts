@@ -1,8 +1,6 @@
-define(function(require){
-    var assert = require('chai').assert;
-    var expect = require('chai').expect;
-    var schemes = require('schemes');
-    var tauChart = require('src/tau.charts');
+import {assert, expect} from 'chai';
+import schemes from './utils/schemes';
+import tauChart from '../src/tau.charts';
 
     var facetSpec = schema({
         scales: schemes.scales,
@@ -86,4 +84,3 @@ define(function(require){
             }).to.throw(Error);
         })
     });
-});

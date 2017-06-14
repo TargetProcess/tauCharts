@@ -1,8 +1,6 @@
-define(function (require) {
-
-    var expect = require('chai').expect;
-    var testUtils = require('testUtils');
-    var trendline = require('plugins/trendline');
+import {expect} from 'chai';
+import testUtils from './utils/utils';
+import trendline from '../plugins/trendline';
     var describeChart = testUtils.describeChart;
 
     describeChart(
@@ -249,4 +247,3 @@ define(function (require) {
             autoWidth: false
         }
     );
-});

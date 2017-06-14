@@ -1,4 +1,3 @@
-define(function () {
     var printCallbacks = [];
     window.Blob = function() {
 
@@ -8,7 +7,6 @@ define(function () {
             callback();
         });
     };
-    return {
+    export default {
         printCallbacks: printCallbacks
     };
-});

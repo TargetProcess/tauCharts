@@ -1,4 +1,7 @@
-import schema from 'js-schema';
+// BUG: Webpack fails to import a function,
+// points to `default` property.
+// import schema from 'js-schema';
+var schema = require('js-schema');
 
         var point = schema({
             color: [null, String],

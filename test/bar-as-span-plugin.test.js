@@ -1,5 +1,5 @@
 import {assert} from 'chai';
-import tauCharts from 'taucharts';
+import tauCharts from '../src/tau.charts';
 import BarAsSpanPlugin from '../plugins/bar-as-span';
 
 import testUtils from './utils/utils';

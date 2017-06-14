@@ -1,4 +1,3 @@
-import {GenericCartesian} from '../elements/element.generic.cartesian';
 import * as d3 from 'd3';
 import {
     Unit
@@ -267,9 +266,6 @@ var deepClone = (function () {
     return deepCopy;
 
 })();
-var chartElement = [
-    GenericCartesian
-];
 
 var testColorCode = ((x) => (/^(#|rgb\(|rgba\()/.test(x)));
 
@@ -316,10 +312,6 @@ let templateSettings = {
 
     export function isObject(obj) {
         return obj != null && typeof obj === 'object';
-    }
-
-    export function isChartElement(element) {
-        return chartElement.some(Element => element instanceof Element);
     }
 
     export function niceZeroBased(domain: number[]) {
@@ -788,4 +780,12 @@ export function take<T>(src?: T) {
         }
     };
     return obj;
+}
+
+import {GenericCartesian} from '../elements/element.generic.cartesian';
+var chartElement = [
+    GenericCartesian
+];
+export function isChartElement(element) {
+    return chartElement.some(Element => element instanceof Element);
 }

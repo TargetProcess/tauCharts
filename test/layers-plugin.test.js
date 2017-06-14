@@ -1,8 +1,7 @@
-define(function (require) {
-    var expect = require('chai').expect;
-    var testUtils = require('testUtils');
-    var layers = require('plugins/layers');
-    var tauCharts = require('src/tau.charts');
+import {expect} from 'chai';
+import testUtils from './utils/utils';
+import layers from '../plugins/layers';
+import tauCharts from '../src/tau.charts';
 
     describe('layers plugin', function () {
 
@@ -210,4 +209,3 @@ define(function (require) {
             expect(keys1).to.equal('id,x,y0,y1,color');
         });
     });
-});

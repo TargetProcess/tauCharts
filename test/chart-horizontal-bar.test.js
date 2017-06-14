@@ -1,7 +1,7 @@
-define(function (require) {
-    var assert = require('chai').assert;
-    var schemes = require('schemes');
-    var tauChart = require('src/tau.charts');
+import {assert} from 'chai';
+import schemes from './utils/schemes';
+import tauChart from '../src/tau.charts';
+
     describe('Horizontal bar chart', function () {
         var testData = [
             {x: 1, y: 1, color: 'red', size: 6},
@@ -22,4 +22,3 @@ define(function (require) {
             bar.destroy();
         })
     });
-});

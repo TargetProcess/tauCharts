@@ -1,15 +1,7 @@
 import tauCharts from 'taucharts';
-import $ from 'jquery';
+import * as $ from 'jquery';
 import * as utils from '../../src/utils/utils';
 import * as d3 from 'd3';
-
-
-tauCharts.api.globalSettings.animationSpeed = 0;
-tauCharts.api.globalSettings.renderingTimeout = 0;
-tauCharts.api.globalSettings.asyncRendering = false;
-tauCharts.api.globalSettings.avoidScrollAtRatio = 1;
-tauCharts.api.globalSettings.syncPointerEvents = true;
-tauCharts.api.globalSettings.handleRenderingErrors = false;
 
     var testChartSettings = {
         getAxisTickLabelSize: function (text) {
@@ -78,15 +70,15 @@ tauCharts.api.globalSettings.handleRenderingErrors = false;
     };
 
     function getDots() {
-        return d3.selectAll('.dot')[0];
+        return d3.selectAll('.dot').nodes();
     }
 
     function getLine() {
-        return d3.selectAll('.line')[0];
+        return d3.selectAll('.line').nodes();
     }
 
     function getArea() {
-        return d3.selectAll('.area')[0];
+        return d3.selectAll('.area').nodes();
     }
 
     function getGroupBar() {

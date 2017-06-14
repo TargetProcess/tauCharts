@@ -1,8 +1,8 @@
-define(function(require){
-    var assert = require('chai').assert;
-    var schemes = require('schemes');
-    var tauChart = require('src/tau.charts');
-    var noScrollStyle = require('test/utils/utils').noScrollStyle;
+import {assert} from 'chai';
+import schemes from './utils/schemes';
+import tauChart from '../src/tau.charts';
+import testUtils from './utils/utils';
+const {noScrollStyle} = testUtils;
 
     var createTestDiv = function (id) {
         noScrollStyle.create();
@@ -213,5 +213,3 @@ define(function(require){
             removeTestDiv();
         });
     });
-
-});

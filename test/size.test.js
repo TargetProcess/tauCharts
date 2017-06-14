@@ -1,7 +1,6 @@
-define(function (require) {
-    var expect = require('chai').expect;
-    var assert = require('chai').assert;
-    var sizeScale = require('src/size').sizeScale;
+import {expect} from 'chai';
+import {assert} from 'chai';
+import {sizeScale} from '../src/size';
 
     var check = function(sizeScale, samples) {
         samples.forEach(function(s) {
@@ -132,4 +131,3 @@ define(function (require) {
             expect(scale(Infinity)).to.equal(110);
         });
     });
-});

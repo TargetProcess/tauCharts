@@ -15,12 +15,7 @@ module.exports = function (config) {
             'node_modules/topojson/build/topojson.js',
             'test/utils/test.css',
             'test/utils/polyfills.js',
-            'dist/tauCharts.js',
-            'test/tests-main.js',
-            {included: false, pattern: 'test/**/*.*'},
-            {included: false, pattern: 'src/**/*.*'},
-            {included: false, pattern: 'plugins/**/*.*'},
-            {included: false, pattern: 'less/**/*.*'}
+            'test/tests-main.js'
         ],
         browsers: process.env.TRAVIS ? ['ChromeTravisCI'] : ['Chrome'],
         customLaunchers: {
@@ -31,13 +26,18 @@ module.exports = function (config) {
                 ]
             }
         },
-        preprocessors: {'test/tests-main.js': ['rollup', 'sourcemap']},
+        // preprocessors: {'test/tests-main.js': ['rollup', 'sourcemap']},
+        preprocessors: {'test/tests-main.js': ['webpack', 'sourcemap']},
         reporters: ['coverage', 'spec', 'coveralls'],
         coverageReporter: {
             type: 'lcovonly',
             dir: 'coverage/'
         },
-        rollupPreprocessor: getTestRollupConfig(),
+        // rollupPreprocessor: getTestRollupConfig(),
+        webpackMiddleware: {
+            noInfo: true
+        },
+        webpack: getTestWebpackConfig(),
         browserNoActivityTimeout: 100000,
         port: 9876,
 
@@ -49,10 +49,15 @@ module.exports = function (config) {
 
         // Continuous Integration mode
         // if true, it capture browsers, run tests and exit
-        singleRun: true
+        singleRun: false
     });
 };
 
+// NOTE: Rollup integration into Karma fails:
+// 1. karma-rollup-preprocessor (and karma-rollup-plugin) doesn't rebuild when source file changes.
+// 2. When importing TypeScript file via alias (rollup-plugin-alias) multiple times,
+//    it fails with "Unexpected token ..." like this is JS but not TS file.
+// 3. Didn't try to create coverage reports.
 function getTestRollupConfig() {
     return {
         entry: './test/tests-main.js',
@@ -102,5 +107,94 @@ function getTestRollupConfig() {
             })
         ],
         sourceMap: 'inline'
+    };
+}
+
+function getTestWebpackConfig() {
+    var path = require('path');
+    var ensureDir = function(absolutePath) {
+        var fs = require('fs-extra');
+        fs.mkdirsSync(absolutePath);
+        return absolutePath;
+    };
+    var cachePath = path.join(require('os').tmpdir(), './webpackCache');
+    var webpack = require('webpack');
+    return {
+        resolve: {
+            modules: [
+                path.resolve('.'),
+                'bower_components',
+                'node_modules'
+            ],
+            alias: {
+                'tau-tooltip': 'node_modules/tau-tooltip/tooltip.js',
+                taucharts: 'src/tau.charts.ts',
+                'print.style.css': 'plugins/print.style.css',
+                rgbcolor: 'bower_components/canvg/rgbcolor.js',
+                stackblur: 'bower_components/canvg/StackBlur.js',
+                canvg: 'bower_components/canvg/canvg.js',
+                'file-saver': 'test/utils/saveAs.js',
+                fetch: 'bower_components/fetch/fetch.js',
+                promise: 'bower_components/es6-promise/es6-promise.js'
+            },
+            extensions: ['.js', '.json', '.ts']
+        },
+        devtool: 'inline-source-map',
+        module: {
+            rules: [
+                {
+                    loader: 'css-loader',
+                    test: /\.css$/
+                },
+                {
+                    loader: 'imports?this=>window!exports?window.Modernizr',
+                    test: /modernizer[\\\/]modernizr\.js$/
+                },
+                {
+                    loader: 'ts-loader',
+                    test: /\.(js|ts)$/,
+                    exclude: [
+                        'node_modules',
+                        'bower_components'
+                    ],
+                    options: {
+                        compilerOptions: {
+                            inlineSourceMap: true,
+                            sourceMap: false
+                        },
+                        entryFileIsJs: true,
+                        transpileOnly: true,
+                        cacheDirectory: ensureDir(path.join(cachePath, './babelJS'))
+                    }
+                },
+                // {
+                //     loader: 'istanbul-instrumenter-loader',
+                //     test: /\.(js|ts)$/,
+                //     exclude: [
+                //         'node_modules',
+                //         'bower_components',
+                //         'test',
+                //         'plugins',
+                //         'src/addons',
+                //         'src/utils/polyfills.js'
+                //     ],
+                //     options: {
+                //         esModules: true
+                //     }
+                // }
+            ]
+        },
+        externals: {
+            d3: 'd3'
+        },
+        stats: {
+            colors: true,
+            reasons: true
+        },
+        plugins: [
+            new webpack.DefinePlugin({
+                VERSION: require('../package.json').version
+            })
+        ]
     };
 }

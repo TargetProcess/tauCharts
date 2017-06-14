@@ -1,9 +1,8 @@
-define(function (require) {
-    var assert = require('chai').assert;
-    var expect = require('chai').expect;
-    var schemes = require('schemes');
-    var tauChart = require('src/tau.charts');
-    var testUtils = require('testUtils');
+import {assert, expect} from 'chai';
+import schemes from './utils/schemes';
+import tauChart from '../src/tau.charts';
+import testUtils from './utils/utils';
+
     describe('Line plot chart', function () {
 
         afterEach(function () {
@@ -362,4 +361,3 @@ define(function (require) {
                 .equal([1, 2, 0, 3]);
         });
     });
-});

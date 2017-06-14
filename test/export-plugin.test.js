@@ -6,7 +6,7 @@ import trendline from '../plugins/trendline';
 import mock from './utils/mock.window';
 import saveAs from './utils/saveAs';
 import exportTo from '../plugins/export';
-import $ from 'jquery';
+import * as $ from 'jquery';
 const describeChart = testUtils.describeChart;
 
     describeChart(
@@ -34,7 +34,7 @@ const describeChart = testUtils.describeChart;
                      done();
                 });
                 setTimeout(function () {
-                    testUtils.simulateEvent('click', $('[data-value="print"]').get(0));
+                    testUtils.simulateEvent('click', document.querySelector('[data-value="print"]'));
                 }, 0);
             });
         },

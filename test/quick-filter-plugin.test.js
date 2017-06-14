@@ -1,8 +1,7 @@
-define(function (require) {
+import {expect} from 'chai';
+import testUtils from './utils/utils';
+import quickFilter from '../plugins/quick-filter';
 
-    var expect = require('chai').expect;
-    var testUtils = require('testUtils');
-    var quickFilter = require('plugins/quick-filter');
     var describeChart = testUtils.describeChart;
 
     describeChart(
@@ -73,4 +72,3 @@ define(function (require) {
             autoWidth: false
         }
     );
-});

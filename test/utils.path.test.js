@@ -1,14 +1,12 @@
-define(function (require) {
-    var expect = require('chai').expect;
-    var tauCharts = require('src/tau.charts');
-    var createInterpolator = require('src/utils/path/interpolators/path-points').default;
-    var getBrushLine = require('src/utils/path/svg/brush-line').getBrushLine;
-    var getBrushCurve = require('src/utils/path/svg/brush-line').getBrushCurve;
-    var {getAreaPolygon, getSmoothAreaPath} = require('src/utils/path/svg/area-path');
-    var toCurve = require('src/utils/path/interpolators/smooth').getCurveKeepingExtremums;
-    var getLineInterpolator = require('src/utils/path/interpolators/interpolators-registry').getLineInterpolator;
-    var lines = require('src/utils/path/svg/line');
-    var testUtils = require('testUtils');
+import {expect} from 'chai';
+import tauCharts from '../src/tau.charts';
+import createInterpolator from '../src/utils/path/interpolators/path-points';
+import {getBrushLine, getBrushCurve} from '../src/utils/path/svg/brush-line';
+import {getAreaPolygon, getSmoothAreaPath}from '../src/utils/path/svg/area-path';
+import {getCurveKeepingExtremums as toCurve} from '../src/utils/path/interpolators/smooth';
+import {getLineInterpolator} from '../src/utils/path/interpolators/interpolators-registry';
+import * as lines from '../src/utils/path/svg/line';
+import testUtils from './utils/utils';
 
     describe('path utilities', function() {
 
@@ -556,8 +554,8 @@ define(function (require) {
                 {'x': 255, 'y': 583}
             ];
             coords.forEach((p, i) => {
-                expect(p.x).to.be.closeTo(expected[i].x, 5);
-                expect(p.y).to.be.closeTo(expected[i].y, 5);
+                expect(p.x).to.be.closeTo(expected[i].x, 10);
+                expect(p.y).to.be.closeTo(expected[i].y, 10);
             });
         });
     });
@@ -666,4 +664,3 @@ define(function (require) {
             expect(empty).to.be.equal('');
         });
     });
-});

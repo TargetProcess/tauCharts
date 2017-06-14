@@ -1,9 +1,8 @@
 import {assert, expect} from 'chai';
 import {Tooltip as Balloon} from '../src/api/balloon';
 import utils from './utils/utils';
-import $ from 'jquery';
-import tauCharts from 'taucharts';
-import {Plot} from '../src/charts/tau.plot';
+import * as $ from 'jquery';
+import tauCharts from '../src/tau.charts';
 import layers from '../plugins/layers';
 
     var div, spec;
@@ -793,7 +792,7 @@ import layers from '../plugins/layers';
         });
 
         it('api test add balloon', function () {
-            var plot = new Plot(config);
+            var plot = new tauCharts.Plot(config);
             var balloon = plot.addBalloon();
             expect(balloon).to.be.instanceof(Balloon);
         });

@@ -1,13 +1,11 @@
 // jscs:disable disallowQuotedKeysInObjects
 // jscs:disable validateQuoteMarks
-
-var $ = require('jquery');
-var expect = require('chai').expect;
-var testUtils = require('testUtils');
-var stubTimeout = testUtils.stubTimeout;
-var tauCharts = require('taucharts');
-var tooltip = require('plugins/tooltip');
-var describeChart = testUtils.describeChart;
+import * as $ from 'jquery';
+import {expect} from 'chai';
+import testUtils from './utils/utils';
+const {stubTimeout, describeChart} = testUtils;
+import tauCharts from '../src/tau.charts';
+import tooltip from '../plugins/tooltip';
 
 var iso = function (str) {
     var offsetHrs = new Date(str).getTimezoneOffset() / 60;
