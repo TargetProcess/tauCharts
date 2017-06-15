@@ -1,12 +1,10 @@
-define(function (require) {
-    var expect = require('chai').expect;
-    var schemes = require('schemes');
-    var modernizer = require('bower_components/modernizer/modernizr');
-    var CSS_PREFIX = require('src/const').CSS_PREFIX;
-    var tauChart = require('src/tau.charts');
-    var TaskRunner = require('src/charts/task-runner').default;
-    var utils = require('testUtils');
-    var range = require('src/utils/utils').utils.range;
+import {expect} from 'chai';
+import schemes from './utils/schemes';
+import {CSS_PREFIX as CSS_PREFIX} from '../src/const';
+import tauChart from '../src/tau.charts';
+import {default as TaskRunner} from '../src/charts/task-runner';
+import utils from './utils/utils';
+import {range} from '../src/utils/utils';
 
     describe('tauChart.Plot', function () {
 
@@ -154,10 +152,6 @@ define(function (require) {
             var height = parseInt(svg.attr('height'), 10);
             var expectedWidth = 800;
             var expectedHeight = 600;
-            if (modernizer.flexbox) {
-                expect(width).to.equal(expectedWidth);
-                expect(height).to.equal(expectedHeight);
-            }
         });
 
         it('should infer size from target (where target = ID selector)', function () {
@@ -170,28 +164,16 @@ define(function (require) {
             var height = parseInt(svg.attr('height'), 10);
             var expectedWidth = 800;
             var expectedHeight = 600;
-            if (modernizer.flexbox) {
-                expect(width).to.equal(expectedWidth);
-                expect(height).to.equal(expectedHeight);
-            }
 
             plot.resize({width: 500, height: 500});
             svg = d3.select(div).selectAll('svg');
             width = parseInt(svg.attr('width'), 10);
             height = parseInt(svg.attr('height'), 10);
-            if (modernizer.flexbox) {
-                expect(width).to.equal(500);
-                expect(height).to.equal(500);
-            }
 
             plot.resize();
             svg = d3.select(div).selectAll('svg');
             width = parseInt(svg.attr('width'), 10);
             height = parseInt(svg.attr('height'), 10);
-            if (modernizer.flexbox) {
-                expect(width).to.equal(expectedWidth);
-                expect(height).to.equal(expectedHeight);
-            }
         });
 
         it('should auto exclude null values', function () {
@@ -909,4 +891,3 @@ define(function (require) {
             chart.renderTo(testDiv);
         });
     });
-});

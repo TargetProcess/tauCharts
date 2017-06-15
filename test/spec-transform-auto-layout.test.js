@@ -1,11 +1,10 @@
-define(function (require) {
-    var testUtils = require('testUtils');
-    var expect = require('chai').expect;
-    var SpecAutoLayout = require('src/spec-transform-auto-layout').SpecTransformAutoLayout;
-    var SpecConverter = require('src/spec-converter').SpecConverter;
-    var tauCharts = require('src/tau.charts');
-    var scalesRegistry = tauCharts.api.scalesRegistry.instance();
-    var ScalesFactory = require('src/scales-factory').ScalesFactory;
+import testUtils from './utils/utils';
+import {expect} from 'chai';
+import {SpecTransformAutoLayout as SpecAutoLayout} from '../src/spec-transform-auto-layout';
+import {SpecConverter} from '../src/spec-converter';
+import tauCharts from '../src/tau.charts';
+const scalesRegistry = tauCharts.api.scalesRegistry.instance();
+import {ScalesFactory} from '../src/scales-factory';
 
     describe('Spec engine factory', function () {
 
@@ -524,4 +523,3 @@ define(function (require) {
             expect(elem.guide.y.tickFontHeight).to.equal(10);
         });
     });
-});

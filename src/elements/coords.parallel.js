@@ -208,9 +208,9 @@ export class Parallel extends Element {
                 .keys(columnsBrushes)
                 .filter((k) => columnsSelections[k])
                 .map((k) => {
-                    var ext = columnsSelections[k].map(columnsScalesMap[k].invert);
                     var rng = [];
                     if (columnsScalesMap[k].discrete) {
+                        var ext = columnsSelections[k];
                         rng = columnsScalesMap[k]
                             .domain()
                             .filter((val) => {
@@ -218,6 +218,7 @@ export class Parallel extends Element {
                                 return (ext[0] <= pos) && (ext[1] >= pos);
                             });
                     } else {
+                        var ext = columnsSelections[k].map(columnsScalesMap[k].invert);
                         rng = [ext[0], ext[1]];
                     }
 

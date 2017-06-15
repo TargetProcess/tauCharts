@@ -1,7 +1,6 @@
 import tauCharts from 'taucharts';
-import canvg from 'canvg';
+import 'canvg';
 import {saveAs} from 'file-saver';
-import Promise from 'promise';
 import 'fetch';
 import printCss from './print.style.css';
 import * as d3 from 'd3';
@@ -782,3 +781,5 @@ import * as d3 from 'd3';
     }
 
     tauCharts.api.plugins.add('exportTo', exportTo);
+
+export default exportTo;

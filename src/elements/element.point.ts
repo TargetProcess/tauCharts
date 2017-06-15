@@ -181,17 +181,21 @@ const Point: PointClass = {
                         .selectAll('circle')
                         .data((fiber) => fiber, screenModel.id);
 
-                    transition(dots.enter().append('circle')
-                        .call(attrs(circleTransAttrs))
+                    var dotsEnter = dots.enter().append('circle')
+                        .call(attrs(circleTransAttrs));
+
+                    var dotsMerge = dotsEnter
                         .merge(dots)
-                        .call(attrs(circleAttrs)))
+                        .call(attrs(circleAttrs));
+
+                    transition(dotsMerge)
                         .call(attrs(circleTransAttrs));
 
                     transition(dots.exit())
                         .attr('r', 0)
                         .remove();
 
-                    node.subscribe(dots as d3Selection);
+                    node.subscribe(dotsMerge as d3Selection);
                 });
 
             transition(g)

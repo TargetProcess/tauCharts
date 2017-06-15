@@ -122,3 +122,5 @@ import tauCharts from 'taucharts';
     }
 
     tauCharts.api.plugins.add('parallel-brushing', ChartParallelBrushing);
+
+export default ChartParallelBrushing;

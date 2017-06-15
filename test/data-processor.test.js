@@ -1,7 +1,5 @@
-define(function (require) {
-    var expect = require('chai').expect;
-    var assert = require('chai').assert;
-    var DataProcessor = require('src/data-processor').DataProcessor;
+import {assert, expect} from 'chai';
+import {DataProcessor} from '../src/data-processor';
 
     describe("DataProcessor", function () {
 
@@ -100,4 +98,3 @@ define(function (require) {
             expect(r.error.errY).to.deep.equal(['{"id":14,"name":"text14"}', '{"id":44,"name":"text44"}']);
         });
     });
-});

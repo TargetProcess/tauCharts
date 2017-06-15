@@ -346,3 +346,5 @@ import * as d3 from 'd3';
     }
 
     tauCharts.api.plugins.add('annotations', annotations);
+
+export default annotations;

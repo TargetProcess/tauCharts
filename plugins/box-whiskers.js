@@ -373,3 +373,5 @@ import tauCharts from 'taucharts';
     }
 
     tauCharts.api.plugins.add('box-whiskers', boxWhiskersPlot);
+
+export default boxWhiskersPlot;

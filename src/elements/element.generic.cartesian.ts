@@ -167,8 +167,8 @@ export abstract class GenericCartesian extends Element {
         var y0 = flip ? 'x0' : 'y0';
         var w = flip ? 'height' : 'width';
         var h = flip ? 'width' : 'height';
-        var drawElement = function () {
-            drawPart(this, 'lvl-top', {
+        var drawElement = function (selection) {
+            drawPart(selection, 'lvl-top', {
                 [w]: ((d) => size(d)),
                 [h]: 1,
                 [x]: ((d) => self.screenModel[x](d) - size(d) / 2),
@@ -176,7 +176,7 @@ export abstract class GenericCartesian extends Element {
                 fill: ((d) => self.screenModel.color(d)),
                 class: ((d) => `lvl-top ${self.screenModel.class(d)}`)
             });
-            drawPart(this, 'lvl-btm', {
+            drawPart(selection, 'lvl-btm', {
                 [w]: ((d) => size(d)),
                 [h]: 1,
                 [x]: ((d) => self.screenModel[x](d) - size(d) / 2),
@@ -184,7 +184,7 @@ export abstract class GenericCartesian extends Element {
                 fill: ((d) => self.screenModel.color(d)),
                 class: ((d) => `lvl-btm ${self.screenModel.class(d)}`)
             });
-            drawPart(this, 'lvl-link', {
+            drawPart(selection, 'lvl-link', {
                 [w]: 0.5,
                 [h]: ((d) => Math.abs(self.screenModel[y](d) - self.screenModel[y0](d))),
                 [x]: ((d) => self.screenModel[x](d) - 0.25),
@@ -194,11 +194,11 @@ export abstract class GenericCartesian extends Element {
             });
         };
 
-        var updateGroups = function (this: d3Selection) {
+        var updateGroups = function (selection) {
 
-            this.attr('class', `frame-id-${self.config.uid}`)
-                .call(function (this: d3Selection) {
-                    var generic = this
+            selection.attr('class', `frame-id-${self.config.uid}`)
+                .call(function (selection) {
+                    var generic = selection
                         .selectAll('.generic')
                         .data((fiber) => fiber, self.screenModel.id);
                     generic

@@ -1,14 +1,12 @@
-define(function(require) {
-    var expect = require('chai').expect;
-    var schemes = require('schemes');
-    var testUtils = require('testUtils');
-    var tauCharts = require('src/tau.charts');
-    var tauBrewer = require('brewer');
+import {assert, expect} from 'chai';
+import schemes from './utils/schemes';
+import testUtils from './utils/utils';
+import tauCharts from '../src/tau.charts';
+import tauBrewer from '../src/addons/color-brewer';
     var getDots = testUtils.getDots;
     var hasClass = testUtils.hasClass;
     var attrib = testUtils.attrib;
     var position = testUtils.position;
-    var assert = require('chai').assert;
     var testData = [
         {x: 1, y: 1, color: 'red', size: 6},
         {x: 0.5, y: 0.5, color: 'green', size: 6},
@@ -502,4 +500,3 @@ define(function(require) {
             });
         }
     );
-});

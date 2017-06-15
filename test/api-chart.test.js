@@ -1,15 +1,10 @@
-define(function (require) {
+import {assert, expect} from 'chai';
+import {Tooltip as Balloon} from '../src/api/balloon';
+import utils from './utils/utils';
+import * as $ from 'jquery';
+import tauCharts from '../src/tau.charts';
+import layers from '../plugins/layers';
 
-    var assert = require('chai').assert;
-
-    var modernizer = require('bower_components/modernizer/modernizr');
-    var Balloon = require('src/api/balloon').Tooltip;
-    var expect = require('chai').expect;
-    var schemes = require('schemes');
-    var utils = require('testUtils');
-    var $ = require('jquery');
-    var tauCharts = require('src/tau.charts');
-    var layers = require('plugins/layers');
     var div, spec;
     var config = {
         layoutEngine: 'DEFAULT',
@@ -399,7 +394,7 @@ define(function (require) {
             });
             chart.renderTo(container);
             var svg = chart.getSVG();
-            expect(parseInt(svg.getAttribute('height')) + scrollbar.height).to.be.closeTo(expectHeight, 10);
+            expect(parseInt(svg.getAttribute('height')) + scrollbar.height).to.be.closeTo(expectHeight, 20);
             chart.destroy();
             document.body.removeChild(container);
         };
@@ -582,9 +577,9 @@ define(function (require) {
                 });
             });
 
-            simulateEvent('click', $('circle')[0]);
-            simulateEvent('mouseover', $('circle')[0]);
-            simulateEvent('mouseout', $('circle')[0]);
+            simulateEvent('click', document.querySelector('circle'));
+            simulateEvent('mouseover', document.querySelector('circle'));
+            simulateEvent('mouseout', document.querySelector('circle'));
         });
 
         it('api plugins', function () {
@@ -815,4 +810,3 @@ define(function (require) {
             }).to.throw(Error);
         });
     });
-});

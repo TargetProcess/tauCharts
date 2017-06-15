@@ -1,11 +1,10 @@
-define(function (require) {
+import {expect} from 'chai';
+import testUtils from './utils/utils';
+import legend from '../plugins/legend';
+import trendline from '../plugins/trendline';
+import exportTo from '../plugins/export';
+import tauCharts from '../src/tau.charts';
 
-    var expect = require('chai').expect;
-    var testUtils = require('testUtils');
-    var legend = require('plugins/legend');
-    var trendline = require('plugins/trendline');
-    var exportTo = require('plugins/export');
-    var tauCharts = require('src/tau.charts');
     var chartTypes = tauCharts.api.chartTypesRegistry.getAllRegisteredTypes();
     var describeChart = testUtils.describeChart;
 
@@ -385,4 +384,3 @@ define(function (require) {
             autoWidth: false
         }
     );
-});

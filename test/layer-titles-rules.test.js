@@ -1,7 +1,6 @@
-define(function (require) {
-    var expect = require('chai').expect;
-    var LayerLabelsModel = require('src/elements/decorators/layer-labels-model').LayerLabelsModel;
-    var LayerLabelsRules = require('src/elements/decorators/layer-labels-rules').LayerLabelsRules;
+import {expect} from 'chai';
+import {LayerLabelsModel} from '../src/elements/decorators/layer-labels-model';
+import {LayerLabelsRules} from '../src/elements/decorators/layer-labels-rules';
 
     describe('LayerLabelsRules', function () {
 
@@ -444,4 +443,3 @@ define(function (require) {
             expect(m.label(rows[2])).to.equal('1', 'original label');
         });
     });
-});

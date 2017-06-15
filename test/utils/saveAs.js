@@ -1,4 +1,3 @@
-define(function() {
     var callbacksItems = {items:[function(){}]};
     var saveAs = function() {
         callbacksItems.items.forEach(function(item){
@@ -6,5 +5,4 @@ define(function() {
         });
     };
     saveAs.callbacks  = callbacksItems;
-    return saveAs;
-});
+export {saveAs};

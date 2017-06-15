@@ -1,6 +1,6 @@
 import * as d3 from 'd3';
 import * as utils from '../utils/utils';
-import topojson from 'topojson';
+import * as topojson from 'topojson';
 import {d3Labeler} from '../utils/d3-labeler';
 import {Element} from './element';
 

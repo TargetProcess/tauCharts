@@ -49,7 +49,7 @@ const mainConfig = {
 };
 
 const pluginsCommonConfig = {
-    exports: 'none',
+    exports: 'default',
     format: 'umd',
     useStrict: true,
     external: [
@@ -68,6 +68,7 @@ const pluginsCommonConfig = {
 
 const plugins = [
     'annotations',
+    'bar-as-span',
     'box-whiskers',
     'crosshair',
     ['export', {
@@ -83,12 +84,12 @@ const plugins = [
                 include: 'plugins/**/*.css'
             }),
             require('rollup-plugin-alias')({
-                'rgbcolor': 'bower_components/rgb-color/index.js',
+                'rgbcolor': 'bower_components/canvg/rgbcolor.js',
                 'stackblur': 'bower_components/canvg/StackBlur.js',
                 'canvg': 'bower_components/canvg/canvg.js',
                 'file-saver': 'bower_components/file-saver/FileSaver.js',
                 'fetch': 'bower_components/fetch/fetch.js',
-                'promise': 'bower_components/es6-promise/es6-promise.js'
+                'es6-promise': 'bower_components/es6-promise/es6-promise.js'
             })
         ].concat(pluginsCommonConfig.plugins)
     }],
@@ -172,7 +173,11 @@ module.exports = (gulp, {connect}) => {
                     {},
                     pluginsCommonConfig,
                     pluginConfig,
-                    {entry: `./plugins/${plugin}.js`}
+                    {
+                        entry: `./plugins/${plugin}.js`,
+                        moduleId: `taucharts-${plugin}`,
+                        moduleName: `taucharts${spinalCaseToCamelCase(plugin)}`
+                    }
                 ),
                 production: false
             });
@@ -184,3 +189,10 @@ module.exports = (gulp, {connect}) => {
 
     });
 };
+
+function spinalCaseToCamelCase(spinal) {
+    return spinal
+        .split('-')
+        .map((s) => s.slice(0, 1).toUpperCase() + s.slice(1))
+        .join('');
+}

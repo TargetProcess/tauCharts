@@ -1,7 +1,6 @@
-define(function(require){
-    var assert = require('chai').assert;
-    var expect = require('chai').expect;
-    var tauChart = require('src/tau.charts');
+import {assert, expect} from 'chai';
+import tauChart from '../src/tau.charts';
+
     describe('Invalid chart definition', function(){
         var testData = [
             {x: 1, y: 1, color: 'red', size: 6},
@@ -92,4 +91,3 @@ define(function(require){
             }).to.throw('There is more than one measure dimension for "y" axis');
         });
     });
-});

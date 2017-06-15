@@ -482,3 +482,5 @@ import * as d3 from 'd3';
     }
 
     tauCharts.api.plugins.add('tooltip', Tooltip);
+
+export default Tooltip;

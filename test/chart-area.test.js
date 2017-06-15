@@ -1,8 +1,8 @@
-define(function (require) {
-    var expect = require('chai').expect;
-    var schemes = require('schemes');
-    var tauChart = require('src/tau.charts');
-    var testUtils = require('testUtils');
+import {expect} from 'chai';
+import schemes from './utils/schemes';
+import tauChart from '../src/tau.charts';
+import testUtils from './utils/utils';
+
     var round = testUtils.roundNumbersInString;
 
     describe('Area plot chart', function () {
@@ -180,7 +180,7 @@ define(function (require) {
 
             area.renderTo(element, {width: 1000, height: 1000});
 
-            var svgPolygons = d3.selectAll('polygon')[0];
+            var svgPolygons = d3.selectAll('polygon').nodes();
 
             expect(svgPolygons.length).to.equal(3);
 
@@ -199,7 +199,7 @@ define(function (require) {
                 .to
                 .equal('0,1000 500,1000 1000,600 1000,600 500,600 0,600', 'B negative');
 
-            var points = d3.selectAll('circle')[0].map((node) => {
+            var points = d3.selectAll('circle').nodes().map((node) => {
                 var p = d3.select(node);
                 var x = p.attr('cx');
                 var y = p.attr('cy');
@@ -248,7 +248,7 @@ define(function (require) {
 
             area.renderTo(element, {width: 1000, height: 1000});
 
-            var svgPolygons = d3.selectAll('polygon')[0];
+            var svgPolygons = d3.selectAll('polygon').nodes();
 
             expect(svgPolygons.length).to.equal(3);
 
@@ -270,7 +270,7 @@ define(function (require) {
                 //.equal('400,0 0,500 0,1000 400,1000 400,500 400,0', 'B positive');
                 .equal('0,1000 0,500 400,0 400,0 400,500 400,1000', 'B positive');
 
-            var points = d3.selectAll('circle')[0].map((node) => {
+            var points = d3.selectAll('circle').nodes().map((node) => {
                 var p = d3.select(node);
                 var x = p.attr('cx');
                 var y = p.attr('cy');
@@ -284,4 +284,3 @@ define(function (require) {
                 .equal('[["400","1000"],["600","500"],["800","0"],["800","1000"],["1000","500"],["0","1000"],["0","500"]]');
         });
     });
-});

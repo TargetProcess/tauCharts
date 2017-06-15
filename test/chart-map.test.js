@@ -1,11 +1,9 @@
-define(function (require) {
-    var worldMap = require('json!src/addons/world-countries');
-    var theUKMap = require('json!src/addons/uk-subunits-places');
-    var expect = require('chai').expect;
-    var assert = require('chai').assert;
-    var schemes = require('schemes');
-    var tauChart = require('src/tau.charts');
-    var testUtils = require('testUtils');
+import worldMap from '../src/addons/world-countries';
+import theUKMap from '../src/addons/uk-subunits-places';
+import {assert, expect} from 'chai';
+import schemes from './utils/schemes';
+import tauChart from '../src/tau.charts';
+import testUtils from './utils/utils';
 
     describe('Map chart', function () {
 
@@ -383,4 +381,3 @@ define(function (require) {
             done();
         });
     });
-});

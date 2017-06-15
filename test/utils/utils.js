@@ -1,8 +1,7 @@
-define(function (require) {
-    var tauCharts = require('src/tau.charts'),
-        $ = require('jquery'),
-        utils = require('src/utils/utils').utils,
-        d3 = require('d3');
+import tauCharts from 'taucharts';
+import * as $ from 'jquery';
+import * as utils from '../../src/utils/utils';
+import * as d3 from 'd3';
 
     var testChartSettings = {
         getAxisTickLabelSize: function (text) {
@@ -71,15 +70,15 @@ define(function (require) {
     };
 
     function getDots() {
-        return d3.selectAll('.dot')[0];
+        return d3.selectAll('.dot').nodes();
     }
 
     function getLine() {
-        return d3.selectAll('.line')[0];
+        return d3.selectAll('.line').nodes();
     }
 
     function getArea() {
-        return d3.selectAll('.area')[0];
+        return d3.selectAll('.area').nodes();
     }
 
     function getGroupBar() {
@@ -234,7 +233,7 @@ define(function (require) {
         return el;
     }
 
-    return {
+export default {
         toLocalDate: toLocalDate,
         roundNumbersInString: roundNumbersInString,
         describePlot: describePlot,
@@ -259,4 +258,3 @@ define(function (require) {
         noScrollStyle,
         destroyCharts
     };
-});

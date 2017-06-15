@@ -17,8 +17,7 @@ interface AxisConfig {
     tickFormat?: (x) => string;
     tickSize?: number;
     tickPadding?: number;
-    hideText?: boolean;
-    hideLabel?: boolean;
+    gridOnly?: boolean;
 }
 
 interface GridConfig {
@@ -73,13 +72,11 @@ function createAxis(config: AxisConfig) {
         tickFormat,
         tickSize,
         tickPadding,
-        hideText,
-        hideLabel
+        gridOnly
     } = defaults(config, {
             tickSize: 6,
             tickPadding: 3,
-            hideLabel: false,
-            hideText: false
+            gridOnly: false
         });
 
     const isLinearScale = (scale.scaleType === 'linear');
@@ -95,7 +92,7 @@ function createAxis(config: AxisConfig) {
 
         var values = (scale.ticks ? scale.ticks(ticksCount) : scale.domain());
         if (scaleGuide.hideTicks) {
-            values = values.filter((d => d == 0));
+            values = gridOnly ? values.filter((d => d == 0)) : [];
         }
         const format = (tickFormat == null ? (scale.tickFormat ? scale.tickFormat(ticksCount) : identity) : tickFormat);
         const spacing = (Math.max(tickSize, 0) + tickPadding);
@@ -123,7 +120,8 @@ function createAxis(config: AxisConfig) {
         }
 
         function drawDomain() {
-            take(selection.selectAll('.domain').data([null]))
+            const domainLineData = scaleGuide.hideTicks || scaleGuide.hide ? [] : [null];
+            take(selection.selectAll('.domain').data(domainLineData))
                 .next((path) => {
                     return path.merge(
                         path.enter().insert('path', '.tick')
@@ -447,7 +445,7 @@ function createAxis(config: AxisConfig) {
                 const side = (dir > 0 ? 'right' : 'left');
                 const tx = position(value);
                 const limit = available[side];
-                const diff = (rect.width / 2 - limit);
+                const diff = Math.ceil(rect.width / 2 - limit + 1); // 1px rounding fix
                 node.setAttribute('dx', String(diff > 0 ? -dir * diff : 0));
             };
             const tick0 = text.filter((d) => d === value0).node();
@@ -511,19 +509,17 @@ function createAxis(config: AxisConfig) {
                 .remove();
         }
 
-        if (!hideText) {
+        if (!gridOnly) {
             drawDomain();
         }
         const ticks = createTicks();
         updateTicks(ticks);
         drawLines(ticks);
-        if (isOrdinalScale && hideText) { // Todo: Explicitly determine if grid 
+        if (isOrdinalScale && gridOnly) { // Todo: Explicitly determine if grid 
             drawExtraOrdinalLine();
         }
-        if (!hideText) {
+        if (!gridOnly && !labelGuide.hide) {
             drawText(ticks);
-        }
-        if (!hideLabel) {
             drawAxisLabel();
         }
 
@@ -540,7 +536,6 @@ export function cartesianGrid(config: GridConfig) {
         scaleGuide: config.scaleGuide,
         ticksCount: config.ticksCount,
         tickSize: config.tickSize,
-        hideText: true,
-        hideLabel: true
+        gridOnly: true
     });
 }

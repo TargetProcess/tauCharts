@@ -1,8 +1,7 @@
-define(function (require) {
-    var tauCharts = require('src/tau.charts');
-    var expect = require('chai').expect;
-    var testUtils = require('testUtils');
-    var Converter = require('src/spec-converter').SpecConverter;
+import tauCharts from '../src/tau.charts';
+import {expect} from 'chai';
+import testUtils from './utils/utils';
+import {SpecConverter as Converter} from '../src/spec-converter';
 
     describe('spec-converter', function () {
 
@@ -435,4 +434,3 @@ define(function (require) {
             expect(x1PeriodScale.period).to.equals(null);
         });
     });
-});

@@ -1,10 +1,9 @@
-define(function (require) {
+import {assert} from 'chai';
+import tauCharts from '../src/tau.charts';
+import BarAsSpanPlugin from '../plugins/bar-as-span';
 
-    var assert = require('chai').assert;
-    var tauCharts = require('src/tau.charts');
-    var BarAsSpanPlugin = require('plugins/bar-as-span');
-
-    var noScrollStyle = require('testUtils').noScrollStyle;
+import testUtils from './utils/utils';
+const {noScrollStyle} = testUtils;
 
     describe('Bar as Span plugin', function () {
 
@@ -274,4 +273,3 @@ define(function (require) {
 
         });
     });
-});

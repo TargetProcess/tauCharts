@@ -1,11 +1,10 @@
 // jscs:disable disallowQuotedKeysInObjects
 // jscs:disable validateQuoteMarks
-
-var expect = require('chai').expect;
-var schemes = require('schemes');
-var tauCharts = require('src/tau.charts');
-var testUtils = require('testUtils');
-var {TauChartError, errorCodes} = require('testUtils');
+import {expect} from 'chai';
+import schemes from './utils/schemes';
+import tauCharts from '../src/tau.charts';
+import testUtils from './utils/utils';
+const {TauChartError, errorCodes} = testUtils;
 
 // NOTE: Bars are now rendered into single container.
 var getGroupBar = function (div) {
@@ -714,7 +713,7 @@ describe('ELEMENT.INTERVAL.STACKED', function () {
         var svg0 = chart0.getSVG();
         expect(svg0.querySelectorAll('.bar').length).to.equals(3);
         var tempOrder = [];
-        d3.select(svg0).selectAll('.bar')[0].forEach(function (rect) {
+        d3.select(svg0).selectAll('.bar').nodes().forEach(function (rect) {
             var d3Rect = d3.select(rect);
             var d = d3Rect.data()[0];
             var y = d3Rect.attr('y');
@@ -747,7 +746,7 @@ describe('ELEMENT.INTERVAL.STACKED', function () {
         var svg0 = chart0.getSVG();
         expect(svg0.querySelectorAll('.bar').length).to.equals(3);
         var tempOrder = [];
-        d3.select(svg0).selectAll('.bar')[0].forEach(function (rect) {
+        d3.select(svg0).selectAll('.bar').nodes().forEach(function (rect) {
             var d3Rect = d3.select(rect);
             var d = d3Rect.data()[0];
             var y = d3Rect.attr('y');
@@ -780,7 +779,7 @@ describe('ELEMENT.INTERVAL.STACKED', function () {
         var svg0 = chart0.getSVG();
         expect(svg0.querySelectorAll('.bar').length).to.equals(6);
         var ws = [];
-        d3.select(svg0).selectAll('.bar')[0].forEach(function (rect) {
+        d3.select(svg0).selectAll('.bar').nodes().forEach(function (rect) {
             var d3Rect = d3.select(rect);
             var w = d3Rect.attr('width');
             ws.push(w);

@@ -1,6 +1,6 @@
-define(function (require) {
-    var Emitter = require('src/event').Emitter;
-    var assert = require('chai').assert;
+import {Emitter} from '../src/event';
+import {assert} from 'chai';
+
     describe('event emitter', function () {
         var emitter = new Emitter();
         beforeEach(function () {
@@ -56,4 +56,3 @@ define(function (require) {
 
         });
     });
-});

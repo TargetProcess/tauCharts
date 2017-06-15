@@ -1,5 +1,6 @@
 // jscs:disable *
 import tauCharts from 'taucharts';
+import * as d3 from 'd3';
 
     var utils = tauCharts.api.utils;
     var pluginsSDK = tauCharts.api.pluginsSDK;
@@ -616,3 +617,5 @@ import tauCharts from 'taucharts';
 
     tauCharts.api.plugins.add('layers', Layers);
 // jscs:enable *
+
+export default Layers;

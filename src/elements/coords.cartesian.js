@@ -102,8 +102,8 @@ export class Cartesian extends Element {
         if (guide.autoLayout === 'extract-axes') {
             var containerHeight = unit.options.containerHeight;
             var diff = (containerHeight - (unit.options.top + unit.options.height));
-            guide.x.hide = (Math.floor(diff) > 0);
-            guide.y.hide = (Math.floor(unit.options.left) > 0);
+            guide.x.hide = (guide.x.hide || (Math.floor(diff) > 0));
+            guide.y.hide = (guide.y.hide || (Math.floor(unit.options.left) > 0));
         }
 
         var options = this.config.options;

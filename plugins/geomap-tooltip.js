@@ -211,3 +211,5 @@ import tauCharts from 'taucharts';
     }
 
     tauCharts.api.plugins.add('geomap-tooltip', ChartGeoMapTooltip);
+
+export default ChartGeoMapTooltip;

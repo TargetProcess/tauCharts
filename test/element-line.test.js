@@ -1,13 +1,10 @@
-define(function (require) {
-    var expect = require('chai').expect;
-    var schemes = require('schemes');
 
-    var testUtils = require('testUtils');
-    var assert = require('chai').assert;
-    var getLine = testUtils.getLine;
-    var attrib = testUtils.attrib;
-    var tauChart = require('src/tau.charts');
-    var cssClassMap = require('src/utils/css-class-map');
+import {assert, expect} from 'chai';
+import schemes from './utils/schemes';
+import testUtils from './utils/utils';
+const {getLine, attrib} = testUtils;
+import tauChart from '../src/tau.charts';
+import * as cssClassMap from '../src/utils/css-class-map';
     describe("ELEMENT.LINE", function () {
 
         var testData = [
@@ -98,7 +95,7 @@ define(function (require) {
 
         it("should render poin element", function () {
             var dotLines = d3.selectAll('.dot-line');
-            assert.equal(dotLines.length, 1, 'should draw point');
+            assert.equal(dotLines.size(), 1, 'should draw point');
         });
     });
 
@@ -188,14 +185,14 @@ define(function (require) {
             chart.renderTo(element, {width: 800, height: 800});
 
             var lines = d3.selectAll('.line');
-            expect(lines[0].length).to.be.equal(1);
+            expect(lines.size()).to.be.equal(1);
             var path = lines.select('path');
             expect(str(d3.rgb(path.attr('stroke'))))
                 .to
                 .be
                 .equal(str(d3.rgb('rgb(171, 205, 239)')), 'stroke');
             var labels = d3.selectAll('.i-role-label');
-            expect(labels[0].length).to.be.equal(5);
+            expect(labels.size()).to.be.equal(5);
             expect(str(d3.rgb(labels.style('fill'))))
                 .to
                 .be
@@ -232,7 +229,7 @@ define(function (require) {
                 return this.getComputedTextLength() > 0;
             });
             expect(visible.size()).to.be.equal(2);
-            var texts = visible[0].map(t => t.textContent);
+            var texts = visible.nodes().map(t => t.textContent);
             expect(texts.indexOf('Manchester') >= 0).to.be.true;
             expect(texts.indexOf('Chelsea') >= 0).to.be.true;
 
@@ -486,4 +483,3 @@ define(function (require) {
             });
         }
     );
-});

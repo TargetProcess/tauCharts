@@ -214,6 +214,7 @@ export interface ScaleConfig {
     ratio?: RatioArg;
     niceInterval?: string;
     utcTime?: boolean;
+    func?: string;
     period?: string;
     georole?: string;
 }

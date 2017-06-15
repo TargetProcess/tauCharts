@@ -1,8 +1,7 @@
-define(function (require) {
-    var expect = require('chai').expect;
-    var schemes = require('schemes');
-    var tauChart = require('src/tau.charts');
-    var plugin = require('plugins/parallel-brushing');
+import {expect} from 'chai';
+import schemes from './utils/schemes';
+import tauChart from '../src/tau.charts';
+import plugin from '../plugins/parallel-brushing';
 
     describe('Parallel-brushing plugin', function () {
 
@@ -44,9 +43,7 @@ define(function (require) {
             var svg = d3.select(chart.getSVG());
 
             var elems = svg.selectAll('.foreground');
-            expect(elems.length).to.equal(1);
-            expect(elems[0].length).to.equal(3);
-            expect(elems[0].filter((n) => (d3.select(n).style('visibility') === 'hidden')).length).to.equal(2);
+            expect(elems.size()).to.equal(3);
+            expect(elems.nodes().filter((n) => (d3.select(n).style('visibility') === 'hidden')).length).to.equal(2);
         });
     });
-});

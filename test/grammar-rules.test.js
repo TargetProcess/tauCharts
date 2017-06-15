@@ -1,10 +1,8 @@
-define(function (require) {
-
-    var expect = require('chai').expect;
-    var GrammarRegistry = require('src/grammar-registry').GrammarRegistry;
-    var SizeScale = require('src/scales/size').SizeScale;
-    var LinearScale = require('src/scales/linear').LinearScale;
-    var OrdinalScale = require('src/scales/ordinal').OrdinalScale;
+import {expect} from 'chai';
+import {GrammarRegistry} from '../src/grammar-registry';
+import {SizeScale} from '../src/scales/size';
+import {LinearScale} from '../src/scales/linear';
+import {OrdinalScale} from '../src/scales/ordinal';
 
     describe('Grammar', function () {
 
@@ -67,4 +65,3 @@ define(function (require) {
             expect(JSON.stringify(sConfig)).to.equal(sConfigOriginal);
         });
     });
-});

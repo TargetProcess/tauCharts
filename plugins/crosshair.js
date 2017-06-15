@@ -440,3 +440,5 @@ const svgNS = 'http://www.w3.org/2000/svg';
     }
 
     tauCharts.api.plugins.add('crosshair', Crosshair);
+
+export default Crosshair;

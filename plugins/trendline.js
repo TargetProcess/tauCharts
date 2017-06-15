@@ -594,3 +594,5 @@ import * as d3 from 'd3';
     }
 
     tauCharts.api.plugins.add('trendline', trendline);
+
+export default trendline;

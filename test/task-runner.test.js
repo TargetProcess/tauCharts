@@ -1,6 +1,5 @@
-define(function (require) {
-    var expect = require('chai').expect;
-    var TaskRunner = require('src/charts/task-runner').default;
+import {expect} from 'chai';
+import TaskRunner from '../src/charts/task-runner';
 
     describe('Task Runner', function () {
 
@@ -159,4 +158,3 @@ define(function (require) {
             }).to.throw('Task Runner is already stopped');
         });
     });
-});
