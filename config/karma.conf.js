@@ -135,7 +135,7 @@ function getTestWebpackConfig() {
                 canvg: 'bower_components/canvg/canvg.js',
                 'file-saver': 'test/utils/saveAs.js',
                 fetch: 'bower_components/fetch/fetch.js',
-                promise: 'bower_components/es6-promise/es6-promise.js'
+                'es6-promise': 'bower_components/es6-promise/es6-promise.js'
             },
             extensions: ['.js', '.json', '.ts']
         },

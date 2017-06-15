@@ -31,7 +31,7 @@ import './element-line.test.js';
 import './element-path.test.js';
 import './element-point.test.js';
 import './event.test.js';
-// import './export-plugin.test.js'; // fails
+import './export-plugin.test.js';
 import './formatter-registry.test.js';
 import './grammar-rules.test.js';
 import './layer-titles-rules.test.js';

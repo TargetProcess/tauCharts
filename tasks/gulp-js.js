@@ -89,7 +89,7 @@ const plugins = [
                 'canvg': 'bower_components/canvg/canvg.js',
                 'file-saver': 'bower_components/file-saver/FileSaver.js',
                 'fetch': 'bower_components/fetch/fetch.js',
-                'promise': 'bower_components/es6-promise/es6-promise.js'
+                'es6-promise': 'bower_components/es6-promise/es6-promise.js'
             })
         ].concat(pluginsCommonConfig.plugins)
     }],
