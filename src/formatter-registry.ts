@@ -15,6 +15,9 @@ const removeRedundantZeros = (() => {
 var FORMATS_MAP: {[format: string]: (x) => string} = {
 
     'x-num-auto': function (x) {
+        if (isNaN(x)) {
+            return 'NaN';
+        }
         var abs = Math.abs(x);
         var result = removeRedundantZeros(
             (abs < 1) ?

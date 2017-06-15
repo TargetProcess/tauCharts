@@ -44,7 +44,7 @@ import './quick-filter-plugin.test.js';
 import './scales-factory.test.js';
 import './size.test.js';
 import './spec-converter.test.js';
-// import './spec-transform-auto-layout.test.js'; // fails
+import './spec-transform-auto-layout.test.js';
 import './spec-transform-extract-axes.test.js';
 import './task-runner.test.js';
 import './tooltip-plugin.test.js';
