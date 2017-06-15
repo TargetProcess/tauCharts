@@ -71,7 +71,7 @@
   "scripts": {
     "dev": "gulp watch",
     "build": "gulp build",
-    "test": "gulp build & karma start config/karma.conf.js",
+    "test": "gulp build && karma start config/karma.conf.js",
     "prepublish": "bower install"
   },
   "_old_scripts": {
