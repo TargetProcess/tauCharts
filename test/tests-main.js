@@ -38,7 +38,7 @@ import './layer-titles-rules.test.js';
 import './layers-plugin.test.js';
 import './legend-plugin.test.js';
 import './parallel-brushing-plugin.test.js';
-// import './plot.test.js'; // fails
+import './plot.test.js';
 import './pluginsdk.test.js';
 import './quick-filter-plugin.test.js';
 import './scales-factory.test.js';

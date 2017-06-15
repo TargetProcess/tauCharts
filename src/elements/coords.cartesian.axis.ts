@@ -445,7 +445,7 @@ function createAxis(config: AxisConfig) {
                 const side = (dir > 0 ? 'right' : 'left');
                 const tx = position(value);
                 const limit = available[side];
-                const diff = (rect.width / 2 - limit);
+                const diff = Math.ceil(rect.width / 2 - limit + 1); // 1px rounding fix
                 node.setAttribute('dx', String(diff > 0 ? -dir * diff : 0));
             };
             const tick0 = text.filter((d) => d === value0).node();

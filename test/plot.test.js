@@ -853,7 +853,6 @@ import {range} from '../src/utils/utils';
             testDiv.style.width = '800px';
             testDiv.style.height = '600px';
 
-            debugger;
             var chart = new tauChart.Chart({
                 type: 'line',
                 guide: {

@@ -261,9 +261,6 @@ import * as d3 from 'd3';
                         img.onload = function () {
                             window.print();
                         };
-                    })
-                    .catch((err) => {
-                        debugger;
                     });
             },
 

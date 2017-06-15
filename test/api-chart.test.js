@@ -394,7 +394,7 @@ import layers from '../plugins/layers';
             });
             chart.renderTo(container);
             var svg = chart.getSVG();
-            expect(parseInt(svg.getAttribute('height')) + scrollbar.height).to.be.closeTo(expectHeight, 10);
+            expect(parseInt(svg.getAttribute('height')) + scrollbar.height).to.be.closeTo(expectHeight, 20);
             chart.destroy();
             document.body.removeChild(container);
         };
