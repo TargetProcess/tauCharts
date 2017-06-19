@@ -11,7 +11,6 @@
     }
 })(function (tauCharts) {
 
-    var _ = tauCharts.api._;
     var d3 = tauCharts.api.d3;
     var createUpdateFunc = tauCharts.api.d3_animationInterceptor;
 
@@ -25,13 +24,13 @@
         rect.exit()
             .remove();
         rect.call(createUpdateFunc(localSpeed, null, props));
-        rect.enter()
+        var enter = rect.enter()
             .append('rect')
-            .attr({class: id})
+            .attr('class', id)
             .style('stroke-width', 0)
             .call(createUpdateFunc(localSpeed, {width: 0}, props));
 
-        return rect;
+        return rect.merge(enter);
     };
 
     tauCharts.api.unitsRegistry.reg(
@@ -110,9 +109,9 @@
                     });
                 };
 
-                var drawCover = function () {
+                var drawCover = function (selection) {
 
-                    var that = this;
+                    var that = selection;
 
                     drawRect(that, 'cursor', {
                         class: 'cursor',
@@ -261,7 +260,7 @@
                     specRef,
                     function (unit, parentUnit) {
 
-                        if (unit.type !== 'ELEMENT.AREA') {
+                        if (unit.type.indexOf('ELEMENT.') !== 0) {
                             return;
                         }
 
@@ -275,13 +274,13 @@
 
             formatRange: function (dateRange) {
 
-                var d0 = d3.time.format('%d')(dateRange[0]);
-                var d1 = d3.time.format('%d')(dateRange[1]);
+                var d0 = d3.timeFormat('%d')(dateRange[0]);
+                var d1 = d3.timeFormat('%d')(dateRange[1]);
 
-                var m0 = d3.time.format('%b')(dateRange[0]);
-                var m1 = d3.time.format('%b')(dateRange[1]);
+                var m0 = d3.timeFormat('%b')(dateRange[0]);
+                var m1 = d3.timeFormat('%b')(dateRange[1]);
 
-                var y1 = d3.time.format('%Y')(dateRange[1]);
+                var y1 = d3.timeFormat('%Y')(dateRange[1]);
                 var diff = Math.round((dateRange[1] - dateRange[0]) / 1000 / 60 / 60 / 24);
 
                 var str = [];
@@ -315,7 +314,7 @@
                         '</td>',
                         '<td style="padding-left: 5px; text-align: right;color:' + (s.diff > 0 ? 'green' : 'red') + '">',
                         '<div style="padding:2px 0 2px 2px;">',
-                        (s.diff > 0 ? '&uarr;' : (s.diff < 0 ? '&darr;' : '')),
+                        (s.diff > 0 ? '&#x25B2;' : (s.diff < 0 ? '&#x25BC;' : '')),
                         (s.diff === 0 ? '' : ('&nbsp;' + Math.abs(s.diff))),
                         '</div>',
                         '</td>',
@@ -2008,4 +2007,4 @@ function splitEvenly(domain, parts) {
         return min + segment * (n + 1);
     });
     return [min].concat(chunks).concat(max);
-};
+}

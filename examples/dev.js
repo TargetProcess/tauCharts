@@ -14,6 +14,7 @@
             'bar-labels',
             'big-data',
             'category-labels-overflow',
+            'cumulative-flow',
             'horizontal-scroll',
             'legend-flip',
             'linear-bars',

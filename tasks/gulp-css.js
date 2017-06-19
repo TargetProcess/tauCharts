@@ -7,6 +7,7 @@ const plugins = [
     'annotations',
     'crosshair',
     'export',
+    'interval-highlight',
     'legend',
     'tooltip',
     'trendline',

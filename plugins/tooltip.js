@@ -5,14 +5,7 @@ import * as d3 from 'd3';
     var pluginsSDK = tauCharts.api.pluginsSDK;
     var TARGET_SVG_CLASS = 'graphical-report__tooltip-target';
 
-    var escapeHtml = function (x) {
-        return String(x)
-            .replace(/&/g, '&amp;')
-            .replace(/</g, '&lt;')
-            .replace(/>/g, '&gt;')
-            .replace(/"/g, '&quot;')
-            .replace(/'/g, '&#039;');
-    };
+    var escapeHtml = utils.escapeHtml;
 
     function Tooltip(xSettings) {
 

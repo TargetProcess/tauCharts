@@ -96,6 +96,7 @@ const plugins = [
     'floating-axes',
     'geomap-legend',
     'geomap-tooltip',
+    'interval-highlight',
     'layers',
     'legend',
     'parallel-brushing',

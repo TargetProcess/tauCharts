@@ -1,0 +1,45 @@
+@interval-highlight_positive: green;
+@interval-highlight_negative: red;
+
+.cfd-tooltip {
+    padding: 15px 15px 12px;
+
+    &__header {
+        margin: 0 0 8px;
+
+        &__date-range {
+            font-weight: 600;
+        }
+    }
+
+    &__item {
+        &__value {
+            text-indent: 4px;
+            margin: 0 0 1px 10px;
+            padding: 3px 0 3px 1px;
+        }
+
+        &__arrow {
+            padding-left: 5px;
+            text-align: right;
+
+            &_positive {
+                color: @interval-highlight_positive;
+            }
+
+            &_negative {
+                color: @interval-highlight_negative;
+            }
+
+            &__val {
+                padding: 1px 0 1px 3px;
+            }
+            &__dir {
+                font-size: 1.2em;
+                position: relative;
+                top: -1px;
+                margin-left: 2px;
+            }
+        }
+    }
+}
