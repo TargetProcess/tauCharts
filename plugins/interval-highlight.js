@@ -1,10 +1,11 @@
 import {api} from 'taucharts';
 import * as d3 from 'd3';
 const {
+    utils,
     pluginsSDK,
     d3_animationInterceptor: createUpdateFunc
 } = api;
-const html = api.utils.xml;
+const html = utils.xml;
 
 const tooltipTemplate = ({dateRange, dateDiff, formatDays, items}) => (
     html('div', {class: 'cfd-tooltip'},
@@ -13,8 +14,7 @@ const tooltipTemplate = ({dateRange, dateDiff, formatDays, items}) => (
                 dateRange
             ),
             html('span',
-                dateDiff,
-                formatDays
+                `(${dateDiff} ${formatDays})`
             )
         ),
         html('table',
@@ -47,9 +47,9 @@ const tooltipItemTemplate = ({name, width, color, diff, value}) => (
                 ].join(' '),
             },
             html('div', { class: 'cfd-tooltip__item__arrow__val' },
-                (diff === 0 ? '' : String(parseFloat((Math.abs(diff)).toFixed(2)))),
                 html('span', { class: 'cfd-tooltip__item__arrow__dir' },
-                    (diff > 0 ? '&#x25B2;' : diff < 0 ? '&#x25BC;' : '')
+                    (diff > 0 ? '&#x25B2;' : diff < 0 ? '&#x25BC;' : ''),
+                    (diff === 0 ? '' : String(parseFloat((Math.abs(diff)).toFixed(2))))
                 )
             )
         )
@@ -226,7 +226,7 @@ const drawCoverFactory = ({
         });
     };
 
-const ELEMENT_CFD = 'ELEMENT.HIGHLIGHT';
+const ELEMENT_CFD = 'ELEMENT.INTERVAL_HIGHLIGHT';
 
 const IntervalHighlight = {
     addInteraction() {
@@ -348,6 +348,10 @@ const IntervalTooltip = (pluginSettings = {}) => {
                 over.guide = over.guide || {};
                 over.guide.cursorColor = pluginSettings.cursorColor;
 
+                unit.guide = utils.defaults(unit.guide || {}, {
+                    showAnchors: 'never'
+                });
+
                 parentUnit.units.push(over);
             });
         },
@@ -363,10 +367,17 @@ const IntervalTooltip = (pluginSettings = {}) => {
                 state.width = 80 * state.value / max;
             });
 
+            var formatDays = 'day';
+            var diffStr = String(dateDiff);
+            if (diffStr[diffStr.length - 1] !== '1') {
+                formatDays += 's';
+            }
+
             return tooltipTemplate({
                 dateRange: formattedDateRange,
                 dateDiff,
-                items: states
+                items: states,
+                formatDays
             });
         },
 
