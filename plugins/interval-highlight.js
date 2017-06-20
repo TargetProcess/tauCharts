@@ -5,56 +5,6 @@ const {
     pluginsSDK,
     d3_animationInterceptor: createUpdateFunc
 } = api;
-const html = utils.xml;
-
-const tooltipTemplate = ({dateRange, dateDiff, formatDays, items}) => (
-    html('div', {class: 'interval-highlight-tooltip'},
-        html('div', {class: 'interval-highlight-tooltip__header'},
-            html('span', {class: 'interval-highlight-tooltip__header__date-range'},
-                dateRange
-            ),
-            html('span',
-                `(${dateDiff} ${formatDays})`
-            )
-        ),
-        html('table',
-            {
-                cellpadding: 0,
-                cellspacing: 0,
-                border: 0
-            },
-            ...items.map(tooltipItemTemplate)
-        )
-    )
-);
-const tooltipItemTemplate = ({name, width, color, diff, value}) => (
-    html('tr', {class: 'interval-highlight-tooltip__item'},
-        html('td', name),
-        html('td',
-            html('div',
-                {
-                    class: 'interval-highlight-tooltip__item__value',
-                    style: `width: ${width}px; background-color: ${color};`
-                },
-                String(parseFloat((value).toFixed(2)))
-            )
-        ),
-        html('td',
-            {
-                class: [
-                    'interval-highlight-tooltip__item__arrow',
-                    `interval-highlight-tooltip__item__arrow_${diff > 0 ? 'positive' : 'negative'}`
-                ].join(' '),
-            },
-            html('div', { class: 'interval-highlight-tooltip__item__arrow__val' },
-                html('span', { class: 'interval-highlight-tooltip__item__arrow__dir' },
-                    (diff > 0 ? '&#x25B2;' : diff < 0 ? '&#x25BC;' : ''),
-                    (diff === 0 ? '' : String(parseFloat((Math.abs(diff)).toFixed(2))))
-                )
-            )
-        )
-    )
-);
 
 const defaultRangeFormatter = function formatRange(dateRange) {
 
@@ -72,25 +22,6 @@ const defaultRangeFormatter = function formatRange(dateRange) {
 
     return `${date0}&ndash;${date1}`;
 };
-
-function drawRect(container, id, props) {
-
-    const localSpeed = props.hasOwnProperty('speed') ? props.speed : 0;
-
-    const rect = container
-        .selectAll('.' + id)
-        .data([1]);
-    rect.exit()
-        .remove();
-    rect.call(createUpdateFunc(localSpeed, null, props));
-    const enter = rect.enter()
-        .append('rect')
-        .attr('class', id)
-        .style('stroke-width', 0)
-        .call(createUpdateFunc(localSpeed, {width: 0}, props));
-
-    return rect.merge(enter);
-}
 
 function findRangeValue(xIndex, x) {
     const nextItem = xIndex.find((r) => r.pos >= x) || xIndex[xIndex.length - 1];
@@ -110,125 +41,28 @@ function areRangesEqual(r1, r2) {
     );
 }
 
-const drawCoverFactory = ({
-    cfg,
-    plugin,
-    screenModel,
-    node,
-    data,
-    xIndex
-}) => function(container) {
+function drawRect(container, className, props) {
 
-        drawRect(container, 'interval-highlight__cursor', {
-            class: 'interval-highlight__cursor',
-            x: 0,
-            y: 0,
-            height: cfg.options.height,
-            width: 0,
-            fill: cfg.guide.cursorColor,
-            opacity: 0.25,
-            speed: 0
-        });
+    const animationSpeed = props.hasOwnProperty('animationSpeed') ? props.animationSpeed : 0;
 
-        const rect = drawRect(container, 'interval-highlight__cover-rect', {
-            class: 'interval-highlight__cover-rect',
-            x: 0,
-            y: 0,
-            width: cfg.options.width,
-            height: cfg.options.height,
-            opacity: 0,
-            cursor: 'pointer',
-            speed: 0
-        });
+    const rect = container
+        .selectAll(`.${className}`)
+        .data([1]);
+    rect.exit()
+        .remove();
+    rect.call(createUpdateFunc(animationSpeed, null, props));
+    const enter = rect.enter()
+        .append('rect')
+        .attr('class', className)
+        .call(createUpdateFunc(animationSpeed, {width: 0}, props));
 
-        rect.on('mouseleave', () => {
-            setTimeout(() => {
-                if (!plugin.freeze) {
-                    node.fire('range-blur');
-                }
-            }, 100);
-        });
-
-        rect.on('mousemove', function() {
-            const mouseCoords = d3.mouse(this);
-            const e = {
-                x: mouseCoords[0],
-                y: mouseCoords[1],
-                pageX: d3.event.pageX,
-                pageY: d3.event.pageY
-            };
-
-            const range = findRangeValue(xIndex, e.x);
-
-            if (areRangesEqual(plugin.activeRange, range)) {
-
-                node.fire('range-active', {
-                    data: range,
-                    event: e
-                });
-
-                return;
-            }
-
-            plugin.activeRange = range;
-
-            const prevX = screenModel.model.scaleX(range[0]);
-            const nextX = screenModel.model.scaleX(range[1]);
-
-            drawRect(container, 'interval-highlight__cursor', {
-                x: prevX,
-                width: nextX - prevX,
-                speed: 0
-            });
-
-            node.fire('range-changed', {
-                data: range,
-                event: e
-            });
-        });
-
-        rect.on('click', function() {
-            const mouseCoords = d3.mouse(this);
-            const e = {
-                x: mouseCoords[0],
-                y: mouseCoords[1],
-                pageX: d3.event.pageX,
-                pageY: d3.event.pageY
-            };
-
-            const range = findRangeValue(xIndex, e.x);
-            const [prevValue, nextValue] = range;
-            const nextValues = filterValuesStack(data, screenModel, nextValue);
-            const prevValues = filterValuesStack(data, screenModel, prevValue);
-
-            const propY = screenModel.model.scaleY.dim;
-            const propCategory = screenModel.model.scaleColor.dim;
-
-            const prevStack = prevValues.reduce(
-                (memo, item) => {
-                    memo[item[propCategory]] = item[propY];
-                    return memo;
-                },
-                {date: prevValue});
-
-            const nextStack = nextValues.reduce(
-                (memo, item) => {
-                    memo[item[propCategory]] = item[propY];
-                    return memo;
-                },
-                {date: nextValue});
-
-            node.fire('range-focus', {
-                data: nextStack,
-                prev: prevStack,
-                event: e
-            });
-        });
-    };
+    return rect.merge(enter);
+}
 
 const ELEMENT_HIGHLIGHT = 'ELEMENT.INTERVAL_HIGHLIGHT';
 
 const IntervalHighlight = {
+
     addInteraction() {
         const node = this.node();
         this.cover = null;
@@ -286,12 +120,118 @@ const IntervalHighlight = {
         const data = this.prepareData(node.data(), screenModel);
         const xIndex = this.createXIndex(data, screenModel);
 
-        const drawCover = drawCoverFactory({plugin: this, cfg, screenModel, data, xIndex, node});
+        const drawCover = (selection) => {
+
+            const element = this;
+
+            drawRect(selection, 'interval-highlight__cursor', {
+                class: 'interval-highlight__cursor',
+                x: 0,
+                y: 0,
+                width: 0,
+                height: cfg.options.height,
+                animationSpeed: 0
+            });
+
+            const rect = drawRect(selection, 'interval-highlight__cover-rect', {
+                class: 'interval-highlight__cover-rect',
+                x: 0,
+                y: 0,
+                width: cfg.options.width,
+                height: cfg.options.height,
+                animationSpeed: 0
+            });
+
+            // Todo: Use chart pointer events.
+
+            rect.on('mouseleave', () => {
+                setTimeout(() => {
+                    if (!element.freeze) {
+                        node.fire('range-blur');
+                    }
+                }, 100);
+            });
+
+            rect.on('mousemove', function() {
+                const mouseCoords = d3.mouse(this);
+                const e = {
+                    x: mouseCoords[0],
+                    y: mouseCoords[1],
+                    pageX: d3.event.pageX,
+                    pageY: d3.event.pageY
+                };
+
+                const range = findRangeValue(xIndex, e.x);
+
+                if (areRangesEqual(element.activeRange, range)) {
+
+                    node.fire('range-active', {
+                        data: range,
+                        event: e
+                    });
+
+                    return;
+                }
+
+                element.activeRange = range;
+
+                const prevX = screenModel.model.scaleX(range[0]);
+                const nextX = screenModel.model.scaleX(range[1]);
+
+                drawRect(selection, 'interval-highlight__cursor', {
+                    x: prevX,
+                    width: nextX - prevX,
+                    animationSpeed: 0
+                });
+
+                node.fire('range-changed', {
+                    data: range,
+                    event: e
+                });
+            });
+
+            rect.on('click', function() {
+                const mouseCoords = d3.mouse(this);
+                const e = {
+                    x: mouseCoords[0],
+                    y: mouseCoords[1],
+                    pageX: d3.event.pageX,
+                    pageY: d3.event.pageY
+                };
+
+                const range = findRangeValue(xIndex, e.x);
+                const [prevValue, nextValue] = range;
+                const nextValues = filterValuesStack(data, screenModel, nextValue);
+                const prevValues = filterValuesStack(data, screenModel, prevValue);
+
+                const propY = screenModel.model.scaleY.dim;
+                const propCategory = screenModel.model.scaleColor.dim;
+
+                const prevStack = prevValues.reduce(
+                    (memo, item) => {
+                        memo[item[propCategory]] = item[propY];
+                        return memo;
+                    },
+                    {date: prevValue});
+
+                const nextStack = nextValues.reduce(
+                    (memo, item) => {
+                        memo[item[propCategory]] = item[propY];
+                        return memo;
+                    },
+                    {date: nextValue});
+
+                node.fire('range-focus', {
+                    data: nextStack,
+                    prev: prevStack,
+                    event: e
+                });
+            });
+        };
 
         const cover = container
             .selectAll('.interval-highlight__cover')
             .data([1]);
-        this.cover = cover;
         cover
             .exit()
             .remove();
@@ -302,6 +242,8 @@ const IntervalHighlight = {
             .append('g')
             .attr('class', 'interval-highlight__cover')
             .call(drawCover);
+
+        this.cover = cover;
     }
 };
 
@@ -309,6 +251,57 @@ api.unitsRegistry.reg(
     ELEMENT_HIGHLIGHT,
     IntervalHighlight,
     'ELEMENT.GENERIC.CARTESIAN');
+
+const html = utils.xml;
+
+const tooltipTemplate = ({dateRange, diffDays, items}) => (
+    html('div', {class: 'interval-highlight-tooltip'},
+        html('div', {class: 'interval-highlight-tooltip__header'},
+            html('span', {class: 'interval-highlight-tooltip__header__date-range'},
+                dateRange
+            ),
+            html('span',
+                diffDays
+            )
+        ),
+        html('table',
+            {
+                cellpadding: 0,
+                cellspacing: 0,
+                border: 0
+            },
+            ...items.map(tooltipItemTemplate)
+        )
+    )
+);
+const tooltipItemTemplate = ({name, width, color, diff, value}) => (
+    html('tr', {class: 'interval-highlight-tooltip__item'},
+        html('td', name),
+        html('td',
+            html('div',
+                {
+                    class: 'interval-highlight-tooltip__item__value',
+                    style: `width: ${width}px; background-color: ${color};`
+                },
+                String(parseFloat((value).toFixed(2)))
+            )
+        ),
+        html('td',
+            {
+                class: [
+                    'interval-highlight-tooltip__item__arrow',
+                    `interval-highlight-tooltip__item__arrow_${diff > 0 ? 'positive' : 'negative'}`
+                ].join(' '),
+            },
+            html('div', {class: 'interval-highlight-tooltip__item__arrow__val'},
+                html('span', {class: 'interval-highlight-tooltip__item__arrow__dir'},
+                    (diff > 0 ? '&#x25B2;' : diff < 0 ? '&#x25BC;' : ''),
+                    (diff === 0 ? '' : String(parseFloat((Math.abs(diff)).toFixed(2))))
+                )
+            )
+        )
+    )
+);
 
 const IntervalTooltip = (pluginSettings = {}) => {
 
@@ -328,8 +321,6 @@ const IntervalTooltip = (pluginSettings = {}) => {
 
             const tooltipElement = this._tooltip.getElement();
             tooltipElement.style.zIndex = 10001;
-            tooltipElement.addEventListener('mouseenter', () => this._freeze(true), false);
-            tooltipElement.addEventListener('mouseleave', () => this._freeze(false), false);
         },
 
         destroy() {
@@ -346,7 +337,6 @@ const IntervalTooltip = (pluginSettings = {}) => {
                 over.type = ELEMENT_HIGHLIGHT;
                 over.namespace = 'highlight';
                 over.guide = over.guide || {};
-                over.guide.cursorColor = pluginSettings.cursorColor;
 
                 unit.guide = utils.defaults(unit.guide || {}, {
                     showAnchors: 'never'
@@ -375,9 +365,8 @@ const IntervalTooltip = (pluginSettings = {}) => {
 
             return tooltipTemplate({
                 dateRange: formattedDateRange,
-                dateDiff,
                 items: states,
-                formatDays
+                diffDays: `(${dateDiff} ${formatDays})`
             });
         },
 
@@ -389,10 +378,12 @@ const IntervalTooltip = (pluginSettings = {}) => {
             const node = chart.select((node) => node.config.type === ELEMENT_HIGHLIGHT)[0];
             this.node = node;
 
-            node.on('range-changed', () => this._tooltip.hide());
-            node.on('range-blur', () => this._tooltip.hide());
-            node.on('range-focus', (sender, e) => {
-                const scaleColor = sender.screenModel.model.scaleColor;
+            const hideTooltip = () => {
+                this._tooltip.hide();
+            };
+
+            const showTooltip = (unit, e) => {
+                const scaleColor = unit.screenModel.model.scaleColor;
                 const categories = scaleColor.domain();
                 const states = categories
                     .map((cat) => {
@@ -410,17 +401,13 @@ const IntervalTooltip = (pluginSettings = {}) => {
                 this._tooltip
                     .content(this.getContent([e.prev.date, e.data.date], states))
                     .show(e.event.pageX + 8, e.event.pageY + 8);
-            });
+            };
+
+            node.on('range-changed', () => hideTooltip());
+            node.on('range-blur', () => hideTooltip());
+            node.on('range-focus', (sender, e) => showTooltip(sender, e));
 
             node.on('range-active', () => clearTimeout(this._hideTooltipTimeout));
-        },
-
-        _freeze(flag) {
-            const node = this.node;
-            node.fire('range-freeze', flag);
-            if (!flag) {
-                this._hideTooltipTimeout = setTimeout(() => node.fire('range-blur'), 100);
-            }
         }
     };
 };
