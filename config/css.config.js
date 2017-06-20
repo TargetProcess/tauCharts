@@ -1,6 +1,15 @@
 var generateThemes = function () {
     var themes = ['default', 'dark'];
-    var plugins = ['tooltip', 'export', 'legend', 'trendline', 'annotations', 'quick-filter', 'crosshair'];
+    var plugins = [
+        'annotations',
+        'crosshair',
+        'export',
+        'interval-highlight',
+        'legend',
+        'quick-filter',
+        'tooltip',
+        'trendline'
+    ];
 
     var generateCompatibleSuffixes = function (key) {
         return {

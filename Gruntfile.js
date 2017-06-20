@@ -149,6 +149,10 @@ module.exports = function (grunt) {
                         dest: 'build/development/plugins/tauCharts.crosshair.js'
                     },
                     {
+                        src: 'plugins/interval-highlight.js',
+                        dest: 'build/development/plugins/tauCharts.interval-highlight.js'
+                    },
+                    {
                         src: 'plugins/legend.js',
                         dest: 'build/development/plugins/tauCharts.legend.js'
                     },
