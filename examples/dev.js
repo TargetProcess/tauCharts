@@ -28,7 +28,7 @@
             'ex-',
             range(0, 31),
             range(40, 48),
-            range(50, 55)
+            range(50, 54)
         ),
         'datasets/': [
             'cars',
