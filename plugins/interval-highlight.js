@@ -72,7 +72,7 @@ var ELEMENT_HIGHLIGHT = 'ELEMENT.INTERVAL_HIGHLIGHT';
 
 var IntervalHighlight = {
 
-    addInteraction() {
+    addInteraction: function () {
         var node = this.node();
         this.cover = null;
         this.activeRange = [];
@@ -82,18 +82,18 @@ var IntervalHighlight = {
         }.bind(this));
     },
 
-    prepareData(data, screenModel) {
+    prepareData: function (data, screenModel) {
         var groups = utils.groupBy(this.node().data(), screenModel.group);
         return Object
             .keys(groups)
-            .sort(function(a, b) {
+            .sort(function (a, b) {
                 return screenModel.order(a) - screenModel.order(b);
             })
-            .reduce(function(memo, k, i) {
+            .reduce(function (memo, k, i) {
                 return memo.concat([groups[k]]);
             }, [])
-            .reduce(function(memo, fiber) {
-                fiber.forEach(function(row) {
+            .reduce(function (memo, fiber) {
+                fiber.forEach(function (row) {
                     screenModel.y(row);
                     screenModel.y0(row);
                 });
@@ -101,14 +101,14 @@ var IntervalHighlight = {
             }, []);
     },
 
-    createXIndex: function(data, screenModel) {
-        return utils.unique(data.map(function(x) {
+    createXIndex: function (data, screenModel) {
+        return utils.unique(data.map(function (x) {
             return x[screenModel.model.scaleX.dim];
         }), String)
-            .sort(function(x1, x2) {
+            .sort(function (x1, x2) {
                 return x1 - x2;
             })
-            .map(function(date, i) {
+            .map(function (date, i) {
                 return {
                     ind: i,
                     val: date,
@@ -117,7 +117,7 @@ var IntervalHighlight = {
             });
     },
 
-    draw() {
+    draw: function () {
 
         var node = this.node();
         var screenModel = node.screenModel;
@@ -169,7 +169,8 @@ var IntervalHighlight = {
             };
 
             var getStacks = function (range, pointer) {
-                var [prevValue, nextValue] = range;
+                var prevValue = range[0];
+                var nextValue = range[1];
                 var nextValues = filterValuesStack(data, screenModel, nextValue);
                 var prevValues = filterValuesStack(data, screenModel, prevValue);
 
@@ -199,7 +200,7 @@ var IntervalHighlight = {
 
             var animationFrameId = null;
             var wrapIntoAnimationFrame = function (handler) {
-                return function() {
+                return function () {
                     var pointer = getPointer();
                     if (!animationFrameId) {
                         animationFrameId = requestAnimationFrame(function () {
@@ -216,7 +217,7 @@ var IntervalHighlight = {
                 animationFrameId = null;
             });
 
-            rect.on('mousemove', wrapIntoAnimationFrame(function(e) {
+            rect.on('mousemove', wrapIntoAnimationFrame(function (e) {
 
                 var range = getRange(e);
 
@@ -244,7 +245,7 @@ var IntervalHighlight = {
                 node.fire('range-changed', getStacks(range, e));
             }));
 
-            rect.on('click', function() {
+            rect.on('click', function () {
 
                 var e = getPointer();
                 var range = getRange(e);
@@ -310,12 +311,12 @@ var VOID_TAGS = [
     'path',
     'polygon',
     'rect'
-].reduce((map, tag) => (map[tag] = true, map), {});
+].reduce(function (map, tag) { return (map[tag] = true, map); }, {});
 
 function html(tag) {
     var childrenArgIndex = 2;
     var attrs = arguments[1];
-    if (typeof attrs !== 'object') {
+    if (typeof attrs !== 'object' || Array.isArray(attrs)) {
         childrenArgIndex = 1;
         attrs = {};
     }
@@ -326,13 +327,13 @@ function html(tag) {
         throw new Error('Tag "' + tag + '" is void but content is assigned to it');
     }
 
-    var tagBeginning = '<' + tag;
+    var tagBeginning = ('<' + tag);
     var attrsString = Object.keys(attrs).map(function (key) {
-        return ' ' + key + '="' + attrs[key] + '"';
+        return (' ' + key + '="' + attrs[key] + '"');
     }).join('');
     if (attrsString.length > XML_ATTR_WRAP) {
-        attrsString = '' + Object.keys(attrs).map(function (key) {
-            return '\n' + XML_INDENT + key + '="' + attrs[key] + '"';
+        attrsString = Object.keys(attrs).map(function (key) {
+            return ('\n' + XML_INDENT + key + '="' + attrs[key] + '"');
         }).join('');
     }
     var childrenString = children
@@ -340,7 +341,7 @@ function html(tag) {
             var content = String(c);
             return content
                 .split('\n')
-                .map(function (line) { return '' + XML_INDENT + line; })
+                .map(function (line) { return (XML_INDENT + line); })
                 .join('\n');
         })
         .join('\n');
@@ -372,7 +373,7 @@ var tooltipTemplate = function (args) {
                 cellspacing: 0,
                 border: 0
             },
-            ...items.map(tooltipItemTemplate)
+            items.map(tooltipItemTemplate)
         )
     )
     );
@@ -420,7 +421,7 @@ var IntervalTooltip = function (pluginSettings) {
 
     return {
 
-        init(chart) {
+        init: function (chart) {
             this._chart = chart;
             this._tooltip = this._chart.addBalloon(
                 {
@@ -431,11 +432,11 @@ var IntervalTooltip = function (pluginSettings) {
                 });
         },
 
-        destroy() {
+        destroy: function () {
             this._tooltip.destroy();
         },
 
-        onSpecReady(chart, specRef) {
+        onSpecReady: function (chart, specRef) {
             chart.traverseSpec(specRef, function (unit, parentUnit) {
                 if (unit.type.indexOf('ELEMENT.') !== 0) {
                     return;
@@ -454,11 +455,11 @@ var IntervalTooltip = function (pluginSettings) {
             });
         },
 
-        getContent(dateRange, states) {
+        getContent: function (dateRange, states) {
             var formattedDateRange = formatRange(dateRange);
             var dateDiff = Math.round((dateRange[1] - dateRange[0]) / 1000 / 60 / 60 / 24);
-            var max = Math.max(...states.map(function(state) {
-                return state['value'];
+            var max = Math.max.apply(null, states.map(function (state) {
+                return state.value;
             }));
 
             states.forEach(function (state) {
@@ -478,7 +479,7 @@ var IntervalTooltip = function (pluginSettings) {
             });
         },
 
-        onRender(chart) {
+        onRender: function (chart) {
             var info = pluginsSDK.extractFieldsFormatInfo(chart.getSpec());
 
             this._tooltip.hide();
