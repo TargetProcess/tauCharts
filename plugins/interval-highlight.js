@@ -8,9 +8,9 @@ const {
 const html = utils.xml;
 
 const tooltipTemplate = ({dateRange, dateDiff, formatDays, items}) => (
-    html('div', {class: 'cfd-tooltip'},
-        html('div', {class: 'cfd-tooltip__header'},
-            html('span', {class: 'cfd-tooltip__header__date-range'},
+    html('div', {class: 'interval-highlight-tooltip'},
+        html('div', {class: 'interval-highlight-tooltip__header'},
+            html('span', {class: 'interval-highlight-tooltip__header__date-range'},
                 dateRange
             ),
             html('span',
@@ -28,12 +28,12 @@ const tooltipTemplate = ({dateRange, dateDiff, formatDays, items}) => (
     )
 );
 const tooltipItemTemplate = ({name, width, color, diff, value}) => (
-    html('tr', {class: 'cfd-tooltip__item'},
+    html('tr', {class: 'interval-highlight-tooltip__item'},
         html('td', name),
         html('td',
             html('div',
                 {
-                    class: 'cfd-tooltip__item__value',
+                    class: 'interval-highlight-tooltip__item__value',
                     style: `width: ${width}px; background-color: ${color};`
                 },
                 String(parseFloat((value).toFixed(2)))
@@ -42,12 +42,12 @@ const tooltipItemTemplate = ({name, width, color, diff, value}) => (
         html('td',
             {
                 class: [
-                    'cfd-tooltip__item__arrow',
-                    `cfd-tooltip__item__arrow_${diff > 0 ? 'positive' : 'negative'}`
+                    'interval-highlight-tooltip__item__arrow',
+                    `interval-highlight-tooltip__item__arrow_${diff > 0 ? 'positive' : 'negative'}`
                 ].join(' '),
             },
-            html('div', { class: 'cfd-tooltip__item__arrow__val' },
-                html('span', { class: 'cfd-tooltip__item__arrow__dir' },
+            html('div', { class: 'interval-highlight-tooltip__item__arrow__val' },
+                html('span', { class: 'interval-highlight-tooltip__item__arrow__dir' },
                     (diff > 0 ? '&#x25B2;' : diff < 0 ? '&#x25BC;' : ''),
                     (diff === 0 ? '' : String(parseFloat((Math.abs(diff)).toFixed(2))))
                 )
@@ -119,8 +119,8 @@ const drawCoverFactory = ({
     xIndex
 }) => function(container) {
 
-        drawRect(container, 'cursor', {
-            class: 'cursor',
+        drawRect(container, 'interval-highlight__cursor', {
+            class: 'interval-highlight__cursor',
             x: 0,
             y: 0,
             height: cfg.options.height,
@@ -130,8 +130,8 @@ const drawCoverFactory = ({
             speed: 0
         });
 
-        const rect = drawRect(container, 'cover-rect', {
-            class: 'cover-rect',
+        const rect = drawRect(container, 'interval-highlight__cover-rect', {
+            class: 'interval-highlight__cover-rect',
             x: 0,
             y: 0,
             width: cfg.options.width,
@@ -175,7 +175,7 @@ const drawCoverFactory = ({
             const prevX = screenModel.model.scaleX(range[0]);
             const nextX = screenModel.model.scaleX(range[1]);
 
-            drawRect(container, 'cursor', {
+            drawRect(container, 'interval-highlight__cursor', {
                 x: prevX,
                 width: nextX - prevX,
                 speed: 0
@@ -226,7 +226,7 @@ const drawCoverFactory = ({
         });
     };
 
-const ELEMENT_CFD = 'ELEMENT.INTERVAL_HIGHLIGHT';
+const ELEMENT_HIGHLIGHT = 'ELEMENT.INTERVAL_HIGHLIGHT';
 
 const IntervalHighlight = {
     addInteraction() {
@@ -237,7 +237,7 @@ const IntervalHighlight = {
         node.on('range-freeze', (_, e) => this.freeze = e);
         node.on('range-blur', () => {
             this.activeRange = [];
-            drawRect(this.cover, 'cursor', {width: 0});
+            drawRect(this.cover, 'interval-highlight__cursor', {width: 0});
         });
     },
 
@@ -289,7 +289,7 @@ const IntervalHighlight = {
         const drawCover = drawCoverFactory({plugin: this, cfg, screenModel, data, xIndex, node});
 
         const cover = container
-            .selectAll('.cover')
+            .selectAll('.interval-highlight__cover')
             .data([1]);
         this.cover = cover;
         cover
@@ -300,13 +300,13 @@ const IntervalHighlight = {
         cover
             .enter()
             .append('g')
-            .attr('class', 'cover')
+            .attr('class', 'interval-highlight__cover')
             .call(drawCover);
     }
 };
 
 api.unitsRegistry.reg(
-    ELEMENT_CFD,
+    ELEMENT_HIGHLIGHT,
     IntervalHighlight,
     'ELEMENT.GENERIC.CARTESIAN');
 
@@ -343,8 +343,8 @@ const IntervalTooltip = (pluginSettings = {}) => {
                 }
 
                 const over = JSON.parse(JSON.stringify(unit));
-                over.type = ELEMENT_CFD;
-                over.namespace = 'cfd';
+                over.type = ELEMENT_HIGHLIGHT;
+                over.namespace = 'highlight';
                 over.guide = over.guide || {};
                 over.guide.cursorColor = pluginSettings.cursorColor;
 
@@ -386,12 +386,12 @@ const IntervalTooltip = (pluginSettings = {}) => {
 
             this._tooltip.hide();
 
-            const cfd = chart.select((node) => node.config.type === ELEMENT_CFD)[0];
-            this.cfd = cfd;
+            const node = chart.select((node) => node.config.type === ELEMENT_HIGHLIGHT)[0];
+            this.node = node;
 
-            cfd.on('range-changed', () => this._tooltip.hide());
-            cfd.on('range-blur', () => this._tooltip.hide());
-            cfd.on('range-focus', (sender, e) => {
+            node.on('range-changed', () => this._tooltip.hide());
+            node.on('range-blur', () => this._tooltip.hide());
+            node.on('range-focus', (sender, e) => {
                 const scaleColor = sender.screenModel.model.scaleColor;
                 const categories = scaleColor.domain();
                 const states = categories
@@ -412,14 +412,14 @@ const IntervalTooltip = (pluginSettings = {}) => {
                     .show(e.event.pageX + 8, e.event.pageY + 8);
             });
 
-            cfd.on('range-active', () => clearTimeout(this._hideTooltipTimeout));
+            node.on('range-active', () => clearTimeout(this._hideTooltipTimeout));
         },
 
         _freeze(flag) {
-            const cfd = this.cfd;
-            cfd.fire('range-freeze', flag);
+            const node = this.node;
+            node.fire('range-freeze', flag);
             if (!flag) {
-                this._hideTooltipTimeout = setTimeout(() => cfd.fire('range-blur'), 100);
+                this._hideTooltipTimeout = setTimeout(() => node.fire('range-blur'), 100);
             }
         }
     };
