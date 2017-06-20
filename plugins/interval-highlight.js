@@ -4,20 +4,20 @@ const {
     pluginsSDK,
     d3_animationInterceptor: createUpdateFunc
 } = api;
-const h = api.utils.xml;
+const html = api.utils.xml;
 
 const tooltipTemplate = ({dateRange, dateDiff, formatDays, items}) => (
-    h('div', {class: 'cfd-tooltip'},
-        h('div', {class: 'cfd-tooltip__header'},
-            h('span', {class: 'cfd-tooltip__header__date-range'},
+    html('div', {class: 'cfd-tooltip'},
+        html('div', {class: 'cfd-tooltip__header'},
+            html('span', {class: 'cfd-tooltip__header__date-range'},
                 dateRange
             ),
-            h('span',
+            html('span',
                 dateDiff,
                 formatDays
             )
         ),
-        h('table',
+        html('table',
             {
                 cellpadding: 0,
                 cellspacing: 0,
@@ -28,29 +28,29 @@ const tooltipTemplate = ({dateRange, dateDiff, formatDays, items}) => (
     )
 );
 const tooltipItemTemplate = ({name, width, color, diff, value}) => (
-    h('tr', {class: 'cfd-tooltip__item'},
-        h('td', name)
-    ),
-    h('td',
-        h('div',
+    html('tr', {class: 'cfd-tooltip__item'},
+        html('td', name),
+        html('td',
+            html('div',
+                {
+                    class: 'cfd-tooltip__item__value',
+                    style: `width: ${width}px; background-color: ${color};`
+                },
+                String(parseFloat((value).toFixed(2)))
+            )
+        ),
+        html('td',
             {
-                class: 'cfd-tooltip__item__value',
-                style: `width: ${width}; backgorund-color: ${color};`
+                class: [
+                    'cfd-tooltip__item__arrow',
+                    `cfd-tooltip__item__arrow_${diff > 0 ? 'positive' : 'negative'}`
+                ].join(' '),
             },
-            String(parseFloat((value).toFixed(2)))
-        )
-    ),
-    h('td',
-        {
-            class: [
-                'cfd-tooltip__item__arrow',
-                `cfd-tooltip__item__arrow_${diff > 0 ? 'positive' : 'negative'}`
-            ].join(' '),
-        },
-        h('div', {class: 'cfd-tooltip__item__arrow__val'},
-            (diff === 0 ? '' : String(parseFloat((Math.abs(diff)).toFixed(2)))),
-            h('span', {class: 'cfd-tooltip__item__arrow__dir'},
-                (diff > 0 ? '&#x25B2;' : diff < 0 ? '&#x25BC;' : '')
+            html('div', { class: 'cfd-tooltip__item__arrow__val' },
+                (diff === 0 ? '' : String(parseFloat((Math.abs(diff)).toFixed(2)))),
+                html('span', { class: 'cfd-tooltip__item__arrow__dir' },
+                    (diff > 0 ? '&#x25B2;' : diff < 0 ? '&#x25BC;' : '')
+                )
             )
         )
     )
