@@ -136,9 +136,9 @@ define(function (require) {
             {i: 2, s: 1,  x: 'medium',   t: new Date('2015-04-19').getTime()}
         ];
         var dataUTC = [
-            {i: 3, s: -3, x: 'high',     t: new Date('2015-04-17T00:00').getTime()},
-            {i: 1, s: 3,  x: 'low',      t: new Date('2015-04-16T00:00').getTime()},
-            {i: 2, s: 1,  x: 'medium',   t: new Date('2015-04-19T00:00').getTime()}
+            {i: 3, s: -3, x: 'high',     t: new Date('2015-04-17T00:00Z').getTime()},
+            {i: 1, s: 3,  x: 'low',      t: new Date('2015-04-16T00:00Z').getTime()},
+            {i: 2, s: 1,  x: 'medium',   t: new Date('2015-04-19T00:00Z').getTime()}
         ];
 
         var xSrc = {
@@ -253,12 +253,12 @@ define(function (require) {
                     utcTime: true
                 }).create([0, 100]);
 
-            expect(scale3.domain()).to.deep.equal([new Date('2015-04-16T00:00'), new Date('2015-04-19T00:00')]);
-            expect(scale3(new Date('2015-04-15T00:00'))).to.equal(0);
-            expect(scale3(new Date('2015-04-16T00:00'))).to.equal(0);
-            expect(scale3(new Date('2015-04-17T12:00'))).to.equal(50);
-            expect(scale3(new Date('2015-04-19T00:00'))).to.equal(100);
-            expect(scale3(new Date('2015-04-20T00:00'))).to.equal(100);
+            expect(scale3.domain()).to.deep.equal([new Date('2015-04-16T00:00Z'), new Date('2015-04-19T00:00Z')]);
+            expect(scale3(new Date('2015-04-15T00:00Z'))).to.equal(0);
+            expect(scale3(new Date('2015-04-16T00:00Z'))).to.equal(0);
+            expect(scale3(new Date('2015-04-17T12:00Z'))).to.equal(50);
+            expect(scale3(new Date('2015-04-19T00:00Z'))).to.equal(100);
+            expect(scale3(new Date('2015-04-20T00:00Z'))).to.equal(100);
         });
 
         it('time scale with single value domain should add 1 hour range around it when nice is applied', function () {
@@ -385,9 +385,9 @@ define(function (require) {
                 }).create([0, 100]);
 
             expect(scale5.domain().length).to.equal(4);
-            expect(scale5(new Date('2015-04-19T00:00').getTime())).to.equal(87.5);
-            expect(scale5(new Date('2015-04-17T00:00').getTime())).to.equal(37.5);
-            expect(scale5(new Date('2015-04-16T00:00').getTime())).to.equal(12.5);
+            expect(scale5(new Date('2015-04-19T00:00Z').getTime())).to.equal(87.5);
+            expect(scale5(new Date('2015-04-17T00:00Z').getTime())).to.equal(37.5);
+            expect(scale5(new Date('2015-04-16T00:00Z').getTime())).to.equal(12.5);
         });
 
         it('should support [linear] scale', function () {

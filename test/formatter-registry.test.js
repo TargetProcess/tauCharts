@@ -10,7 +10,7 @@ define(function (require) {
             return (str + '+' + offsetISO);
         };
         var utc = function (str) {
-            return new Date(str).toUTCString();
+            return (str + 'Z');
         };
 
         var registry;
