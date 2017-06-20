@@ -8,17 +8,17 @@ const {
 
 const defaultRangeFormatter = function formatRange(dateRange) {
 
-    var d0 = d3.timeFormat('%d')(dateRange[0]);
-    var d1 = d3.timeFormat('%d')(dateRange[1]);
+    const d0 = d3.timeFormat('%d')(dateRange[0]);
+    const d1 = d3.timeFormat('%d')(dateRange[1]);
 
-    var m0 = d3.timeFormat('%b')(dateRange[0]);
-    var m1 = d3.timeFormat('%b')(dateRange[1]);
+    const m0 = d3.timeFormat('%b')(dateRange[0]);
+    const m1 = d3.timeFormat('%b')(dateRange[1]);
 
-    var y0 = d3.timeFormat('%Y')(dateRange[0]);
-    var y1 = d3.timeFormat('%Y')(dateRange[1]);
+    const y0 = d3.timeFormat('%Y')(dateRange[0]);
+    const y1 = d3.timeFormat('%Y')(dateRange[1]);
 
-    var date0 = `${d0}${m0 === m1 ? '' : ` ${m0}`}${y0 === y1 ? '' : ` ${y0}`}`;
-    var date1 = `${d1} ${m1} ${y1}`;
+    const date0 = `${d0}${m0 === m1 ? '' : ` ${m0}`}${y0 === y1 ? '' : ` ${y0}`}`;
+    const date1 = `${d1} ${m1} ${y1}`;
 
     return `${date0}&ndash;${date1}`;
 };
@@ -66,9 +66,7 @@ const IntervalHighlight = {
     addInteraction() {
         const node = this.node();
         this.cover = null;
-        this.freeze = false;
         this.activeRange = [];
-        node.on('range-freeze', (_, e) => this.freeze = e);
         node.on('range-blur', () => {
             this.activeRange = [];
             drawRect(this.cover, 'interval-highlight__cursor', {width: 0});
@@ -144,24 +142,74 @@ const IntervalHighlight = {
 
             // Todo: Use chart pointer events.
 
-            rect.on('mouseleave', () => {
-                setTimeout(() => {
-                    if (!element.freeze) {
-                        node.fire('range-blur');
-                    }
-                }, 100);
-            });
-
-            rect.on('mousemove', function() {
-                const mouseCoords = d3.mouse(this);
+            const getPointer = () => {
+                const domEvent = d3.event;
+                const mouseCoords = d3.mouse(domEvent.target);
                 const e = {
                     x: mouseCoords[0],
                     y: mouseCoords[1],
-                    pageX: d3.event.pageX,
-                    pageY: d3.event.pageY
+                    pageX: domEvent.pageX,
+                    pageY: domEvent.pageY
                 };
+                return e;
+            };
 
-                const range = findRangeValue(xIndex, e.x);
+            const getRange = (pointer) => {
+                const range = findRangeValue(xIndex, pointer.x);
+                return range;
+            };
+
+            const getStacks = (range, pointer) => {
+                const [prevValue, nextValue] = range;
+                const nextValues = filterValuesStack(data, screenModel, nextValue);
+                const prevValues = filterValuesStack(data, screenModel, prevValue);
+
+                const propY = screenModel.model.scaleY.dim;
+                const propCategory = screenModel.model.scaleColor.dim;
+
+                const prevStack = prevValues.reduce(
+                    (memo, item) => {
+                        memo[item[propCategory]] = item[propY];
+                        return memo;
+                    },
+                    {date: prevValue});
+
+                const nextStack = nextValues.reduce(
+                    (memo, item) => {
+                        memo[item[propCategory]] = item[propY];
+                        return memo;
+                    },
+                    {date: nextValue});
+
+                return {
+                    data: nextStack,
+                    prev: prevStack,
+                    event: pointer
+                };
+            };
+
+            const animationFrameId = null;
+            const wrapIntoAnimationFrame = function(handler) {
+                return function() {
+                    const pointer = getPointer();
+                    if (!animationFrameId) {
+                        animationFrameId = requestAnimationFrame(() => {
+                            handler.call(this, pointer);
+                            animationFrameId = null;
+                        })
+                    }
+                };
+            };
+
+            rect.on('mouseleave', () => {
+                node.fire('range-blur');
+                cancelAnimationFrame(animationFrameId);
+                animationFrameId = null;
+            });
+
+            rect.on('mousemove', wrapIntoAnimationFrame(function(e) {
+
+                const range = getRange(e);
 
                 if (areRangesEqual(element.activeRange, range)) {
 
@@ -184,48 +232,15 @@ const IntervalHighlight = {
                     animationSpeed: 0
                 });
 
-                node.fire('range-changed', {
-                    data: range,
-                    event: e
-                });
-            });
+                node.fire('range-changed', getStacks(range, e));
+            }));
 
             rect.on('click', function() {
-                const mouseCoords = d3.mouse(this);
-                const e = {
-                    x: mouseCoords[0],
-                    y: mouseCoords[1],
-                    pageX: d3.event.pageX,
-                    pageY: d3.event.pageY
-                };
 
-                const range = findRangeValue(xIndex, e.x);
-                const [prevValue, nextValue] = range;
-                const nextValues = filterValuesStack(data, screenModel, nextValue);
-                const prevValues = filterValuesStack(data, screenModel, prevValue);
+                const e = getPointer();
+                const range = getRange(e);
 
-                const propY = screenModel.model.scaleY.dim;
-                const propCategory = screenModel.model.scaleColor.dim;
-
-                const prevStack = prevValues.reduce(
-                    (memo, item) => {
-                        memo[item[propCategory]] = item[propY];
-                        return memo;
-                    },
-                    {date: prevValue});
-
-                const nextStack = nextValues.reduce(
-                    (memo, item) => {
-                        memo[item[propCategory]] = item[propY];
-                        return memo;
-                    },
-                    {date: nextValue});
-
-                node.fire('range-focus', {
-                    data: nextStack,
-                    prev: prevStack,
-                    event: e
-                });
+                node.fire('range-focus', getStacks(range, e));
             });
         };
 
@@ -237,13 +252,13 @@ const IntervalHighlight = {
             .remove();
         cover
             .call(drawCover);
-        cover
+        const enter = cover
             .enter()
             .append('g')
             .attr('class', 'interval-highlight__cover')
             .call(drawCover);
 
-        this.cover = cover;
+        this.cover = cover.merge(enter);
     }
 };
 
@@ -313,14 +328,11 @@ const IntervalTooltip = (pluginSettings = {}) => {
             this._chart = chart;
             this._tooltip = this._chart.addBalloon(
                 {
-                    spacing: 3,
+                    spacing: 24,
                     place: 'bottom-right',
                     auto: true,
                     effectClass: 'fade'
                 });
-
-            const tooltipElement = this._tooltip.getElement();
-            tooltipElement.style.zIndex = 10001;
         },
 
         destroy() {
@@ -400,14 +412,24 @@ const IntervalTooltip = (pluginSettings = {}) => {
 
                 this._tooltip
                     .content(this.getContent([e.prev.date, e.data.date], states))
-                    .show(e.event.pageX + 8, e.event.pageY + 8);
+                    .show(e.event.pageX, e.event.pageY);
             };
 
-            node.on('range-changed', () => hideTooltip());
-            node.on('range-blur', () => hideTooltip());
-            node.on('range-focus', (sender, e) => showTooltip(sender, e));
+            const updateTooltip = (e) => {
+                this._tooltip
+                    .position(e.event.pageX, e.event.pageY);
+            };
 
-            node.on('range-active', () => clearTimeout(this._hideTooltipTimeout));
+            const onClick = (sender, e) => {
+                if (pluginSettings.onClick) {
+                    pluginSettings.onClick.call(null, sender, e);
+                }
+            };
+
+            node.on('range-changed', (sender, e) => showTooltip(sender, e));
+            node.on('range-blur', () => hideTooltip());
+            node.on('range-focus', (sender, e) => onClick(sender, e));
+            node.on('range-active', (sender, e) => updateTooltip(e));
         }
     };
 };

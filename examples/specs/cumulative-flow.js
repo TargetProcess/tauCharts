@@ -24,7 +24,11 @@ dev.spec({
     },
     data: getCFDData(),
     plugins: [
-        tauCharts.api.plugins.get('interval-highlight')()
+        tauCharts.api.plugins.get('interval-highlight')({
+            onClick: function(sender, e){
+                console.log(e.data, e.prev);
+            }
+        })
     ],
     guide: {
         showGridLines: 'y',
