@@ -117,7 +117,7 @@ define(function (require) {
     describe("UTC unit domain period generator", function () {
 
         var utc = function (str) {
-            return new Date(str).toUTCString();
+            return (str + 'Z');
         };
         var PeriodGenerator;
         beforeEach(function () {
