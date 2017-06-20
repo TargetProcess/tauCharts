@@ -13,6 +13,7 @@
             '../plugins/tooltip',
             '../plugins/crosshair',
             '../plugins/tauCharts.export',
+            '../plugins/interval-highlight',
             '../plugins/layers',
             '../plugins/legend',
             '../plugins/trendline',
@@ -35,7 +36,8 @@
             '../css/crosshair.default',
             '../css/trendline.default',
             '../css/annotations.default',
-            '../css/quick-filter.default'
+            '../css/quick-filter.default',
+            '../css/interval-highlight.default'
         ]);
         var loadDevPluginsAndCSS = function (callbacks) {
             loadDevPlugins();
@@ -49,6 +51,7 @@
         var loadBuildPlugins = loadJS.bind(null, [
             '../build/development/plugins/tauCharts.tooltip',
             '../build/development/plugins/tauCharts.crosshair',
+            '../build/development/plugins/tauCharts.interval-highlight',
             '../build/development/plugins/tauCharts.export',
             '../build/development/plugins/tauCharts.layers',
             '../build/development/plugins/tauCharts.legend',
@@ -66,7 +69,8 @@
             '../build/development/plugins/tauCharts.tooltip.default',
             '../build/development/plugins/tauCharts.trendline.default',
             '../build/development/plugins/tauCharts.annotations.default',
-            '../build/development/plugins/tauCharts.quick-filter.default'
+            '../build/development/plugins/tauCharts.quick-filter.default',
+            '../build/development/plugins/tauCharts.interval-highlight.default'
         ]);
         var loadBuildPluginsAndCSS = function (callbacks) {
             loadBuildPlugins();
