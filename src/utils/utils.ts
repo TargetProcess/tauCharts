@@ -807,12 +807,13 @@ export function xml(tag: string, attrs: {[attr: string]: any}, ...children: Stri
 export function xml(tag: string) {
     var childrenArgIndex = 2;
     var attrs = arguments[1];
-    if (typeof attrs !== 'object') {
+    if (typeof arguments[1] !== 'object' || Array.isArray(arguments[1])) {
         childrenArgIndex = 1;
         attrs = {};
     }
     const children = flatten(Array.prototype.slice.call(arguments, childrenArgIndex) as StringOrArray[]);
 
+    const hasSingleTextChild = (children.length === 1 && children[0].trim()[0] !== '<');
     const isVoidTag = VOID_TAGS[tag];
     if (isVoidTag && children.length > 0) {
         throw new Error(`Tag "${tag}" is void but content is assigned to it`);
@@ -823,24 +824,25 @@ export function xml(tag: string) {
         return ` ${key}="${attrs[key]}"`;
     }).join('');
     if (attrsString.length > XML_ATTR_WRAP) {
-        attrsString = `${Object.keys(attrs).map(function (key) {
+        attrsString = Object.keys(attrs).map(function (key) {
             return `\n${XML_INDENT}${key}="${attrs[key]}"`;
-        }).join('')}`;
+        }).join('');
     }
-    const childrenString = children
-        .map((c) => {
-            // const text = String(c);
-            // const content = (text.trim()[0] === '<' ? c : escapeHtml(text));
-            const content = String(c);
-            return content
-                .split('\n')
-                .map((line) => `${XML_INDENT}${line}`)
-                .join('\n');
-        })
-        .join('\n');
+    const childrenString = (hasSingleTextChild ?
+        children[0] :
+        ('\n' + children
+            .map((c) => {
+                const content = String(c);
+                return content
+                    .split('\n')
+                    .map((line) => `${XML_INDENT}${line}`)
+                    .join('\n');
+            })
+            .join('\n') + '\n')
+    );
     const tagEnding = (isVoidTag ?
         '/>' :
-        (`>\n${childrenString}\n</${tag}>`));
+        (`>${childrenString}</${tag}>`));
 
     return `${tagBeginning}${attrsString}${tagEnding}`;
 }
