@@ -1,4 +1,4 @@
-import tauCharts from 'taucharts';
+import tauCharts from '../../src/tau.charts';
 import * as $ from 'jquery';
 import * as utils from '../../src/utils/utils';
 import * as d3 from 'd3';

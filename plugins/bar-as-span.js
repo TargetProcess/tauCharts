@@ -81,7 +81,7 @@ function BarAsSpan(settings) {
         var dim = yScale.dim;
         data.sort(utils.createMultiSorter(
             function (a, b) { return (a[dim0] - b[dim0]); },
-            function (a, b) { return (a[dim] - b[dim]); },
+            function (a, b) { return (a[dim] - b[dim]); }
         ));
 
         var catDim = xScale.dim;

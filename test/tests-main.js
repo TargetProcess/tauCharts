@@ -9,9 +9,12 @@ tauCharts.api.globalSettings.syncPointerEvents = true;
 tauCharts.api.globalSettings.handleRenderingErrors = false;
 tauCharts.api.globalSettings.experimentalShouldAnimate = () => true;
 
+/*
 import './algebra.test.js';
 import './api-chart.test.js';
+*/
 import './bar-as-span-plugin.test.js';
+/*
 import './chart-area.test.js';
 import './chart-bar.test.js';
 import './chart-config.test.js';
@@ -53,3 +56,4 @@ import './unit-domain-period-generator.test.js';
 import './units-registry.test.js';
 import './utils.path.test.js';
 import './utils.test.js';
+*/

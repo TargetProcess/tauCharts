@@ -1,3 +1,109 @@
+// karma-typescript
+module.exports = function (config) {
+    config.set({
+
+        // base path, that will be used to resolve files and exclude
+        basePath: '..',
+
+        // frameworks to use
+        frameworks: ['mocha', 'karma-typescript'],
+
+        // list of files / patterns to load in the browser
+        files: [
+            'dist/tauCharts.css',
+            'dist/plugins/tauCharts.tooltip.css',
+            'node_modules/d3/build/d3.js',
+            'node_modules/topojson/build/topojson.js',
+            'test/utils/test.css',
+            'test/utils/polyfills.js',
+            'test/tests-main.js',
+            {included: false, pattern: 'src/**/*.ts'}
+        ],
+        browsers: process.env.TRAVIS ? ['ChromeTravisCI'] : ['Chrome'],
+        customLaunchers: {
+            ChromeTravisCI: {
+                base: 'Chrome',
+                flags: [
+                    '--no-sandbox'
+                ]
+            }
+        },
+        preprocessors: {
+            'plugins/**/*.js': ['karma-typescript'],
+            'plugins/**/*.ts': ['karma-typescript'],
+            'src/**/*.js': ['karma-typescript'],
+            'src/**/*.ts': ['karma-typescript'],
+            'test/**/*.js': ['karma-typescript']
+            // 'plugins/**/*.js': ['coverage'],
+            // 'src/**/*.js': ['coverage'],
+            // 'src/**/*.ts': ['karma-typescript', 'coverage'],
+            // 'test/tests-main.js': ['karma-typescript', 'coverage']
+        },
+        karmaTypescriptConfig: {
+            tsconfig: './tsconfig.json',
+            include: [
+                'plugins/**/*.js',
+                'plugins/**/*.ts',
+                'src/**/*.js',
+                'src/**/*.ts'
+            ],
+            compilerOptions: {
+                inlineSourceMap: true,
+                sourceMap: false
+            },
+            bundlerOptions: {
+                entryPoints: 'test/test-main.js',
+                transforms: [
+                    require('karma-typescript-es6-transform')({
+                        presets: ['es2015']
+                    }),
+                    // require('karma-typescript-postcss-transform')()
+                ],
+                directories:[
+                    'node_modules',
+                    'bower_components'
+                ],
+                resolve: {
+                    alias: {
+                        /*
+                        'tau-tooltip': 'node_modules/tau-tooltip/tooltip.js',
+                        */
+                        taucharts: 'src/tau.charts.ts',
+                        /*
+                        'print.style.css': 'plugins/print.style.css',
+                        rgbcolor: 'bower_components/canvg/rgbcolor.js',
+                        stackblur: 'bower_components/canvg/StackBlur.js',
+                        canvg: 'bower_components/canvg/canvg.js',
+                        'file-saver': 'test/utils/saveAs.js',
+                        fetch: 'bower_components/fetch/fetch.js',
+                        'es6-promise': 'bower_components/es6-promise/es6-promise.js'
+                        */
+                    }
+                }
+            }
+        },
+        reporters: ['coverage', 'spec', 'coveralls', 'karma-typescript'],
+        // coverageReporter: {
+        //     type: 'lcovonly',
+        //     dir: 'coverage/'
+        // },
+        browserNoActivityTimeout: 100000,
+        port: 9876,
+
+        // enable / disable colors in the output (reporters and logs)
+        colors: true,
+
+        // level of logging
+        logLevel: config.LOG_DEBUG,
+
+        // Continuous Integration mode
+        // if true, it capture browsers, run tests and exit
+        singleRun: true
+    });
+};
+
+/*
+// webpack
 module.exports = function (config) {
     config.set({
 
@@ -52,6 +158,7 @@ module.exports = function (config) {
         singleRun: true
     });
 };
+*/
 
 // NOTE: Rollup integration into Karma fails:
 // 1. karma-rollup-preprocessor (and karma-rollup-plugin) doesn't rebuild when source file changes.
@@ -112,7 +219,7 @@ function getTestRollupConfig() {
 
 function getTestWebpackConfig() {
     var path = require('path');
-    var ensureDir = function(absolutePath) {
+    var ensureDir = function (absolutePath) {
         var fs = require('fs-extra');
         fs.mkdirsSync(absolutePath);
         return absolutePath;
@@ -167,21 +274,25 @@ function getTestWebpackConfig() {
                         cacheDirectory: ensureDir(path.join(cachePath, './babelJS'))
                     }
                 },
-                // {
-                //     loader: 'istanbul-instrumenter-loader',
-                //     test: /\.(js|ts)$/,
-                //     exclude: [
-                //         'node_modules',
-                //         'bower_components',
-                //         'test',
-                //         'plugins',
-                //         'src/addons',
-                //         'src/utils/polyfills.js'
-                //     ],
-                //     options: {
-                //         esModules: true
-                //     }
-                // }
+                /*
+                // Coverage reports are not created
+                {
+                    loader: 'istanbul-instrumenter-loader',
+                    test: /\.(js|ts)$/,
+                    enforce: 'post',
+                    exclude: [
+                        'node_modules',
+                        'bower_components',
+                        'test',
+                        'plugins',
+                        'src/addons',
+                        'src/utils/polyfills.js'
+                    ],
+                    options: {
+                        esModules: true
+                    }
+                }
+                */
             ]
         },
         externals: {
