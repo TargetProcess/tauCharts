@@ -29,12 +29,6 @@ module.exports = function (config) {
 
         preprocessors: {'test/tests-main.js': ['webpack', 'sourcemap']},
         reporters: ['coverage', 'spec', 'coveralls', 'remap-coverage'],
-        // coverageReporter: {
-        //     // type: 'lcovonly',
-        //     type: 'html',
-        //     dir: 'coverage/'
-        // },
-        // plugins: ['karma-coverage', 'karma-remap-coverage'],
         coverageReporter: {
             type: 'in-memory'
         },
@@ -112,8 +106,7 @@ function getTestWebpackConfig() {
                             sourceMap: true
                         },
                         entryFileIsJs: true,
-                        transpileOnly: true,
-                        cacheDirectory: ensureDir(path.join(cachePath, './babelJS'))
+                        transpileOnly: true
                     }
                 },
                 {
