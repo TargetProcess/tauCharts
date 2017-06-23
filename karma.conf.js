@@ -1,8 +1,4 @@
 module.exports = function (config) {
-    console.log('dist/', require('fs').readdirSync('./dist'));
-    console.log('dist/css', require('fs').readdirSync('./dist/css'));
-    // console.log('dist/plugins', require('fs').readdirSync('./dist/plugins'));
-    // console.log('/', require('fs').readdirSync('./'));
     config.set({
 
         basePath: '.',

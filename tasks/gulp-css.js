@@ -8,9 +8,9 @@ const plugins = [
     'crosshair',
     'export-to',
     'legend',
+    'quick-filter',
     'tooltip',
     'trendline',
-    'quick-filter'
 ];
 const themes = [
     'dark',
@@ -24,7 +24,7 @@ module.exports = (gulp, {connect}) => {
     };
 
     const getDestDir = (isPlugin = false) => {
-        return `./dist/css${isPlugin ? '/plugins' : ''}/`;
+        return `./dist${isPlugin ? '/plugins' : ''}`;
     };
 
     const getDestFile = (name, theme, isPlugin = false) => {
@@ -36,7 +36,6 @@ module.exports = (gulp, {connect}) => {
         const src = getSrc(name, isPlugin);
         const destDir = getDestDir(isPlugin);
         const destFile = getDestFile(name, theme, isPlugin);
-        console.log('css dest', destDir, destFile)
         return gulp.src(src)
             .pipe(less({
                 paths: ['less'],
