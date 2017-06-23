@@ -24,7 +24,7 @@ module.exports = (gulp, {connect}) => {
     };
 
     const getDestDir = (isPlugin = false) => {
-        return `./dist${isPlugin ? '/plugins' : ''}/`;
+        return `./dist/css${isPlugin ? '/plugins' : ''}/`;
     };
 
     const getDestFile = (name, theme, isPlugin = false) => {

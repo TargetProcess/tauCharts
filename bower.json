@@ -9,7 +9,7 @@
   ],
   "main": [
     "dist/taucharts.js",
-    "dist/taucharts.css"
+    "dist/css/taucharts.css"
   ],
   "license": "Apache License 2.0",
   "private": false,
