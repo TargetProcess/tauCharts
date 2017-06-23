@@ -1,7 +1,8 @@
 module.exports = function (config) {
+    console.log('dist/', require('fs').readdirSync('./dist'));
     config.set({
 
-        basePath: '..',
+        basePath: '.',
 
         frameworks: ['mocha'],
 
