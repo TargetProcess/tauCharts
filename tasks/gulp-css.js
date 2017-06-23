@@ -36,6 +36,7 @@ module.exports = (gulp, {connect}) => {
         const src = getSrc(name, isPlugin);
         const destDir = getDestDir(isPlugin);
         const destFile = getDestFile(name, theme, isPlugin);
+        console.log('css dest', destDir, destFile)
         return gulp.src(src)
             .pipe(less({
                 paths: ['less'],
