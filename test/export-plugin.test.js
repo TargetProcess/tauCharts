@@ -6,7 +6,7 @@ import trendline from '../plugins/trendline';
 import mock from './utils/mock.window';
 import {saveAs} from './utils/saveAs';
 import exportTo from '../plugins/export';
-import * as $ from 'jquery';
+import $ from 'jquery';
 const describeChart = testUtils.describeChart;
 
     describeChart(

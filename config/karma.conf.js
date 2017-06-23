@@ -26,14 +26,15 @@ module.exports = function (config) {
                 ]
             }
         },
-        // preprocessors: {'test/tests-main.js': ['rollup', 'sourcemap']},
+
         preprocessors: {'test/tests-main.js': ['webpack', 'sourcemap']},
-        reporters: ['coverage', 'spec', 'coveralls'],
+        reporters: ['coverage', 'spec', 'coveralls', 'remap-coverage'],
         coverageReporter: {
-            type: 'lcovonly',
-            dir: 'coverage/'
+            type: 'in-memory'
         },
-        // rollupPreprocessor: getTestRollupConfig(),
+        remapCoverageReporter: {
+            html: './coverage/'
+        },
         webpackMiddleware: {
             noInfo: true
         },
@@ -53,66 +54,9 @@ module.exports = function (config) {
     });
 };
 
-// NOTE: Rollup integration into Karma fails:
-// 1. karma-rollup-preprocessor (and karma-rollup-plugin) doesn't rebuild when source file changes.
-// 2. When importing TypeScript file via alias (rollup-plugin-alias) multiple times,
-//    it fails with "Unexpected token ..." like this is JS but not TS file.
-// 3. Didn't try to create coverage reports.
-function getTestRollupConfig() {
-    return {
-        entry: './test/tests-main.js',
-        moduleName: 'taucharts-tests',
-        format: 'iife',
-        useStrict: true,
-        external: [
-            'd3',
-            'topojson',
-            'taucharts'
-        ],
-        globals: {
-            'd3': 'd3',
-            'topojson': 'topojson',
-            'taucharts': 'tauCharts'
-        },
-        plugins: [
-            require('rollup-plugin-alias')({
-                'tau-tooltip': 'node_modules/tau-tooltip/src/tooltip.js',
-                'taucharts': 'src/tau.charts.ts'
-            }),
-            require('rollup-plugin-replace')({
-                '{{VERSION}}': `${require('../package.json').version}`
-            }),
-            require('rollup-plugin-node-resolve')(),
-            require('rollup-plugin-commonjs')({
-                namedExports: {
-                    'node_modules/chai/index.js': ['expect', 'assert']
-                }
-            }),
-            require('rollup-plugin-typescript')({
-                typescript: require('typescript'),
-                target: 'es5',
-                allowJs: true,
-                lib: [
-                    'es6',
-                    'dom'
-                ],
-                include: [
-                    '**/*.ts',
-                    '**/*.js'
-                ],
-                exclude: [
-                    'node_modules/**',
-                    'bower_components/**'
-                ]
-            })
-        ],
-        sourceMap: 'inline'
-    };
-}
-
 function getTestWebpackConfig() {
     var path = require('path');
-    var ensureDir = function(absolutePath) {
+    var ensureDir = function (absolutePath) {
         var fs = require('fs-extra');
         fs.mkdirsSync(absolutePath);
         return absolutePath;
@@ -159,29 +103,21 @@ function getTestWebpackConfig() {
                     ],
                     options: {
                         compilerOptions: {
-                            inlineSourceMap: true,
-                            sourceMap: false
+                            sourceMap: true
                         },
                         entryFileIsJs: true,
-                        transpileOnly: true,
-                        cacheDirectory: ensureDir(path.join(cachePath, './babelJS'))
+                        transpileOnly: true
                     }
                 },
-                // {
-                //     loader: 'istanbul-instrumenter-loader',
-                //     test: /\.(js|ts)$/,
-                //     exclude: [
-                //         'node_modules',
-                //         'bower_components',
-                //         'test',
-                //         'plugins',
-                //         'src/addons',
-                //         'src/utils/polyfills.js'
-                //     ],
-                //     options: {
-                //         esModules: true
-                //     }
-                // }
+                {
+                    loader: 'istanbul-instrumenter-loader',
+                    test: /\.(js|ts)$/,
+                    enforce: 'post',
+                    exclude: /test|addons|plugins|node_modules|bower_components|polyfills\.js|d3-labeler\.js|coords\.geomap\.js|chart-map\.ts/,
+                    options: {
+                        esModules: true
+                    }
+                }
             ]
         },
         externals: {

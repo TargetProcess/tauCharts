@@ -1,6 +1,6 @@
 // jscs:disable disallowQuotedKeysInObjects
 // jscs:disable validateQuoteMarks
-import * as $ from 'jquery';
+import $ from 'jquery';
 import {expect} from 'chai';
 import testUtils from './utils/utils';
 const {stubTimeout, describeChart} = testUtils;

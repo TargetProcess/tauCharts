@@ -1,7 +1,15 @@
-import tauCharts from 'taucharts';
-import * as $ from 'jquery';
+import tauCharts from '../../src/tau.charts';
+import $ from 'jquery';
 import * as utils from '../../src/utils/utils';
 import * as d3 from 'd3';
+
+tauCharts.api.globalSettings.animationSpeed = 0;
+tauCharts.api.globalSettings.renderingTimeout = 0;
+tauCharts.api.globalSettings.asyncRendering = false;
+tauCharts.api.globalSettings.avoidScrollAtRatio = 1;
+tauCharts.api.globalSettings.syncPointerEvents = true;
+tauCharts.api.globalSettings.handleRenderingErrors = false;
+tauCharts.api.globalSettings.experimentalShouldAnimate = () => true;
 
     var testChartSettings = {
         getAxisTickLabelSize: function (text) {

@@ -1,5 +1,6 @@
 import tauCharts from 'taucharts';
-import 'canvg';
+import canvg from 'canvg';
+import Promise from 'es6-promise';
 import {saveAs} from 'file-saver';
 import 'fetch';
 import printCss from './print.style.css';
