@@ -1,5 +1,7 @@
 module.exports = function (config) {
     console.log('dist/', require('fs').readdirSync('./dist'));
+    console.log('tasks/', require('fs').readdirSync('./dist'));
+    console.log('dist/plugins', require('fs').readdirSync('./dist'));
     config.set({
 
         basePath: '.',

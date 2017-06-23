@@ -8,7 +8,7 @@ require('./tasks/gulp-css')(gulp, plugins);
 require('./tasks/gulp-watch')(gulp, plugins);
 
 gulp.task('build', [
-    'build-css',
     'build-js',
     'build-plugins-js',
+    'build-css'
 ]);
