@@ -6,8 +6,8 @@ module.exports = function (config) {
         frameworks: ['mocha'],
 
         files: [
-            'dist/css/taucharts.css',
-            'dist/css/plugins/tooltip.css',
+            'dist/taucharts.css',
+            'dist/plugins/tooltip.css',
             'node_modules/d3/build/d3.js',
             'node_modules/topojson/build/topojson.js',
             'test/utils/test.css',
