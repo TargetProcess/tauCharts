@@ -58,7 +58,7 @@ function getTestWebpackConfig() {
             modules: [
                 path.resolve('.'),
                 'bower_components',
-                'node_modules',
+                'node_modules'
             ],
             alias: {
                 'canvg': 'bower_components/canvg/canvg.js',
@@ -69,7 +69,7 @@ function getTestWebpackConfig() {
                 'rgbcolor': 'bower_components/canvg/rgbcolor.js',
                 'stackblur': 'bower_components/canvg/StackBlur.js',
                 'taucharts': 'src/tau.charts.ts',
-                'tau-tooltip': 'node_modules/tau-tooltip/tooltip.js',
+                'tau-tooltip': 'node_modules/tau-tooltip/tooltip.js'
             },
             extensions: ['.js', '.json', '.ts']
         },
