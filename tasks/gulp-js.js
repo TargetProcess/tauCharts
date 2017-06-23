@@ -153,7 +153,7 @@ module.exports = (gulp, {connect}) => {
     gulp.task('build-js', () => {
 
         return createStream({
-            distDir: './dist',
+            distDir: './dist/',
             distFile: 'taucharts.js',
             rollupConfig: mainConfig,
             production: false
