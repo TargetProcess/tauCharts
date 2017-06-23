@@ -1,6 +1,6 @@
-import tauCharts from 'taucharts';
+import Taucharts from 'taucharts';
 
-    var utils = tauCharts.api.utils;
+    var utils = Taucharts.api.utils;
     var REFRESH_DELAY = 0;
 
     function QuickFilter(xSettings) {
@@ -273,6 +273,6 @@ import tauCharts from 'taucharts';
         };
     }
 
-    tauCharts.api.plugins.add('quick-filter', QuickFilter);
+    Taucharts.api.plugins.add('quick-filter', QuickFilter);
 
 export default QuickFilter;

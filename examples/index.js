@@ -2,7 +2,7 @@
 
     'use strict';
 
-    var utils = tauCharts.api.utils;
+    var utils = Taucharts.api.utils;
 
     //----------------------------------------------
     // NOTE: Place paths to specs and datasets here.
@@ -71,7 +71,7 @@
         'annotations',
         'box-whiskers',
         'crosshair',
-        'exportTo',
+        'export-to',
         'floating-axes',
         'layers',
         'legend',
@@ -84,18 +84,17 @@
     var LAZY_RENDERING = true;
 
     var pluginConfigs = {
-        'exportTo': {
+        'export-to': {
             cssPaths: [
-                '../dist/tauCharts.css',
-                '../dist/plugins/tauCharts.export.css',
-                '../dist/plugins/tauCharts.legend.css',
-                '../dist/plugins/tauCharts.trendline.css',
-                '../dist/plugins/tauCharts.annotations.css',
-                '../dist/plugins/tauCharts.quick-filter.css'
+                '../dist/taucharts.css',
+                '../dist/plugins/export.css',
+                '../dist/plugins/legend.css',
+                '../dist/plugins/trendline.css',
+                '../dist/plugins/annotations.css',
+                '../dist/plugins/quick-filter.css'
             ]
         }
     };
-
 
     function DevApp(paths) {
         this._specs = [];
@@ -251,7 +250,7 @@
                 s.plugins.splice(0);
                 settings.plugins.forEach(function (p) {
                     var config = pluginConfigs[p];
-                    s.plugins.push(tauCharts.api.plugins.get(p)(config));
+                    s.plugins.push(Taucharts.api.plugins.get(p)(config));
                 });
             }
 
@@ -271,8 +270,8 @@
             while (this._notRenderedSpecs.length) {
                 s = this._notRenderedSpecs.shift();
                 chart = (s.spec.type ?
-                    new tauCharts.Chart(s.spec) :
-                    new tauCharts.Plot(s.spec));
+                    new Taucharts.Chart(s.spec) :
+                    new Taucharts.Plot(s.spec));
                 chart.renderTo(s.target);
                 this._charts.push(chart);
             }
@@ -292,8 +291,8 @@
                 (rect.top <= top && rect.bottom >= bottom)
             ) {
                 chart = (s.spec.type ?
-                    new tauCharts.Chart(s.spec) :
-                    new tauCharts.Plot(s.spec));
+                    new Taucharts.Chart(s.spec) :
+                    new Taucharts.Plot(s.spec));
                 chart.renderTo(s.target);
                 this._charts.push(chart);
                 this._notRenderedSpecs.splice(i, 1);
@@ -660,19 +659,19 @@
     var randomWord = (function () {
 
         var sample = [
-            'TauCharts is a javascript graph library.',
+            'Taucharts is a javascript graph library.',
             'It is based on D3 framework.',
             'So, why do you need it?',
-            'There are number of similar libraries, but TauCharts has some unique features.',
+            'There are number of similar libraries, but Taucharts has some unique features.',
             'Many charting libraries look really ugly.',
             'They were created by programmers, and not all programmers have deep knowledge of design and information visualization.',
-            'TauCharts is designed with passion by professional designers and information visualization experts.',
+            'Taucharts is designed with passion by professional designers and information visualization experts.',
             'We put significant effort into the design of our charts and think a lot about clarity, ink-to-data ratio, integrity, and usability.',
-            'TauCharts has a nice framework and great extensibility options.',
+            'Taucharts has a nice framework and great extensibility options.',
             'Its plugins infrastructure is flexible and allows you to easily write your own plugins.',
             'Most charting libraries only provide a set of charts you can create.',
             'That is okay, but in many cases you need more sophisticated visualizations.',
-            'TauCharts is based on Grammar of Graphics and can draw some really complex and interactive visualizations.'
+            'Taucharts is based on Grammar of Graphics and can draw some really complex and interactive visualizations.'
         ].join(' ');
 
         var lettersUsage = {};

@@ -42,10 +42,10 @@ dev.spec({
     },
 
     plugins: [
-        tauCharts.api.plugins.get('legend')(),
-        tauCharts.api.plugins.get('tooltip')()
+        Taucharts.api.plugins.get('legend')(),
+        Taucharts.api.plugins.get('tooltip')()
         // ,
-        // tauCharts.api.plugins.get('settings')()
+        // Taucharts.api.plugins.get('settings')()
     ]
 
 });

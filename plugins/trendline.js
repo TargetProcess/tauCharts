@@ -1,4 +1,4 @@
-import tauCharts from 'taucharts';
+import Taucharts from 'taucharts';
 import * as d3 from 'd3';
 
     // jscs:disable
@@ -311,7 +311,7 @@ import * as d3 from 'd3';
         });
     }());
     // jscs:enable
-    var utils = tauCharts.api.utils;
+    var utils = Taucharts.api.utils;
 
     function trendline(xSettings) {
 
@@ -425,7 +425,7 @@ import * as d3 from 'd3';
                     return;
                 }
 
-                var periodGenerator = tauCharts.api.tickPeriod;
+                var periodGenerator = Taucharts.api.tickPeriod;
                 var createPeriodCaster = function (period) {
                     var gen = periodGenerator.get(period, {utc: specRef.settings.utcTime});
                     return function (x) {
@@ -593,6 +593,6 @@ import * as d3 from 'd3';
         };
     }
 
-    tauCharts.api.plugins.add('trendline', trendline);
+    Taucharts.api.plugins.add('trendline', trendline);
 
 export default trendline;

@@ -6089,7 +6089,7 @@ dev.spec({
         }
     ],
     plugins: [
-        tauCharts.api.plugins.get('legend')(),
-        tauCharts.api.plugins.get('quick-filter')(['CycleTime', 'EndDate'])
+        Taucharts.api.plugins.get('legend')(),
+        Taucharts.api.plugins.get('quick-filter')(['CycleTime', 'EndDate'])
     ]
 });

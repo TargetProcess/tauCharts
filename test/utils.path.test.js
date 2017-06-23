@@ -1,5 +1,5 @@
 import {expect} from 'chai';
-import tauCharts from '../src/tau.charts';
+import Taucharts from '../src/tau.charts';
 import createInterpolator from '../src/utils/path/interpolators/path-points';
 import {getBrushLine, getBrushCurve} from '../src/utils/path/svg/brush-line';
 import {getAreaPolygon, getSmoothAreaPath}from '../src/utils/path/svg/area-path';
@@ -429,7 +429,7 @@ import testUtils from './utils/utils';
                     });
             }
 
-            var chart = new tauCharts.Chart({
+            var chart = new Taucharts.Chart({
                 type: 'area',
                 data: [
                     {x: 10, y: 4},
@@ -485,7 +485,7 @@ import testUtils from './utils/utils';
             testDiv.style.height = '600px';
             document.body.appendChild(testDiv);
 
-            var chart = new tauCharts.Chart({
+            var chart = new Taucharts.Chart({
                 type: 'line',
                 data: [
                     {x: 10, y: 4},
@@ -514,7 +514,7 @@ import testUtils from './utils/utils';
             testDiv.style.height = '600px';
             document.body.appendChild(testDiv);
 
-            var chart = new tauCharts.Chart({
+            var chart = new Taucharts.Chart({
                 type: 'area',
                 data: [
                     {x: 10, y: 4},

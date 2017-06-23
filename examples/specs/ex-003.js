@@ -9,9 +9,9 @@ dev.spec({
     color: 'Country',
 
     plugins: [
-        tauCharts.api.plugins.get('legend')(),
-        tauCharts.api.plugins.get('trendline')(),
-        tauCharts.api.plugins.get('tooltip')({
+        Taucharts.api.plugins.get('legend')(),
+        Taucharts.api.plugins.get('trendline')(),
+        Taucharts.api.plugins.get('tooltip')({
             // fields: ['Athlete', 'Age', 'Total Medals', 'Sport']
         })
     ],

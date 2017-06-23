@@ -37,8 +37,8 @@ dev.spec({
         })
         .reverse(),
     plugins: [
-        tauCharts.api.plugins.get('tooltip')(),
-        tauCharts.api.plugins.get('annotations')({
+        Taucharts.api.plugins.get('tooltip')(),
+        Taucharts.api.plugins.get('annotations')({
             items: [
                 {
                     dim: 'count',
@@ -91,8 +91,8 @@ dev.spec({
         }, []),
 
     plugins: [
-        tauCharts.api.plugins.get('tooltip')(),
-        tauCharts.api.plugins.get('annotations')({
+        Taucharts.api.plugins.get('tooltip')(),
+        Taucharts.api.plugins.get('annotations')({
             items: [
                 {
                     dim: 'x',
@@ -147,8 +147,8 @@ dev.spec({
         }),
 
     plugins: [
-        tauCharts.api.plugins.get('tooltip')(),
-        tauCharts.api.plugins.get('annotations')({
+        Taucharts.api.plugins.get('tooltip')(),
+        Taucharts.api.plugins.get('annotations')({
             items: [
                 {
                     dim: 'x',
@@ -220,10 +220,10 @@ dev.spec({
         }),
 
     plugins: [
-        tauCharts.api.plugins.get('legend')(),
-        tauCharts.api.plugins.get('tooltip')(),
-        tauCharts.api.plugins.get('trendline')({showPanel: false}),
-        tauCharts.api.plugins.get('exportTo')()
+        Taucharts.api.plugins.get('legend')(),
+        Taucharts.api.plugins.get('tooltip')(),
+        Taucharts.api.plugins.get('trendline')({showPanel: false}),
+        Taucharts.api.plugins.get('export-to')()
     ]
 });
 
@@ -302,14 +302,14 @@ dev.spec({
     },
 
     plugins: [
-        tauCharts.api.plugins.get('parallel-brushing')({
+        Taucharts.api.plugins.get('parallel-brushing')({
             forceBrush: {
                 hp: [150, 200]
             }
         }),
-        tauCharts.api.plugins.get('parallel-tooltip')(),
-        tauCharts.api.plugins.get('geomap-legend')(),
-        tauCharts.api.plugins.get('exportTo')()
+        Taucharts.api.plugins.get('parallel-tooltip')(),
+        Taucharts.api.plugins.get('geomap-legend')(),
+        Taucharts.api.plugins.get('export-to')()
     ]
 
 });

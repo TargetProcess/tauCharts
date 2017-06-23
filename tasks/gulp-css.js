@@ -2,11 +2,11 @@ const less = require('gulp-less');
 const rename = require('gulp-rename');
 const eventStream = require('event-stream');
 
-const main = 'tauCharts';
+const main = 'taucharts';
 const plugins = [
     'annotations',
     'crosshair',
-    'export',
+    'export-to',
     'legend',
     'tooltip',
     'trendline',
@@ -29,7 +29,7 @@ module.exports = (gulp, {connect}) => {
 
     const getDestFile = (name, theme, isPlugin = false) => {
         const themePrefix = (theme === 'default' ? '' : `.${theme}`);
-        return `${isPlugin ? 'tauCharts.' : ''}${name}${themePrefix}.css`;
+        return `${name}${themePrefix}.css`;
     };
 
     const createStream = ({name, theme, isPlugin}) => {

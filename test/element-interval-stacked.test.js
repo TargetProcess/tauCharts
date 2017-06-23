@@ -2,7 +2,7 @@
 // jscs:disable validateQuoteMarks
 import {expect} from 'chai';
 import schemes from './utils/schemes';
-import tauCharts from '../src/tau.charts';
+import Taucharts from '../src/tau.charts';
 import testUtils from './utils/utils';
 const {TauChartError, errorCodes} = testUtils;
 
@@ -80,7 +80,7 @@ describe('ELEMENT.INTERVAL.STACKED', function () {
 
     it('should draw vertical stacked bar on y-measure / x-measure', function () {
 
-        var plot = new tauCharts.Chart({
+        var plot = new Taucharts.Chart({
             data: [
                 {x: 1, y: 0.60},
                 {x: 1, y: 0.30},
@@ -131,7 +131,7 @@ describe('ELEMENT.INTERVAL.STACKED', function () {
 
     it('should draw horizontal stacked bar on y-measure / x-measure', function () {
 
-        var plot = new tauCharts.Chart({
+        var plot = new Taucharts.Chart({
             data: [
                 {y: 1, x: 0.60},
                 {y: 1, x: 0.30},
@@ -182,7 +182,7 @@ describe('ELEMENT.INTERVAL.STACKED', function () {
 
     it('should draw vertical stacked bar on y-measure / x-category', function () {
 
-        var plot = new tauCharts.Chart({
+        var plot = new Taucharts.Chart({
             data: [
                 {x: 'A', y: 0.60},
                 {x: 'A', y: 0.30},
@@ -249,7 +249,7 @@ describe('ELEMENT.INTERVAL.STACKED', function () {
 
     it('should draw horizontal stacked bar on y-category / x-measure', function () {
 
-        var plot = new tauCharts.Chart({
+        var plot = new Taucharts.Chart({
             data: [
                 {y: 'A', x: 0.60},
                 {y: 'A', x: 0.30},
@@ -315,7 +315,7 @@ describe('ELEMENT.INTERVAL.STACKED', function () {
 
     it('should draw vertical stacked bar with color and size', function () {
 
-        var plot = new tauCharts.Chart({
+        var plot = new Taucharts.Chart({
             data: [
                 {x: 'A', y: 0.60, c: 'C1', s: 100},
                 {x: 'A', y: 0.40, c: 'C2', s: 50},
@@ -376,7 +376,7 @@ describe('ELEMENT.INTERVAL.STACKED', function () {
 
     it('should draw vertical stacked bar with color and size + prettify', function () {
 
-        var plot = new tauCharts.Chart({
+        var plot = new Taucharts.Chart({
             data: [
                 {x: 'A', y: 0.60, c: 'C1', s: 100},
                 {x: 'A', y: 0.40, c: 'C2', s: 50},
@@ -436,7 +436,7 @@ describe('ELEMENT.INTERVAL.STACKED', function () {
 
     it('should draw horizontal stacked bar with color and size + prettify', function () {
 
-        var plot = new tauCharts.Chart({
+        var plot = new Taucharts.Chart({
             data: [
                 {y: 'A', x: 0.60, c: 'C1', s: 100},
                 {y: 'A', x: 0.40, c: 'C2', s: 50},
@@ -496,7 +496,7 @@ describe('ELEMENT.INTERVAL.STACKED', function () {
 
     it('should throw on y-category / x-category', function () {
 
-        var plot = new tauCharts.Plot({
+        var plot = new Taucharts.Plot({
             data: [
                 {y: 'A', x: 'X'},
                 {y: 'B', x: 'Y'}
@@ -532,13 +532,13 @@ describe('ELEMENT.INTERVAL.STACKED', function () {
             err = ex;
         }
 
-        expect(err.errorCode).to.equals(tauCharts.api.errorCodes.STACKED_FIELD_NOT_NUMBER);
+        expect(err.errorCode).to.equals(Taucharts.api.errorCodes.STACKED_FIELD_NOT_NUMBER);
         expect(err.errorArgs.field).to.equals('y');
     });
 
     it('should support negative values in [stacked-bar]', function () {
 
-        var chart = new tauCharts.Chart({
+        var chart = new Taucharts.Chart({
             type: 'stacked-bar',
             data: [
                 {x: 'A', y: -0.60, c: 'C1', s: 100},
@@ -602,7 +602,7 @@ describe('ELEMENT.INTERVAL.STACKED', function () {
 
     it('should support negative values in [horizontal-stacked-bar]', function () {
 
-        var chart = new tauCharts.Chart({
+        var chart = new Taucharts.Chart({
             type: 'horizontal-stacked-bar',
             data: [
                 {y: 'A', x: 0.60, c: 'C1', s: 100},
@@ -660,7 +660,7 @@ describe('ELEMENT.INTERVAL.STACKED', function () {
 
     it('should support highlight event', function () {
 
-        var chart = new tauCharts.Chart({
+        var chart = new Taucharts.Chart({
             type: 'horizontal-stacked-bar',
             data: [
                 {y: 'A', x: 0.60, c: 'C1', s: 100},
@@ -697,7 +697,7 @@ describe('ELEMENT.INTERVAL.STACKED', function () {
 
     it('should infer color order from data by default', function () {
 
-        var chart0 = new tauCharts.Chart({
+        var chart0 = new Taucharts.Chart({
             type: 'stacked-bar',
             data: [
                 {x: 'A', y: 1, c: 'C1'},
@@ -725,7 +725,7 @@ describe('ELEMENT.INTERVAL.STACKED', function () {
 
     it('should take color order from dimension order if specified', function () {
 
-        var chart0 = new tauCharts.Chart({
+        var chart0 = new Taucharts.Chart({
             dimensions: {
                 c: {'type': 'category', 'scale': 'ordinal', order: ['C3', 'C1', 'C2']},
                 x: {'type': 'category', 'scale': 'ordinal'},
@@ -758,7 +758,7 @@ describe('ELEMENT.INTERVAL.STACKED', function () {
 
     it('should have valid size in facet', function () {
 
-        var chart0 = new tauCharts.Chart({
+        var chart0 = new Taucharts.Chart({
             type: 'stacked-bar',
             data: [
                 {f: 'Volleyball', x: '20-25', y: 1, s: 100},

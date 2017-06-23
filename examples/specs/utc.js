@@ -46,7 +46,7 @@ dev.spec({
         {x: utcDate(2017, 1, 12, 3, 0), y: 20}
     ],
     plugins: [
-        tauCharts.api.plugins.get('annotations')({
+        Taucharts.api.plugins.get('annotations')({
             items: [
                 {
                     dim: 'x',

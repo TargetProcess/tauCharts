@@ -1,4 +1,4 @@
-import tauCharts from 'taucharts';
+import Taucharts from 'taucharts';
 import canvg from 'canvg';
 import Promise from 'es6-promise';
 import {saveAs} from 'file-saver';
@@ -6,8 +6,8 @@ import 'fetch';
 import printCss from './print.style.css';
 import * as d3 from 'd3';
 
-    var utils = tauCharts.api.utils;
-    var pluginsSDK = tauCharts.api.pluginsSDK;
+    var utils = Taucharts.api.utils;
+    var pluginsSDK = Taucharts.api.pluginsSDK;
     var tokens = pluginsSDK.tokens();
 
     var trimChar = function (str, char) {
@@ -199,8 +199,8 @@ import * as d3 from 'd3';
                                         var domStr = (new XMLSerializer()).serializeToString(dom);
                                         var isError = (domStr.substring(0, 5).toLowerCase() === '<html');
                                         if (isError) {
-                                            tauCharts.api.globalSettings.log('[export plugin]: canvg error', 'error');
-                                            tauCharts.api.globalSettings.log(domStr, 'error');
+                                            Taucharts.api.globalSettings.log('[export plugin]: canvg error', 'error');
+                                            Taucharts.api.globalSettings.log(domStr, 'error');
                                         }
                                         resolve(canvas.toDataURL('image/png'));
                                     }
@@ -609,7 +609,7 @@ import * as d3 from 'd3';
             },
 
             onUnitDraw: function (chart, unit) {
-                if (tauCharts.api.isChartElement(unit) && unit.config.namespace === 'chart') {
+                if (Taucharts.api.isChartElement(unit) && unit.config.namespace === 'chart') {
                     this._unit = unit;
                 }
             },
@@ -727,7 +727,7 @@ import * as d3 from 'd3';
 
                 if (!this._cssPaths) {
                     this._cssPaths = [];
-                    tauCharts.api.globalSettings.log(
+                    Taucharts.api.globalSettings.log(
                         '[export plugin]: the "cssPath" parameter should be specified for correct operation',
                         'warn'
                     );
@@ -761,7 +761,11 @@ import * as d3 from 'd3';
                 var popupElement = popup.getElement();
                 popupElement.setAttribute('tabindex', '-1');
                 this._handleMenu(popupElement, chart, popup);
+                chart.on('export-to', function (chart, type) {
+                    this._select(type, chart);
+                }.bind(this));
                 chart.on('exportTo', function (chart, type) {
+                    console.warn('Taucharts Export Plug-in: `exportTo` event is deprecated, use `export-to` instead.');
                     this._select(type, chart);
                 }.bind(this));
                 this._onDestroy(function () {
@@ -781,6 +785,6 @@ import * as d3 from 'd3';
         };
     }
 
-    tauCharts.api.plugins.add('exportTo', exportTo);
+Taucharts.api.plugins.add('export-to', exportTo);
 
 export default exportTo;

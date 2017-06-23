@@ -1,7 +1,7 @@
-import tauCharts from 'taucharts';
+import Taucharts from 'taucharts';
 import * as d3 from 'd3';
 
-var utils = tauCharts.api.utils;
+var utils = Taucharts.api.utils;
 
 function BarAsSpan(settings) {
 
@@ -185,6 +185,6 @@ function BarAsSpan(settings) {
     };
 }
 
-tauCharts.api.plugins.add('bar-as-span', BarAsSpan);
+Taucharts.api.plugins.add('bar-as-span', BarAsSpan);
 
 export default BarAsSpan;

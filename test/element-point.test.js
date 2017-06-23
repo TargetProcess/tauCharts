@@ -1,7 +1,7 @@
 import {assert, expect} from 'chai';
 import schemes from './utils/schemes';
 import testUtils from './utils/utils';
-import tauCharts from '../src/tau.charts';
+import Taucharts from '../src/tau.charts';
 import tauBrewer from '../src/addons/color-brewer';
     var getDots = testUtils.getDots;
     var hasClass = testUtils.hasClass;
@@ -205,7 +205,7 @@ import tauBrewer from '../src/addons/color-brewer';
                         y: 'y',
                         color: 'color',
                         guide: {
-                            color: {brewer: tauCharts.api.colorBrewers.get('tauBrewer')('YlGn', 3)}
+                            color: {brewer: Taucharts.api.colorBrewers.get('tauBrewer')('YlGn', 3)}
                         }
                     }
                 ]

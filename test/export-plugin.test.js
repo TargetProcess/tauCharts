@@ -5,7 +5,7 @@ import legend from '../plugins/legend';
 import trendline from '../plugins/trendline';
 import mock from './utils/mock.window';
 import {saveAs} from './utils/saveAs';
-import exportTo from '../plugins/export';
+import exportTo from '../plugins/export-to';
 import $ from 'jquery';
 const describeChart = testUtils.describeChart;
 
@@ -69,7 +69,7 @@ const describeChart = testUtils.describeChart;
                     done();
                 });
                 expect($('[data-value="png"]').length).to.be.ok;
-                context.chart.fire('exportTo', 'png');
+                context.chart.fire('export-to', 'png');
             });
         },
         {

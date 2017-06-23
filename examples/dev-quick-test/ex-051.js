@@ -145,8 +145,8 @@ dev.spec({
         layoutEngine: 'NONE'
     },
     plugins: [
-        tauCharts.api.plugins.get('legend')(),
-        tauCharts.api.plugins.get('annotations')({
+        Taucharts.api.plugins.get('legend')(),
+        Taucharts.api.plugins.get('annotations')({
             items: [
                 {
                     dim: 'lon',
@@ -156,7 +156,7 @@ dev.spec({
                 }
             ]
         }),
-        tauCharts.api.plugins.get('tooltip')()
+        Taucharts.api.plugins.get('tooltip')()
     ]
 });
 
@@ -275,9 +275,9 @@ dev.spec({
         layoutEngine: 'NONE'
     },
     plugins: [
-        tauCharts.api.plugins.get('legend')(),
-        tauCharts.api.plugins.get('tooltip')(),
-        tauCharts.api.plugins.get('annotations')({
+        Taucharts.api.plugins.get('legend')(),
+        Taucharts.api.plugins.get('tooltip')(),
+        Taucharts.api.plugins.get('annotations')({
             items: [
                 {
                     dim: 'temperature',

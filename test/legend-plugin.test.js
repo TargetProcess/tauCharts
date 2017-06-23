@@ -2,10 +2,10 @@ import {expect} from 'chai';
 import testUtils from './utils/utils';
 import legend from '../plugins/legend';
 import trendline from '../plugins/trendline';
-import exportTo from '../plugins/export';
-import tauCharts from '../src/tau.charts';
+import exportTo from '../plugins/export-to';
+import Taucharts from '../src/tau.charts';
 
-    var chartTypes = tauCharts.api.chartTypesRegistry.getAllRegisteredTypes();
+    var chartTypes = Taucharts.api.chartTypesRegistry.getAllRegisteredTypes();
     var describeChart = testUtils.describeChart;
 
     function getText(node) {

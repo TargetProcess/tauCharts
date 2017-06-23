@@ -1,8 +1,8 @@
-import tauCharts from 'taucharts';
+import Taucharts from 'taucharts';
 import * as d3 from 'd3';
 
-    var utils = tauCharts.api.utils;
-    var pluginsSDK = tauCharts.api.pluginsSDK;
+    var utils = Taucharts.api.utils;
+    var pluginsSDK = Taucharts.api.pluginsSDK;
     var TARGET_SVG_CLASS = 'graphical-report__tooltip-target';
 
     var escapeHtml = function (x) {
@@ -463,11 +463,11 @@ import * as d3 from 'd3';
                     if (fmt.hasOwnProperty('format')) {
                         info[k].format = (typeof fmt.format === 'function') ?
                             (fmt.format) :
-                            (tauCharts.api.tickFormat.get(fmt.format, info[k].nullAlias));
+                            (Taucharts.api.tickFormat.get(fmt.format, info[k].nullAlias));
                     } else {
                         info[k].format = (info[k].hasOwnProperty('format')) ?
                             (info[k].format) :
-                            (tauCharts.api.tickFormat.get(null, info[k].nullAlias));
+                            (Taucharts.api.tickFormat.get(null, info[k].nullAlias));
                     }
                 });
 
@@ -481,6 +481,6 @@ import * as d3 from 'd3';
         return plugin;
     }
 
-    tauCharts.api.plugins.add('tooltip', Tooltip);
+    Taucharts.api.plugins.add('tooltip', Tooltip);
 
 export default Tooltip;

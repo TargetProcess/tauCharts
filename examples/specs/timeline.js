@@ -35,9 +35,9 @@ dev.spec({
     color: 'team',
     label: 'team',
     plugins: [
-        tauCharts.api.plugins.get('tooltip')(),
-        tauCharts.api.plugins.get('legend')(),
-        tauCharts.api.plugins.get('bar-as-span')({
+        Taucharts.api.plugins.get('tooltip')(),
+        Taucharts.api.plugins.get('legend')(),
+        Taucharts.api.plugins.get('bar-as-span')({
             x0: 'start'
         })
     ],
@@ -72,9 +72,9 @@ dev.spec({
     color: 'team',
     label: 'team',
     plugins: [
-        tauCharts.api.plugins.get('tooltip')(),
-        tauCharts.api.plugins.get('legend')(),
-        tauCharts.api.plugins.get('bar-as-span')({
+        Taucharts.api.plugins.get('tooltip')(),
+        Taucharts.api.plugins.get('legend')(),
+        Taucharts.api.plugins.get('bar-as-span')({
             x0: 'start',
             collapse: false
         })
@@ -110,9 +110,9 @@ dev.spec({
     color: 'team',
     label: 'team',
     plugins: [
-        tauCharts.api.plugins.get('tooltip')(),
-        tauCharts.api.plugins.get('legend')(),
-        tauCharts.api.plugins.get('bar-as-span')({
+        Taucharts.api.plugins.get('tooltip')(),
+        Taucharts.api.plugins.get('legend')(),
+        Taucharts.api.plugins.get('bar-as-span')({
             y0: 'start'
         })
     ],

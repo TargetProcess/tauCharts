@@ -34,6 +34,6 @@ dev.spec({
     }, []),
 
     plugins: [
-        tauCharts.api.plugins.get('trendline')({showPanel: false})
+        Taucharts.api.plugins.get('trendline')({showPanel: false})
     ]
 });

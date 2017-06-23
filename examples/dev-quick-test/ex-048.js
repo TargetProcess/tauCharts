@@ -52,16 +52,16 @@ dev.spec({
     },
 
     plugins: [
-        tauCharts.api.plugins.get('legend')(),
-        tauCharts.api.plugins.get('tooltip')({
+        Taucharts.api.plugins.get('legend')(),
+        Taucharts.api.plugins.get('tooltip')({
             aggregationGroupFields: ['x1', 'y1', 'size']
         }),
-        tauCharts.api.plugins.get('trendline')({showPanel: false}),
-        tauCharts.api.plugins.get('exportTo')({
+        Taucharts.api.plugins.get('trendline')({showPanel: false}),
+        Taucharts.api.plugins.get('export-to')({
 
             cssPaths: [
-                '../build/development/css/tauCharts.default.css',
-                '../build/development/plugins/tauCharts.trendline.css'
+                '../build/development/css/Taucharts.default.css',
+                '../build/development/plugins/Taucharts.trendline.css'
             ],
 
             appendFields: [
@@ -74,7 +74,7 @@ dev.spec({
                 }
             ]
         }),
-        tauCharts.api.plugins.get('annotations')({
+        Taucharts.api.plugins.get('annotations')({
             items: [
                 {
                     dim: 'y1',
@@ -102,7 +102,7 @@ dev.spec({
                 ,
                 {
                     dim: 'x1',
-                    val: tauCharts.api.tickPeriod.get('month').cast(1420092000000),
+                    val: Taucharts.api.tickPeriod.get('month').cast(1420092000000),
                     text: 'Build 33',
                     position: 'front',
                     color: 'green'
@@ -114,8 +114,8 @@ dev.spec({
                     //val: '1425189600000',
                     //val: ["\/Date(1430456400000-0500)\/", "\/Date(1433134800000-0500)\/"],
                     val: [
-                        tauCharts.api.tickPeriod.get('month').cast(new Date('2016-05-01')),
-                        tauCharts.api.tickPeriod.get('month').cast(new Date('2016-07-01'))
+                        Taucharts.api.tickPeriod.get('month').cast(new Date('2016-05-01')),
+                        Taucharts.api.tickPeriod.get('month').cast(new Date('2016-07-01'))
                     ],
                     text: 'Build 33',
                     position: 'front',
@@ -126,8 +126,8 @@ dev.spec({
                     dim: 'x1',
                     val: ["\/Date(1430456400000-0500)\/", "\/Date(1433134800000-0500)\/"],
                     //val: [
-                    //    tauCharts.api.tickPeriod.get('month').cast(new Date('2016-05-01')),
-                    //    tauCharts.api.tickPeriod.get('month').cast(new Date('2016-07-01'))
+                    //    Taucharts.api.tickPeriod.get('month').cast(new Date('2016-05-01')),
+                    //    Taucharts.api.tickPeriod.get('month').cast(new Date('2016-07-01'))
                     //],
                     text: 'Build 55',
                     position: 'front',
@@ -320,7 +320,7 @@ dev.spec({
             "id": "89367",
             "type": "Feature",
             "orderingValue": null,
-            "data": {"id": 89367, "name": "Charting Engine (taucharts) MVF", "type": "Feature"},
+            "data": {"id": 89367, "name": "Charting Engine (Taucharts) MVF", "type": "Feature"},
             "coords": {
                 "x1": "\/Date(1422770400000-0600)\/",
                 "y1": 63.0000,
