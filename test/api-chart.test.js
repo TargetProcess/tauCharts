@@ -2,7 +2,7 @@ import {assert, expect} from 'chai';
 import {Tooltip as Balloon} from '../src/api/balloon';
 import utils from './utils/utils';
 import $ from 'jquery';
-import tauCharts from '../src/tau.charts';
+import Taucharts from '../src/tau.charts';
 import layers from '../plugins/layers';
 
     var div, spec;
@@ -48,7 +48,7 @@ import layers from '../plugins/layers';
         };
 
         beforeEach(function () {
-            tauCharts.Chart.winAware = [];
+            Taucharts.Chart.winAware = [];
             div1 = createDiv();
             div2 = createDiv();
             div3 = createDiv();
@@ -71,11 +71,11 @@ import layers from '../plugins/layers';
                 expect(parseInt($(svg).attr('height'))).to.be.equal(height);
             }
 
-            var chart1 = new tauCharts.Chart(createConfig());
-            var chart2 = new tauCharts.Chart(createConfig());
+            var chart1 = new Taucharts.Chart(createConfig());
+            var chart2 = new Taucharts.Chart(createConfig());
             var config3 = createConfig();
             config3.autoResize = false;
-            var chart3 = new tauCharts.Chart(config3);
+            var chart3 = new Taucharts.Chart(config3);
             chart1.renderTo(div1);
             div1.style.width = 300 + 'px';
             chart2.renderTo(div2);
@@ -89,7 +89,7 @@ import layers from '../plugins/layers';
             checkSizes(chart2, 600, 800);
             checkSizes(chart3, 600, 800);
             // emulate resize
-            tauCharts.Chart.resizeOnWindowEvent();
+            Taucharts.Chart.resizeOnWindowEvent();
             var d = $.Deferred();
             setTimeout(function () {
                 checkSizes(chart1, 300, 800);
@@ -101,8 +101,8 @@ import layers from '../plugins/layers';
                 chart1.destroy();
                 chart2.destroy();
                 chart3.destroy();
-                tauCharts.Chart.resizeOnWindowEvent();
-                expect(tauCharts.Chart.winAware.length).to.be.equals(0);
+                Taucharts.Chart.resizeOnWindowEvent();
+                expect(Taucharts.Chart.winAware.length).to.be.equals(0);
                 setTimeout(function () {
                     done();
                 });
@@ -161,31 +161,31 @@ import layers from '../plugins/layers';
         });
 
         it('should support [entire-view] model', function () {
-            var chart1 = new tauCharts.Chart(createConfig('entire-view'));
+            var chart1 = new Taucharts.Chart(createConfig('entire-view'));
             chart1.renderTo(div1);
             checkSizes(chart1, 600, 800);
         });
 
         it('should support [normal] model', function () {
-            var chart1 = new tauCharts.Chart(createConfig('normal'));
+            var chart1 = new Taucharts.Chart(createConfig('normal'));
             chart1.renderTo(div1);
             checkSizes(chart1, 600, 800);
         });
 
         it('should support [fit-width] model', function () {
-            var chart1 = new tauCharts.Chart(createConfig('fit-width'));
+            var chart1 = new Taucharts.Chart(createConfig('fit-width'));
             chart1.renderTo(div1);
             checkSizes(chart1, 600, 218);
         });
 
         it('should support [fit-height] model', function () {
-            var chart1 = new tauCharts.Chart(createConfig('fit-height'));
+            var chart1 = new Taucharts.Chart(createConfig('fit-height'));
             chart1.renderTo(div1);
             checkSizes(chart1, 165, 800);
         });
 
         it('should support [minimal] model', function () {
-            var chart1 = new tauCharts.Chart(createConfig('minimal'));
+            var chart1 = new Taucharts.Chart(createConfig('minimal'));
             chart1.renderTo(div1);
             checkSizes(chart1, 165, 256);
         });
@@ -254,35 +254,35 @@ import layers from '../plugins/layers';
         });
 
         it('should support [normal] model', function () {
-            var chart = new tauCharts.Chart(createConfig('normal'));
+            var chart = new Taucharts.Chart(createConfig('normal'));
             chart.renderTo(div);
             expect(getTicks(chart, 'x').length).to.be.above(0);
             expect(getTicks(chart, 'y').length).to.be.above(0);
         });
 
         it('should support [entire-view] model', function () {
-            var chart = new tauCharts.Chart(createConfig('entire-view'));
+            var chart = new Taucharts.Chart(createConfig('entire-view'));
             chart.renderTo(div);
             expect(getTicks(chart, 'x').length).to.be.equal(0);
             expect(getTicks(chart, 'y').length).to.be.equal(0);
         });
 
         it('should support [fit-width] model', function () {
-            var chart = new tauCharts.Chart(createConfig('fit-width'));
+            var chart = new Taucharts.Chart(createConfig('fit-width'));
             chart.renderTo(div);
             expect(getTicks(chart, 'x').length).to.be.above(0);
             expect(getTicks(chart, 'y').length).to.be.equal(0);
         });
 
         it('should support [fit-height] model', function () {
-            var chart = new tauCharts.Chart(createConfig('fit-height'));
+            var chart = new Taucharts.Chart(createConfig('fit-height'));
             chart.renderTo(div);
             expect(getTicks(chart, 'x').length).to.be.equal(0);
             expect(getTicks(chart, 'y').length).to.be.above(0);
         });
 
         it('should support [minimal] model', function () {
-            var chart = new tauCharts.Chart(createConfig('minimal'));
+            var chart = new Taucharts.Chart(createConfig('minimal'));
             chart.renderTo(div);
             expect(getTicks(chart, 'x').length).to.be.above(0);
             expect(getTicks(chart, 'y').length).to.be.above(0);
@@ -356,14 +356,14 @@ import layers from '../plugins/layers';
         });
 
         it('should not hide axes ticks for [normal] model', function () {
-            var chart = new tauCharts.Chart(createConfig('normal'));
+            var chart = new Taucharts.Chart(createConfig('normal'));
             chart.renderTo(div);
             expect(getTicks(chart, 'x').length).to.be.above(0);
             expect(getTicks(chart, 'y').length).to.be.above(0);
         });
 
         it('should hide axes ticks for [entire-view] model', function () {
-            var chart = new tauCharts.Chart(createConfig('entire-view'));
+            var chart = new Taucharts.Chart(createConfig('entire-view'));
             chart.renderTo(div);
             expect(getTicks(chart, 'x').length).to.be.equal(0);
             expect(getTicks(chart, 'y').length).to.be.equal(0);
@@ -381,8 +381,8 @@ import layers from '../plugins/layers';
             container.style.width = '120px';
             container.style.height = '120px';
             document.body.appendChild(container);
-            var scrollbar = tauCharts.api.globalSettings.getScrollbarSize(container);
-            var chart = new tauCharts.Chart({
+            var scrollbar = Taucharts.api.globalSettings.getScrollbarSize(container);
+            var chart = new Taucharts.Chart({
                 type: 'bar',
                 x: 'x',
                 y: 'y',
@@ -421,7 +421,7 @@ import layers from '../plugins/layers';
         });
 
         var createChart = function ({syncPointerEvents}) {
-            chart = new tauCharts.Chart({
+            chart = new Taucharts.Chart({
                 type: 'bar',
                 x: 'x',
                 y: 'y',
@@ -499,7 +499,7 @@ import layers from '../plugins/layers';
         container.style.width = '800px';
         container.style.height = '600px';
         document.body.appendChild(container);
-        var chart = new tauCharts.Chart({
+        var chart = new Taucharts.Chart({
             type: 'line',
             x: 'date',
             y: 'value',
@@ -560,7 +560,7 @@ import layers from '../plugins/layers';
 
         it('api test element events', function (done) {
 
-            var plot = new tauCharts.Plot(config);
+            var plot = new Taucharts.Plot(config);
             plot.renderTo(div);
             var simulateEvent = utils.simulateEvent;
             var event = ['elementclick', 'elementmouseover', 'elementmouseout'];
@@ -644,7 +644,7 @@ import layers from '../plugins/layers';
                     }
                 ]
             };
-            var plot = new tauCharts.Plot(config);
+            var plot = new Taucharts.Plot(config);
             plot.fire('elementclick');
             plot.fire('customevent');
             plot.destroy();
@@ -656,7 +656,7 @@ import layers from '../plugins/layers';
         });
 
         it('api test insertToRightSidebar', function () {
-            var plot = new tauCharts.Plot(config);
+            var plot = new Taucharts.Plot(config);
             plot.renderTo(div);
             var $div = $('<div>test</div>>');
             var divTest = $div.get(0);
@@ -674,7 +674,7 @@ import layers from '../plugins/layers';
         });
 
         it('api test insertToLeftSidebar', function () {
-            var plot = new tauCharts.Plot(config);
+            var plot = new Taucharts.Plot(config);
             plot.renderTo(div);
             var $div = $('<div>test</div>>');
             var divTest = $div.get(0);
@@ -692,7 +692,7 @@ import layers from '../plugins/layers';
         });
 
         it('api test insertToHeader', function () {
-            var plot = new tauCharts.Plot(config);
+            var plot = new Taucharts.Plot(config);
             plot.renderTo(div);
             var $div = $('<div>test</div>>');
             var divTest = $div.get(0);
@@ -711,7 +711,7 @@ import layers from '../plugins/layers';
         });
 
         it('api test insertToFooter', function () {
-            var plot = new tauCharts.Plot(config);
+            var plot = new Taucharts.Plot(config);
             plot.renderTo(div);
             var $div = $('<div>test</div>>');
             var divTest = $div.get(0);
@@ -730,7 +730,7 @@ import layers from '../plugins/layers';
         });
 
         it('api test set and get data', function (done) {
-            var plot = new tauCharts.Plot(config);
+            var plot = new Taucharts.Plot(config);
             plot.renderTo(div);
 
             expect(plot.getChartModelData()).to.eql(config.data);
@@ -744,7 +744,7 @@ import layers from '../plugins/layers';
         });
 
         it('api test getSVG', function () {
-            var plot = new tauCharts.Plot(config);
+            var plot = new Taucharts.Plot(config);
             var svg = plot.getSVG();
             expect(svg).to.be.equals(null);
             plot.renderTo(div);
@@ -755,7 +755,7 @@ import layers from '../plugins/layers';
         it('api test filters', function () {
             var newConfig = Object.assign({}, config);
             newConfig.data = [{x: 1, y: 2, z: 'category1'}, {x: 3, y: 4, z: 'category2'}, {x: 3, y: 1, z: 'category3'}];
-            var plot = new tauCharts.Plot(newConfig);
+            var plot = new Taucharts.Plot(newConfig);
             var id = plot.addFilter({
                 tag: 'testFilter', predicate: function (item) {
                     return item.z === 'category3';
@@ -792,7 +792,7 @@ import layers from '../plugins/layers';
         });
 
         it('api test add balloon', function () {
-            var plot = new tauCharts.Plot(config);
+            var plot = new Taucharts.Plot(config);
             var balloon = plot.addBalloon();
             expect(balloon).to.be.instanceof(Balloon);
         });
@@ -800,13 +800,13 @@ import layers from '../plugins/layers';
         it('register plugins', function () {
             var myPlugins = {myPlugins: true};
             var myPlugins2 = {myPlugins: false};
-            tauCharts.api.plugins.add('myPlugins', myPlugins);
-            expect(tauCharts.api.plugins.get('myPlugins')).to.eql(myPlugins);
+            Taucharts.api.plugins.add('myPlugins', myPlugins);
+            expect(Taucharts.api.plugins.get('myPlugins')).to.eql(myPlugins);
             expect(function () {
-                tauCharts.api.plugins.add('myPlugins', myPlugins2);
+                Taucharts.api.plugins.add('myPlugins', myPlugins2);
             }).to.throw(Error);
             expect(function () {
-                tauCharts.api.plugins.get('UnknownPlugin')();
+                Taucharts.api.plugins.get('UnknownPlugin')();
             }).to.throw(Error);
         });
     });

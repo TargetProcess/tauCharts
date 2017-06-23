@@ -2,20 +2,26 @@
   "name": "taucharts",
   "version": "2.0.0-beta.0",
   "homepage": "https://github.com/TargetProcess/tauCharts",
-  "description": "D3 based data-focused charting library",
+  "description": "Data-focused charting library based on D3",
   "author": {
-    "name": "Taucraft Limited"
+    "name": "Targetprocess, Inc."
   },
   "keywords": [
     "d3",
-    "charts"
+    "svg",
+    "charts",
+    "graphics",
+    "barchart",
+    "linechart",
+    "scatterplot",
+    "visualization"
   ],
-  "main": "build/development/tauCharts.js",
+  "main": "dist/taucharts.js",
   "license": "Apache-2.0",
   "licenses": [
     {
       "type": "Apache License 2.0",
-      "url": "https://github.com/TargetProcess/tauCharts/blob/master/license.md"
+      "url": "https://github.com/TargetProcess/tauCharts/blob/master/LICENSE"
     }
   ],
   "dependencies": {
@@ -65,24 +71,10 @@
     "webpack": "^2.6.1"
   },
   "scripts": {
-    "dev": "gulp watch",
+    "start": "gulp watch",
     "build": "gulp build",
-    "test": "gulp build && karma start config/karma.conf.js",
+    "test": "gulp build-css && karma start",
     "prepublish": "bower install"
-  },
-  "_old_scripts": {
-    "devserver": "grunt webpack-dev-server:start",
-    "less2css": "grunt less",
-    "eslint": "eslint src/**",
-    "watch-less": "grunt watch:less",
-    "build": "bower install && grunt build",
-    "webpackbuild": "grunt webpack:build",
-    "test": "npm run eslint && npm run travis && karma start config/karma.conf.js",
-    "travis": "grunt travis",
-    "release": "grunt publish && grunt gh-pages",
-    "devtest": "grunt karma:dev",
-    "buildExporTo": "grunt webpack:buildExportTo",
-    "prepublish": "grunt clean:npmpublish && npm run build"
   },
   "types": "./types/index.d.ts"
 }

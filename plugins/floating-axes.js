@@ -1,7 +1,7 @@
-import tauCharts from 'taucharts';
+import Taucharts from 'taucharts';
 import * as d3 from 'd3';
 
-    var utils = tauCharts.api.utils;
+    var utils = Taucharts.api.utils;
 
     var SHADOW_SIZE = 16;
     var SHADOW_COLOR_0 = '#E5E7EB';
@@ -128,7 +128,7 @@ import * as d3 from 'd3';
                 var minXAxesY = mmin(axesInfo.x.map(function (i) {
                     return (i.axisTransform.translate.y + i.parentTransform.translate.y);
                 })) - 1;
-                var scrollbars = tauCharts.api.globalSettings.getScrollbarSize(root);
+                var scrollbars = Taucharts.api.globalSettings.getScrollbarSize(root);
 
                 function getPositions() {
                     return {
@@ -625,6 +625,6 @@ import * as d3 from 'd3';
         };
     };
 
-    tauCharts.api.plugins.add('floating-axes', floatingAxes);
+    Taucharts.api.plugins.add('floating-axes', floatingAxes);
 
 export default floatingAxes;

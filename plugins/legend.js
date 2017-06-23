@@ -1,8 +1,8 @@
-import tauCharts from 'taucharts';
+import Taucharts from 'taucharts';
 import * as d3 from 'd3';
 
-    var utils = tauCharts.api.utils;
-    var pluginsSDK = tauCharts.api.pluginsSDK;
+    var utils = Taucharts.api.utils;
+    var pluginsSDK = Taucharts.api.pluginsSDK;
     var RESET_SELECTOR = '.graphical-report__legend__reset';
     var COLOR_ITEM_SELECTOR = '.graphical-report__legend__item-color';
     var COLOR_TOGGLE_SELECTOR = '.graphical-report__legend__guide--color__overlay';
@@ -1001,6 +1001,6 @@ import * as d3 from 'd3';
         };
     }
 
-    tauCharts.api.plugins.add('legend', ChartLegend);
+    Taucharts.api.plugins.add('legend', ChartLegend);
 
 export default ChartLegend;

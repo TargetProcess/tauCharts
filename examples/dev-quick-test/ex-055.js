@@ -7,13 +7,13 @@
         var tauPlugins = require('taucharts');
         module.exports = factory(tauPlugins);
     } else {
-        factory(this.tauCharts);
+        factory(this.Taucharts);
     }
-})(function (tauCharts) {
+})(function (Taucharts) {
 
-    var _ = tauCharts.api._;
-    var d3 = tauCharts.api.d3;
-    var createUpdateFunc = tauCharts.api.d3_animationInterceptor;
+    var _ = Taucharts.api._;
+    var d3 = Taucharts.api.d3;
+    var createUpdateFunc = Taucharts.api.d3_animationInterceptor;
 
     var drawRect = function (container, id, props) {
 
@@ -34,7 +34,7 @@
         return rect;
     };
 
-    tauCharts.api.unitsRegistry.reg(
+    Taucharts.api.unitsRegistry.reg(
         'ELEMENT.CFD',
         {
             addInteraction: function () {
@@ -374,7 +374,7 @@
         };
     }
 
-    tauCharts.api.plugins.add('cfd', cfd);
+    Taucharts.api.plugins.add('cfd', cfd);
 
     return cfd;
 });
@@ -1993,7 +1993,7 @@ dev.spec({
     "y": "count",
     "color": "entityState",
     plugins: [
-        tauCharts.api.plugins.get('cfd')()
+        Taucharts.api.plugins.get('cfd')()
     ],
     "data": cfdData
 });

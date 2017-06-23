@@ -2,8 +2,8 @@ import testUtils from './utils/utils';
 import {expect} from 'chai';
 import {SpecTransformAutoLayout as SpecAutoLayout} from '../src/spec-transform-auto-layout';
 import {SpecConverter} from '../src/spec-converter';
-import tauCharts from '../src/tau.charts';
-const scalesRegistry = tauCharts.api.scalesRegistry.instance();
+import Taucharts from '../src/tau.charts';
+const scalesRegistry = Taucharts.api.scalesRegistry.instance();
 import {ScalesFactory} from '../src/scales-factory';
 
     describe('Spec engine factory', function () {

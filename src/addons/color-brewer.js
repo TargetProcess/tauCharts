@@ -1,4 +1,4 @@
-import tauCharts from 'taucharts';
+import Taucharts from 'taucharts';
 
     // This product includes color specifications and designs developed by Cynthia Brewer (http://colorbrewer.org/).
     var colorbrewer = {
@@ -309,6 +309,6 @@ import tauCharts from 'taucharts';
             return hueSet + ' ' + 'q' + index + '-' + colorNumber;
         });
     };
-    tauCharts.api.colorBrewers.add('tauBrewer', tauBrewer);
+    Taucharts.api.colorBrewers.add('tauBrewer', tauBrewer);
 
 export default tauBrewer;

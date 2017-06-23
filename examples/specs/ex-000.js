@@ -10,10 +10,10 @@ dev.spec({
     size: 'mass',
 
     plugins: [
-        tauCharts.api.plugins.get('legend')({
+        Taucharts.api.plugins.get('legend')({
             position: 'bottom'
         }),
-        tauCharts.api.plugins.get('tooltip')()
+        Taucharts.api.plugins.get('tooltip')()
     ],
 
     data: dev.dataset('exoplanets')

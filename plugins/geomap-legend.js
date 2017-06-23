@@ -1,6 +1,6 @@
-import tauCharts from 'taucharts';
+import Taucharts from 'taucharts';
 
-    var utils = tauCharts.api.utils;
+    var utils = Taucharts.api.utils;
 
     function ChartGeoMapLegend(xSettings) {
 
@@ -313,6 +313,6 @@ import tauCharts from 'taucharts';
         return plugin;
     }
 
-    tauCharts.api.plugins.add('geomap-legend', ChartGeoMapLegend);
+    Taucharts.api.plugins.add('geomap-legend', ChartGeoMapLegend);
 
 export default ChartGeoMapLegend;

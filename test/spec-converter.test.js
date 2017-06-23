@@ -1,4 +1,4 @@
-import tauCharts from '../src/tau.charts';
+import Taucharts from '../src/tau.charts';
 import {expect} from 'chai';
 import testUtils from './utils/utils';
 import {SpecConverter as Converter} from '../src/spec-converter';
@@ -365,7 +365,7 @@ import {SpecConverter as Converter} from '../src/spec-converter';
 
         it('should change scale type from time to period when tickPeriod is specified', function () {
 
-            var c1 = new tauCharts.Chart({
+            var c1 = new Taucharts.Chart({
                 type: 'bar',
                 x: 'x1',
                 y: 'y1',
@@ -384,7 +384,7 @@ import {SpecConverter as Converter} from '../src/spec-converter';
 
             expect(x1TimeScale.type).to.equals('time');
 
-            var c2 = new tauCharts.Chart({
+            var c2 = new Taucharts.Chart({
                 type: 'bar',
                 x: 'x1',
                 y: 'y1',
@@ -410,7 +410,7 @@ import {SpecConverter as Converter} from '../src/spec-converter';
 
         it('should not fail when unknown tickPeriod is specified', function () {
 
-            var c2 = new tauCharts.Chart({
+            var c2 = new Taucharts.Chart({
                 type: 'bar',
                 x: 'x1',
                 y: 'y1',

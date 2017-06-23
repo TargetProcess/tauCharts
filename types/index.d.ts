@@ -233,7 +233,7 @@ declare var api: {
             axisVPadding?: number;
         }) => PluginObject;
 
-        get(name: 'exportTo'): (settings?: {
+        get(name: 'export-to'): (settings?: {
             fontSize?: number;
             paddingTop?: number;
             backgroundColor?: string;

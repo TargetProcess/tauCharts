@@ -22,8 +22,8 @@ dev.spec({
         {state: 'co', population: 1250}
     ],
     plugins: [
-        tauCharts.api.plugins.get('geomap-tooltip')(),
-        tauCharts.api.plugins.get('geomap-legend')()
+        Taucharts.api.plugins.get('geomap-tooltip')(),
+        Taucharts.api.plugins.get('geomap-legend')()
     ]
 
 });

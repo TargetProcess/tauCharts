@@ -3,7 +3,7 @@
 import {expect} from 'chai';
 import schemes from './utils/schemes';
 import {assert} from 'chai';
-import tauCharts from '../src/tau.charts';
+import Taucharts from '../src/tau.charts';
 import {Cartesian as Cartesian} from '../src/elements/coords.cartesian';
 import {Interval as Interval} from '../src/elements/element.interval';
 import {ScalesFactory as ScalesFactory} from '../src/scales-factory';
@@ -11,7 +11,7 @@ import * as utils from '../src/utils/utils';
 import testUtils from './utils/utils';
 
     var iref = 0;
-    var scalesRegistry = tauCharts.api.scalesRegistry.instance({
+    var scalesRegistry = Taucharts.api.scalesRegistry.instance({
         references: new WeakMap(),
         refCounter: (() => (++iref))
     });
@@ -153,7 +153,7 @@ import testUtils from './utils/utils';
                     context.element = document.createElement('div');
                     document.body.appendChild(context.element);
 
-                    // tauCharts.Plot.globalSettings = testChartSettings;
+                    // Taucharts.Plot.globalSettings = testChartSettings;
 
                     var sss = convertSpec(spec, data);
                     if (size.print) {
@@ -163,7 +163,7 @@ import testUtils from './utils/utils';
                     sss.settings = sss.settings || {};
                     sss.settings.specEngine = 'NONE';
                     sss.settings.layoutEngine = 'NONE';
-                    context.chart = new tauCharts.Plot(sss);
+                    context.chart = new Taucharts.Plot(sss);
                     context.chart.renderTo(
                         context.element,
                         {
@@ -1206,7 +1206,7 @@ import testUtils from './utils/utils';
 
         it('should draw horizontal bar on 2 order axis', function () {
 
-            var plot = new tauCharts.Chart({
+            var plot = new Taucharts.Chart({
                 data: [
                     {
                         "createDate": new Date(iso("2014-09-01T00:00:00")),
@@ -1279,7 +1279,7 @@ import testUtils from './utils/utils';
 
         it('should draw vertical bar on 2 order axis', function () {
 
-            var plot = new tauCharts.Chart({
+            var plot = new Taucharts.Chart({
                 data: [
                     {
                         "createDate": new Date(iso("2014-09-01T00:00:00")),

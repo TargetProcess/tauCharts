@@ -23,7 +23,7 @@ const tsConfig = {
 const mainConfig = {
     entry: './src/tau.charts.ts',
     moduleId: 'taucharts',
-    moduleName: 'tauCharts',
+    moduleName: 'Taucharts',
     exports: 'default',
     format: 'umd',
     useStrict: true,
@@ -58,7 +58,7 @@ const pluginsCommonConfig = {
     ],
     globals: {
         'd3': 'd3',
-        'taucharts': 'tauCharts'
+        'taucharts': 'Taucharts'
     },
     plugins: [
         require('rollup-plugin-commonjs')(),
@@ -71,7 +71,7 @@ const plugins = [
     'bar-as-span',
     'box-whiskers',
     'crosshair',
-    ['export', {
+    ['export-to', {
         onwarn: function (warning) {
             // Note: 'fetch' causes a warning.
             if (warning.code === 'THIS_IS_UNDEFINED') {
@@ -103,7 +103,7 @@ const plugins = [
     'quick-filter',
     'settings',
     'tooltip',
-    'trendline'
+    'trendline',
 ];
 
 const cache = {};
@@ -147,15 +147,14 @@ module.exports = (gulp, {connect}) => {
         }
         return stream
             .pipe(source(distFile))
-            .pipe(gulp.dest(distDir))
-            .pipe(connect.reload());
+            .pipe(gulp.dest(distDir));
     };
 
     gulp.task('build-js', () => {
 
         return createStream({
             distDir: './dist',
-            distFile: 'tauCharts.js',
+            distFile: 'taucharts.js',
             rollupConfig: mainConfig,
             production: false
         }).pipe(connect.reload());
@@ -168,7 +167,7 @@ module.exports = (gulp, {connect}) => {
             const [plugin, pluginConfig] = (Array.isArray(p) ? p : [p, {}]);
             return createStream({
                 distDir: './dist/plugins',
-                distFile: `tauCharts.${plugin}.js`,
+                distFile: `${plugin}.js`,
                 rollupConfig: Object.assign(
                     {},
                     pluginsCommonConfig,

@@ -1,8 +1,8 @@
-import tauCharts from 'taucharts';
+import Taucharts from 'taucharts';
 import * as d3 from 'd3';
 
-    var utils = tauCharts.api.utils;
-    var pluginsSDK = tauCharts.api.pluginsSDK;
+    var utils = Taucharts.api.utils;
+    var pluginsSDK = Taucharts.api.pluginsSDK;
 
     var addToUnits = function (units, newUnit, position) {
         if (position === 'front') {
@@ -79,7 +79,7 @@ import * as d3 from 'd3';
                     var primaryScaleInfo = chart.getScaleInfo(metaInfo.primaryScale);
 
                     if ((primaryScaleInfo.scaleType === 'period')) {
-                        var periodCaster = tauCharts.api.tickPeriod.get(primaryScaleInfo.period,
+                        var periodCaster = Taucharts.api.tickPeriod.get(primaryScaleInfo.period,
                             {utc: specRef.settings.utcTime});
                         from = periodCaster.cast(new Date(metaInfo.from));
                         to = periodCaster.cast(new Date(metaInfo.to));
@@ -139,7 +139,7 @@ import * as d3 from 'd3';
 
                     var primaryScaleInfo = chart.getScaleInfo(primary);
                     var from = ((primaryScaleInfo.scaleType === 'period') ?
-                        tauCharts.api.tickPeriod.get(primaryScaleInfo.period, {utc: specRef.settings.utcTime})
+                        Taucharts.api.tickPeriod.get(primaryScaleInfo.period, {utc: specRef.settings.utcTime})
                             .cast(new Date(metaInfo.from)) :
                         metaInfo.from);
                     var isOutOfDomain = (!primaryScaleInfo.isInDomain(from));
@@ -345,6 +345,6 @@ import * as d3 from 'd3';
         };
     }
 
-    tauCharts.api.plugins.add('annotations', annotations);
+    Taucharts.api.plugins.add('annotations', annotations);
 
 export default annotations;

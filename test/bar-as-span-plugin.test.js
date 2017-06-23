@@ -1,5 +1,5 @@
 import {assert} from 'chai';
-import tauCharts from '../src/tau.charts';
+import Taucharts from '../src/tau.charts';
 import BarAsSpanPlugin from '../plugins/bar-as-span';
 
 import testUtils from './utils/utils';
@@ -23,7 +23,7 @@ const {noScrollStyle} = testUtils;
 
         it('should place spans correct', function () {
 
-            var chart = new tauCharts.Chart({
+            var chart = new Taucharts.Chart({
                 type: 'horizontal-bar',
                 x: 'end',
                 y: ['team', 'type'],
@@ -133,7 +133,7 @@ const {noScrollStyle} = testUtils;
         it('should place spans correct (vertical)', function () {
 
             // Todo: Horizontall timeline is useless, write normal test when Waterfall chart will be finished.
-            var chart = new tauCharts.Chart({
+            var chart = new Taucharts.Chart({
                 type: 'bar',
                 y: 'end',
                 x: ['team', 'type'],
@@ -198,7 +198,7 @@ const {noScrollStyle} = testUtils;
 
         it('should place spans correct (no collapse)', function () {
 
-            var chart = new tauCharts.Chart({
+            var chart = new Taucharts.Chart({
                 type: 'horizontal-bar',
                 x: 'end',
                 y: ['team', 'type'],

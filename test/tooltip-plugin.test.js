@@ -4,7 +4,7 @@ import $ from 'jquery';
 import {expect} from 'chai';
 import testUtils from './utils/utils';
 const {stubTimeout, describeChart} = testUtils;
-import tauCharts from '../src/tau.charts';
+import Taucharts from '../src/tau.charts';
 import tooltip from '../plugins/tooltip';
 
 var iso = function (str) {
@@ -470,7 +470,7 @@ describe('tooltip', function () {
     };
 
     beforeEach(function () {
-        tauCharts.Chart.winAware = [];
+        Taucharts.Chart.winAware = [];
         div1 = createDiv();
     });
 
@@ -480,7 +480,7 @@ describe('tooltip', function () {
 
     it('should support reveal feature', function (done) {
 
-        var chart1 = new tauCharts.Chart({
+        var chart1 = new Taucharts.Chart({
             type: 'bar',
             x: 'x',
             y: 'count',

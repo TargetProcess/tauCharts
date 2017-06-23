@@ -1,6 +1,6 @@
-import tauCharts from 'taucharts';
+import Taucharts from 'taucharts';
 
-    var utils = tauCharts.api.utils;
+    var utils = Taucharts.api.utils;
 
     function ChartSettings(xSettings) {
 
@@ -62,6 +62,6 @@ import tauCharts from 'taucharts';
         };
     }
 
-    tauCharts.api.plugins.add('settings', ChartSettings);
+    Taucharts.api.plugins.add('settings', ChartSettings);
 
 export default ChartSettings;

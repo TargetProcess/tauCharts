@@ -30,13 +30,13 @@ Load JavaScript dependencies
 
 ```html
 <script src="//cdn.jsdelivr.net/d3js/latest/d3.min.js" charset="utf-8"></script>
-<script src="//cdn.jsdelivr.net/taucharts/latest/tauCharts.min.js" type="text/javascript"></script>
+<script src="//cdn.jsdelivr.net/taucharts/latest/taucharts.min.js" type="text/javascript"></script>
 ```
 
 Include a CSS file, as well
 
 ```html
-<link rel="stylesheet" type="text/css" href="//cdn.jsdelivr.net/taucharts/latest/tauCharts.min.css">
+<link rel="stylesheet" type="text/css" href="//cdn.jsdelivr.net/taucharts/latest/taucharts.min.css">
 ```
 
 #### Downloading Taucharts using Bower
@@ -57,16 +57,16 @@ Below are some popular usage scenarios. For more examples, see our experimental 
 
 #### Scatter plot
 ```javascript
-var chart = new tauCharts.Chart({
-    'type' : 'scatterplot',
-    'x'    : 'Cycle Time',
-    'y'    : 'SUM(Bugs Count)',
-    'color': 'Team',
-    'size' : 'Sum(User Stories Count)',
-    'data' : [{'Cycle Time': 186, 'SUM(Bugs Count)': 34, 'Team': 'HDP'...}, ...],
-    'plugins': [
-        tauCharts.api.plugins.get('legend'),
-        tauCharts.api.plugins.get('tooltip')
+var chart = new Taucharts.Chart({
+    type   : 'scatterplot',
+    x      : 'Cycle Time',
+    y      : 'SUM(Bugs Count)',
+    color  : 'Team',
+    size   : 'Sum(User Stories Count)',
+    data   : [{'Cycle Time': 186, 'SUM(Bugs Count)': 34, 'Team': 'HDP'...}, ...],
+    plugins: [
+        Taucharts.api.plugins.get('legend'),
+        Taucharts.api.plugins.get('tooltip')
     ]
 });
 ```
@@ -78,14 +78,14 @@ ___
 
 #### Line chart
 ```javascript
-var chart = new tauCharts.Chart({
-    'type' : 'line',
-    'y'    : 'Y Scale',
-    'x'    : 'X Scale',
-    'color': 'Team',
-    'size' : 'Effort',
-    'label': 'Effort',
-    'data' : [{'Team': 'Alpha', 'Effort': 40, 'Y Scale': 23, 'X Scale': 72 }, ...]
+var chart = new Taucharts.Chart({
+    type : 'line',
+    y    : 'Y Scale',
+    x    : 'X Scale',
+    color: 'Team',
+    size : 'Effort',
+    label: 'Effort',
+    data : [{'Team': 'Alpha', 'Effort': 40, 'Y Scale': 23, 'X Scale': 72 }, ...]
 });
 ```
 [![Line Chart](examples/screenshots/Taucharts_Line.png)](http://api.taucharts.com/basic/line.html)
@@ -96,7 +96,7 @@ ___
 
 #### Bar chart
 ```javascript
-var chart = new tauCharts.Chart({
+var chart = new Taucharts.Chart({
     type : 'bar',
     x    : 'team',
     y    : 'effort',
@@ -112,7 +112,7 @@ ___
 
 #### Horizontal bar chart
 ```javascript
-var chart = new tauCharts.Chart({
+var chart = new Taucharts.Chart({
     type : 'horizontal-bar',
     x    : 'count',
     y    : 'team',
@@ -128,7 +128,7 @@ ___
 
 #### Stacked bar chart
 ```javascript
-var chart = new tauCharts.Chart({
+var chart = new Taucharts.Chart({
     type : 'stacked-bar',
     x    : 'age',
     y    : ['count', 'sport'],
@@ -144,7 +144,7 @@ ___
 
 #### Horizontal stacked bar chart
 ```javascript
-var chart = new tauCharts.Chart({
+var chart = new Taucharts.Chart({
     type : 'horizontal-stacked-bar',
     y    : 'process',
     x    : 'count',
@@ -160,7 +160,7 @@ ___
 
 #### Stacked area chart
 ```javascript
-var chart = new tauCharts.Chart({
+var chart = new Taucharts.Chart({
     type : 'stacked-area',
     y    : 'effort',
     x    : 'date',
@@ -179,7 +179,7 @@ ___
 
 #### Facet chart
 ```javascript
-var chart1 = new tauCharts.Chart({
+var chart1 = new Taucharts.Chart({
   type : 'scatterplot',
   x    : ['milespergallon'],
   y    : ['class', 'price'],
@@ -195,7 +195,7 @@ ___
 
 #### Data Streaming
 ```javascript
-var chart1 = new tauCharts.Chart({
+var chart1 = new Taucharts.Chart({
     type : 'line',
     x    : 'x',
     y    : 'y',
@@ -232,12 +232,12 @@ npm install
 
 Run local webpack dev server (with hot reload):
 ```
-npm run devserver
+npm start
 ```
 
 Local server will be started on port 9000 and live taucharts assembly will be exposed by url:
 ```
-http://localhost:9000/tauCharts.js
+http://localhost:9000/dist/taucharts.js
 ```
 
 Now you can see some taucharts examples:
@@ -254,7 +254,7 @@ To build a static assembly:
 ```
 npm run build
 ```
-This command creates development and production assemblies in a *[./build]* folder.
+This command creates development and production assemblies in a *[./dist]* folder.
 
 ## Taucharts examples / usage reviews
 

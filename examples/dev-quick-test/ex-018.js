@@ -42,8 +42,8 @@ dev.spec({
         }
     },
     plugins: [
-        tauCharts.api.plugins.get('trendline')(),
-        tauCharts.api.plugins.get('tooltip')({fields:['count']})
+        Taucharts.api.plugins.get('trendline')(),
+        Taucharts.api.plugins.get('tooltip')({fields:['count']})
     ]
 
 });

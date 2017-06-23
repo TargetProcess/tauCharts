@@ -8,8 +8,8 @@ dev.spec({
         interpolate: 'smooth'
     },
     plugins: [
-        tauCharts.api.plugins.get('legend')(),
-        tauCharts.api.plugins.get('tooltip')()
+        Taucharts.api.plugins.get('legend')(),
+        Taucharts.api.plugins.get('tooltip')()
     ],
     data: [
         {date: '2017-02-11', bugsCount: 500},
@@ -30,8 +30,8 @@ dev.spec({
         interpolate: 'smooth'
     },
     plugins: [
-        tauCharts.api.plugins.get('legend')(),
-        tauCharts.api.plugins.get('tooltip')()
+        Taucharts.api.plugins.get('legend')(),
+        Taucharts.api.plugins.get('tooltip')()
     ],
     data: [
         {date: '2017-02-11', income: 4000000050},
