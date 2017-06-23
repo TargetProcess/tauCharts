@@ -73,7 +73,7 @@
   "scripts": {
     "start": "gulp watch",
     "build": "gulp build",
-    "test": "gulp build && karma start",
+    "test": "gulp build-css && karma start",
     "prepublish": "bower install"
   },
   "types": "./types/index.d.ts"
