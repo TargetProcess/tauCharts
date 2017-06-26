@@ -23,8 +23,9 @@ module.exports = (gulp, {connect}) => {
         return `./less${isPlugin ? '/plugins' : ''}/${name}.less`;
     };
 
-    const getDestDir = (isPlugin = false) => {
-        return `./dist${isPlugin ? '/plugins' : ''}`;
+    const getDestDir = ({isPlugin = false, production}) => {
+        const root = (production ? 'dist' : 'debug');
+        return `./${root}${isPlugin ? '/plugins' : ''}`;
     };
 
     const getDestFile = (name, theme, isPlugin = false) => {
@@ -32,9 +33,9 @@ module.exports = (gulp, {connect}) => {
         return `${name}${themePrefix}.css`;
     };
 
-    const createStream = ({name, theme, isPlugin}) => {
+    const createStream = ({name, theme, isPlugin, production}) => {
         const src = getSrc(name, isPlugin);
-        const destDir = getDestDir(isPlugin);
+        const destDir = getDestDir({isPlugin, production});
         const destFile = getDestFile(name, theme, isPlugin);
         return gulp.src(src)
             .pipe(less({
@@ -47,24 +48,29 @@ module.exports = (gulp, {connect}) => {
             .pipe(gulp.dest(destDir));
     };
 
-    gulp.task('build-css', () => {
+    const buildCSS = ({production}) => {
         const streams = [];
         themes.forEach((theme) => {
             streams.push(createStream({
                 name: main,
                 theme,
-                isPlugin: false
+                isPlugin: false,
+                production
             }));
             plugins.forEach((plugin) => {
                 streams.push(createStream({
                     name: plugin,
                     theme,
-                    isPlugin: true
+                    isPlugin: true,
+                    production
                 }));
             });
         });
         return eventStream
             .merge(streams)
             .pipe(connect.reload());
-    });
+    };
+
+    gulp.task('build-css', () => buildCSS({production: true}));
+    gulp.task('debug-css', () => buildCSS({production: false}));
 };

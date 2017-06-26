@@ -1,6 +1,7 @@
 const rollup = require('rollup-stream');
 const source = require('vinyl-source-stream');
 const eventStream = require('event-stream');
+const log = require('gulp-util').log;
 
 const tsConfig = {
     typescript: require('typescript'),
@@ -133,15 +134,15 @@ module.exports = (gulp, {connect}) => {
                 .on('bundle', (bundle) => cache[entry] = bundle)
                 .on('error', function (err) {
                     cache[entry] = null;
-                    console.error('\x1b[31m', [
+                    log('\x1b[31m', [
                         '',
                         '.========================.',
                         '!                        !',
                         '! JAVASCRIPT BUILD ERROR !',
                         '!                        !',
                         '*========================*'
-                    ].join('\n'));
-                    console.error('\x1b[0m', err);
+                    ].join('\n'), '\x1b[0m');
+                    log(err);
                     this.emit('end');
                 });
         }
@@ -150,23 +151,25 @@ module.exports = (gulp, {connect}) => {
             .pipe(gulp.dest(distDir));
     };
 
-    gulp.task('build-js', () => {
+    const getRoot = ({production}) => {
+        return (production ? 'dist' : 'debug');
+    };
 
+    const buildMainJS = ({production}) => {
         return createStream({
-            distDir: './dist',
+            distDir: `./${getRoot({production})}`,
             distFile: 'taucharts.js',
             rollupConfig: mainConfig,
-            production: false
+            production
         }).pipe(connect.reload());
+    };
 
-    });
-
-    gulp.task('build-plugins-js', () => {
+    const buildPluginsJS = ({production}) => {
 
         const streams = plugins.map((p) => {
             const [plugin, pluginConfig] = (Array.isArray(p) ? p : [p, {}]);
             return createStream({
-                distDir: './dist/plugins',
+                distDir: `./${getRoot({production})}/plugins`,
                 distFile: `${plugin}.js`,
                 rollupConfig: Object.assign(
                     {},
@@ -178,15 +181,19 @@ module.exports = (gulp, {connect}) => {
                         moduleName: `taucharts${spinalCaseToCamelCase(plugin)}`
                     }
                 ),
-                production: false
+                production
             });
         });
 
         return eventStream
             .merge(streams)
             .pipe(connect.reload());
+    };
 
-    });
+    gulp.task('build-js', () => buildMainJS({production: true}));
+    gulp.task('debug-js', () => buildMainJS({production: false}));
+    gulp.task('build-plugins-js', () => buildPluginsJS({production: true}));
+    gulp.task('debug-plugins-js', () => buildPluginsJS({production: false}));
 };
 
 function spinalCaseToCamelCase(spinal) {

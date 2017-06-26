@@ -43,6 +43,7 @@
     "gulp-connect": "^5.0.0",
     "gulp-less": "^3.3.0",
     "gulp-rename": "^1.2.2",
+    "gulp-util": "^3.0.8",
     "istanbul-instrumenter-loader": "^2.0.0",
     "jquery": "^3.2.1",
     "js-schema": "^1.0.1",
