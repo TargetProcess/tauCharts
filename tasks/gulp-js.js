@@ -1,6 +1,7 @@
 const rollup = require('rollup-stream');
+const uglify = require('gulp-uglify');
 const source = require('vinyl-source-stream');
-const eventStream = require('event-stream');
+const streamify = require('gulp-streamify');
 const log = require('gulp-util').log;
 
 const tsConfig = {
@@ -109,7 +110,13 @@ const plugins = [
 
 const cache = {};
 
-module.exports = (gulp, {connect}) => {
+module.exports = (gulp, {
+    banner,
+    concat,
+    connect,
+    insert,
+    merge,
+}) => {
 
     const createStream = ({distDir, distFile, rollupConfig, production}) => {
 
@@ -156,12 +163,21 @@ module.exports = (gulp, {connect}) => {
     };
 
     const buildMainJS = ({production}) => {
-        return createStream({
+
+        const stream = createStream({
             distDir: `./${getRoot({production})}`,
             distFile: 'taucharts.js',
             rollupConfig: mainConfig,
             production
-        }).pipe(connect.reload());
+        });
+
+        if (production) {
+            return stream
+                .pipe(insert.prepend(banner()));
+        }
+
+        return stream
+            .pipe(connect.reload());
     };
 
     const buildPluginsJS = ({production}) => {
@@ -185,14 +201,29 @@ module.exports = (gulp, {connect}) => {
             });
         });
 
-        return eventStream
-            .merge(streams)
+        const mergedStream = merge(...streams);
+
+        if (production) {
+            return mergedStream;
+        }
+
+        return mergedStream
             .pipe(connect.reload());
     };
 
-    gulp.task('build-js', () => buildMainJS({production: true}));
+    const buildProdJS = () => {
+        return merge(
+                buildMainJS({production: true}),
+                buildPluginsJS({production: true})
+            )
+            .pipe(streamify(concat('taucharts.min.js')))
+            .pipe(streamify(uglify()))
+            .pipe(streamify(insert.prepend(banner())))
+            .pipe(gulp.dest(`./${getRoot({production: true})}`));
+    };
+
+    gulp.task('prod-js', () => buildProdJS());
     gulp.task('debug-js', () => buildMainJS({production: false}));
-    gulp.task('build-plugins-js', () => buildPluginsJS({production: true}));
     gulp.task('debug-plugins-js', () => buildPluginsJS({production: false}));
 };
 

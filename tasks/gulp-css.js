@@ -1,6 +1,6 @@
 const less = require('gulp-less');
+const cssmin = require('gulp-cssmin');
 const rename = require('gulp-rename');
-const eventStream = require('event-stream');
 
 const main = 'taucharts';
 const plugins = [
@@ -17,7 +17,13 @@ const themes = [
     'default'
 ];
 
-module.exports = (gulp, {connect}) => {
+module.exports = (gulp, {
+    banner,
+    concat,
+    connect,
+    insert,
+    merge,
+}) => {
 
     const getSrc = (name, isPlugin = false) => {
         return `./less${isPlugin ? '/plugins' : ''}/${name}.less`;
@@ -29,8 +35,11 @@ module.exports = (gulp, {connect}) => {
     };
 
     const getDestFile = (name, theme, isPlugin = false) => {
-        const themePrefix = (theme === 'default' ? '' : `.${theme}`);
-        return `${name}${themePrefix}.css`;
+        return `${name}${getThemePrefix(theme)}.css`;
+    };
+
+    const getThemePrefix = (theme) => {
+        return (theme === 'default' ? '' : `.${theme}`);
     };
 
     const createStream = ({name, theme, isPlugin, production}) => {
@@ -39,6 +48,10 @@ module.exports = (gulp, {connect}) => {
         const destFile = getDestFile(name, theme, isPlugin);
         return gulp.src(src)
             .pipe(less({
+                sourceMap: (production ? null : {
+                    sourceMapFileInline: true,
+                    outputSourceFiles: true
+                }),
                 paths: ['less'],
                 modifyVars: {
                     theme
@@ -48,29 +61,56 @@ module.exports = (gulp, {connect}) => {
             .pipe(gulp.dest(destDir));
     };
 
+    const concatThemeStreams = (theme, streams) => {
+        return merge(...streams)
+            .pipe(concat(`taucharts${getThemePrefix(theme)}.min.css`))
+            .pipe(cssmin())
+            .pipe(insert.prepend(banner()))
+            .pipe(gulp.dest(getDestDir({production: true})));
+    };
+
     const buildCSS = ({production}) => {
+
         const streams = [];
+
         themes.forEach((theme) => {
-            streams.push(createStream({
+
+            const themeStreams = [];
+
+            themeStreams.push(createStream({
                 name: main,
                 theme,
                 isPlugin: false,
                 production
             }));
+
             plugins.forEach((plugin) => {
-                streams.push(createStream({
+                themeStreams.push(createStream({
                     name: plugin,
                     theme,
                     isPlugin: true,
                     production
                 }));
             });
+
+            if (production) {
+                let concatStream = concatThemeStreams(theme, themeStreams);
+                themeStreams.push(concatStream);
+            }
+
+            streams.push(...themeStreams);
         });
-        return eventStream
-            .merge(streams)
+
+        const mergedStream = merge(streams);
+
+        if (production) {
+            return mergedStream;
+        }
+
+        return mergedStream
             .pipe(connect.reload());
     };
 
-    gulp.task('build-css', () => buildCSS({production: true}));
+    gulp.task('prod-css', () => buildCSS({production: true}));
     gulp.task('debug-css', () => buildCSS({production: false}));
 };
