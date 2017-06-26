@@ -153,8 +153,15 @@ module.exports = (gulp, {
                     this.emit('end');
                 });
         }
+        stream = stream
+            .pipe(source(distFile));
+
+        if (production) {
+            stream = stream
+                .pipe(streamify(insert.prepend(banner())));
+        }
+
         return stream
-            .pipe(source(distFile))
             .pipe(gulp.dest(distDir));
     };
 
@@ -170,11 +177,6 @@ module.exports = (gulp, {
             rollupConfig: mainConfig,
             production
         });
-
-        if (production) {
-            return stream
-                .pipe(insert.prepend(banner()));
-        }
 
         return stream
             .pipe(connect.reload());

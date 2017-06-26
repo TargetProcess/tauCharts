@@ -2,7 +2,6 @@ const less = require('gulp-less');
 const cssmin = require('gulp-cssmin');
 const rename = require('gulp-rename');
 
-const main = 'taucharts';
 const plugins = [
     'annotations',
     'crosshair',
@@ -39,14 +38,14 @@ module.exports = (gulp, {
     };
 
     const getThemePrefix = (theme) => {
-        return (theme === 'default' ? '' : `.${theme}`);
+        return (theme === 'default' || !theme ? '' : `.${theme}`);
     };
 
     const createStream = ({name, theme, isPlugin, production}) => {
         const src = getSrc(name, isPlugin);
         const destDir = getDestDir({isPlugin, production});
         const destFile = getDestFile(name, theme, isPlugin);
-        return gulp.src(src)
+        var stream = gulp.src(src)
             .pipe(less({
                 sourceMap: (production ? null : {
                     sourceMapFileInline: true,
@@ -57,7 +56,14 @@ module.exports = (gulp, {
                     theme
                 }
             }))
-            .pipe(rename(destFile))
+            .pipe(rename(destFile));
+
+        if (production) {
+            stream = stream
+                .pipe(insert.prepend(banner()))
+        }
+
+        return stream
             .pipe(gulp.dest(destDir));
     };
 
@@ -71,14 +77,20 @@ module.exports = (gulp, {
 
     const buildCSS = ({production}) => {
 
-        const streams = [];
+        const brewerStream = createStream({
+            name: 'colorbrewer',
+            isPlugin: false,
+            production
+        });
+
+        const streams = [brewerStream];
 
         themes.forEach((theme) => {
 
             const themeStreams = [];
 
             themeStreams.push(createStream({
-                name: main,
+                name: 'taucharts',
                 theme,
                 isPlugin: false,
                 production
@@ -94,7 +106,7 @@ module.exports = (gulp, {
             });
 
             if (production) {
-                let concatStream = concatThemeStreams(theme, themeStreams);
+                let concatStream = concatThemeStreams(theme, themeStreams.concat(brewerStream));
                 themeStreams.push(concatStream);
             }
 

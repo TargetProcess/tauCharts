@@ -3,7 +3,7 @@ const clean = require('gulp-clean');
 const concat = require('gulp-concat');
 const connect = require('gulp-connect');
 const insert = require('gulp-insert');
-const merge = require('merge2');
+const merge = require('merge-stream');
 const rename = require('gulp-rename');
 const runSequence = require('run-sequence');
 const d3 = require('d3');
@@ -16,7 +16,7 @@ const banner = () => {
     return [
         `/*`,
         `${package.name} v${package.version} (${today})`,
-        `Copyright (c) ${year} ${package.author.name}`,
+        `Copyright ${year} ${package.author.name}`,
         `Licensed under ${package.licenses.map(x => x.type).join(', ')}`,
         `*/`,
         ``
