@@ -1,6 +1,7 @@
 node_modules
 bower_components
 dist
+debug
 coverage
 .idea
 .vscode

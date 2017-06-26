@@ -87,7 +87,7 @@
         'export-to': {
             cssPaths: [
                 '../dist/taucharts.css',
-                '../dist/plugins/export.css',
+                '../dist/plugins/export-to.css',
                 '../dist/plugins/legend.css',
                 '../dist/plugins/trendline.css',
                 '../dist/plugins/annotations.css',
