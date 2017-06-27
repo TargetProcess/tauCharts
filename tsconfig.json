@@ -6,7 +6,13 @@
             "dom"
         ],
         "allowJs": true,
-        "target": "es5"
+        "target": "es5",
+        "baseUrl": ".",
+        "paths": {
+            "taucharts": [
+                "src/tau.charts"
+            ]
+        }
     },
     "include": [
         "plugins/**/*",
