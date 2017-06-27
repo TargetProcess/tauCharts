@@ -535,7 +535,7 @@ import * as d3 from 'd3';
         };
         var parent = node;
         var transform;
-        while (parent.nodeName.toUpperCase() !== 'SVG') {
+        while (parent && parent.nodeName.toUpperCase() !== 'SVG') {
             transform = getDynamicTransform(parent);
             info.translate0.x += transform.translate0.x;
             info.translate0.y += transform.translate0.y;

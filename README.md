@@ -272,6 +272,10 @@ This command creates development and production assemblies in a *[./dist]* folde
 
 [GeoTremor mobile app](http://geotremor.tangentapps.com)
 
+[Dex](http://dexvis.net/)
+
+[Dex integration video](https://youtu.be/mxD4aQmC4sg)
+
 ## License
 
 Licensing: [Apache License, Version 2.0](http://www.apache.org/licenses/LICENSE-2.0)
