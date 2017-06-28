@@ -356,7 +356,7 @@ const BasePath = {
         });
         const split = (values) => {
             if (values.length === 1) {
-                return groups[values];
+                return groups[values[0]];
             }
             const midIndex = Math.ceil(values.length / 2);
             const middle = (values[midIndex - 1] + values[midIndex]) / 2;

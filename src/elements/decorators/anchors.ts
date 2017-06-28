@@ -3,8 +3,6 @@ import {CSS_PREFIX} from '../../const';
 import {
     d3_animationInterceptor as createUpdateFunc,
     d3_setAttrs as attrs,
-    // d3_setClasses as classes,
-    // d3_transition as transition
 } from '../../utils/d3-decorators';
 import * as utilsDom from '../../utils/utils-dom';
 import {
@@ -154,7 +152,7 @@ const anchorShapes: ShapesAttrsDictionary = {
                     const r = (showOnHover ?
                         (filter(d) ? Math.max(rmin, (screenModel.size(d) / 2)) : 0) :
                         filter(d) ?
-                            // Note: Highlight point with larger radius.
+                            // Note: Highlight stick with larger width.
                             Math.max(rmin, Math.ceil(screenModel.size(d) / 2 * rx)) :
                             (screenModel.size(d) / 2)
                     );
