@@ -96,6 +96,7 @@ const Area = {
 
         const isPolygon = (getInterpolatorSplineType(guide.interpolate) === 'polyline');
         baseModel.pathElement = (isPolygon ? 'polygon' : 'path');
+        baseModel.anchorShape = 'vertical-stick';
 
         baseModel.pathTween = {
             attr: (isPolygon ? 'points' : 'd'),
