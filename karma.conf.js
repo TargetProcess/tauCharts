@@ -1,4 +1,7 @@
 module.exports = function (config) {
+
+    const DEBUG = Boolean(config.tauchartsDebug);
+
     config.set({
 
         basePath: '.',
@@ -6,8 +9,8 @@ module.exports = function (config) {
         frameworks: ['mocha'],
 
         files: [
-            'dist/taucharts.css',
-            'dist/plugins/tooltip.css',
+            `${DEBUG ? 'debug' : 'dist'}/taucharts.css`,
+            `${DEBUG ? 'debug' : 'dist'}/plugins/tooltip.css`,
             'node_modules/d3/build/d3.js',
             'node_modules/topojson/build/topojson.js',
             'test/utils/test.css',
@@ -26,15 +29,17 @@ module.exports = function (config) {
         },
 
         preprocessors: {'test/tests-main.js': ['webpack', 'sourcemap']},
-        reporters: ['coverage', 'spec', 'coveralls', 'remap-coverage'],
-        coverageReporter: {
+        reporters: (DEBUG ?
+            ['spec'] :
+            ['coverage', 'spec', 'coveralls', 'remap-coverage']),
+        coverageReporter: (DEBUG ? null : {
             type: 'in-memory'
-        },
-        remapCoverageReporter: {
+        }),
+        remapCoverageReporter: (DEBUG ? null : {
             html: './coverage/'
-        },
+        }),
 
-        webpack: getTestWebpackConfig(),
+        webpack: getTestWebpackConfig(DEBUG),
         webpackMiddleware: {
             noInfo: true
         },
@@ -44,11 +49,11 @@ module.exports = function (config) {
         colors: true,
         logLevel: config.LOG_INFO,
 
-        singleRun: true
+        singleRun: (DEBUG ? false : true)
     });
 };
 
-function getTestWebpackConfig() {
+function getTestWebpackConfig(DEBUG) {
 
     const path = require('path');
     const webpack = require('webpack');
@@ -95,7 +100,7 @@ function getTestWebpackConfig() {
                         transpileOnly: true
                     }
                 },
-                {
+                (DEBUG ? null : {
                     loader: 'istanbul-instrumenter-loader',
                     test: /\.(js|ts)$/,
                     enforce: 'post',
@@ -103,8 +108,8 @@ function getTestWebpackConfig() {
                     options: {
                         esModules: true
                     }
-                }
-            ]
+                })
+            ].filter((x) => x)
         },
         externals: {
             d3: 'd3'
@@ -119,4 +124,4 @@ function getTestWebpackConfig() {
             })
         ]
     };
-}
+};
