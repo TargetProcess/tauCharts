@@ -157,6 +157,67 @@ const Area = {
             const tick = ticks.find(flip ? ((value) => item.y === value) : ((value) => item.x === value));
             groups[tick].push(item);
         });
+
+        // Put placeholders for missing groups at some ticks
+        (() => {
+            const groupNames = Object.keys(items.reduce((map, item) => {
+                map[item.group] = true;
+                return map;
+            }, {}));
+
+            // Todo: sort groups by Y (consider missing groups at some ticks)
+            const groupIndex = groupNames.reduce((map, g, i) => {
+                map[g] = i;
+                return map;
+            }, {} as {[group: string]: number});
+
+            ticks.forEach((tick) => {
+                const current = groups[tick];
+                current.sort((a, b) => groupIndex[a.group] - groupIndex[b.group]);
+                if (current.length < groupNames.length) {
+                    for (var i = 0; i < groupNames.length; i++) {
+                        let shouldInsert = false;
+                        let y, y0;
+                        if (i === current.length) {
+                            if (i === 0) {
+                                y = y0 = 0;
+                            } else {
+                                y = y0 = current[i - 1].y;
+                            }
+                            shouldInsert = true;
+                        } else if (current[i].group !== groupNames[i]) {
+                            y = y0 = current[i].y0;
+                            shouldInsert = true;
+                        }
+                        if (shouldInsert) {
+                            let placeholder: ElementInfo = {
+                                x: tick,
+                                y,
+                                y0,
+                                data: null, // Placeholer should not have any data
+                                node: null,
+                                group: groupNames[i]
+                            };
+                            current.splice(i, 0, placeholder);
+                        }
+                    }
+                }
+            });
+        })();
+
+        if (ticks.length === 1) {
+            const tree: TreeNode = {
+                start: ticks[0],
+                end: ticks[0],
+                isLeaf: true,
+                items: {
+                    start: groups[ticks[0]],
+                    end: groups[ticks[0]]
+                }
+            };
+            return {bounds, tree};
+        }
+
         const split = (values: number[]): TreeNode => {
             if (values.length === 2) {
                 let [start, end] = values;
@@ -213,7 +274,9 @@ const Area = {
             const mid = span.left.end;
             return getClosestSpan(cursor < mid ? span.left : span.right);
         })(tree);
-        var kx = ((cursor - closestSpan.start) / (closestSpan.end - closestSpan.start));
+        var kx = (closestSpan.end === closestSpan.start ?
+            0 :
+            ((cursor - closestSpan.start) / (closestSpan.end - closestSpan.start)));
         if (kx < 0) {
             kx = 0;
         }
@@ -258,10 +321,18 @@ const Area = {
                     y: d.y,
                     y0: d.y0,
                     el: (kx < 0.5 ? d.start : d.end)
-                }));
+                }))
+                .filter((d) => d.el.data != null); // Filter-out missing groups placeholders
         })();
-        const items = interpolated
-            .filter((d) => (cursorY >= d.y && cursorY <= d.y0))
+
+        const cy = (cursorY - translate.y);
+        const cursorOverItems = interpolated
+            .filter((d) => (cy >= d.y && cy <= d.y0));
+        const bestMatchItems = (cursorOverItems.length > 0 ?
+            cursorOverItems :
+            interpolated);
+
+        const items = bestMatchItems
             .map((d) => d.el)
             .map((el) => {
                 const x = (el.x + translate.x);
