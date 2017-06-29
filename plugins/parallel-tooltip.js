@@ -1,6 +1,6 @@
-import tauCharts from 'taucharts';
+import Taucharts from 'taucharts';
 
-    var utils = tauCharts.api.utils;
+    var utils = Taucharts.api.utils;
 
     function ChartParallelTooltip(xSettings) {
 
@@ -141,6 +141,6 @@ import tauCharts from 'taucharts';
         return plugin;
     }
 
-    tauCharts.api.plugins.add('parallel-tooltip', ChartParallelTooltip);
+    Taucharts.api.plugins.add('parallel-tooltip', ChartParallelTooltip);
 
 export default ChartParallelTooltip;

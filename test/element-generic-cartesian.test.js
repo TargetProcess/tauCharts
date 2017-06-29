@@ -2,7 +2,7 @@
 // jscs:disable validateQuoteMarks
 import {expect} from 'chai';
 import schemes from './utils/schemes';
-import tauCharts from '../src/tau.charts';
+import Taucharts from '../src/tau.charts';
 import * as utils from '../src/utils/utils';
 import testUtils from './utils/utils';
 
@@ -99,7 +99,7 @@ import testUtils from './utils/utils';
 
         it('should draw', function () {
 
-            var plot = new tauCharts.Plot({
+            var plot = new Taucharts.Plot({
                 sources: {
                     '?': {
                         dims: {},

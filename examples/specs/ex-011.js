@@ -10,8 +10,8 @@ dev.spec({
     size: 'ABS(count)',
 
     plugins: [
-        tauCharts.api.plugins.get('legend')(),
-        tauCharts.api.plugins.get('tooltip')()
+        Taucharts.api.plugins.get('legend')(),
+        Taucharts.api.plugins.get('tooltip')()
     ],
 
     data: [

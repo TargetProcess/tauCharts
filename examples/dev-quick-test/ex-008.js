@@ -13,8 +13,8 @@ dev.spec({
         sourcemap: './../src/addons/world-countries.json'
     },
     plugins: [
-        tauCharts.api.plugins.get('geomap-tooltip')(),
-        tauCharts.api.plugins.get('geomap-legend')()
+        Taucharts.api.plugins.get('geomap-tooltip')(),
+        Taucharts.api.plugins.get('geomap-legend')()
     ]
 
 });

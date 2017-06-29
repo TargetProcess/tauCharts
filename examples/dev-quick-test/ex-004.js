@@ -28,6 +28,6 @@ dev.spec({
         }),
 
     plugins: [
-        tauCharts.api.plugins.get('settings')()
+        Taucharts.api.plugins.get('settings')()
     ]
 });

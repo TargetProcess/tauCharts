@@ -51,7 +51,7 @@ dev.spec({
         }
     },
     plugins: [
-        tauCharts.api.plugins.get('tooltip')({fields:['team', 'project', 'cycleTime', 'effort']})
+        Taucharts.api.plugins.get('tooltip')({fields:['team', 'project', 'cycleTime', 'effort']})
     ]
 
 });

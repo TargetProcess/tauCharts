@@ -1,7 +1,15 @@
-import tauCharts from 'taucharts';
-import * as $ from 'jquery';
+import Taucharts from '../../src/tau.charts';
+import $ from 'jquery';
 import * as utils from '../../src/utils/utils';
 import * as d3 from 'd3';
+
+Taucharts.api.globalSettings.animationSpeed = 0;
+Taucharts.api.globalSettings.renderingTimeout = 0;
+Taucharts.api.globalSettings.asyncRendering = false;
+Taucharts.api.globalSettings.avoidScrollAtRatio = 1;
+Taucharts.api.globalSettings.syncPointerEvents = true;
+Taucharts.api.globalSettings.handleRenderingErrors = false;
+Taucharts.api.globalSettings.experimentalShouldAnimate = () => true;
 
     var testChartSettings = {
         getAxisTickLabelSize: function (text) {
@@ -117,9 +125,9 @@ import * as d3 from 'd3';
                 context.element = document.createElement('div');
                 document.body.appendChild(context.element);
 
-                tauCharts.Plot.globalSettings = testChartSettings;
+                Taucharts.Plot.globalSettings = testChartSettings;
 
-                context.chart = new tauCharts.Plot({
+                context.chart = new Taucharts.Plot({
                     layoutEngine: 'DEFAULT',
                     specEngine: 'DEFAULT',
                     spec: spec,
@@ -150,14 +158,14 @@ import * as d3 from 'd3';
             };
 
             beforeEach(function () {
-                tauCharts.Chart.winAware = [];
+                Taucharts.Chart.winAware = [];
                 context.element = document.createElement('div');
                 context.element.setAttribute('data-chart-id', name);
                 document.body.appendChild(context.element);
 
-                tauCharts.Plot.globalSettings = testChartSettings;
+                Taucharts.Plot.globalSettings = testChartSettings;
 
-                context.chart = new tauCharts.Chart(config);
+                context.chart = new Taucharts.Chart(config);
                 if (options.autoWidth) {
                     context.chart.renderTo(context.element);
                 } else {
@@ -211,7 +219,7 @@ import * as d3 from 'd3';
     };
 
     function destroyCharts() {
-        tauCharts.Chart.winAware
+        Taucharts.Chart.winAware
             .slice(0)
             .forEach(function (chart) {
                 chart.destroy();

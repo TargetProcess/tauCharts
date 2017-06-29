@@ -143,7 +143,7 @@
             };
         }
 
-        tauCharts.api.plugins.add('diff', diff);
+        Taucharts.api.plugins.add('diff', diff);
 
     })();
 
@@ -162,7 +162,7 @@
             label: 'hours',
             data: barData,
             plugins: [
-                tauCharts.api.plugins.get('diff')()
+                Taucharts.api.plugins.get('diff')()
             ]
         };
     })());

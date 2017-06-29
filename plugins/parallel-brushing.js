@@ -1,6 +1,6 @@
-import tauCharts from 'taucharts';
+import Taucharts from 'taucharts';
 
-    var utils = tauCharts.api.utils;
+    var utils = Taucharts.api.utils;
 
     function ChartParallelBrushing(xSettings) {
 
@@ -121,6 +121,6 @@ import tauCharts from 'taucharts';
         return plugin;
     }
 
-    tauCharts.api.plugins.add('parallel-brushing', ChartParallelBrushing);
+    Taucharts.api.plugins.add('parallel-brushing', ChartParallelBrushing);
 
 export default ChartParallelBrushing;

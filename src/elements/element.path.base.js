@@ -10,6 +10,8 @@ import * as utils from '../utils/utils';
 import * as utilsDom from '../utils/utils-dom';
 import * as utilsDraw from '../utils/utils-draw';
 import * as d3 from 'd3';
+import {drawAnchors, highlightAnchors} from './decorators/anchors';
+import {getClosestPointInfo} from '../utils/utils-position';
 
 const synthetic = 'taucharts_synthetic_record';
 const isNonSyntheticRecord = ((row) => row[synthetic] !== true);
@@ -167,6 +169,7 @@ const BasePath = {
 
         const screenModel = node.screenModel;
         const model = this.buildModel(screenModel);
+        this.domElementModel = model;
 
         const createUpdateFunc = d3_animationInterceptor;
 
@@ -212,7 +215,7 @@ const BasePath = {
             };
 
             const series = selection
-                .selectAll(model.pathElement)
+                .selectAll(`${model.pathElement}:not(.i-data-anchor)`)
                 .data((fiber) => (fiber.length > 1) ? [fiber] : [], getDataSetId);
             series
                 .exit()
@@ -239,29 +242,7 @@ const BasePath = {
             node.subscribe(merged);
 
             if (guide.showAnchors !== 'never') {
-                const anchorClass = 'i-data-anchor';
-                const attr = {
-                    r: (guide.showAnchors === 'hover' ? 0 :
-                        ((d) => screenModel.size(d) / 2)
-                    ),
-                    cx: (d) => model.x(d),
-                    cy: (d) => model.y(d),
-                    opacity: (guide.showAnchors === 'hover' ? 0 : 1),
-                    fill: (d) => screenModel.color(d),
-                    class: anchorClass
-                };
-
-                const dots = selection
-                    .selectAll(`.${anchorClass}`)
-                    .data((fiber) => fiber.filter(isNonSyntheticRecord), screenModel.id);
-                dots.exit()
-                    .remove();
-                dots.call(createUpdateFunc(guide.animationSpeed, null, attr));
-                const allDots = dots.enter()
-                    .append('circle')
-                    .call(createUpdateFunc(guide.animationSpeed, {r: 0}, attr))
-                    .merge(dots);
-
+                const allDots = drawAnchors(node, model, selection);
                 node.subscribe(allDots);
             }
         };
@@ -324,7 +305,6 @@ const BasePath = {
 
         frameBinding.order();
 
-        // TODO: Exclude removed elements from calculation.
         this._boundsInfo = this._getBoundsInfo(options.container.selectAll('.i-data-anchor').nodes());
 
         node.subscribe(new LayerLabels(
@@ -377,7 +357,7 @@ const BasePath = {
         });
         const split = (values) => {
             if (values.length === 1) {
-                return groups[values];
+                return groups[values[0]];
             }
             const midIndex = Math.ceil(values.length / 2);
             const middle = (values[midIndex - 1] + values[midIndex]) / 2;
@@ -422,25 +402,9 @@ const BasePath = {
                 const distance = Math.abs(flip ? (cursorY - y) : (cursorX - x));
                 const secondaryDistance = Math.abs(flip ? (cursorX - x) : (cursorY - y));
                 return {node: el.node, data: el.data, distance, secondaryDistance, x, y};
-            })
-            .sort((a, b) => (a.distance === b.distance ?
-                (a.secondaryDistance - b.secondaryDistance) :
-                (a.distance - b.distance)
-            ));
+            });
 
-        const largerDistIndex = items.findIndex((d) => (
-            (d.distance !== items[0].distance) ||
-            (d.secondaryDistance !== items[0].secondaryDistance)
-        ));
-        const sameDistItems = (largerDistIndex < 0 ? items : items.slice(0, largerDistIndex));
-        if (sameDistItems.length === 1) {
-            return sameDistItems[0];
-        }
-        const mx = (sameDistItems.reduce((sum, item) => sum + item.x, 0) / sameDistItems.length);
-        const my = (sameDistItems.reduce((sum, item) => sum + item.y, 0) / sameDistItems.length);
-        const angle = (Math.atan2(my - cursorY, mx - cursorX) + Math.PI);
-        const closest = sameDistItems[Math.round((sameDistItems.length - 1) * angle / 2 / Math.PI)];
-        return closest;
+        return getClosestPointInfo(cursorX, cursorY, items);
     },
 
     highlight(filter) {
@@ -482,33 +446,13 @@ const BasePath = {
     },
 
     highlightDataPoints(filter) {
-        const cssClass = 'i-data-anchor';
-        const screenModel = this.node().screenModel;
-        const showOnHover = this.node().config.guide.showAnchors === 'hover';
-        const rmin = 4; // Min highlight radius
-        const rx = 1.25; // Highlight multiplier
-        const unit = this.node();
-        const container = unit.config.options.container;
-        const dots = container
-            .selectAll(`.${cssClass}`)
-            .attr('r', (showOnHover ?
-                ((d) => filter(d) ? Math.max(rmin, (screenModel.size(d) / 2)) : 0) :
-                ((d) => {
-                    // NOTE: Highlight point with larger radius.
-                    var r = screenModel.size(d) / 2;
-                    if (filter(d)) {
-                        r = Math.max(rmin, Math.ceil(r * rx));
-                    }
-                    return r;
-                })
-            ))
-            .attr('opacity', (showOnHover ? ((d) => filter(d) ? 1 : 0) : 1))
-            .attr('fill', (d) => screenModel.color(d))
-            .attr('class', (d) => utilsDom.classes(cssClass, screenModel.class(d)))
-            .classed(`${CSS_PREFIX}highlighted`, filter);
+        const node = this.node();
+        const elModel = this.domElementModel;
+        const dots = highlightAnchors(node, elModel, filter);
+        const container = node.config.options.container;
 
         // Display cursor line
-        const flip = unit.config.flip;
+        const flip = node.config.flip;
         const highlighted = dots.filter(filter);
         var cursorLine = container.select('.cursor-line');
         if (highlighted.empty()) {
@@ -517,7 +461,7 @@ const BasePath = {
             if (cursorLine.empty()) {
                 cursorLine = container.append('line');
             }
-            const model = unit.screenModel.model;
+            const model = node.screenModel.model;
             const x1 = model.xi(highlighted.data()[0]);
             const x2 = model.xi(highlighted.data()[0]);
             const domain = model.scaleY.domain();

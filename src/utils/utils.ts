@@ -585,7 +585,7 @@ let templateSettings = {
         return [].concat(...array.map(x => flatten(x)));
     }
 
-    export function unique<T>(array: T[], func?: (T) => string) {
+    export function unique<T>(array: T[], func?: (T) => string): T[] {
         var hash = {};
         var result = [];
         var len = array.length;

@@ -1,3 +1,3 @@
-build/* binary
+dist/*  binary
 *.js    eol=lf
 *.ts    eol=lf

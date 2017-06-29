@@ -119,6 +119,7 @@ const Line = {
         };
 
         baseModel.pathElement = 'path';
+        baseModel.anchorShape = 'circle';
         baseModel.pathAttributesEnterInit = pathAttributes;
         baseModel.pathAttributesUpdateDone = pathAttributes;
         baseModel.pathTween = {

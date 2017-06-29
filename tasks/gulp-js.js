@@ -1,6 +1,8 @@
 const rollup = require('rollup-stream');
+const uglify = require('gulp-uglify');
 const source = require('vinyl-source-stream');
-const eventStream = require('event-stream');
+const streamify = require('gulp-streamify');
+const log = require('gulp-util').log;
 
 const tsConfig = {
     typescript: require('typescript'),
@@ -23,7 +25,7 @@ const tsConfig = {
 const mainConfig = {
     entry: './src/tau.charts.ts',
     moduleId: 'taucharts',
-    moduleName: 'tauCharts',
+    moduleName: 'Taucharts',
     exports: 'default',
     format: 'umd',
     useStrict: true,
@@ -58,7 +60,7 @@ const pluginsCommonConfig = {
     ],
     globals: {
         'd3': 'd3',
-        'taucharts': 'tauCharts'
+        'taucharts': 'Taucharts'
     },
     plugins: [
         require('rollup-plugin-commonjs')(),
@@ -71,7 +73,7 @@ const plugins = [
     'bar-as-span',
     'box-whiskers',
     'crosshair',
-    ['export', {
+    ['export-to', {
         onwarn: function (warning) {
             // Note: 'fetch' causes a warning.
             if (warning.code === 'THIS_IS_UNDEFINED') {
@@ -104,12 +106,18 @@ const plugins = [
     'quick-filter',
     'settings',
     'tooltip',
-    'trendline'
+    'trendline',
 ];
 
 const cache = {};
 
-module.exports = (gulp, {connect}) => {
+module.exports = (gulp, {
+    banner,
+    concat,
+    connect,
+    insert,
+    merge,
+}) => {
 
     const createStream = ({distDir, distFile, rollupConfig, production}) => {
 
@@ -134,42 +142,54 @@ module.exports = (gulp, {connect}) => {
                 .on('bundle', (bundle) => cache[entry] = bundle)
                 .on('error', function (err) {
                     cache[entry] = null;
-                    console.error('\x1b[31m', [
+                    log('\x1b[31m', [
                         '',
                         '.========================.',
                         '!                        !',
                         '! JAVASCRIPT BUILD ERROR !',
                         '!                        !',
                         '*========================*'
-                    ].join('\n'));
-                    console.error('\x1b[0m', err);
+                    ].join('\n'), '\x1b[0m');
+                    log(err);
                     this.emit('end');
                 });
         }
+        stream = stream
+            .pipe(source(distFile));
+
+        if (production) {
+            stream = stream
+                .pipe(streamify(insert.prepend(banner())));
+        }
+
         return stream
-            .pipe(source(distFile))
-            .pipe(gulp.dest(distDir))
+            .pipe(gulp.dest(distDir));
+    };
+
+    const getRoot = ({production}) => {
+        return (production ? 'dist' : 'debug');
+    };
+
+    const buildMainJS = ({production}) => {
+
+        const stream = createStream({
+            distDir: `./${getRoot({production})}`,
+            distFile: 'taucharts.js',
+            rollupConfig: mainConfig,
+            production
+        });
+
+        return stream
             .pipe(connect.reload());
     };
 
-    gulp.task('build-js', () => {
-
-        return createStream({
-            distDir: './dist',
-            distFile: 'tauCharts.js',
-            rollupConfig: mainConfig,
-            production: false
-        }).pipe(connect.reload());
-
-    });
-
-    gulp.task('build-plugins-js', () => {
+    const buildPluginsJS = ({production}) => {
 
         const streams = plugins.map((p) => {
             const [plugin, pluginConfig] = (Array.isArray(p) ? p : [p, {}]);
             return createStream({
-                distDir: './dist/plugins',
-                distFile: `tauCharts.${plugin}.js`,
+                distDir: `./${getRoot({production})}/plugins`,
+                distFile: `${plugin}.js`,
                 rollupConfig: Object.assign(
                     {},
                     pluginsCommonConfig,
@@ -180,15 +200,34 @@ module.exports = (gulp, {connect}) => {
                         moduleName: `taucharts${spinalCaseToCamelCase(plugin)}`
                     }
                 ),
-                production: false
+                production
             });
         });
 
-        return eventStream
-            .merge(streams)
-            .pipe(connect.reload());
+        const mergedStream = merge(...streams);
 
-    });
+        if (production) {
+            return mergedStream;
+        }
+
+        return mergedStream
+            .pipe(connect.reload());
+    };
+
+    const buildProdJS = () => {
+        return merge(
+                buildMainJS({production: true}),
+                buildPluginsJS({production: true})
+            )
+            .pipe(streamify(concat('taucharts.min.js')))
+            .pipe(streamify(uglify()))
+            .pipe(streamify(insert.prepend(banner())))
+            .pipe(gulp.dest(`./${getRoot({production: true})}`));
+    };
+
+    gulp.task('prod-js', () => buildProdJS());
+    gulp.task('debug-js', () => buildMainJS({production: false}));
+    gulp.task('debug-plugins-js', () => buildPluginsJS({production: false}));
 };
 
 function spinalCaseToCamelCase(spinal) {

@@ -1,7 +1,7 @@
 import {expect} from 'chai';
 import testUtils from './utils/utils';
 import layers from '../plugins/layers';
-import tauCharts from '../src/tau.charts';
+import Taucharts from '../src/tau.charts';
 
     describe('layers plugin', function () {
 
@@ -12,7 +12,7 @@ import tauCharts from '../src/tau.charts';
         beforeEach(function () {
             element = document.createElement('div');
             document.body.appendChild(element);
-            tauCharts.Plot.globalSettings.log = function (msg) {
+            Taucharts.Plot.globalSettings.log = function (msg) {
                 error.push(msg);
             };
         });
@@ -25,7 +25,7 @@ import tauCharts from '../src/tau.charts';
 
         it('should be applied for measure scales', function () {
 
-            chart = new tauCharts.Chart({
+            chart = new Taucharts.Chart({
                 type: 'scatterplot',
                 x: 'x',
                 y: 'y',
@@ -49,7 +49,7 @@ import tauCharts from '../src/tau.charts';
 
         it('should be error when applied to non-measure Y scale', function () {
 
-            chart = new tauCharts.Chart({
+            chart = new Taucharts.Chart({
                 type: 'scatterplot',
                 x: 'x',
                 y: 'y',
@@ -74,7 +74,7 @@ import tauCharts from '../src/tau.charts';
 
         it('should be error when applied to non-rect coordinates', function () {
 
-            chart = new tauCharts.Chart({
+            chart = new Taucharts.Chart({
                 type: 'parallel',
                 columns: ['x', 'y'],
                 data: [
@@ -98,7 +98,7 @@ import tauCharts from '../src/tau.charts';
 
         it('should work with setData() method', function () {
 
-            chart = new tauCharts.Chart({
+            chart = new Taucharts.Chart({
                 type: 'bar',
                 x: 'x',
                 y: 'y',
@@ -132,7 +132,7 @@ import tauCharts from '../src/tau.charts';
 
         it('should allow stacked bar with missed values in data', function () {
 
-            chart = new tauCharts.Chart({
+            chart = new Taucharts.Chart({
                 type: 'scatterplot',
                 x: 'x',
                 y: 'y',
@@ -160,7 +160,7 @@ import tauCharts from '../src/tau.charts';
 
         it('should keep setData() / getData() / getChartModelData() consistent', function () {
 
-            chart = new tauCharts.Chart({
+            chart = new Taucharts.Chart({
                 type: 'scatterplot',
                 x: 'x',
                 y: 'y0',

@@ -64,7 +64,7 @@ dev.spec({
     data: dev.dataset('medals'),
 
     plugins: [
-        tauCharts.api.plugins.get('legend')(),
-        tauCharts.api.plugins.get('tooltip')()
+        Taucharts.api.plugins.get('legend')(),
+        Taucharts.api.plugins.get('tooltip')()
     ]
 });

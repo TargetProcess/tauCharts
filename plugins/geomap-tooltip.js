@@ -1,6 +1,6 @@
-import tauCharts from 'taucharts';
+import Taucharts from 'taucharts';
 
-    var utils = tauCharts.api.utils;
+    var utils = Taucharts.api.utils;
 
     function ChartGeoMapTooltip(xSettings) {
 
@@ -210,6 +210,6 @@ import tauCharts from 'taucharts';
         return plugin;
     }
 
-    tauCharts.api.plugins.add('geomap-tooltip', ChartGeoMapTooltip);
+    Taucharts.api.plugins.add('geomap-tooltip', ChartGeoMapTooltip);
 
 export default ChartGeoMapTooltip;

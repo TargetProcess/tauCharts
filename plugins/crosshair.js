@@ -1,10 +1,10 @@
-import tauCharts from 'taucharts';
+import Taucharts from 'taucharts';
 import * as d3 from 'd3';
 
 const svgNS = 'http://www.w3.org/2000/svg';
-    var utils = tauCharts.api.utils;
-    var svgUtils = tauCharts.api.svgUtils;
-    var pluginsSDK = tauCharts.api.pluginsSDK;
+    var utils = Taucharts.api.utils;
+    var svgUtils = Taucharts.api.svgUtils;
+    var pluginsSDK = Taucharts.api.pluginsSDK;
 
     function labelBox(options) {
 
@@ -268,9 +268,9 @@ const svgNS = 'http://www.w3.org/2000/svg';
                         var xSameSign = unit.data().filter(function (d) {
                             var dy = d[scaleY.dim];
                             return (
+                                (d === e.data) ||
                                 ((dy === yValue) || (dy - yValue === 0)) &&
-                                ((unit.screenModel.x(e.data) - unit.screenModel.x(d)) *
-                                    d[scaleX.dim] >= 0)
+                                ((unit.screenModel.x(e.data) - unit.screenModel.x(d)) * d[scaleX.dim] > 0)
                             );
                         });
                         ex = (xValue < 0 ? Math.min : Math.max).apply(null, xSameSign.map(function (d) {
@@ -283,9 +283,9 @@ const svgNS = 'http://www.w3.org/2000/svg';
                         var ySameSign = unit.data().filter(function (d) {
                             var dx = d[scaleX.dim];
                             return (
+                                (d === e.data) ||
                                 ((dx === xValue) || (dx - xValue === 0)) &&
-                                ((unit.screenModel.y(d) - unit.screenModel.y(e.data)) *
-                                    d[scaleY.dim] >= 0)
+                                ((unit.screenModel.y(d) - unit.screenModel.y(e.data)) * d[scaleY.dim] > 0)
                             );
                         });
                         ey = (yValue < 0 ? Math.max : Math.min).apply(null, ySameSign.map(function (d) {
@@ -424,11 +424,11 @@ const svgNS = 'http://www.w3.org/2000/svg';
                     if (fmt.hasOwnProperty('format')) {
                         info[k].format = (typeof fmt.format === 'function') ?
                             (fmt.format) :
-                            (tauCharts.api.tickFormat.get(fmt.format, info[k].nullAlias));
+                            (Taucharts.api.tickFormat.get(fmt.format, info[k].nullAlias));
                     } else {
                         info[k].format = (info[k].hasOwnProperty('format')) ?
                             (info[k].format) :
-                            (tauCharts.api.tickFormat.get(null, info[k].nullAlias));
+                            (Taucharts.api.tickFormat.get(null, info[k].nullAlias));
                     }
                 });
 
@@ -439,6 +439,6 @@ const svgNS = 'http://www.w3.org/2000/svg';
         return plugin;
     }
 
-    tauCharts.api.plugins.add('crosshair', Crosshair);
+    Taucharts.api.plugins.add('crosshair', Crosshair);
 
 export default Crosshair;

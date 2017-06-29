@@ -2,27 +2,27 @@
 <html>
 <meta charset="utf-8">
 <head>
-    <script src="../node_modules/d3/d3.min.js"></script>
+    <script src="../node_modules/d3/build/d3.min.js"></script>
 
-    <script src="../tauCharts.js"></script>
+    <script src="../dist/taucharts.js"></script>
     <!-- plugins -->
-    <script src="../plugins/tooltip.js"></script>
-    <script src="../plugins/export.js"></script>
-    <script src="../plugins/legend.js"></script>
-    <script src="../plugins/trendline.js"></script>
-    <script src="../plugins/settings.js"></script>
-    <script src="../plugins/parallel-brushing.js"></script>
-    <script src="../plugins/parallel-tooltip.js"></script>
-    <script src="../plugins/geomap-tooltip.js"></script>
-    <script src="../plugins/geomap-legend.js"></script>
+    <script src="../dist/plugins/tooltip.js"></script>
+    <script src="../dist/plugins/export-to.js"></script>
+    <script src="../dist/plugins/legend.js"></script>
+    <script src="../dist/plugins/trendline.js"></script>
+    <script src="../dist/plugins/settings.js"></script>
+    <script src="../dist/plugins/parallel-brushing.js"></script>
+    <script src="../dist/plugins/parallel-tooltip.js"></script>
+    <script src="../dist/plugins/geomap-tooltip.js"></script>
+    <script src="../dist/plugins/geomap-legend.js"></script>
     <!-- css -->
-    <link href="../css/layout.css" rel="stylesheet"/>
-    <link href="../css/base.css" rel="stylesheet"/>
-    <link href="../css/legend.default.css" rel="stylesheet"/>
-    <link href="../css/tauCharts.default.css" rel="stylesheet"/>
-    <link href="../css/tooltip.default.css" rel="stylesheet"/>
-    <link href="../css/trendline.default.css" rel="stylesheet"/>
+    <link href="../dist/taucharts.css" rel="stylesheet"/>
+    <link href="../dist/plugins/legend.css" rel="stylesheet"/>
+    <link href="../dist/plugins/tooltip.css" rel="stylesheet"/>
+    <link href="../dist/plugins/trendline.css" rel="stylesheet"/>
     <script>
+        var utils = Taucharts.api.utils;
+
         var regressionsHub = (function () {
 
             'use strict';
@@ -366,7 +366,7 @@
 <div id="composite3" class="cc"></div>
 
 <script>
-    var c = new tauCharts.Chart({
+    var c = new Taucharts.Chart({
 
         data: [
             {car: "BMV X5", co2: 197, hp: 306},
@@ -499,7 +499,7 @@
         }
     };
 
-    var facetGpl = new tauCharts.Plot(facetSpec);
+    var facetGpl = new Taucharts.Plot(facetSpec);
 
     facetGpl.renderTo('#container');
 </script>
@@ -674,7 +674,7 @@
         }
     };
 
-    var gpl = new tauCharts.Plot(facetSpec);
+    var gpl = new Taucharts.Plot(facetSpec);
 
     gpl.renderTo('#trendline');
 
@@ -1053,14 +1053,14 @@
         }
     };
 
-    var dashGpl = new tauCharts.Plot(dashSpec);
+    var dashGpl = new Taucharts.Plot(dashSpec);
 
     dashGpl.renderTo('#dashboard');
     </script>
 
 <script>
 
-    var composite = new tauCharts.Plot({
+    var composite = new Taucharts.Plot({
 
         settings: {
             fitModel: 'none'
@@ -1311,7 +1311,7 @@
 <script>
 
 
-    var composite1place = new tauCharts.Plot({
+    var composite1place = new Taucharts.Plot({
 
         settings: {
             fitModel: 'none'
@@ -1559,7 +1559,7 @@
 </script>
 
 <script>
-    var composite2 = new tauCharts.Chart({
+    var composite2 = new Taucharts.Chart({
 
         data: [
             {car: "BMV X5", co2: 197, hp: 306},
@@ -1596,10 +1596,10 @@
 </script>
 
 <script>
-    var composite3 = new tauCharts.Chart({
+    var composite3 = new Taucharts.Chart({
 
         plugins: [
-            tauCharts.api.plugins.get('trendline')({showPanel:true})
+            Taucharts.api.plugins.get('trendline')({showPanel:true})
         ],
 
         "type": "scatterplot",

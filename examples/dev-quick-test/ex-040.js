@@ -58,7 +58,7 @@ dev.spec({
         excludeNull: false
     },
     plugins: [
-        tauCharts.api.plugins.get('layers')({
+        Taucharts.api.plugins.get('layers')({
             // mode: 'dock',
             showPanel: true,
             layers: [
@@ -82,7 +82,7 @@ dev.spec({
             ]
         })
         ,
-        tauCharts.api.plugins.get('annotations')({
+        Taucharts.api.plugins.get('annotations')({
             items: [
                 {
                     dim: 'sin',
@@ -93,15 +93,15 @@ dev.spec({
             ]
         })
         ,
-        tauCharts.api.plugins.get('legend')()
+        Taucharts.api.plugins.get('legend')()
         ,
 
-        tauCharts.api.plugins.get('quick-filter')()
+        Taucharts.api.plugins.get('quick-filter')()
         ,
 
-        tauCharts.api.plugins.get('trendline')()
+        Taucharts.api.plugins.get('trendline')()
         ,
 
-        tauCharts.api.plugins.get('tooltip')()
+        Taucharts.api.plugins.get('tooltip')()
     ]
 });

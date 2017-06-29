@@ -79,6 +79,7 @@ const Path = {
         baseModel.pathAttributesUpdateDone = pathAttributes;
 
         baseModel.pathElement = 'polygon';
+        baseModel.anchorShape = 'circle';
 
         baseModel.pathTween = {
             attr: 'points',
