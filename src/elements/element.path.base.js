@@ -11,6 +11,7 @@ import * as utilsDom from '../utils/utils-dom';
 import * as utilsDraw from '../utils/utils-draw';
 import * as d3 from 'd3';
 import {drawAnchors, highlightAnchors} from './decorators/anchors';
+import {getClosestPointInfo} from '../utils/utils-position';
 
 const synthetic = 'taucharts_synthetic_record';
 const isNonSyntheticRecord = ((row) => row[synthetic] !== true);
@@ -401,25 +402,9 @@ const BasePath = {
                 const distance = Math.abs(flip ? (cursorY - y) : (cursorX - x));
                 const secondaryDistance = Math.abs(flip ? (cursorX - x) : (cursorY - y));
                 return {node: el.node, data: el.data, distance, secondaryDistance, x, y};
-            })
-            .sort((a, b) => (a.distance === b.distance ?
-                (a.secondaryDistance - b.secondaryDistance) :
-                (a.distance - b.distance)
-            ));
+            });
 
-        const largerDistIndex = items.findIndex((d) => (
-            (d.distance !== items[0].distance) ||
-            (d.secondaryDistance !== items[0].secondaryDistance)
-        ));
-        const sameDistItems = (largerDistIndex < 0 ? items : items.slice(0, largerDistIndex));
-        if (sameDistItems.length === 1) {
-            return sameDistItems[0];
-        }
-        const mx = (sameDistItems.reduce((sum, item) => sum + item.x, 0) / sameDistItems.length);
-        const my = (sameDistItems.reduce((sum, item) => sum + item.y, 0) / sameDistItems.length);
-        const angle = (Math.atan2(my - cursorY, mx - cursorX) + Math.PI);
-        const closest = sameDistItems[Math.round((sameDistItems.length - 1) * angle / 2 / Math.PI)];
-        return closest;
+        return getClosestPointInfo(cursorX, cursorY, items);
     },
 
     highlight(filter) {
