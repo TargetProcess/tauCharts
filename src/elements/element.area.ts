@@ -1,6 +1,7 @@
 import * as d3 from 'd3';
 import {CSS_PREFIX} from '../const';
 import * as utils from '../utils/utils';
+import * as utilsDraw from '../utils/utils-draw';
 import {BasePath} from './element.path.base';
 import {getLineClassesByCount} from '../utils/css-class-map';
 import {GrammarRegistry} from '../grammar-registry';
@@ -96,6 +97,7 @@ const Area = {
 
         const isPolygon = (getInterpolatorSplineType(guide.interpolate) === 'polyline');
         baseModel.pathElement = (isPolygon ? 'polygon' : 'path');
+        baseModel.anchorShape = 'vertical-stick';
 
         baseModel.pathTween = {
             attr: (isPolygon ? 'points' : 'd'),
