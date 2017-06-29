@@ -99,19 +99,21 @@ export interface GrammarElement {
     getGrammarRules?(): GrammarRule[];
     getAdjustScalesRules?(): GrammarRule[];
     createScreenModel?(grammarModel: GrammarModel): ScreenModel;
-    getClosestElement?(x: number, y: number): {
-        data;
-        node: Element;
-        x: number;
-        y: number;
-        distance: number;
-        secondaryDistance: number;
-    };
+    getClosestElement?(x: number, y: number): ClosestElementInfo;
     addInteraction?();
     draw?();
     data?(): any[];
     node?(): GrammarElement;
     parentUnit?: Unit;
+}
+
+export interface ClosestElementInfo {
+    data;
+    node: Element;
+    x: number;
+    y: number;
+    distance: number;
+    secondaryDistance: number;
 }
 
 export interface ElementOptions {
