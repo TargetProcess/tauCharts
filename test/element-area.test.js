@@ -91,8 +91,7 @@ const MIN_ANCHOR_RADIUS = 4;
             areaNode.fire('highlight-data-points', ((row) => (row.x === 0)));
 
             var highlightedDots0 = d3.selectAll('.i-data-anchor').filter(function () {
-                var r = parseFloat(d3.select(this).attr('r'));
-                return r === MIN_ANCHOR_RADIUS;
+                return this.getBBox().width === MIN_ANCHOR_RADIUS;
             });
 
             expect(highlightedDots0.size()).to.equal(2, 'should highlight 2 data points');
