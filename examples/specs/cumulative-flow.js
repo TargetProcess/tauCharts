@@ -24,8 +24,8 @@ dev.spec({
     },
     data: getCFDData(),
     plugins: [
-        tauCharts.api.plugins.get('interval-highlight')({
-            onClick: function(sender, e){
+        Taucharts.api.plugins.get('interval-highlight')({
+            onClick: function (sender, e) {
                 console.log(e.data, e.prev);
             }
         })

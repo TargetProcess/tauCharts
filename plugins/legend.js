@@ -14,7 +14,7 @@ import * as d3 from 'd3';
         return ++counter;
     };
 
-    const xml = tauCharts.api.utils.xml;
+    const xml = Taucharts.api.utils.xml;
 
     var splitEvenly = function (domain, parts) {
         var min = domain[0];
