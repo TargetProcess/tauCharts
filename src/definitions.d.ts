@@ -149,7 +149,7 @@ export interface UnitGuide {
     showAnchors?: 'always' | 'hover' | 'never';
     interpolate?: 'linear' | 'smooth' | 'smooth-keep-extremum' | 'step' | 'step-before' | 'step-after';
     split?: ScaleGuide;
-    showGridLines?: 'x' | 'y' | 'xy';
+    showGridLines?: 'x' | 'y' | 'xy' | '';
     utcTime?: boolean;
     paddingNoTicks?: {
         b: number;
@@ -334,6 +334,7 @@ export interface AxisLabelGuide {
     textAnchor?: string;
     size?: number;
     rotate?: number;
+    _original_text?: string;
 }
 
 export interface ScaleSettings {

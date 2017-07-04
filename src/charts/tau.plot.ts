@@ -47,7 +47,7 @@ import {
 
 interface Filter {
     tag: string;
-    src: string;
+    src?: string;
     predicate: (row) => boolean;
     id?: number;
 }
@@ -799,7 +799,7 @@ export class Plot extends Emitter {
         this.renderTo(this._target, sizes);
     }
 
-    select(queryFilter: (unit?: Unit) => boolean) {
+    select(queryFilter: (unit?: GrammarElement) => boolean) {
         return this._nodes.filter(queryFilter);
     }
 

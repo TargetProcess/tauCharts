@@ -1,5 +1,8 @@
 import Taucharts from 'taucharts';
 import * as d3 from 'd3';
+import {Plot} from '../src/charts/tau.plot';
+import {DimMap} from '../src/plugins-sdk';
+import {GrammarElement} from '../src/definitions';
 
     var utils = Taucharts.api.utils;
     var pluginsSDK = Taucharts.api.pluginsSDK;
@@ -14,7 +17,7 @@ import * as d3 from 'd3';
             .replace(/'/g, '&#039;');
     };
 
-    function Tooltip(xSettings) {
+    function Tooltip(xSettings: TooltipSettings) {
 
         var settings = utils.defaults(
             xSettings || {},
@@ -22,28 +25,24 @@ import * as d3 from 'd3';
                 // add default settings here
                 align: 'bottom-right',
                 escapeHtml: true,
-                fields: null,
-                formatters: {},
-                dockToData: false,
-                aggregationGroupFields: [],
-                onRevealAggregation: function (filters, row) {
-                    console.log(
-                        'Setup [onRevealAggregation] callback and filter original data by the following criteria: ',
-                        JSON.stringify(filters, null, 2));
-                },
+                fields: null as string[],
+                formatters: {} as Formatter | FormatterObject,
                 spacing: 24
             });
 
-        var plugin = {
+        var plugin: TooltipObject = {
 
-            init: function (chart) {
+            init: function (chart: Plot) {
 
                 this._chart = chart;
                 this._metaInfo = {};
                 this._skipInfo = {};
 
                 // NOTE: for compatibility with old Tooltip implementation.
-                Object.assign(this, utils.omit(settings, 'fields', 'getFields'));
+                // Object.assign(this, utils.omit(settings, 'fields', 'getFields'));
+                this.template = (settings.template || this.template);
+                this.render = (settings.render || this.render);
+                this.afterInit = (settings.afterInit || this.afterInit);
 
                 this._tooltip = this._chart.addBalloon(
                     {
@@ -52,17 +51,11 @@ import * as d3 from 'd3';
                         effectClass: 'fade'
                     });
 
-                var revealAggregationBtn = ((settings.aggregationGroupFields.length > 0) ?
-                        (this.templateRevealAggregation) :
-                        ('')
-                );
-
-                var template = utils.template(this.template);
+                var template = this.template;
                 var tooltipNode = this.getTooltipNode();
 
                 this._tooltip
                     .content(template({
-                        revealTemplate: revealAggregationBtn,
                         excludeTemplate: this.templateExclude
                     }));
 
@@ -74,14 +67,6 @@ import * as d3 from 'd3';
                         while (target !== e.currentTarget && target !== null) {
                             if (target.classList.contains('i-role-exclude')) {
                                 this._exclude();
-                                this.setState({
-                                    highlight: null,
-                                    isStuck: false
-                                });
-                            }
-
-                            if (target.classList.contains('i-role-reveal')) {
-                                this._reveal();
                                 this.setState({
                                     highlight: null,
                                     isStuck: false
@@ -211,7 +196,7 @@ import * as d3 from 'd3';
                     .updateSize();
             },
 
-            hideTooltip: function (e) {
+            hideTooltip: function () {
                 window.removeEventListener('click', this._outerClickHandler, true);
                 this._tooltip.hide();
             },
@@ -292,12 +277,12 @@ import * as d3 from 'd3';
                     .map(function (k) {
                         var key = k;
                         var val = data[k];
-                        return self.renderItem(self._getLabel(key), self._getFormat(key)(val), key, val);
+                        return self.renderItem(self._getLabel(key), self._getFormat(key)(val));
                     })
                     .join('');
             },
 
-            renderItem: function (label, formattedValue, fieldKey, fieldVal) {
+            renderItem: function (label, formattedValue) {
                 return this.itemTemplate({
                     label: settings.escapeHtml ? escapeHtml(label) : label,
                     value: settings.escapeHtml ? escapeHtml(formattedValue) : formattedValue
@@ -341,19 +326,6 @@ import * as d3 from 'd3';
                     });
             },
 
-            _reveal: function () {
-                var aggregatedRow = this.state.highlight.data;
-                var groupFields = (settings.aggregationGroupFields || []);
-                var descFilters = groupFields.reduce(function (memo, k) {
-                    if (aggregatedRow.hasOwnProperty(k)) {
-                        memo[k] = aggregatedRow[k];
-                    }
-                    return memo;
-                }, {});
-
-                settings.onRevealAggregation(descFilters, aggregatedRow);
-            },
-
             _exclude: function () {
                 this._chart
                     .addFilter({
@@ -393,14 +365,6 @@ import * as d3 from 'd3';
                 }
             },
 
-            templateRevealAggregation: [
-                '<div class="i-role-reveal graphical-report__tooltip__vertical">',
-                '   <div class="graphical-report__tooltip__vertical__wrap">',
-                '       Reveal',
-                '   </div>',
-                '</div>'
-            ].join(''),
-
             templateExclude: [
                 '<div class="i-role-exclude graphical-report__tooltip__exclude">',
                 '   <div class="graphical-report__tooltip__exclude__wrap">',
@@ -410,23 +374,22 @@ import * as d3 from 'd3';
                 '</div>'
             ].join(''),
 
-            template: [
+            template: ({excludeTemplate}) => [
                 '<div class="i-role-content graphical-report__tooltip__content"></div>',
-                '<%= revealTemplate %>',
-                '<%= excludeTemplate %>'
+                excludeTemplate
             ].join(''),
 
-            itemTemplate: utils.template([
+            itemTemplate: ({label, value}) => [
                 '<div class="graphical-report__tooltip__list__item">',
-                '<div class="graphical-report__tooltip__list__elem"><%=label%></div>',
-                '<div class="graphical-report__tooltip__list__elem"><%=value%></div>',
+                `  <div class="graphical-report__tooltip__list__elem">${label}</div>`,
+                `  <div class="graphical-report__tooltip__list__elem">${value}</div>`,
                 '</div>'
-            ].join('')),
+            ].join('\n'),
 
             _getFormatters: function () {
 
                 var info = pluginsSDK.extractFieldsFormatInfo(this._chart.getSpec());
-                var skip = {};
+                var skip = {} as {[key: string]: boolean};
                 Object.keys(info).forEach(function (k) {
 
                     if (info[k].isComplexField) {
@@ -438,14 +401,20 @@ import * as d3 from 'd3';
                     }
                 });
 
-                var toLabelValuePair = function (x) {
+                var toLabelValuePair = function (x: Formatter | FormatterObject) {
 
-                    var res = {};
+                    interface Pair {
+                        format: Formatter | FormatterObject;
+                        label?: string;
+                        nullAlias?: string;
+                    }
+
+                    var res = {} as Pair;
 
                     if (typeof x === 'function' || typeof x === 'string') {
                         res = {format: x};
                     } else if (utils.isObject(x)) {
-                        res = utils.pick(x, 'label', 'format', 'nullAlias');
+                        res = utils.pick(x, 'label', 'format', 'nullAlias') as Pair;
                     }
 
                     return res;
@@ -458,12 +427,12 @@ import * as d3 from 'd3';
                     info[k] = Object.assign(
                         ({label: k, nullAlias: ('No ' + k)}),
                         (info[k] || {}),
-                        (utils.pick(fmt, 'label', 'nullAlias')));
+                        (utils.pick(fmt, 'label', 'nullAlias'))) as any;
 
                     if (fmt.hasOwnProperty('format')) {
                         info[k].format = (typeof fmt.format === 'function') ?
                             (fmt.format) :
-                            (Taucharts.api.tickFormat.get(fmt.format, info[k].nullAlias));
+                            (Taucharts.api.tickFormat.get(fmt.format as any, info[k].nullAlias));
                     } else {
                         info[k].format = (info[k].hasOwnProperty('format')) ?
                             (info[k].format) :
@@ -482,5 +451,78 @@ import * as d3 from 'd3';
     }
 
     Taucharts.api.plugins.add('tooltip', Tooltip);
+
+interface TooltipSettings {
+    fields?: string[];
+    formatters?: {[field: string]: (Formatter | FormatterObject)};
+    align?: string;
+    escapeHtml?: boolean;
+    spacing?: number;
+    getFields?: (chart: Plot) => string[];
+    template?: TooltipTemplate;
+    render?: TooltipRenderFunction;
+    afterInit?: TooltipAfterInitFunction;
+}
+
+type Formatter = (x: any) => string;
+
+interface FormatterObject {
+    label?: string;
+    format: (x: any) => string;
+    nullAlias?: string;
+}
+
+interface TooltipState {
+    highlight: {
+        data: any;
+        cursor: TooltipCursor;
+        unit: GrammarElement;
+    };
+    isStuck: boolean;
+}
+
+interface TooltipCursor {
+    x: number;
+    y: number;
+}
+
+type TooltipRenderFunction = (this: TooltipObject, data: any[], fields: string[]) => string;
+type TooltipTemplate = ({excludeTemplate}: {excludeTemplate: string}) => string;
+type TooltipAfterInitFunction = (tooltipNode: HTMLElement) => void;
+
+interface TooltipObject {
+    init(this: TooltipObject, chart: Plot): void;
+    getTooltipNode(this: TooltipObject): HTMLElement;
+    state: TooltipState;
+    setState(this: TooltipObject, newState: TooltipState): void;
+    showTooltip(this: TooltipObject, data: any, cursor: TooltipCursor);
+    hideTooltip(this: TooltipObject): void;
+    destroy(this: TooltipObject): void;
+    _subscribeToHover(this: TooltipObject): void;
+    afterInit: TooltipAfterInitFunction;
+    render: TooltipRenderFunction;
+    renderItem: (this: TooltipObject, label: string, formattedValue: string) => string;
+    _getFormat(this: TooltipObject, k: string): any;
+    _getLabel(this: TooltipObject, k: string): string;
+    _accentFocus(this: TooltipObject, data): void;
+    _removeFocus(this: TooltipObject): void;
+    _exclude(this: TooltipObject): void;
+    onRender(this: TooltipObject): void;
+    _setTargetSvgClass(this: TooltipObject, isSet: boolean): void;
+    _setTargetEventsEnabled(this: TooltipObject, isSet: boolean): void;
+    templateExclude: string;
+    template: TooltipTemplate;
+    itemTemplate: ({label, value}: {label: string, value: string}) => string;
+    _getFormatters(this: TooltipObject): {
+        meta: DimMap;
+        skip: {[key: string]: boolean};
+    };
+    _chart?: Plot;
+    _tooltip?: any;
+    _metaInfo?: DimMap;
+    _skipInfo?: {[key: string]: boolean};
+    _scrollHandler?: (this: TooltipObject) => void;
+    _outerClickHandler?: (this: TooltipObject, e) => void;
+}
 
 export default Tooltip;

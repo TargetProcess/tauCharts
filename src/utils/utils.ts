@@ -680,7 +680,7 @@ let templateSettings = {
 
     // TODO Remove this methods and its associated configs
     // which are just for templating in some plugins
-    export function pick(object: Object, ...props: string[]) {
+    export function pick(object: Object, ...props: string[]): Object {
         var result = {};
         if (object == null) {
             return result;
@@ -700,7 +700,7 @@ let templateSettings = {
         return testRegexp.test(string) ? string.replace(replaceRegexp, match => map[match]) : string;
     }
 
-    export function template(text: string, settings?, oldSettings?): string {
+    export function template(text: string, settings?, oldSettings?): (data?) => string {
         if (!settings && oldSettings) {
             settings = oldSettings;
         }

@@ -13,7 +13,9 @@ dev.spec({
         Taucharts.api.plugins.get('legend')({
             position: 'bottom'
         }),
-        Taucharts.api.plugins.get('tooltip')()
+        Taucharts.api.plugins.get('tooltip')({
+            aggregationGroupFields:['name']
+        })
     ],
 
     data: dev.dataset('exoplanets')
