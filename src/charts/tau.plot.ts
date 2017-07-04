@@ -22,7 +22,7 @@ import {SpecTransformExtractAxes} from '../spec-transform-extract-axes';
 import {CSS_PREFIX} from '../const';
 
 import {GPL} from './tau.gpl';
-import {UnitDomainPeriodGenerator, PeriodGenerator} from '../unit-domain-period-generator';
+import {UnitDomainPeriodGenerator} from '../unit-domain-period-generator';
 import * as d3 from 'd3';
 import TaskRunner from './task-runner';
 var selectOrAppend = utilsDom.selectOrAppend;
@@ -198,46 +198,18 @@ export class Plot extends Emitter {
             .keys(spec.scales)
             .map(s => spec.scales[s]);
 
-        interface PeriodScaleMeta {
-            source: string;
-            dim: string;
-            period: PeriodGenerator;
-        }
-
-        var workPlan = scales
+        scales
             .filter(s => (s.type === 'period'))
-            .reduce((memo, scaleRef) => {
+            .forEach((scaleRef) => {
                 var periodCaster = tickPeriod.get(scaleRef.period, {utc: spec.settings.utcTime});
-                if (periodCaster) {
-                    memo.push({source: scaleRef.source, dim: scaleRef.dim, period: periodCaster});
-                } else {
+                if (!periodCaster) {
                     log([
                         `Unknown period "${scaleRef.period}".`,
                         `Docs: http://api.taucharts.com/plugins/customticks.html#how-to-add-custom-tick-period`
                     ], 'WARN');
                     scaleRef.period = null;
                 }
-
-                return memo;
-            }, [] as PeriodScaleMeta[]);
-
-        var isNullOrUndefined = ((x) => ((x === null) || (x === undefined)));
-
-        var reducer = (refSources: DataSources, metaDim: PeriodScaleMeta) => {
-            refSources[metaDim.source].data = refSources[metaDim.source]
-                .data
-                .map(row => {
-                    var val = row[metaDim.dim];
-                    if (!isNullOrUndefined(val)) {
-                        row[metaDim.dim] = metaDim.period.cast(val);
-                    }
-                    return row;
-                });
-
-            return refSources;
-        };
-
-        spec.sources = workPlan.reduce(reducer, spec.sources);
+            });
 
         return spec;
     }
