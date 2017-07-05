@@ -9,7 +9,6 @@ import {cartesianAxis, cartesianGrid} from './coords.cartesian.axis';
 import {
     d3_transition as transition,
     d3_selectAllImmediate as selectAllImmediate,
-    d3_decorator_avoidLabelsCollisions
 } from '../utils/d3-decorators';
 var selectOrAppend = utilsDom.selectOrAppend;
 

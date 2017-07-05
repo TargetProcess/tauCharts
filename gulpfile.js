@@ -15,7 +15,7 @@ const banner = () => {
     const year = now.getUTCFullYear();
     return [
         `/*`,
-        `${package.name} v${package.version} (${today})`,
+        `${package.name}@${package.version} (${today})`,
         `Copyright ${year} ${package.author.name}`,
         `Licensed under ${package.licenses.map(x => x.type).join(', ')}`,
         `*/`,

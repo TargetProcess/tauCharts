@@ -3,22 +3,32 @@ const uglify = require('gulp-uglify');
 const source = require('vinyl-source-stream');
 const streamify = require('gulp-streamify');
 const log = require('gulp-util').log;
+const red = (message) => `\x1b[31m${message}\x1b[0m`;
+const fs = require('fs');
 
 const tsConfig = {
     typescript: require('typescript'),
-    target: 'es5',
-    allowJs: true,
+    module: 'es2015',
     lib: [
         'es6',
         'dom'
     ],
+    allowJs: true,
+    target: 'es5',
+    baseUrl: '.',
+    paths: {
+        'taucharts': [
+            'src/tau.charts'
+        ]
+    },
     include: [
-        '**/*.ts',
-        '**/*.js'
+        'plugins/**/*',
+        'src/**/*',
+        'test/**/*'
     ],
     exclude: [
-        'node_modules/**',
-        'bower_components/**'
+        'bower_components',
+        'node_modules'
     ]
 };
 
@@ -46,7 +56,7 @@ const mainConfig = {
         }),
         require('rollup-plugin-node-resolve')(),
         require('rollup-plugin-commonjs')(),
-        require('rollup-plugin-typescript')(tsConfig)
+        require('@alexlur/rollup-plugin-typescript')(tsConfig)
     ]
 };
 
@@ -64,7 +74,7 @@ const pluginsCommonConfig = {
     },
     plugins: [
         require('rollup-plugin-commonjs')(),
-        require('rollup-plugin-typescript')(tsConfig)
+        require('@alexlur/rollup-plugin-typescript')(tsConfig)
     ]
 };
 
@@ -141,14 +151,14 @@ module.exports = (gulp, {
                 .on('bundle', (bundle) => cache[entry] = bundle)
                 .on('error', function (err) {
                     cache[entry] = null;
-                    log('\x1b[31m', [
+                    log(red([
                         '',
                         '.========================.',
                         '!                        !',
                         '! JAVASCRIPT BUILD ERROR !',
                         '!                        !',
                         '*========================*'
-                    ].join('\n'), '\x1b[0m');
+                    ].join('\n')));
                     log(err);
                     this.emit('end');
                 });
@@ -186,6 +196,8 @@ module.exports = (gulp, {
 
         const streams = plugins.map((p) => {
             const [plugin, pluginConfig] = (Array.isArray(p) ? p : [p, {}]);
+            const jsPath = `./plugins/${plugin}.js`;
+            const tsPath = `./plugins/${plugin}.ts`;
             return createStream({
                 distDir: `./${getRoot({production})}/plugins`,
                 distFile: `${plugin}.js`,
@@ -194,7 +206,7 @@ module.exports = (gulp, {
                     pluginsCommonConfig,
                     pluginConfig,
                     {
-                        entry: `./plugins/${plugin}.js`,
+                        entry: (fs.existsSync(jsPath) ? jsPath : tsPath),
                         moduleId: `taucharts-${plugin}`,
                         moduleName: `taucharts${spinalCaseToCamelCase(plugin)}`
                     }
@@ -215,11 +227,22 @@ module.exports = (gulp, {
 
     const buildProdJS = () => {
         return merge(
-                buildMainJS({production: true}),
-                buildPluginsJS({production: true})
-            )
+            buildMainJS({production: true}),
+            buildPluginsJS({production: true})
+        )
             .pipe(streamify(concat('taucharts.min.js')))
-            .pipe(streamify(uglify()))
+            .pipe(streamify(uglify().on('error', function (err) {
+                log(red([
+                    '',
+                    '.=======================.',
+                    '!                       !',
+                    '! UGLIFY JS BUILD ERROR !',
+                    '!                       !',
+                    '*=======================*'
+                ].join('\n')));
+                log(err);
+                this.emit('end');
+            })))
             .pipe(streamify(insert.prepend(banner())))
             .pipe(gulp.dest(`./${getRoot({production: true})}`));
     };
