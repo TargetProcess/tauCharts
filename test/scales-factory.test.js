@@ -287,6 +287,71 @@ import * as utils from '../src/utils/utils';
                 .equal(expectedRange.map(x => x.getTime()));
         });
 
+    it('should set intervals for time scale', function () {
+        var data = [
+            {t: new Date('2017-01-01T10:00Z')},
+            {t: new Date('2017-01-02T05:00Z')},
+            {t: new Date('2017-01-04T02:00Z')}
+        ];
+
+        var dayScale = new TimeScale(
+            {
+                part: () => data.slice(),
+                full: () => data.slice()
+            },
+            {
+                dim: 't',
+                nice: true,
+                period: 'day',
+                utcTime: true
+            }).create([0, 100]);
+    
+        var monthScale = new TimeScale(
+            {
+                part: () => data.slice(),
+                full: () => data.slice()
+            },
+            {
+                dim: 't',
+                period: 'month',
+                utcTime: true
+            }).create([0, 100]);
+
+        expect(dayScale.domain().map(x => x.getTime()))
+            .to
+            .deep
+            .equal([new Date('2017-01-01T00:00Z'), new Date('2017-01-04T00:00Z')].map((d) => d.getTime()), 'domain rounded to day');
+
+        expect(monthScale.domain().map(x => x.getTime()))
+            .to
+            .deep
+            .equal([new Date('2017-01-01T00:00Z'), new Date('2017-02-01T00:00Z')].map((d) => d.getTime()), 'domain with single month extended with 1 interval');
+    });
+
+    it('should extend time scale with intervals when single value', function () {
+        var data = [
+            {t: new Date('2017-01-01T10:00Z')},
+            {t: new Date('2017-01-02T05:00Z')},
+            {t: new Date('2017-01-04T02:00Z')}
+        ];
+        var dayScale = new TimeScale(
+            {
+                part: () => data.slice(),
+                full: () => data.slice()
+            },
+            {
+                dim: 't',
+                nice: true,
+                period: 'day',
+                utcTime: true
+            }).create([0, 100]);
+
+        expect(dayScale.domain().map(x => x.getTime()))
+            .to
+            .deep
+            .equal([new Date('2017-01-01T00:00Z'), new Date('2017-01-04T00:00Z')].map((d) => d.getTime()));
+    });
+
         it('should support [period] scale', function () {
 
             var scale0 = new PeriodScale(

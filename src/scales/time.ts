@@ -1,5 +1,6 @@
 import {BaseScale} from './base';
 import {DataFrame} from '../data-frame';
+import {UnitDomainPeriodGenerator, PeriodGenerator} from '../unit-domain-period-generator';
 import * as d3 from 'd3';
 import * as utils from '../utils/utils';
 import {
@@ -11,6 +12,7 @@ export class TimeScale extends BaseScale {
 
     vars: Date[];
     niceIntervalFn: d3.CountableTimeInterval;
+    periodGenerator: PeriodGenerator;
 
     constructor(xSource: DataFrame, scaleConfig: ScaleConfig) {
 
@@ -18,11 +20,16 @@ export class TimeScale extends BaseScale {
 
         var props = this.scaleConfig;
         var vars = this.vars;
+        const period = (props.period ?
+            UnitDomainPeriodGenerator.get(this.scaleConfig.period, {utc: props.utcTime}) :
+            null);
 
-        var domain = (d3.extent(vars) as [Date, Date]).map((v) => new Date(v));
+        const domain = (d3.extent(vars) as [Date, Date]).map(period ?
+            (v) => period.cast(new Date(v)) :
+            (v) => new Date(v));
 
-        var min = (props.min === null || props.min === undefined) ? domain[0] : new Date(props.min).getTime();
-        var max = (props.max === null || props.max === undefined) ? domain[1] : new Date(props.max).getTime();
+        const min = (props.min == null) ? domain[0] : new Date(props.min).getTime();
+        const max = (props.max == null) ? domain[1] : new Date(props.max).getTime();
 
         vars = [
             new Date(Math.min(min as number, Number(domain[0]))),
@@ -51,11 +58,22 @@ export class TimeScale extends BaseScale {
             this.vars = vars;
         }
 
+        if (period && Number(this.vars[0]) === Number(this.vars[1])) {
+            // Note: If domain start and end is the same
+            // extend domain with one time interval
+            this.vars[1] = period.next(this.vars[0]);
+        }
+
+        this.periodGenerator = period;
+
         this.addField('scaleType', 'time');
     }
 
     isInDomain(aTime) {
         var x = new Date(aTime);
+        if (this.scaleConfig.period) {
+            x = this.periodGenerator.cast(x);
+        }
         var domain = this.domain();
         var min = domain[0];
         var max = domain[domain.length - 1];
@@ -66,15 +84,13 @@ export class TimeScale extends BaseScale {
 
         var varSet = this.vars;
         var utcTime = this.scaleConfig.utcTime;
+        const period = this.periodGenerator;
 
         var d3TimeScale = (utcTime ? d3.scaleUtc : d3.scaleTime);
-        var d3Domain = d3TimeScale().domain(
-            this.scaleConfig.nice ?
-                utils.niceTimeDomain(varSet, this.niceIntervalFn, {utc: utcTime}) :
-                varSet
-        );
 
-        var d3Scale = d3Domain.range(interval);
+        const d3Scale = d3TimeScale()
+            .domain(varSet)
+            .range(interval);
 
         var scale = ((x) => {
             var min = varSet[0];
@@ -88,6 +104,21 @@ export class TimeScale extends BaseScale {
             }
             return d3Scale(new Date(x));
         }) as ScaleFunction;
+
+        if (this.scaleConfig.period) {
+            const [min, max] = varSet;
+            d3Scale.ticks = () => {
+                return UnitDomainPeriodGenerator.generate(
+                    min,
+                    max,
+                    this.scaleConfig.period, {utc: utcTime})
+                    .filter((t) => t >= min && t <= max);
+            };
+            scale = ((x) => {
+                const floor = period.cast(x);
+                return d3Scale(floor);
+            }) as ScaleFunction;
+        }
 
         // have to copy properties since d3 produce Function with methods
         Object.keys(d3Scale).forEach((p) => (scale[p] = d3Scale[p]));
