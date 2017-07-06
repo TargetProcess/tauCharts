@@ -518,9 +518,11 @@ function createAxis(config: AxisConfig) {
         if (isOrdinalScale && gridOnly) { // Todo: Explicitly determine if grid 
             drawExtraOrdinalLine();
         }
-        if (!gridOnly && !labelGuide.hide) {
+        if (!gridOnly) {
             drawText(ticks);
-            drawAxisLabel();
+            if (!labelGuide.hide) {
+                drawAxisLabel();
+            }
         }
 
     });
