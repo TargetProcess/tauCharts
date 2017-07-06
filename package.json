@@ -84,7 +84,7 @@
   "scripts": {
     "start": "gulp watch",
     "build": "gulp build",
-    "test": "gulp prod-css && karma start",
+    "test": "gulp build && karma start",
     "devtest": "gulp debug-css && karma start --taucharts-debug",
     "prepublish": "bower install"
   },
