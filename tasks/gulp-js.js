@@ -126,6 +126,7 @@ module.exports = (gulp, {
     connect,
     insert,
     merge,
+    runSequence,
 }) => {
 
     const createStream = ({distDir, distFile, rollupConfig, production}) => {
@@ -225,11 +226,13 @@ module.exports = (gulp, {
             .pipe(connect.reload());
     };
 
-    const buildProdJS = () => {
-        return merge(
-            buildMainJS({production: true}),
-            buildPluginsJS({production: true})
-        )
+    const minifyJS = () => {
+
+        const root = getRoot({production: true});
+        const sources = [`./${root}/taucharts.js`]
+            .concat(plugins.map((plugin) => `./${root}/plugins/${plugin}.js`));
+
+        return gulp.src(sources)
             .pipe(streamify(concat('taucharts.min.js')))
             .pipe(streamify(uglify().on('error', function (err) {
                 log(red([
@@ -244,10 +247,18 @@ module.exports = (gulp, {
                 this.emit('end');
             })))
             .pipe(streamify(insert.prepend(banner())))
-            .pipe(gulp.dest(`./${getRoot({production: true})}`));
+            .pipe(gulp.dest(`./${root}`));
     };
 
-    gulp.task('prod-js', () => buildProdJS());
+    gulp.task('prod-js_compile', () => merge(
+        buildMainJS({production: true}),
+        buildPluginsJS({production: true})
+    ));
+    gulp.task('prod-js_minify', () => minifyJS());
+    gulp.task('prod-js', (done) => runSequence(
+        'prod-js_compile',
+        'prod-js_minify',
+        done));
     gulp.task('debug-js', () => buildMainJS({production: false}));
     gulp.task('debug-plugins-js', () => buildPluginsJS({production: false}));
 };

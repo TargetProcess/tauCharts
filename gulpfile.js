@@ -30,6 +30,7 @@ const plugins = {
     insert,
     merge,
     rename,
+    runSequence,
 };
 
 require('./tasks/gulp-js')(gulp, plugins);
