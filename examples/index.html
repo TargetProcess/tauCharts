@@ -52,14 +52,14 @@
         // Load JS dependencies from node_modules, neighbor node_modules or CDN
         var loadNodeModules = loadJS.bind(null, [
             '../node_modules/d3/build/d3',
-            '../node_modules/topojson/build/topojson'
+            '../node_modules/topojson/dist/topojson'
         ]);
         var loadNeighborNodeModules = loadJS.bind(null, [
             '../../d3/build/d3',
-            '../../topojson/build/topojson'
+            '../../topojson/dist/topojson'
         ]);
         var loadCDN = loadJS.bind(null, [
-            '//cdnjs.cloudflare.com/ajax/libs/d3/4.7.4/d3',
+            '//cdnjs.cloudflare.com/ajax/libs/d3/4.9.1/d3',
             '//cdnjs.cloudflare.com/ajax/libs/topojson/3.0.0/topojson'
         ]);
 

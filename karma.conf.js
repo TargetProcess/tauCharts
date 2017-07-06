@@ -12,7 +12,7 @@ module.exports = function (config) {
             `${DEBUG ? 'debug' : 'dist'}/taucharts.css`,
             `${DEBUG ? 'debug' : 'dist'}/plugins/tooltip.css`,
             'node_modules/d3/build/d3.js',
-            'node_modules/topojson/build/topojson.js',
+            'node_modules/topojson/dist/topojson.js',
             'test/utils/test.css',
             'test/utils/polyfills.js',
             'test/tests-main.js'
