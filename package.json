@@ -33,6 +33,7 @@
     "url": "https://github.com/TargetProcess/tauCharts.git"
   },
   "devDependencies": {
+    "@alexlur/rollup-plugin-typescript": "^1.0.4",
     "@types/d3": "^4.9.0",
     "bower": "^1.8.0",
     "chai": "^4.0.2",
@@ -76,14 +77,14 @@
     "run-sequence": "^1.2.2",
     "tau-tooltip": "^1.1.2",
     "ts-loader": "^2.1.0",
-    "typescript": "^2.3.3",
+    "typescript": "^2.4.1",
     "vinyl-source-stream": "^1.1.0",
     "webpack": "^2.6.1"
   },
   "scripts": {
     "start": "gulp watch",
     "build": "gulp build",
-    "test": "gulp prod-css && karma start",
+    "test": "gulp build && karma start",
     "devtest": "gulp debug-css && karma start --taucharts-debug",
     "prepublish": "bower install"
   },
