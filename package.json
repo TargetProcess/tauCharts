@@ -86,7 +86,7 @@
     "build": "gulp build",
     "test": "gulp build && karma start",
     "devtest": "gulp debug-css && karma start --taucharts-debug",
-    "prepublish": "bower install"
+    "prepublish": "bower install && gulp build"
   },
   "types": "./types/index.d.ts"
 }
