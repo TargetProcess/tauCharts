@@ -1,4 +1,3 @@
-import * as d3 from 'd3';
 import {Element} from './element';
 import * as utilsDom from '../utils/utils-dom';
 import * as utilsDraw from '../utils/utils-draw';

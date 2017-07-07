@@ -3,7 +3,8 @@ import {selectOrAppend, classes} from '../utils/utils-dom';
 import {cutText, wrapText, avoidTickTextCollision} from '../utils/d3-decorators';
 import {CSS_PREFIX} from '../const';
 import * as utilsDraw from '../utils/utils-draw';
-import * as d3 from 'd3';
+import {Selection} from 'd3-selection';
+import {Transition} from 'd3-transition';
 
 import {AxisLabelGuide, ScaleFunction, ScaleGuide} from '../definitions';
 
@@ -27,8 +28,8 @@ interface GridConfig {
     tickSize: number;
 }
 
-type d3Selection = d3.Selection<any, any, any, any>;
-type d3Transition = d3.Transition<any, any, any, any>;
+type d3Selection = Selection<any, any, any, any>;
+type d3Transition = Transition<any, any, any, any>;
 
 function identity<T>(x: T) {
     return x;
@@ -426,13 +427,13 @@ function createAxis(config: AxisConfig) {
                 .attr('x1', position(value0))
                 .attr('x2', position(value0))
                 .attr('y1', 0)
-                .attr('y2', 1) as d3.Selection<SVGLineElement, any, any, any>;
+                .attr('y2', 1) as d3Selection;
             const tempRight = selection
                 .append('line')
                 .attr('x1', position(value1))
                 .attr('x2', position(value1))
                 .attr('y1', 0)
-                .attr('y2', 1) as d3.Selection<SVGLineElement, any, any, any>;
+                .attr('y2', 1) as d3Selection;
             const available = {
                 left: (tempLeft.node().getBoundingClientRect().left - svgRect.left),
                 right: (svgRect.right - tempRight.node().getBoundingClientRect().right)

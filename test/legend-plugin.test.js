@@ -1,4 +1,5 @@
 import {expect} from 'chai';
+import * as d3 from 'd3-color';
 import testUtils from './utils/utils';
 import legend from '../plugins/legend';
 import trendline from '../plugins/trendline';

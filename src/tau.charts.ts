@@ -46,8 +46,6 @@ import {PluginsSDK} from './plugins-sdk';
 
 import {GrammarElement} from './definitions';
 
-import * as d3 from 'd3';
-
 import './utils/polyfills';
 
 var colorBrewers = {};
@@ -64,7 +62,6 @@ var api = {
     grammarRegistry: GrammarRegistry,
     tickFormat: FormatterRegistry,
     isChartElement: utils.isChartElement,
-    d3,
     utils,
     svgUtils: utilsDraw,
     tickPeriod: UnitDomainPeriodGenerator,

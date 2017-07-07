@@ -52,25 +52,18 @@
         // Load JS dependencies from node_modules, neighbor node_modules or CDN
         var loadNodeModules = loadJS.bind(null, [
             '../node_modules/d3/build/d3',
-            '../node_modules/topojson/dist/topojson'
-        ]);
-        var loadNeighborNodeModules = loadJS.bind(null, [
-            '../../d3/build/d3',
-            '../../topojson/dist/topojson'
+            '../node_modules/topojson-client/dist/topojson-client'
         ]);
         var loadCDN = loadJS.bind(null, [
-            '//cdnjs.cloudflare.com/ajax/libs/d3/4.9.1/d3',
-            '//cdnjs.cloudflare.com/ajax/libs/topojson/3.0.0/topojson'
+            'http://cdnjs.cloudflare.com/ajax/libs/d3/4.9.1/d3',
+            'http://cdnjs.cloudflare.com/ajax/libs/topojson/3.0.0/topojson'
         ]);
 
         // Start loading
         loadNodeModules({
             done: loadTaucharts,
-            error: loadNeighborNodeModules.bind(null, {
-                done: loadTaucharts,
-                error: loadCDN.bind(null, {
-                    done: loadTaucharts
-                })
+            error: loadCDN.bind(null, {
+                done: loadTaucharts
             })
         });
 

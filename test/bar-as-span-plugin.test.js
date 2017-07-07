@@ -1,6 +1,7 @@
 import {assert} from 'chai';
 import Taucharts from '../src/tau.charts';
 import BarAsSpanPlugin from '../plugins/bar-as-span';
+import * as d3 from 'd3-selection';
 
 import testUtils from './utils/utils';
 const {noScrollStyle} = testUtils;
