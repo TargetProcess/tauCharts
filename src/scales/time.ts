@@ -47,8 +47,6 @@ export class TimeScale extends BaseScale {
         if (props.nice) {
             var niceInterval = props.niceInterval;
             // Todo: Some map for d3 intervals.
-            var getD3Interval = (n: string) => d3[`time${n[0].toUpperCase()}${n.slice(1)}`];
-            var getD3UtcInterval = (n: string) => d3[`utc${n[0].toUpperCase()}${n.slice(1)}`];
             var d3TimeInterval = (niceInterval && getD3Interval(niceInterval) ?
                 (props.utcTime ? getD3UtcInterval(niceInterval) : getD3Interval(niceInterval)) :
                 null);
@@ -114,12 +112,12 @@ export class TimeScale extends BaseScale {
 
         if (this.scaleConfig.period) {
             const [min, max] = varSet;
-            d3Scale.ticks = () => {
-                return UnitDomainPeriodGenerator.generate(
-                    min,
-                    max,
-                    this.scaleConfig.period, {utc: utcTime})
-                    .filter((t) => t >= min && t <= max);
+            const d3Ticks = d3Scale.ticks;
+            d3Scale.ticks = (count?) => {
+                if (typeof count !== 'number') {
+                    count = 10;
+                }
+                return getPeriodTicks([min, max], this.scaleConfig.period, utcTime, count);
             };
             scale = ((x) => {
                 const floor = period.cast(x);
@@ -134,4 +132,104 @@ export class TimeScale extends BaseScale {
 
         return this.toBaseScale(scale, interval);
     }
+}
+
+function getD3Interval(name: string) {
+    return d3[`time${name[0].toUpperCase()}${name.slice(1)}`];
+}
+
+function getD3UtcInterval(name: string) {
+    return d3[`utc${name[0].toUpperCase()}${name.slice(1)}`];
+}
+
+function getPeriodTicks(domain: Date[], period: string, utc: boolean, count = 10) {
+
+    const [start, end] = domain;
+    const gen = UnitDomainPeriodGenerator.get(period, {utc});
+    const n0 = Number(start);
+    const n1 = Number(end);
+    const interval = ((n1 - n0) / count);
+    const periodInterval = (Number(gen.next(gen.cast(start))) - Number(gen.cast(start)));
+    const periodCount = ((n1 - n0) / periodInterval);
+
+    if (periodCount <= count) {
+        return UnitDomainPeriodGenerator.generate(
+            start,
+            end,
+            period,
+            {utc})
+            .filter((t) => t >= start && t <= end);
+    }
+
+    return d3_getTimeTicks(domain.map(Number), utc);
+}
+
+function d3_getTimeTicks(domain, utc, count = 10) {
+
+    const millisecond = utc ? d3.utcMillisecond : d3.timeMillisecond;
+    const second = utc ? d3.utcSecond : d3.timeSecond;
+    const minute = utc ? d3.utcMinute : d3.timeMinute;
+    const hour = utc ? d3.utcHour : d3.timeHour;
+    const day = utc ? d3.utcDay : d3.timeDay;
+    const week = utc ? d3.utcWeek : d3.timeWeek;
+    const month = utc ? d3.utcMonth : d3.timeMonth;
+    const year = utc ? d3.utcYear : d3.timeYear;
+
+    const durationSecond = 1000;
+    const durationMinute = durationSecond * 60;
+    const durationHour = durationMinute * 60;
+    const durationDay = durationHour * 24;
+    const durationWeek = durationDay * 7;
+    const durationMonth = durationDay * 30;
+    const durationYear = durationDay * 365;
+
+    const tickIntervals: ([any, number, number])[] = [
+        [second, 1, durationSecond],
+        [second, 5, 5 * durationSecond],
+        [second, 15, 15 * durationSecond],
+        [second, 30, 30 * durationSecond],
+        [minute, 1, durationMinute],
+        [minute, 5, 5 * durationMinute],
+        [minute, 15, 15 * durationMinute],
+        [minute, 30, 30 * durationMinute],
+        [hour, 1, durationHour],
+        [hour, 3, 3 * durationHour],
+        [hour, 6, 6 * durationHour],
+        [hour, 12, 12 * durationHour],
+        [day, 1, durationDay],
+        [day, 2, 2 * durationDay],
+        [week, 1, durationWeek],
+        [month, 1, durationMonth],
+        [month, 3, 3 * durationMonth],
+        [year, 1, durationYear]
+    ];
+
+    function tickInterval(start, stop) {
+
+        const duration = Math.abs(stop - start) / count;
+
+        var interval;
+        var i = d3.bisector((i) => i[2]).right(tickIntervals, duration);
+        if (i === tickIntervals.length) {
+            interval = year;
+        } else if (i) {
+            let ti = tickIntervals[duration / tickIntervals[i - 1][2] < tickIntervals[i][2] / duration ? i - 1 : i];
+            interval = ti[0];
+        } else {
+            interval = millisecond;
+        }
+
+        return interval;
+    }
+
+    function ticks() {
+        const d = domain;
+        const t0 = d[0];
+        const t1 = d[d.length - 1];
+        const t = tickInterval(t0, t1);
+        const ticks = t.range(t0, t1 + 1); // inclusive stop
+        return ticks;
+    }
+
+    return ticks();
 }

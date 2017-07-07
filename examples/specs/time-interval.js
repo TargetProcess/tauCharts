@@ -8,7 +8,7 @@ dev.spec({
     y: 'y',
     guide: {
         x: {
-            timeInterval: 'month'
+            timeInterval: 'day'
         }
     },
     settings: {
@@ -26,9 +26,42 @@ dev.spec({
             items: [
                 {
                     dim: 'x',
-                    val: utcDate(2017, 1, 11),
+                    val: utcDate(2017, 1, 12, 0, 0),
                     text: 'one',
-                    color: '#636363'
+                    color: 'red'
+                }
+            ]
+        })
+    ]
+});
+
+dev.spec({
+    type: 'scatterplot',
+    x: 'x',
+    y: 'y',
+    guide: {
+        x: {
+            timeInterval: 'day'
+        }
+    },
+    settings: {
+        utcTime: true
+    },
+    data: [
+        {x: utcDate(2017, 1, 11, 12, 0), y: 10},
+        {x: utcDate(2017, 1, 11, 21, 0), y: 20},
+        {x: utcDate(2017, 1, 12, 0, 0), y: 10},
+        {x: utcDate(2017, 1, 12, 3, 0), y: 20},
+        {x: utcDate(2018, 1, 13, 6, 0), y: 30}
+    ],
+    plugins: [
+        Taucharts.api.plugins.get('annotations')({
+            items: [
+                {
+                    dim: 'x',
+                    val: utcDate(2017, 1, 12, 0, 0),
+                    text: 'one',
+                    color: 'red'
                 }
             ]
         })
