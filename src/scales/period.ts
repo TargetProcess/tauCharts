@@ -2,7 +2,12 @@ import {BaseScale} from './base';
 import {UnitDomainPeriodGenerator, PeriodGenerator} from '../unit-domain-period-generator';
 import {DataFrame} from '../data-frame';
 import * as utils from '../utils/utils';
-import * as d3 from 'd3';
+import * as d3Array from 'd3-array';
+import * as d3Scale from 'd3-scale';
+const d3 = {
+    ...d3Array,
+    ...d3Scale,
+};
 import {
     ScaleConfig,
     ScaleFunction

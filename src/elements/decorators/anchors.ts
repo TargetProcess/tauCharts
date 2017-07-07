@@ -1,4 +1,3 @@
-import * as d3 from 'd3';
 import {CSS_PREFIX} from '../../const';
 import {
     d3_animationInterceptor as createUpdateFunc,

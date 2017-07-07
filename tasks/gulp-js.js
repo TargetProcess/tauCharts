@@ -32,6 +32,28 @@ const tsConfig = {
     ]
 };
 
+const d3Modules = [
+    'd3-array',
+    'd3-axis',
+    'd3-brush',
+    'd3-color',
+    'd3-format',
+    'd3-geo',
+    'd3-request',
+    'd3-scale',
+    'd3-selection',
+    'd3-shape',
+    'd3-time',
+    'd3-time-format',
+    'd3-transition',
+    'd3-quadtree',
+];
+
+const d3Globals = d3Modules.reduce((map, d3Module) => {
+    map[d3Module] = 'd3';
+    return map;
+}, {});
+
 const mainConfig = {
     entry: './src/tau.charts.ts',
     moduleId: 'taucharts',
@@ -40,13 +62,12 @@ const mainConfig = {
     format: 'umd',
     useStrict: true,
     external: [
-        'd3',
-        'topojson'
+        ...d3Modules,
+        'topojson-client'
     ],
-    globals: {
-        'd3': 'd3',
-        'topojson': 'topojson'
-    },
+    globals: Object.assign({}, d3Globals, {
+        'topojson-client': 'topojson'
+    }),
     plugins: [
         require('rollup-plugin-alias')({
             'tau-tooltip': 'node_modules/tau-tooltip/src/tooltip.js'
@@ -65,13 +86,12 @@ const pluginsCommonConfig = {
     format: 'umd',
     useStrict: true,
     external: [
-        'd3',
+        ...d3Modules,
         'taucharts'
     ],
-    globals: {
-        'd3': 'd3',
+    globals: Object.assign({}, d3Globals, {
         'taucharts': 'Taucharts'
-    },
+    }),
     plugins: [
         require('rollup-plugin-commonjs')(),
         require('@alexlur/rollup-plugin-typescript')(tsConfig)

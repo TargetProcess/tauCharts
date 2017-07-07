@@ -1,6 +1,6 @@
 import {Emitter} from '../event';
 import * as utils from '../utils/utils';
-import * as d3 from 'd3';
+import * as d3 from 'd3-selection';
 import {
     global_Element,
     GrammarElement,

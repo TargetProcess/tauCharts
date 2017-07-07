@@ -5,6 +5,7 @@ import tauChart from '../src/tau.charts';
 import {default as TaskRunner} from '../src/charts/task-runner';
 import utils from './utils/utils';
 import {range} from '../src/utils/utils';
+import * as d3 from 'd3-selection';
 
     describe('tauChart.Plot', function () {
 

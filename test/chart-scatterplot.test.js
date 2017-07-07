@@ -2,6 +2,7 @@ import {assert} from 'chai';
 import schemes from './utils/schemes';
 import tauChart from '../src/tau.charts';
 import testUtils from './utils/utils';
+import * as d3 from 'd3-selection';
 
     describe('scatter plot chart', function () {
         var testData = [

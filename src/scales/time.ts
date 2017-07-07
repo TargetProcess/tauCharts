@@ -1,6 +1,13 @@
 import {BaseScale} from './base';
 import {DataFrame} from '../data-frame';
-import * as d3 from 'd3';
+import * as d3Array from 'd3-array';
+import * as d3Scale from 'd3-scale';
+import * as d3Time from 'd3-time'
+const d3 = {
+    ...d3Array,
+    ...d3Scale,
+    ...d3Time,
+};
 import * as utils from '../utils/utils';
 import {
     ScaleConfig,

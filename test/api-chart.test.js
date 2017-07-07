@@ -2,6 +2,7 @@ import {assert, expect} from 'chai';
 import {Tooltip as Balloon} from '../src/api/balloon';
 import utils from './utils/utils';
 import $ from 'jquery';
+import * as d3 from 'd3-selection';
 import Taucharts from '../src/tau.charts';
 import layers from '../plugins/layers';
 

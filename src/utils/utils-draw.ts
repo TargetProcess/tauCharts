@@ -1,4 +1,4 @@
-import * as d3 from 'd3';
+import * as d3 from 'd3-selection';
 
     export function translate(left: number, top: number) {
         return `translate(${left},${top})`;

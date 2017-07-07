@@ -11,8 +11,6 @@ module.exports = function (config) {
         files: [
             `${DEBUG ? 'debug' : 'dist'}/taucharts.css`,
             `${DEBUG ? 'debug' : 'dist'}/plugins/tooltip.css`,
-            'node_modules/d3/build/d3.js',
-            'node_modules/topojson/dist/topojson.js',
             'test/utils/test.css',
             'test/utils/polyfills.js',
             'test/tests-main.js'
@@ -110,9 +108,6 @@ function getTestWebpackConfig(DEBUG) {
                     }
                 })
             ].filter((x) => x)
-        },
-        externals: {
-            d3: 'd3'
         },
         stats: {
             colors: true,

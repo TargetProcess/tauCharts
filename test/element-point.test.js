@@ -1,4 +1,5 @@
 import {assert, expect} from 'chai';
+import * as d3 from 'd3-selection';
 import schemes from './utils/schemes';
 import testUtils from './utils/utils';
 import Taucharts from '../src/tau.charts';

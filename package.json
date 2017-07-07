@@ -25,8 +25,21 @@
     }
   ],
   "dependencies": {
-    "d3": "^4.9.1",
-    "topojson": "^3.0.0"
+    "d3-array": "^1.2.0",
+    "d3-axis": "^1.0.8",
+    "d3-brush": "^1.0.4",
+    "d3-color": "^1.0.3",
+    "d3-format": "^1.2.0",
+    "d3-geo": "^1.6.4",
+    "d3-quadtree": "^1.0.3",
+    "d3-request": "^1.0.5",
+    "d3-scale": "^1.0.6",
+    "d3-selection": "^1.1.0",
+    "d3-shape": "^1.2.0",
+    "d3-time": "^1.0.7",
+    "d3-time-format": "^2.0.5",
+    "d3-transition": "^1.1.0",
+    "topojson-client": "^3.0.0"
   },
   "repository": {
     "type": "git",
@@ -38,6 +51,7 @@
     "bower": "^1.8.0",
     "chai": "^4.0.2",
     "css-loader": "^0.28.4",
+    "d3": "^4.9.1",
     "event-stream": "^3.3.4",
     "fs-extra": "^3.0.1",
     "gulp": "^3.9.1",

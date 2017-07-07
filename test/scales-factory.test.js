@@ -1,4 +1,5 @@
 import {expect} from 'chai';
+import * as d3 from 'd3-scale';
 import {scalesRegistry as ScalesRegistry} from '../src/scales-registry';
 import {ScalesFactory} from '../src/scales-factory';
 import {ValueScale} from '../src/scales/value';

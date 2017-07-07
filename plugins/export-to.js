@@ -4,7 +4,7 @@ import Promise from 'es6-promise';
 import {saveAs} from 'file-saver';
 import 'fetch';
 import printCss from './print.style.css';
-import * as d3 from 'd3';
+import * as d3 from 'd3-selection';
 
     var utils = Taucharts.api.utils;
     var pluginsSDK = Taucharts.api.pluginsSDK;

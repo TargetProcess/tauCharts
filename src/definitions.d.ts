@@ -2,7 +2,7 @@ import {EventCallback, EventHandlerMap} from './event';
 import {Plot} from './charts/tau.plot';
 import {DataFrame} from './data-frame';
 import {PeriodGenerator} from './unit-domain-period-generator';
-import {Selection} from 'd3';
+import {Selection} from 'd3-selection';
 
 export type global_Element = Element;
 export type d3Selection = Selection<global_Element, any, global_Element, any>;

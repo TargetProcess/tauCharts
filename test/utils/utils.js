@@ -1,7 +1,7 @@
 import Taucharts from '../../src/tau.charts';
 import $ from 'jquery';
 import * as utils from '../../src/utils/utils';
-import * as d3 from 'd3';
+import * as d3 from 'd3-selection';
 
 Taucharts.api.globalSettings.animationSpeed = 0;
 Taucharts.api.globalSettings.renderingTimeout = 0;

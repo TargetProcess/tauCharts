@@ -1,5 +1,5 @@
 import Taucharts from 'taucharts';
-import * as d3 from 'd3';
+import * as d3 from 'd3-selection';
 
 const svgNS = 'http://www.w3.org/2000/svg';
     var utils = Taucharts.api.utils;

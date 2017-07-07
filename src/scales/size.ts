@@ -1,7 +1,7 @@
 import {BaseScale} from './base';
 import {DataFrame} from '../data-frame';
 import * as utils from '../utils/utils';
-import * as d3 from 'd3';
+import * as d3 from 'd3-array';
 import {
     ScaleConfig
 } from '../definitions';
