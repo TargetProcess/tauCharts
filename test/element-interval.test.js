@@ -3,6 +3,7 @@
 import {expect} from 'chai';
 import schemes from './utils/schemes';
 import {assert} from 'chai';
+import * as d3 from 'd3-selection';
 import Taucharts from '../src/tau.charts';
 import {Cartesian as Cartesian} from '../src/elements/coords.cartesian';
 import {Interval as Interval} from '../src/elements/element.interval';

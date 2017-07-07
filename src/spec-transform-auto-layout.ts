@@ -1,6 +1,6 @@
 import * as utils from './utils/utils';
 import {FormatterRegistry} from './formatter-registry';
-import * as d3 from 'd3';
+import * as d3 from 'd3-scale';
 import {
     ChartSettings,
     GPLSpec,

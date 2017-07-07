@@ -1,6 +1,7 @@
 import {expect} from 'chai';
 import schemes from './utils/schemes';
 import * as d3Decorator from '../src/utils/d3-decorators';
+import * as d3 from 'd3-selection';
 
 describe('d3-decorators', function () {
     var div;

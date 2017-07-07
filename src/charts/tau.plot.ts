@@ -23,7 +23,8 @@ import {CSS_PREFIX} from '../const';
 
 import {GPL} from './tau.gpl';
 import {UnitDomainPeriodGenerator} from '../unit-domain-period-generator';
-import * as d3 from 'd3';
+import * as d3 from 'd3-selection';
+import 'd3-transition';
 import TaskRunner from './task-runner';
 var selectOrAppend = utilsDom.selectOrAppend;
 var selectImmediate = utilsDom.selectImmediate;

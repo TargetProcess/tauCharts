@@ -1,6 +1,15 @@
-import * as d3 from 'd3';
+import * as d3Array from 'd3-array';
+import * as d3Geo from 'd3-geo';
+import * as d3Json from 'd3-request';
+import * as d3Selection from 'd3-selection';
+const d3 = {
+    ...d3Array,
+    ...d3Geo,
+    ...d3Json,
+    ...d3Selection,
+};
 import * as utils from '../utils/utils';
-import * as topojson from 'topojson';
+import * as topojson from 'topojson-client';
 import {d3Labeler} from '../utils/d3-labeler';
 import {Element} from './element';
 

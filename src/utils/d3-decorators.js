@@ -1,7 +1,12 @@
 import * as utils from './utils';
 import * as utilsDom from './utils-dom';
 import * as utilsDraw from './utils-draw';
-import * as d3 from 'd3';
+import * as d3Selection from 'd3-selection';
+import * as d3Transition from 'd3-transition'
+const d3 = {
+    ...d3Selection,
+    ...d3Transition,
+};
 import * as axis from '../elements/coords.cartesian.axis';
 import interpolatePathPoints from './path/interpolators/path-points';
 import {getLineInterpolator, getInterpolatorSplineType} from './path/interpolators/interpolators-registry';

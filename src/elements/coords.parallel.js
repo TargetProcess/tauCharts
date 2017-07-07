@@ -1,4 +1,11 @@
-import * as d3 from 'd3';
+import * as d3Axis from 'd3-axis';
+import * as d3Brush from 'd3-brush';
+import * as d3Selection from 'd3-selection';
+const d3 = {
+    ...d3Axis,
+    ...d3Brush,
+    ...d3Selection,
+};
 import {Element} from './element';
 import * as utilsDraw from '../utils/utils-draw';
 import * as utils from '../utils/utils';

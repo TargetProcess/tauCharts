@@ -1,6 +1,6 @@
 {
   "name": "taucharts",
-  "version": "2.0.0-beta.0",
+  "version": "2.0.0-beta.2",
   "homepage": "https://github.com/TargetProcess/tauCharts",
   "description": "D3 based data-focused charting library",
   "keywords": [
@@ -15,12 +15,13 @@
   "private": false,
   "ignore": [
     "/*",
-    "!build/**",
-    "!license.txt"
+    "!dist/**",
+    "!examples/**",
+    "!LICENSE"
   ],
   "dependencies": {
-    "d3": "^3.5.17",
-    "topojson": "^1.6.27"
+    "d3": "^4.9.1",
+    "topojson": "^3.0.0"
   },
   "devDependencies": {
     "canvg": "https://github.com/gabelerner/canvg.git#v1.4",

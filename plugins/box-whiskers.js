@@ -1,4 +1,5 @@
 import Taucharts from 'taucharts';
+import * as d3 from 'd3-selection';
 
     var utils = Taucharts.api.utils;
 

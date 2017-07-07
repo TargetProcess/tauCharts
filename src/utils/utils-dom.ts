@@ -1,7 +1,7 @@
 /**
  * Internal method to return CSS value for given element and property
  */
-import * as d3 from 'd3';
+import * as d3 from 'd3-selection';
 var tempDiv = document.createElement('div');
 import * as utils from './utils';
 var scrollbarSizes: WeakMap<Node, {width: number; height: number;}> = new WeakMap();

@@ -5,6 +5,7 @@ import schemes from './utils/schemes';
 import Taucharts from '../src/tau.charts';
 import testUtils from './utils/utils';
 const {TauChartError, errorCodes} = testUtils;
+import * as d3 from 'd3-selection';
 
 // NOTE: Bars are now rendered into single container.
 var getGroupBar = function (div) {
