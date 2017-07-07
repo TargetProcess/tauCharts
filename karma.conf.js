@@ -109,9 +109,6 @@ function getTestWebpackConfig(DEBUG) {
                 })
             ].filter((x) => x)
         },
-        externals: {
-            d3: 'd3'
-        },
         stats: {
             colors: true,
             reasons: true
