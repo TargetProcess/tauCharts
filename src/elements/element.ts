@@ -1,6 +1,7 @@
 import {Emitter} from '../event';
 import * as utils from '../utils/utils';
-import * as d3 from 'd3-selection';
+import * as d3Selection from 'd3-selection';
+const d3 = {...d3Selection};
 import {
     global_Element,
     GrammarElement,
@@ -70,7 +71,7 @@ export abstract class Element extends Emitter implements GrammarElement {
             var callback = function (d) {
                 var eventData = {
                     data: dataInterceptor.call(this, d),
-                    event: eventInterceptor.call(this, d3.event, d)
+                    event: eventInterceptor.call(this, d3Selection.event, d)
                 };
                 self.fire(eventName, eventData);
                 self.fireNameSpaceEvent(eventName, eventData);

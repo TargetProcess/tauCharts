@@ -23,7 +23,8 @@ import {CSS_PREFIX} from '../const';
 
 import {GPL} from './tau.gpl';
 import {UnitDomainPeriodGenerator} from '../unit-domain-period-generator';
-import * as d3 from 'd3-selection';
+import * as d3_selection from 'd3-selection';
+const d3 = {...d3_selection};
 import 'd3-transition';
 import TaskRunner from './task-runner';
 var selectOrAppend = utilsDom.selectOrAppend;
@@ -354,9 +355,9 @@ export class Plot extends Emitter {
         }
         const svg = d3.select(this._svg);
         const wrapEventHandler = (this._liveSpec.settings.syncPointerEvents ?
-            ((handler) => () => handler(d3.event)) :
+            ((handler) => () => handler(d3_selection.event)) :
             ((handler) => (() => {
-                var e = d3.event;
+                var e = d3_selection.event;
                 if (this._pointerAnimationFrameId && e.type !== 'mousemove') {
                     this._cancelPointerAnimationFrame();
                 }

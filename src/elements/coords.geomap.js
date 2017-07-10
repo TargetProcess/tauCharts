@@ -410,9 +410,9 @@ export class GeoMap extends Element {
                             fillScale(row[fillScale.dim]);
                     });
             })
-            .on('mouseover', (d) => this.fire('area-mouseover', {data: toData(d), event: d3.event}))
-            .on('mouseout',  (d) => this.fire('area-mouseout', {data: toData(d), event: d3.event}))
-            .on('click',     (d) => this.fire('area-click', {data: toData(d), event: d3.event}));
+            .on('mouseover', (d) => this.fire('area-mouseover', {data: toData(d), event: d3Selection.event}))
+            .on('mouseout',  (d) => this.fire('area-mouseout', {data: toData(d), event: d3Selection.event}))
+            .on('click',     (d) => this.fire('area-click', {data: toData(d), event: d3Selection.event}));
 
         if (!latScale.dim || !lonScale.dim) {
             return [];
@@ -424,9 +424,9 @@ export class GeoMap extends Element {
                 .attr('transform', ({data: d}) => `translate(${d3Projection([d[lonScale.dim], d[latScale.dim]])})`)
                 .attr('class', ({data: d}) => colorScale(d[colorScale.dim]))
                 .attr('opacity', pointOpacity)
-                .on('mouseover', ({data:d}) => self.fire('point-mouseover', {data: d, event: d3.event}))
-                .on('mouseout',  ({data:d}) => self.fire('point-mouseout', {data: d, event: d3.event}))
-                .on('click',     ({data:d}) => self.fire('point-click', {data: d, event: d3.event}));
+                .on('mouseover', ({data:d}) => self.fire('point-mouseover', {data: d, event: d3Selection.event}))
+                .on('mouseout',  ({data:d}) => self.fire('point-mouseout', {data: d, event: d3Selection.event}))
+                .on('click',     ({data:d}) => self.fire('point-click', {data: d, event: d3Selection.event}));
         };
 
         var updateGroups = function (selection) {

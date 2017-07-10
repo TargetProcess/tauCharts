@@ -203,9 +203,9 @@ export class Parallel extends Element {
         var onBrushEventHandler = () => {
             
             var targetKey = Object.keys(columnsBrushes)
-                .find((k) => columnsBrushes[k] === d3.event.target);
+                .find((k) => columnsBrushes[k] === d3Selection.event.target);
 
-            columnsSelections[targetKey] = d3.event.selection;
+            columnsSelections[targetKey] = d3Selection.event.selection;
 
             if (!fireBrushEvents) {
                 return;
