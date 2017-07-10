@@ -291,6 +291,7 @@ export interface ScaleGuide {
     maxSize?: number;
     label?: AxisLabelGuide;
     tickPeriod?: string;
+    timeInterval?: string;
     tickFormat?: string;
     brewer?: Brewer;
     func?: string;

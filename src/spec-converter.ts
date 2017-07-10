@@ -333,6 +333,11 @@ export class SpecConverter {
                 item.type = 'period';
             }
 
+            if (guide.hasOwnProperty('timeInterval')) {
+                item.period = guide.timeInterval;
+                item.type = 'time';
+            }
+
             item.fitToFrameByDims = guide.fitToFrameByDims;
 
             item.ratio = guide.ratio;
