@@ -1,5 +1,6 @@
 import Taucharts from 'taucharts';
-import * as d3 from 'd3-selection';
+import * as d3Selection from 'd3-selection';
+const d3 = {...d3Selection};
 
     var utils = Taucharts.api.utils;
 
@@ -414,10 +415,10 @@ import * as d3 from 'd3-selection';
                         svg.dispatchEvent(evt);
                     })
                     .on('mousemove', function () {
-                        d3.event.stopPropagation();
+                        d3Selection.event.stopPropagation();
                     })
                     .on('click', function () {
-                        d3.event.stopPropagation();
+                        d3Selection.event.stopPropagation();
                     });
             },
 

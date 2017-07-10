@@ -1,18 +1,22 @@
 (function (factory) {
     if (typeof define === 'function' && define.amd) {
-        define(['taucharts'], function (tauPlugins) {
-            return factory(tauPlugins);
-        });
+        define(
+            ['taucharts', 'd3-selection', 'd3-time-format', 'd3-color', 'd3-array'],
+            function (tauPlugins, d3Selection, d3TimeFormat, d3Color, d3Array) {
+                return factory(tauPlugins, d3Selection);
+            });
     } else if (typeof module === 'object' && module.exports) {
         var tauPlugins = require('taucharts');
-        module.exports = factory(tauPlugins);
+        var d3Selection = require('d3-selection');
+        var d3TimeFormat = require('d3-time-format');
+        var d3Color = require('d3-color');
+        var d3Array = require('d3-array');
+        module.exports = factory(tauPlugins, d3Selection, d3TimeFormat, d3Color, d3Array);
     } else {
-        factory(this.Taucharts);
+        factory(this.Taucharts, this.d3, this.d3, this.d3, this.d3);
     }
-})(function (Taucharts) {
+})(function (Taucharts, d3Selection, d3TimeFormat, d3Color, d3Array) {
 
-    var _ = Taucharts.api._;
-    var d3 = Taucharts.api.d3;
     var createUpdateFunc = Taucharts.api.d3_animationInterceptor;
 
     var drawRect = function (container, id, props) {
@@ -25,13 +29,13 @@
         rect.exit()
             .remove();
         rect.call(createUpdateFunc(localSpeed, null, props));
-        rect.enter()
+        var enter = rect.enter()
             .append('rect')
-            .attr({class: id})
+            .attr('class', id)
             .style('stroke-width', 0)
             .call(createUpdateFunc(localSpeed, {width: 0}, props));
 
-        return rect;
+        return rect.merge(enter);
     };
 
     Taucharts.api.unitsRegistry.reg(
@@ -110,9 +114,9 @@
                     });
                 };
 
-                var drawCover = function () {
+                var drawCover = function (selection) {
 
-                    var that = this;
+                    var that = selection;
 
                     drawRect(that, 'cursor', {
                         class: 'cursor',
@@ -145,7 +149,7 @@
                     });
 
                     rect.on('mousemove', function () {
-                        var e = d3.event;
+                        var e = d3Selection.event;
                         var c = {x: e.offsetX, y: e.offsetY};
 
                         var range = findRangeValue(c.x);
@@ -178,7 +182,7 @@
                     });
 
                     rect.on('click', function () {
-                        var e = d3.event;
+                        var e = d3Selection.event;
                         var c = {x: e.offsetX, y: e.offsetY};
 
                         var range = findRangeValue(c.x);

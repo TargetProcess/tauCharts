@@ -213,8 +213,9 @@ const d3 = {
                 brush.move(brushg, filter.map(x));
 
                 function updateBrush() {
-                    if (d3.event && Array.isArray(d3.event.selection)) {
-                        var selection = d3.event.selection.map(x.invert);
+                    const d3Event = d3Selection.event;
+                    if (d3Event && Array.isArray(d3Event.selection)) {
+                        const selection = d3Event.selection.map(x.invert);
                         filter = selection;
                         self._filter[dim] = selection;
                     } else {
