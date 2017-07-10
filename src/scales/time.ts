@@ -161,75 +161,92 @@ function getPeriodTicks(domain: Date[], period: string, utc: boolean, count = 10
             .filter((t) => t >= start && t <= end);
     }
 
-    return d3_getTimeTicks(domain.map(Number), utc);
+    return getTimeTicks(domain, utc, count);
 }
 
-function d3_getTimeTicks(domain, utc, count = 10) {
+interface IntervalInfo {
+    interval: d3.CountableTimeInterval;
+    utc: d3.CountableTimeInterval;
+    duration: number;
+}
 
-    const millisecond = utc ? d3.utcMillisecond : d3.timeMillisecond;
-    const second = utc ? d3.utcSecond : d3.timeSecond;
-    const minute = utc ? d3.utcMinute : d3.timeMinute;
-    const hour = utc ? d3.utcHour : d3.timeHour;
-    const day = utc ? d3.utcDay : d3.timeDay;
-    const week = utc ? d3.utcWeek : d3.timeWeek;
-    const month = utc ? d3.utcMonth : d3.timeMonth;
-    const year = utc ? d3.utcYear : d3.timeYear;
+const time = (() => {
+    const second = 1000;
+    const minute = second * 60;
+    const hour = minute * 60;
+    const day = hour * 24;
+    const week = day * 7;
+    const month = day * 30;
+    const year = day * 365;
+    return {
+        second: {duration: second, interval: d3.timeSecond, utc: d3.utcSecond},
+        minute: {duration: minute, interval: d3.timeMinute, utc: d3.utcMinute},
+        hour: {duration: hour, interval: d3.timeHour, utc: d3.utcHour},
+        day: {duration: day, interval: d3.timeDay, utc: d3.utcDay},
+        week: {duration: week, interval: d3.timeWeek, utc: d3.utcWeek},
+        month: {duration: month, interval: d3.timeMonth, utc: d3.utcMonth},
+        year: {duration: year, interval: d3.timeYear, utc: d3.utcYear},
+    };
+})();
 
-    const durationSecond = 1000;
-    const durationMinute = durationSecond * 60;
-    const durationHour = durationMinute * 60;
-    const durationDay = durationHour * 24;
-    const durationWeek = durationDay * 7;
-    const durationMonth = durationDay * 30;
-    const durationYear = durationDay * 365;
+interface SortedIntervalInfo {
+    time: IntervalInfo;
+    step: number;
+    duration: number;
+}
 
-    const tickIntervals: ([any, number, number])[] = [
-        [second, 1, durationSecond],
-        [second, 5, 5 * durationSecond],
-        [second, 15, 15 * durationSecond],
-        [second, 30, 30 * durationSecond],
-        [minute, 1, durationMinute],
-        [minute, 5, 5 * durationMinute],
-        [minute, 15, 15 * durationMinute],
-        [minute, 30, 30 * durationMinute],
-        [hour, 1, durationHour],
-        [hour, 3, 3 * durationHour],
-        [hour, 6, 6 * durationHour],
-        [hour, 12, 12 * durationHour],
-        [day, 1, durationDay],
-        [day, 2, 2 * durationDay],
-        [week, 1, durationWeek],
-        [month, 1, durationMonth],
-        [month, 3, 3 * durationMonth],
-        [year, 1, durationYear]
+const intervals = (() => {
+    const info = (time: IntervalInfo, step: number) => {
+        const duration = (step * time.duration);
+        return {time, step, duration};
+    };
+    return [
+        info(time.second, 1),
+        info(time.second, 5),
+        info(time.second, 15),
+        info(time.second, 30),
+        info(time.minute, 1),
+        info(time.minute, 5),
+        info(time.minute, 15),
+        info(time.minute, 30),
+        info(time.hour, 1),
+        info(time.hour, 3),
+        info(time.hour, 6),
+        info(time.hour, 12),
+        info(time.day, 1),
+        info(time.day, 2),
+        info(time.week, 1),
+        info(time.month, 1),
+        info(time.month, 3),
+        info(time.year, 1),
     ];
+})();
 
-    function tickInterval(start, stop) {
+function getTimeTicks(domain: Date[], utc: boolean, count = 10) {
 
-        const duration = Math.abs(stop - start) / count;
+    const d0 = Number(domain[0]);
+    const d1 = Number(domain[1]);
 
-        var interval;
-        var i = d3.bisector((i) => i[2]).right(tickIntervals, duration);
-        if (i === tickIntervals.length) {
-            interval = year;
-        } else if (i) {
-            let ti = tickIntervals[duration / tickIntervals[i - 1][2] < tickIntervals[i][2] / duration ? i - 1 : i];
-            interval = ti[0];
-        } else {
-            interval = millisecond;
-        }
+    const target = Math.abs(d1 - d0) / count;
 
-        return interval;
+    var interval: d3.CountableTimeInterval;
+    var step: number;
+    const i = d3.bisector((i: SortedIntervalInfo) => i.duration).right(intervals, target);
+    if (i === intervals.length) {
+        interval = (utc ? d3.utcYear : d3.timeYear);
+        step = d3.tickStep((d0 / time.year.duration), (d1 / time.year.duration), count);
+    } else if (i) {
+        let before = (target / intervals[i - 1].duration);
+        let after = (intervals[i].duration / target);
+        let ti = intervals[before < after ? i - 1 : i];
+        interval = (utc ? ti.time.utc : ti.time.interval);
+        step = ti.step;
+    } else {
+        interval = (utc ? d3.utcMillisecond : d3.timeMillisecond);
+        step = d3.tickStep(d0, d1, count);
     }
 
-    function ticks() {
-        const d = domain;
-        const t0 = d[0];
-        const t1 = d[d.length - 1];
-        const t = tickInterval(t0, t1);
-        const ticks = t.range(t0, t1 + 1); // inclusive stop
-        return ticks;
-    }
-
-    return ticks();
+    return interval
+        .every(step)
+        .range(new Date(d0), new Date(d1 + 1));
 }
