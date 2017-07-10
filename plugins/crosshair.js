@@ -299,8 +299,12 @@ const svgNS = 'http://www.w3.org/2000/svg';
 
                 var box = e.node.getBBox();
                 var pad = (function getCrossPadding() {
-                    if (unit.config.type === 'ELEMENT.INTERVAL' ||
-                        unit.config.type === 'ELEMENT.INTERVAL.STACKED') {
+                    const paddingElements = [
+                        'ELEMENT.AREA',
+                        'ELEMENT.INTERVAL',
+                        'ELEMENT.INTERVAL.STACKED',
+                    ];
+                    if (paddingElements.indexOf(unit.config.type) >= 0) {
                         return {
                             x: (box.width * (unit.config.flip ? xValue > 0 ? 1 : 0 : 0.5)),
                             y: (box.height * (unit.config.flip ? 0.5 : yValue > 0 ? 1 : 0))
