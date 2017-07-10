@@ -351,6 +351,39 @@ import * as utils from '../src/utils/utils';
             .to
             .deep
             .equal([new Date('2017-01-01T00:00Z'), new Date('2017-01-04T00:00Z')].map((d) => d.getTime()));
+
+        expect(dayScale.ticks(10))
+            .to
+            .deep
+            .equal([new Date('2017-01-01T00:00Z'), new Date('2017-01-02T00:00Z'), new Date('2017-01-03T00:00Z'), new Date('2017-01-04T00:00Z')]);
+    });
+
+    it('should generate periodic time ticks with fallback for large ticks count', function () {
+        var data = [
+            {t: new Date('2017-01-01T10:00Z')},
+            {t: new Date('2017-04-01T02:00Z')}
+        ];
+        var dayScale = new TimeScale(
+            {
+                part: () => data.slice(),
+                full: () => data.slice()
+            },
+            {
+                dim: 't',
+                nice: true,
+                period: 'day',
+                utcTime: true
+            }).create([0, 100]);
+
+        expect(dayScale.ticks(5))
+            .to
+            .deep
+            .equal([
+                new Date('2017-01-01T00:00Z'),
+                new Date('2017-02-01T00:00Z'),
+                new Date('2017-03-01T00:00Z'),
+                new Date('2017-04-01T00:00Z')
+            ]);
     });
 
         it('should support [period] scale', function () {
