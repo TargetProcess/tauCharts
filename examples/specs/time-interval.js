@@ -28,7 +28,7 @@ dev.spec({
                     dim: 'x',
                     val: utcDate(2017, 1, 12, 0, 0),
                     text: 'one',
-                    color: 'red'
+                    color: 'orange'
                 }
             ]
         })
@@ -61,7 +61,7 @@ dev.spec({
                     dim: 'x',
                     val: utcDate(2017, 1, 12, 0, 0),
                     text: 'one',
-                    color: 'red'
+                    color: 'RGB(255, 128, 0)'
                 }
             ]
         })
