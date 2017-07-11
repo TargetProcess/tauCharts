@@ -64,9 +64,11 @@ export class TimeScale extends BaseScale {
         }
 
         if (period && Number(this.vars[0]) === Number(this.vars[1])) {
-            // Note: If domain start and end is the same
-            // extend domain with one time interval
-            this.vars[1] = period.next(this.vars[0]);
+            // Note: If domain start and end are the same
+            // extend domain with one time interval at each side
+            let mid = this.vars[0];
+            this.vars[0] = period.cast(new Date(Number(mid) - 1));
+            this.vars[1] = period.next(mid);
         }
 
         this.periodGenerator = period;

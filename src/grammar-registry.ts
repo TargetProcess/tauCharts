@@ -3,7 +3,8 @@ import {TauChartError as Error, errorCodes} from './error';
 import {
     GrammarModel,
     GrammarRule,
-    ScaleConfig
+    ScaleConfig,
+    ScaleFunction,
 } from './definitions';
 
 interface GrammarRegistryInstance {
@@ -392,11 +393,14 @@ GrammarRegistry
                 left: Number.MAX_VALUE
             });
 
-        const fixScale = (scale, start, end, flip) => {
+        const fixScale = (scale: ScaleFunction, start, end, flip) => {
 
             var domain = scale.domain();
             var length = Math.abs(scale.value(domain[1]) - scale.value(domain[0]));
             var koeff = ((domain[1] - domain[0]) / length);
+            if (length === 0) {
+                return 1;
+            }
 
             var _startPad = Math.max(0, (-start));
             var _endPad = Math.max(0, (end - length));
@@ -415,8 +419,12 @@ GrammarRegistry
                     next.max = endVal;
                     next.nice = false;
                 } else {
-                    next.min = (prev.min > startVal ? next.min : prev.min);
-                    next.max = (prev.max < endVal ? next.max : prev.max);
+                    if (prev.min <= startVal) {
+                        next.min = prev.min;
+                    }
+                    if (prev.max >= endVal) {
+                        next.max = prev.max;
+                    }
                 }
 
                 return next;

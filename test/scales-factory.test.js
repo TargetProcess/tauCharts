@@ -326,7 +326,7 @@ import * as utils from '../src/utils/utils';
         expect(monthScale.domain().map(x => x.getTime()))
             .to
             .deep
-            .equal([new Date('2017-01-01T00:00Z'), new Date('2017-02-01T00:00Z')].map((d) => d.getTime()), 'domain with single month extended with 1 interval');
+            .equal([new Date('2016-12-01T00:00Z'), new Date('2017-02-01T00:00Z')].map((d) => d.getTime()), 'domain with single month extended with 1 interval');
     });
 
     it('should extend time scale with intervals when single value', function () {

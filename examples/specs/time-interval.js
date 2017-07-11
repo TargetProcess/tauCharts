@@ -2,25 +2,10 @@ function utcDate(year, month, day, hours, minutes) {
     return new Date(Date.UTC.apply(null, arguments));
 }
 
-dev.spec({
-    type: 'scatterplot',
+var timeIntervalSpecTemplate = {
+    type: 'bar',
     x: 'x',
     y: 'y',
-    guide: {
-        x: {
-            timeInterval: 'day'
-        }
-    },
-    settings: {
-        utcTime: true
-    },
-    data: [
-        {x: utcDate(2017, 1, 11, 12, 0), y: 10},
-        {x: utcDate(2017, 1, 11, 21, 0), y: 20},
-        {x: utcDate(2017, 1, 12, 0, 0), y: 10},
-        {x: utcDate(2017, 1, 12, 3, 0), y: 20},
-        {x: utcDate(2017, 1, 13, 6, 0), y: 30}
-    ],
     plugins: [
         Taucharts.api.plugins.get('annotations')({
             items: [
@@ -33,12 +18,21 @@ dev.spec({
             ]
         })
     ]
-});
+};
 
-dev.spec({
-    type: 'scatterplot',
-    x: 'x',
-    y: 'y',
+function getTimeIntervalSpec(ext) {
+    return Object.assign({}, timeIntervalSpecTemplate, ext);
+}
+
+const timeIntervalData = [
+    {x: utcDate(2017, 1, 11, 12, 0), y: 10},
+    {x: utcDate(2017, 1, 11, 21, 0), y: 20},
+    {x: utcDate(2017, 1, 12, 0, 0), y: 10},
+    {x: utcDate(2017, 1, 12, 3, 0), y: 20},
+    {x: utcDate(2017, 1, 13, 6, 0), y: 30}
+];
+
+dev.spec(getTimeIntervalSpec({
     guide: {
         x: {
             timeInterval: 'day'
@@ -47,23 +41,31 @@ dev.spec({
     settings: {
         utcTime: true
     },
-    data: [
-        {x: utcDate(2017, 1, 11, 12, 0), y: 10},
-        {x: utcDate(2017, 1, 11, 21, 0), y: 20},
-        {x: utcDate(2017, 1, 12, 0, 0), y: 10},
-        {x: utcDate(2017, 1, 12, 3, 0), y: 20},
+    data: timeIntervalData
+}));
+
+dev.spec(getTimeIntervalSpec({
+    guide: {
+        x: {
+            timeInterval: 'day'
+        }
+    },
+    settings: {
+        utcTime: true
+    },
+    data: timeIntervalData.concat(
         {x: utcDate(2018, 1, 13, 6, 0), y: 30}
-    ],
-    plugins: [
-        Taucharts.api.plugins.get('annotations')({
-            items: [
-                {
-                    dim: 'x',
-                    val: utcDate(2017, 1, 12, 0, 0),
-                    text: 'one',
-                    color: 'RGB(255, 128, 0)'
-                }
-            ]
-        })
-    ]
-});
+    )
+}));
+
+dev.spec(getTimeIntervalSpec({
+    guide: {
+        x: {
+            timeInterval: 'month'
+        }
+    },
+    settings: {
+        utcTime: true
+    },
+    data: timeIntervalData
+}));

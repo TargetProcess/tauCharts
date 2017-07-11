@@ -1,4 +1,5 @@
 import * as utils from './utils/utils';
+import {UnitDomainPeriodGenerator} from './unit-domain-period-generator';
 import {
     ChartConfig,
     ChartSettings,
@@ -148,7 +149,7 @@ export class SpecConverter {
 
         var walkStructure = (srcUnit: Unit) => {
             var gplRoot = utils.clone(utils.omit(srcUnit, 'unit'));
-            this.ruleCreateScales(srcUnit, gplRoot);
+            this.ruleCreateScales(srcUnit, gplRoot, gplSpec.settings);
             gplRoot.expression = this.ruleInferExpression(srcUnit);
 
             if (srcUnit.unit) {
@@ -163,12 +164,12 @@ export class SpecConverter {
         gplSpec.unit = root;
     }
 
-    ruleCreateScales(srcUnit: Unit, gplRoot: Unit) {
+    ruleCreateScales(srcUnit: Unit, gplRoot: Unit, settings: ChartSettings) {
 
         var guide = srcUnit.guide || {};
         ['identity', 'color', 'size', 'label', 'x', 'y', 'split'].forEach((p) => {
             if (srcUnit.hasOwnProperty(p)) {
-                gplRoot[p] = this.scalesPool(p, srcUnit[p], guide[p] || {});
+                gplRoot[p] = this.scalesPool(p, srcUnit[p], guide[p] || {}, settings);
             }
         });
     }
@@ -198,7 +199,7 @@ export class SpecConverter {
         return r;
     }
 
-    scalesPool(scaleType: string, dimName: string, guide: ScaleGuide) {
+    scalesPool(scaleType: string, dimName: string, guide: ScaleGuide, settings: ChartSettings) {
 
         var k = `${scaleType}_${dimName}`;
 
@@ -333,9 +334,20 @@ export class SpecConverter {
                 item.type = 'period';
             }
 
+            if (guide.hasOwnProperty('tickPeriod') && guide.hasOwnProperty('timeInterval')) {
+                throw new Error('Use "tickPeriod" for period scale, "timeInterval" for time scale, but not both');
+            }
+
             if (guide.hasOwnProperty('timeInterval')) {
                 item.period = guide.timeInterval;
                 item.type = 'time';
+                let gen = UnitDomainPeriodGenerator.get(item.period, {utc: settings.utcTime});
+                if (guide.hasOwnProperty('min')) {
+                    item.min = gen.cast(new Date(guide.min));
+                }
+                if (guide.hasOwnProperty('max')) {
+                    item.max = gen.cast(new Date(guide.max));
+                }
             }
 
             item.fitToFrameByDims = guide.fitToFrameByDims;
