@@ -91,10 +91,21 @@ function createAxis(config: AxisConfig) {
 
     return ((context: d3Selection | d3Transition) => {
 
-        var values = (scale.ticks ? scale.ticks(ticksCount) : scale.domain());
+        var values: any[];
+        if (scale.ticks) {
+            values = scale.ticks(ticksCount);
+            // Prevent generating too much ticks
+            let count = Math.floor(ticksCount * 1.25);
+            while ((values.length > count) && (count > 2) && (values.length > 2)) {
+                values = scale.ticks(--count);
+            }
+        } else {
+            values = scale.domain();
+        }
         if (scaleGuide.hideTicks) {
             values = gridOnly ? values.filter((d => d == 0)) : [];
         }
+
         const format = (tickFormat == null ? (scale.tickFormat ? scale.tickFormat(ticksCount) : identity) : tickFormat);
         const spacing = (Math.max(tickSize, 0) + tickPadding);
         const range = scale.range();
