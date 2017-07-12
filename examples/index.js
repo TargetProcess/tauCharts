@@ -422,7 +422,7 @@
 
     DevApp.prototype._reportFilterResult = function (filtered, total) {
         document.getElementById('filterText').textContent = (
-            'Showing ' + filtered + ' of ' + total + ' charts'
+            'Showing ' + filtered + ' of ' + total + ' charts (Taucharts@' + Taucharts.version + ')'
         );
     };
 
