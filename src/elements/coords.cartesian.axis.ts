@@ -95,8 +95,8 @@ function createAxis(config: AxisConfig) {
         if (scale.ticks) {
             values = scale.ticks(ticksCount);
             // Prevent generating too much ticks
-            let count = Math.floor(ticksCount * 1.25); 
-            while (values.length > count) {
+            let count = Math.floor(ticksCount * 1.25);
+            while ((values.length > count) && (count > 2) && (values.length > 2)) {
                 values = scale.ticks(--count);
             }
         } else {

@@ -10,7 +10,7 @@ module.exports = (gulp, {connect}) => {
         () => {
             const server = connect.server({
                 host: '0.0.0.0',
-                port: 9000,
+                port: 9001,
                 root: './',
                 livereload: true,
                 middleware: (connect, options) => {
