@@ -478,7 +478,7 @@ function createAxis(config: AxisConfig) {
                 .next((label) => {
 
                     const ly = (kh * guide.padding);
-                    const size = (range1 - range0);
+                    const size = Math.abs(range1 - range0);
                     var lx = (kh * size * 0.5);
                     if (guide.dock === 'left' || guide.dock === 'right') {
                         lx = (guide.dock === 'left' ?
