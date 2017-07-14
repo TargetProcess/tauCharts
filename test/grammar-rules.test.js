@@ -43,6 +43,36 @@ import {OrdinalScale} from '../src/scales/ordinal';
             expect(sConfig.maxSize).to.be.closeTo(29, 1);
         });
 
+        it('should support avoidScalesOverflow for facets', function () {
+            const xConfig = {dim: 'x'};
+            const sConfig = {dim: 's', minSize: 1, maxSize: 40};
+            var model = {
+                scaleX: new LinearScale(xSrc, xConfig).create([0, 100]),
+                scaleSize: new SizeScale(xSrc, sConfig).create(),
+                size: (row) => model.scaleSize.value(row[model.scaleSize.dim]),
+                xi: (row) => model.scaleX.value(row[model.scaleX.dim]),
+            };
+            const model1 = {...model, data: (() => [{x: 0, s: 1}])};
+            const model2 = {...model, data: (() => [{x: 0.5, s: 0}])};
+            const model3 = {...model, data: (() => [{x: 1, s: 1}])};
+
+            GrammarRegistry.get('avoidScalesOverflow')(model1, {sizeDirection: 'x'});
+            GrammarRegistry.get('avoidScalesOverflow')(model2, {sizeDirection: 'x'});
+            GrammarRegistry.get('avoidScalesOverflow')(model3, {sizeDirection: 'x'});
+
+            model1.scaleX.commit();
+            model2.scaleX.commit();
+            model3.scaleX.commit();
+            model1.scaleSize.commit();
+            model2.scaleSize.commit();
+            model3.scaleSize.commit();
+
+            expect(xConfig.min).to.equal(-0.2);
+            expect(xConfig.max).to.equal(1.2);
+            expect(sConfig.minSize).to.be.closeTo(0.7, 0.1);
+            expect(sConfig.maxSize).to.be.closeTo(29, 2);
+        });
+
         it('should ignore avoidScalesOverflow rule for ordinal scale', function () {
             var xConfig = {dim: 'x_ordinal'};
             var xConfigOriginal = JSON.stringify(xConfig);

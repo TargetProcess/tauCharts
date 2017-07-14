@@ -413,18 +413,21 @@ GrammarRegistry
 
             scale.fixup((prev) => {
                 var next: ScaleConfig = {};
-                if (!prev.fixed) {
+                if (!prev.fixedBorders) {
                     next.fixed = true;
                     next.min = startVal;
                     next.max = endVal;
                     next.nice = false;
+                    next.fixedBorders = [start, end];
                 } else {
-                    if (prev.min <= startVal) {
-                        next.min = prev.min;
+                    let [resStart, resEnd] = prev.fixedBorders.slice();
+                    if (resStart > start || resEnd < end) {
+                        next.min = Math.min(prev.min, startVal);
+                        next.max = Math.max(prev.max, endVal);
+                        resStart = Math.min(start, resStart);
+                        resEnd = Math.max(end, resEnd);
                     }
-                    if (prev.max >= endVal) {
-                        next.max = prev.max;
-                    }
+                    next.fixedBorders = [resStart, resEnd];
                 }
 
                 return next;
