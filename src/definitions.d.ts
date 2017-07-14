@@ -209,6 +209,7 @@ export interface ScaleConfig {
     series?: any[];
     __fixup__?: any;
     fixed?: boolean;
+    fixedForBorders?: number[];
     minSize?: number;
     maxSize?: number;
     min?: any;
