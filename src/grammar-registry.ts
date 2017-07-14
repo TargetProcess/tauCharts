@@ -75,6 +75,13 @@ GrammarRegistry
                 var categoriesCount = (categories.length || 1);
                 var space = ((d) => baseScale.stepSize(d[baseScale.dim]) * (categoriesCount / (1 + categoriesCount)));
 
+                // Sort colors for each X
+                const catIndices = categories.reduce((map, c, i) => {
+                    map[c] = i;
+                    return map;
+                }, {});
+                Object.keys(xColors).forEach((x) => xColors[x].sort((a, b) => catIndices[a] - catIndices[b]));
+
                 return {
                     xi: ((d) => {
                         const x = d[model.scaleX.dim];
