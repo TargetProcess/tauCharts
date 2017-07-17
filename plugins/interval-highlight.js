@@ -1,5 +1,6 @@
 import {api} from 'taucharts';
-import * as d3 from 'd3';
+import {timeFormat as d3TimeFormat} from 'd3-time-format';
+import * as d3Selection from 'd3-selection';
 const {
     utils,
     pluginsSDK,
