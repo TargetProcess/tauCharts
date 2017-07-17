@@ -4,7 +4,12 @@ import {LayerLabels} from './decorators/layer-labels';
 import * as utils from '../utils/utils';
 import * as utilsDom from '../utils/utils-dom';
 import * as utilsDraw from '../utils/utils-draw';
-import * as d3 from 'd3';
+import * as d3Quadtree from 'd3-quadtree';
+import * as d3Select from 'd3-selection';
+const d3 = {
+    ...d3Quadtree,
+    ...d3Select,
+};
 import {
     d3_setAttrs as attrs,
     d3_setClasses as classes,

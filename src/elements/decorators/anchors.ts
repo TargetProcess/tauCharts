@@ -1,4 +1,3 @@
-import * as d3 from 'd3';
 import {CSS_PREFIX} from '../../const';
 import {
     d3_animationInterceptor as createUpdateFunc,
@@ -11,7 +10,7 @@ import {
     GrammarModel,
     UnitGuide,
 } from '../../definitions';
-import {getBrushLine} from '../../utils/path/svg/brush-line'
+import {getBrushLine} from '../../utils/path/svg/brush-line';
 
 const synthetic = 'taucharts_synthetic_record';
 const isNonSyntheticRecord = ((row) => row[synthetic] !== true);
@@ -66,7 +65,7 @@ interface ShapesAttrsDictionary {
         element: string;
         getInitialAttrs: (node: GrammarElement, model: any) => Object;
         getHighlightAttrs: (node: GrammarElement, model: any, filter: (row) => boolean | null) => Object;
-    }
+    };
 }
 
 const anchorShapes: ShapesAttrsDictionary = {
@@ -85,7 +84,7 @@ const anchorShapes: ShapesAttrsDictionary = {
                 ),
                 cx: (d) => model.x(d),
                 cy: (d) => model.y(d),
-            }
+            };
         },
 
         getHighlightAttrs: function (node, model, filter) {
@@ -130,10 +129,10 @@ const anchorShapes: ShapesAttrsDictionary = {
                     const path = getBrushLine([
                         {x, y, size: r},
                         {x: x0, y: y0, size: r}
-                    ])
+                    ]);
                     return path;
                 }
-            }
+            };
         },
 
         getHighlightAttrs: function (node, model, filter) {
@@ -159,10 +158,10 @@ const anchorShapes: ShapesAttrsDictionary = {
                     const path = getBrushLine([
                         {x, y, size: r},
                         {x: x0, y: y0, size: r}
-                    ])
+                    ]);
                     return path;
                 }
             };
         }
     }
-}
+};

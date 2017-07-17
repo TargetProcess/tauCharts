@@ -1,6 +1,15 @@
-import * as d3 from 'd3';
+import * as d3Array from 'd3-array';
+import * as d3Geo from 'd3-geo';
+import * as d3Json from 'd3-request';
+import * as d3Selection from 'd3-selection';
+const d3 = {
+    ...d3Array,
+    ...d3Geo,
+    ...d3Json,
+    ...d3Selection,
+};
 import * as utils from '../utils/utils';
-import * as topojson from 'topojson';
+import * as topojson from 'topojson-client';
 import {d3Labeler} from '../utils/d3-labeler';
 import {Element} from './element';
 
@@ -217,8 +226,8 @@ export class GeoMap extends Element {
         } else if (codeScale.georole) {
 
             if (contours.indexOf(codeScale.georole) === -1) {
-                console.log(`There is no contour for georole "${codeScale.georole}"`); // eslint-disable-line
-                console.log(`Available contours are: ${contours.join(' | ')}`); // eslint-disable-line
+                console.log(`There is no contour for georole "${codeScale.georole}"`); // tslint:disable-line
+                console.log(`Available contours are: ${contours.join(' | ')}`); // tslint:disable-line
 
                 throw new Error(`Invalid [georole]`);
             }
@@ -226,7 +235,7 @@ export class GeoMap extends Element {
             contourToFill = codeScale.georole;
 
         } else {
-            console.log('Specify [georole] for code scale'); // eslint-disable-line
+            console.log('Specify [georole] for code scale'); // tslint:disable-line
             throw new Error('[georole] is missing');
         }
 
@@ -401,9 +410,9 @@ export class GeoMap extends Element {
                             fillScale(row[fillScale.dim]);
                     });
             })
-            .on('mouseover', (d) => this.fire('area-mouseover', {data: toData(d), event: d3.event}))
-            .on('mouseout',  (d) => this.fire('area-mouseout', {data: toData(d), event: d3.event}))
-            .on('click',     (d) => this.fire('area-click', {data: toData(d), event: d3.event}));
+            .on('mouseover', (d) => this.fire('area-mouseover', {data: toData(d), event: d3Selection.event}))
+            .on('mouseout',  (d) => this.fire('area-mouseout', {data: toData(d), event: d3Selection.event}))
+            .on('click',     (d) => this.fire('area-click', {data: toData(d), event: d3Selection.event}));
 
         if (!latScale.dim || !lonScale.dim) {
             return [];
@@ -415,9 +424,9 @@ export class GeoMap extends Element {
                 .attr('transform', ({data: d}) => `translate(${d3Projection([d[lonScale.dim], d[latScale.dim]])})`)
                 .attr('class', ({data: d}) => colorScale(d[colorScale.dim]))
                 .attr('opacity', pointOpacity)
-                .on('mouseover', ({data:d}) => self.fire('point-mouseover', {data: d, event: d3.event}))
-                .on('mouseout',  ({data:d}) => self.fire('point-mouseout', {data: d, event: d3.event}))
-                .on('click',     ({data:d}) => self.fire('point-click', {data: d, event: d3.event}));
+                .on('mouseover', ({data:d}) => self.fire('point-mouseover', {data: d, event: d3Selection.event}))
+                .on('mouseout',  ({data:d}) => self.fire('point-mouseout', {data: d, event: d3Selection.event}))
+                .on('click',     ({data:d}) => self.fire('point-click', {data: d, event: d3Selection.event}));
         };
 
         var updateGroups = function (selection) {
@@ -536,10 +545,10 @@ export class GeoMap extends Element {
         var d3ProjectionMethod = d3[proj];
 
         if (!d3ProjectionMethod) {
-            /*eslint-disable */
+            /*tslint:disable */
             console.log(`Unknown projection "${projection}"`);
             console.log(`See available projection types here: https://github.com/mbostock/d3/wiki/Geo-Projections`);
-            /*eslint-enable */
+            /*tslint:enable */
             throw new Error(`Invalid map: unknown projection "${projection}"`);
         }
 

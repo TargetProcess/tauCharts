@@ -181,7 +181,7 @@ class PluginsSDK {
             }, {} as DimMap);
     }
 
-    static tokens () {
+    static tokens() {
         return {
             reg: function (key, val) {
                 customTokens[key] = val;

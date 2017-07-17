@@ -2,7 +2,7 @@ import {EventCallback, EventHandlerMap} from './event';
 import {Plot} from './charts/tau.plot';
 import {DataFrame} from './data-frame';
 import {PeriodGenerator} from './unit-domain-period-generator';
-import {Selection} from 'd3';
+import {Selection} from 'd3-selection';
 
 export type global_Element = Element;
 export type d3Selection = Selection<global_Element, any, global_Element, any>;
@@ -93,7 +93,10 @@ export interface GrammarElement {
     regScale?(paramId: string, scaleObj: ScaleFunction): GrammarElement;
     getScale?(paramId: string): ScaleFunction;
     fireNameSpaceEvent?(eventName: string, eventData: any);
-    subscribe?(sel: GrammarElement | d3Selection, dataInterceptor?: (x: any) => any, eventInterceptor?: (x: Event) => Event);
+    subscribe?(
+        sel: GrammarElement | d3Selection,
+        dataInterceptor?: (x: any) => any, eventInterceptor?: (x: Event) => Event
+    );
     allocateRect?(key?: DataKey): ElementOptions;
     defineGrammarModel?(fnCreateScale: ScaleFactoryMethod): GrammarModel;
     getGrammarRules?(): GrammarRule[];
@@ -104,7 +107,7 @@ export interface GrammarElement {
     draw?();
     data?(): any[];
     node?(): GrammarElement;
-    parentUnit?: Unit;
+    parentUnit?: GrammarElement;
 }
 
 export interface ClosestElementInfo {
@@ -209,6 +212,7 @@ export interface ScaleConfig {
     series?: any[];
     __fixup__?: any;
     fixed?: boolean;
+    fixedBorders?: number[];
     minSize?: number;
     maxSize?: number;
     min?: any;
@@ -291,6 +295,7 @@ export interface ScaleGuide {
     maxSize?: number;
     label?: AxisLabelGuide;
     tickPeriod?: string;
+    timeInterval?: string;
     tickFormat?: string;
     brewer?: Brewer;
     func?: string;

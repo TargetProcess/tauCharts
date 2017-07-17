@@ -1,7 +1,12 @@
 import {BaseScale} from './base';
 import {DataFrame} from '../data-frame';
 import * as utils from '../utils/utils';
-import * as d3 from 'd3';
+import * as d3Array from 'd3-array';
+import * as d3Scale from 'd3-scale';
+const d3 = {
+    ...d3Array,
+    ...d3Scale,
+};
 import {
     ScaleConfig
 } from '../definitions';
@@ -123,7 +128,7 @@ export class ColorScale extends BaseScale {
         if (Array.isArray(brewer)) {
 
             func = d3.scaleLinear<string, number>()
-                .domain(utils.splitEvenly(varSet.map(x => x - 0), brewer.length))
+                .domain(utils.splitEvenly(varSet.map(x => x - 0) as [number, number], brewer.length))
                 .range(brewer);
 
         } else {

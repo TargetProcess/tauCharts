@@ -1,4 +1,9 @@
-import * as d3 from 'd3';
+import * as d3Array from 'd3-array';
+import * as d3Scale from 'd3-scale';
+const d3 = {
+    ...d3Array,
+    ...d3Scale,
+};
 import {
     Unit
 } from '../definitions';
@@ -28,13 +33,18 @@ export function traverseJSON(
     return rootRef;
 }
 
-export function traverseSpec(root: Unit, enterFn: (node: Unit, level?: number) => any, exitFn: (node: Unit, level?: number) => any, level = 0) {
+export function traverseSpec(
+    root: Unit,
+    enterFn: (node: Unit, level?: number) => any,
+    exitFn: (node: Unit, level?: number) => any,
+    level = 0
+) {
     var shouldContinue = enterFn(root, level);
     if (shouldContinue) {
         (root.units || []).map((rect) => traverseSpec(rect, enterFn, exitFn, level + 1));
     }
     exitFn(root, level);
-};
+}
 
 var deepClone = (function () {
 
@@ -376,7 +386,7 @@ let templateSettings = {
         ];
     }
 
-    export function niceTimeDomain(domain: Date[], niceIntervalFn: d3.CountableTimeInterval, { utc } = { utc: false }) {
+    export function niceTimeDomain(domain: Date[], niceIntervalFn: d3.CountableTimeInterval, {utc} = {utc: false}) {
 
         var [low, top] = (d3.extent(domain) as [Date, Date]);
         var span = (+top - +low);
@@ -499,7 +509,12 @@ let templateSettings = {
         return isApplicable;
     }
 
-    export function throttleLastEvent(last: {e?: string, ts?: number}, eventType: string, handler: (...args) => void, limitFromPrev: 'requestAnimationFrame' | number = 0) {
+    export function throttleLastEvent(
+        last: {e?: string, ts?: number},
+        eventType: string,
+        handler: (...args) => void,
+        limitFromPrev: 'requestAnimationFrame' | number = 0
+    ) {
 
         if (limitFromPrev === 'requestAnimationFrame') {
             var frameRequested = false;
@@ -652,8 +667,14 @@ let templateSettings = {
     export function memoize<R>(func: () => R, hasher?: () => string): () => R;
     export function memoize<A, R>(func: (a: A) => R, hasher?: (a: A) => string): (a: A) => R;
     export function memoize<A, B, R>(func: (a: A, b: B) => R, hasher?: (a: A, b: B) => string): (a: A, b: B) => R;
-    export function memoize<A, B, C, R>(func: (a: A, b: B, c: C) => R, hasher?: (a: A, b: B, c: C) => string): (a: A, b: B, c: C) => R;
-    export function memoize<R>(func: (...args: any[]) => R, hasher?: (...args: any[]) => string): (...args: any[]) => R;
+    export function memoize<A, B, C, R>(
+        func: (a: A, b: B, c: C) => R,
+        hasher?: (a: A, b: B, c: C) => string
+    ): (a: A, b: B, c: C) => R;
+    export function memoize<R>(
+        func: (...args: any[]) => R,
+        hasher?: (...args: any[]) => string
+    ): (...args: any[]) => R;
     export function memoize(func, hasher) {
         const memoize = <any>function (key) {
             const cache = memoize.cache;

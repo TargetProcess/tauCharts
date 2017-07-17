@@ -1,4 +1,16 @@
 import Taucharts from 'taucharts';
+import * as d3Array from 'd3-array';
+import * as d3Brush from 'd3-brush';
+import * as d3Scale from 'd3-scale';
+import * as d3Selection from 'd3-selection';
+import * as d3TimeFormat from 'd3-time-format';
+const d3 = {
+    ...d3Array,
+    ...d3Brush,
+    ...d3Scale,
+    ...d3Selection,
+    ...d3TimeFormat,
+};
 
     var utils = Taucharts.api.utils;
     var REFRESH_DELAY = 0;
@@ -201,8 +213,9 @@ import Taucharts from 'taucharts';
                 brush.move(brushg, filter.map(x));
 
                 function updateBrush() {
-                    if (d3.event && Array.isArray(d3.event.selection)) {
-                        var selection = d3.event.selection.map(x.invert);
+                    const d3Event = d3Selection.event;
+                    if (d3Event && Array.isArray(d3Event.selection)) {
+                        const selection = d3Event.selection.map(x.invert);
                         filter = selection;
                         self._filter[dim] = selection;
                     } else {

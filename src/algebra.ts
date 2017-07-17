@@ -39,7 +39,14 @@ var FramesAlgebra: {[algebra: string]: FrameAlgebraFunction} = {
             []);
     },
 
-    cross_period(dataFn: () => any[], dimX: string, dimY: string, xPeriod: string, yPeriod: string, guide: UnitGuide): any[] {
+    cross_period(
+        dataFn: () => any[],
+        dimX: string,
+        dimY: string,
+        xPeriod: string,
+        yPeriod: string,
+        guide: UnitGuide
+    ): any[] {
         var data = dataFn();
         var utc = (guide ? guide.utcTime : false);
 

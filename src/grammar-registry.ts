@@ -3,7 +3,8 @@ import {TauChartError as Error, errorCodes} from './error';
 import {
     GrammarModel,
     GrammarRule,
-    ScaleConfig
+    ScaleConfig,
+    ScaleFunction,
 } from './definitions';
 
 interface GrammarRegistryInstance {
@@ -73,6 +74,13 @@ GrammarRegistry
                     scaleColor.originalSeries().sort((a, b) => a - b);
                 var categoriesCount = (categories.length || 1);
                 var space = ((d) => baseScale.stepSize(d[baseScale.dim]) * (categoriesCount / (1 + categoriesCount)));
+
+                // Sort colors for each X
+                const catIndices = categories.reduce((map, c, i) => {
+                    map[c] = i;
+                    return map;
+                }, {});
+                Object.keys(xColors).forEach((x) => xColors[x].sort((a, b) => catIndices[a] - catIndices[b]));
 
                 return {
                     xi: ((d) => {
@@ -392,11 +400,14 @@ GrammarRegistry
                 left: Number.MAX_VALUE
             });
 
-        const fixScale = (scale, start, end, flip) => {
+        const fixScale = (scale: ScaleFunction, start, end, flip) => {
 
             var domain = scale.domain();
             var length = Math.abs(scale.value(domain[1]) - scale.value(domain[0]));
             var koeff = ((domain[1] - domain[0]) / length);
+            if (length === 0) {
+                return 1;
+            }
 
             var _startPad = Math.max(0, (-start));
             var _endPad = Math.max(0, (end - length));
@@ -409,14 +420,21 @@ GrammarRegistry
 
             scale.fixup((prev) => {
                 var next: ScaleConfig = {};
-                if (!prev.fixed) {
+                if (!prev.fixedBorders) {
                     next.fixed = true;
                     next.min = startVal;
                     next.max = endVal;
                     next.nice = false;
+                    next.fixedBorders = [start, end];
                 } else {
-                    next.min = (prev.min > startVal ? next.min : prev.min);
-                    next.max = (prev.max < endVal ? next.max : prev.max);
+                    let [resStart, resEnd] = prev.fixedBorders.slice();
+                    if (resStart > start || resEnd < end) {
+                        next.min = Math.min(prev.min, startVal);
+                        next.max = Math.max(prev.max, endVal);
+                        resStart = Math.min(start, resStart);
+                        resEnd = Math.max(end, resEnd);
+                    }
+                    next.fixedBorders = [resStart, resEnd];
                 }
 
                 return next;

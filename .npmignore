@@ -1,5 +1,6 @@
  /*
  !dist/**
+ !examples/**
  !types/**
  !LICENSE
  !package.json

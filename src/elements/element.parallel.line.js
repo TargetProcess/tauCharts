@@ -1,7 +1,7 @@
 import {CSS_PREFIX} from '../const';
 import {Element} from './element';
 import * as utils from '../utils/utils';
-import * as d3 from 'd3';
+import * as d3 from 'd3-shape';
 
 export class ParallelLine extends Element {
 
@@ -65,7 +65,7 @@ export class ParallelLine extends Element {
         };
 
         var markPath = function (sel) {
-            sel.attr('stroke', (row) => color.toColor(color(row[color.dim])))
+            sel.attr('stroke', (row) => color.toColor(color(row[color.dim])));
             sel.attr('class', (row) => `${CSS_PREFIX}__line line ${color.toClass(color(row[color.dim]))} foreground`);
         };
 

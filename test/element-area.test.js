@@ -2,6 +2,7 @@ import {expect} from 'chai';
 import schemes from './utils/schemes';
 import testUtils from './utils/utils';
 import {assert} from 'chai';
+import * as d3 from 'd3-selection';
 const getArea = testUtils.getArea;
 const attrib = testUtils.attrib;
 import tauChart from '../src/tau.charts';

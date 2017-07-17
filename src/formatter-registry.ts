@@ -1,5 +1,10 @@
 import * as utils from './utils/utils';
-import * as d3 from 'd3';
+import * as d3Fromat from 'd3-format';
+import * as d3TimeFromat from 'd3-time-format';
+const d3 = {
+    ...d3Fromat,
+    ...d3TimeFromat,
+};
 
 const d3Fromat4S = d3.format('.4s');
 const d3Fromat2R = d3.format('.2r');

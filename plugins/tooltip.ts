@@ -1,5 +1,5 @@
 import Taucharts from 'taucharts';
-import * as d3 from 'd3';
+import * as d3 from 'd3-selection';
 import {Plot} from '../src/charts/tau.plot';
 import {DimMap} from '../src/plugins-sdk';
 import {GrammarElement} from '../src/definitions';

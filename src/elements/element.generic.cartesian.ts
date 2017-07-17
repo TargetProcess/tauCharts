@@ -2,7 +2,7 @@ import {Element} from './element';
 import {GrammarRegistry} from '../grammar-registry';
 import {d3_animationInterceptor} from '../utils/d3-decorators';
 import * as utils from '../utils/utils';
-import * as d3 from 'd3';
+import * as d3 from 'd3-selection';
 import {
     d3Selection,
     GrammarElement,

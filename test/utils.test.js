@@ -1,8 +1,16 @@
 import {assert, expect} from 'chai';
+import * as d3Axis from 'd3-axis';
+import * as d3Scale from 'd3-scale';
+import * as d3Selection from 'd3-selection';
+const d3 = {
+    ...d3Axis,
+    ...d3Scale,
+    ...d3Selection,
+};
 import * as utils from '../src/utils/utils';
 import * as drawUtils from '../src/utils/utils-draw';
 import * as domUtils from '../src/utils/utils-dom';
-import * as d3 from 'd3';
+import * as d3 from 'd3-selection';
 import {avoidTickTextCollision} from '../src/utils/d3-decorators';
 
     var check = function (samples) {
