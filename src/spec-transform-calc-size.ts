@@ -277,7 +277,12 @@ export class SpecTransformCalcSize implements SpecTransformer {
             return r;
         };
 
-        var calcSizeRecursively = (prop: 'x' | 'y', root: Unit, takeStepSizeStrategy: StepSizeStrategy, frame: DataFrameObject = null) => {
+        var calcSizeRecursively = (
+            prop: 'x' | 'y',
+            root: Unit,
+            takeStepSizeStrategy: StepSizeStrategy,
+            frame: DataFrameObject = null
+        ) => {
 
             var xCfg = (prop === 'x') ? root.x : root.y;
             var yCfg = (prop === 'x') ? root.y : root.x;

@@ -42,14 +42,14 @@ function translateX(x: number) {
 }
 
 function translateY(y: number) {
-    return `translate(0,${y + 0.5})`;;
+    return `translate(0,${y + 0.5})`;
 }
 
 function center(scale: ScaleFunction) {
     var offset = Math.max(0, scale.bandwidth() - 1) / 2; // Adjust for 0.5px offset.
     if (scale.round()) {
-        offset = Math.round(offset)
-    };
+        offset = Math.round(offset);
+    }
     return function (d) {
         return (scale(d) + offset);
     };

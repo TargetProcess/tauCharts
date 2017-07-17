@@ -52,12 +52,22 @@ const status = {
     FAIL: 'FAIL'
 };
 
-var strategyNormalizeAxis: {[status: string]: (axis: string[], config: ValidatedConfig, guide: UnitGuide[]) => string[]} = {
+interface NormalizeAxisStrategies {
+    [status: string]: (
+        axis: string[],
+        config: ValidatedConfig,
+        guide: UnitGuide[]
+    ) => string[];
+}
+
+var strategyNormalizeAxis: NormalizeAxisStrategies = {
     [status.SUCCESS]: (axis) => axis,
     [status.FAIL]: (axis, data) => {
         throw new Error((data.messages || []).join('\n') ||
-            // jscs:disable
-        'This configuration is not supported, See http://api.taucharts.com/basic/facet.html#easy-approach-for-creating-facet-chart');
+            [
+                'This configuration is not supported,',
+                'See http://api.taucharts.com/basic/facet.html#easy-approach-for-creating-facet-chart'
+    ].join(' '));
     },
     [status.WARNING]: (axis, config, guide) => {
         var axisName = config.axis;

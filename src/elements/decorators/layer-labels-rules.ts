@@ -22,7 +22,9 @@ const findCutIndex = (text: string, labelWidth: number, availableSpace: number) 
         (text.length));
 };
 
-const cutString = (str: string, index: number) => ((index === 0) ? '' : str.slice(0, index).replace(/\.+$/g, '') + '\u2026');
+const cutString = (str: string, index: number) => ((index === 0) ?
+    '' :
+    str.slice(0, index).replace(/\.+$/g, '') + '\u2026');
 
 var isPositive = (scale, row) => scale.discrete || (!scale.discrete && row[scale.dim] >= 0);
 var isNegative = (scale, row) => !scale.discrete && row[scale.dim] < 0;

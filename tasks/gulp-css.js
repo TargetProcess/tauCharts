@@ -61,7 +61,7 @@ module.exports = (gulp, {
 
         if (production) {
             stream = stream
-                .pipe(insert.prepend(banner()))
+                .pipe(insert.prepend(banner()));
         }
 
         return stream

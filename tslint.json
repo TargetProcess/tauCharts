@@ -1,0 +1,261 @@
+{
+    "defaultSeverity": "error",
+    "extends": [
+        "tslint-eslint-rules"
+    ],
+    "rules": {
+        "adjacent-overload-signatures": true,
+        "align": [
+            true,
+            "elements",
+            "members",
+            "parameters"
+        ],
+        "ban-types": [
+            true,
+            [
+                "Function",
+                "Use `() => void` instead of `Function` type."
+            ],
+            [
+                "Boolean",
+                "Use `boolean` instead of `Boolean` type."
+            ],
+            [
+                "Number",
+                "Use `number` instead of `Number` type."
+            ],
+            [
+                "String",
+                "Use `string` instead of `String` type."
+            ],
+            [
+                "Symbol",
+                "Use `symbol` instead of `Symbol` type."
+            ]
+        ],
+        "callable-types": true,
+        "class-name": true,
+        "comment-format": [
+            true,
+            "check-space"
+        ],
+        "curly": [
+            true,
+            "ignore-same-line"
+        ],
+        "eofline": true,
+        "import-spacing": true,
+        "indent": [
+            true,
+            "spaces",
+            4
+        ],
+        "interface-name": [
+            true,
+            "never-prefix"
+        ],
+        "jsdoc-format": true,
+        "label-position": true,
+        "max-line-length": [
+            true,
+            120
+        ],
+        "new-parens": true,
+        "no-consecutive-blank-lines": true,
+        "no-console": true,
+        "no-construct": true,
+        "no-debugger": true,
+        "no-duplicate-super": true,
+        "no-duplicate-variable": true,
+        "no-eval": true,
+        "no-internal-module": true,
+        "no-irregular-whitespace": true,
+        "no-misused-new": true,
+        "no-namespace": true,
+        "no-parameter-properties": true,
+        "no-string-throw": true,
+        "no-trailing-whitespace": [
+            true,
+            "ignore-comments"
+        ],
+        "no-unnecessary-initializer": true,
+        "no-unsafe-finally": true,
+        "no-unused-expression": true,
+        "no-var-requires": true,
+        "object-curly-spacing": [
+            true,
+            "never"
+        ],
+        "one-line": [
+            true,
+            "check-catch",
+            "check-finally",
+            "check-else",
+            "check-open-brace",
+            "check-whitespace"
+        ],
+        "quotemark": [
+            true,
+            "single",
+            "avoid-escape"
+        ],
+        "semicolon": [
+            true,
+            "always"
+        ],
+        "space-before-function-paren": [
+            true,
+            {
+                "anonymous": "always",
+                "asyncArrow": "always",
+                "constructor": "never",
+                "method": "never",
+                "named": "never"
+            }
+        ],
+        "trailing-comma": [
+            true,
+            {
+                "multiline": {
+                    "objects": "ignore",
+                    "arrays": "ignore",
+                    "functions": "ignore",
+                    "typeLiterals": "never"
+                },
+                "singleline": "never"
+            }
+        ],
+        "typedef-whitespace": [
+            true,
+            {
+                "call-signature": "nospace",
+                "index-signature": "nospace",
+                "parameter": "nospace",
+                "property-declaration": "nospace",
+                "variable-declaration": "nospace"
+            },
+            {
+                "call-signature": "onespace",
+                "index-signature": "onespace",
+                "parameter": "onespace",
+                "property-declaration": "onespace",
+                "variable-declaration": "onespace"
+            }
+        ],
+        "typeof-compare": true,
+        "unified-signatures": true,
+        "whitespace": [
+            "check-branch",
+            "check-decl",
+            "check-module",
+            "check-operator",
+            "check-preblock",
+            "check-separator",
+            "check-type",
+            "check-typecast"
+        ]
+    },
+    // TODO: Fork tslint to prevent duplicate configuration.
+    "jsRules": {
+        "align": [
+            true,
+            "elements",
+            "members",
+            "parameters"
+        ],
+        "class-name": true,
+        "comment-format": [
+            true,
+            "check-space"
+        ],
+        "curly": [
+            true,
+            "ignore-same-line"
+        ],
+        "eofline": true,
+        "import-spacing": true,
+        "indent": [
+            true,
+            "spaces",
+            4
+        ],
+        "jsdoc-format": true,
+        "label-position": true,
+        "max-line-length": [
+            true,
+            120
+        ],
+        "new-parens": true,
+        "no-consecutive-blank-lines": true,
+        "no-console": true,
+        "no-construct": true,
+        "no-debugger": true,
+        "no-duplicate-super": true,
+        "no-duplicate-variable": true,
+        "no-eval": true,
+        "no-irregular-whitespace": true,
+        "no-string-throw": true,
+        "no-trailing-whitespace": [
+            true,
+            "ignore-comments"
+        ],
+        "no-unnecessary-initializer": true,
+        "no-unsafe-finally": true,
+        "no-unused-expression": true,
+        "object-curly-spacing": [
+            true,
+            "never"
+        ],
+        "one-line": [
+            true,
+            "check-catch",
+            "check-finally",
+            "check-else",
+            "check-open-brace",
+            "check-whitespace"
+        ],
+        "quotemark": [
+            true,
+            "single",
+            "avoid-escape"
+        ],
+        "semicolon": [
+            true,
+            "always"
+        ],
+        "space-before-function-paren": [
+            true,
+            {
+                "anonymous": "always",
+                "asyncArrow": "always",
+                "constructor": "never",
+                "method": "never",
+                "named": "never"
+            }
+        ],
+        "trailing-comma": [
+            true,
+            {
+                "multiline": {
+                    "objects": "ignore",
+                    "arrays": "ignore",
+                    "functions": "ignore",
+                    "typeLiterals": "never"
+                },
+                "singleline": "never"
+            }
+        ],
+        "typeof-compare": true,
+        "whitespace": [
+            "check-branch",
+            "check-decl",
+            "check-module",
+            "check-operator",
+            "check-preblock",
+            "check-separator",
+            "check-type",
+            "check-typecast"
+        ]
+    }
+}

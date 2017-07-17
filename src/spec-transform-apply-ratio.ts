@@ -46,7 +46,12 @@ export class SpecTransformApplyRatio implements SpecTransformer {
             return (unitRef.type.indexOf('ELEMENT.') === 0);
         };
 
-        var traverse = (root: Unit, enterFn: (unit?: Unit, lvl?: number) => boolean, exitFn: (unit?: Unit, lvl?: number) => any, level = 0) => {
+        var traverse = (
+            root: Unit,
+            enterFn: (unit?: Unit, lvl?: number) => boolean,
+            exitFn: (unit?: Unit, lvl?: number) => any,
+            level = 0
+        ) => {
 
             var shouldContinue = enterFn(root, level);
 
@@ -98,7 +103,9 @@ export class SpecTransformApplyRatio implements SpecTransformer {
         var xyProd = 2;
         if ([realXs.length, realYs.length].some(l => l === xyProd)) {
             let exDim = ((s: GPLSpecScale) => s.dim);
-            let scalesIterator = ((s: GPLSpecScale, i: number, list: GPLSpecScale[]) => (s.fitToFrameByDims = list.slice(0, i).map(exDim)));
+            let scalesIterator = ((s: GPLSpecScale, i: number, list: GPLSpecScale[]) => {
+                s.fitToFrameByDims = list.slice(0, i).map(exDim);
+            });
             let tryApplyRatioToScales = (axis: string, scalesRef: GPLSpecScale[]) => {
                 if (scalesRef.filter(isOrdinalScale).length === xyProd) {
                     scalesRef.forEach(scalesIterator);

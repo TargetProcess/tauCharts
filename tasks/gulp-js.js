@@ -109,7 +109,7 @@ const plugins = [
             if (warning.code === 'THIS_IS_UNDEFINED') {
                 return;
             }
-            console.error(warning.message);
+            console.error(warning.message); // tslint:disable-line
         },
         plugins: [
             require('rollup-plugin-string')({

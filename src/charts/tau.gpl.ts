@@ -37,7 +37,11 @@ const compose = (prev: GrammarModel, updates: GrammarModel = {}) => {
     return (Object.assign(new MixinModel(prev), updates));
 };
 
-const evalGrammarRules = (grammarRules: (GrammarRule | string)[], initialGrammarModel: GrammarModel, grammarRegistry: GrammarRegistry) => {
+const evalGrammarRules = (
+    grammarRules: (GrammarRule | string)[],
+    initialGrammarModel: GrammarModel,
+    grammarRegistry: GrammarRegistry
+) => {
     return grammarRules
         .map((rule) => {
             return ((typeof(rule) === 'string') ? grammarRegistry.get(rule) : rule);
@@ -57,7 +61,12 @@ export class GPL extends Emitter {
     transformations: DataTransformations;
     root: Unit;
 
-    constructor(config: GPLSpec, scalesRegistryInstance: ScalesFactory, unitsRegistry: UnitsRegistry, grammarRules: GrammarRegistry) {
+    constructor(
+        config: GPLSpec,
+        scalesRegistryInstance: ScalesFactory,
+        unitsRegistry: UnitsRegistry,
+        grammarRules: GrammarRegistry
+    ) {
 
         super();
 
@@ -99,7 +108,13 @@ export class GPL extends Emitter {
             });
     }
 
-    static traverseSpec(spec: {unit: Unit}, enter: Iteratee, exit: Iteratee, rootNode: Unit = null, rootFrame: DataFrame = null) {
+    static traverseSpec(
+        spec: {unit: Unit},
+        enter: Iteratee,
+        exit: Iteratee,
+        rootNode: Unit = null,
+        rootFrame: DataFrame = null
+    ) {
 
         var queue: (() => void)[] = [];
 
@@ -181,7 +196,10 @@ export class GPL extends Emitter {
             .concat(updateScalesQueue);
     }
 
-    _flattenDrawScenario(root: GrammarElement, iterator: (parentInstance: GrammarElement, unit: Unit, rootFrame: DataFrame) => GrammarElement) {
+    _flattenDrawScenario(
+        root: GrammarElement,
+        iterator: (parentInstance: GrammarElement, unit: Unit, rootFrame: DataFrame) => GrammarElement
+    ) {
 
         var uids = {};
         var scenario: GrammarElement[] = [];

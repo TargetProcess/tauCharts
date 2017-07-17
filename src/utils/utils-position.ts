@@ -8,7 +8,11 @@ import {
  * chooses one of points according to angle
  * of vector from point to cursor.
  */
-export function getClosestPointInfo(cursorX: number, cursorY: number, bestMatchItems: ClosestElementInfo[]): ClosestElementInfo {
+export function getClosestPointInfo(
+    cursorX: number,
+    cursorY: number,
+    bestMatchItems: ClosestElementInfo[]
+): ClosestElementInfo {
     const items = bestMatchItems
         .sort((a, b) => (a.distance === b.distance ?
             (a.secondaryDistance - b.secondaryDistance) :

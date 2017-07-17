@@ -130,7 +130,10 @@ var scrollbarSizes: WeakMap<Node, {width: number; height: number;}> = new WeakMa
         return size;
     }
 
-    export function getLabelSize(text: string, {fontSize, fontFamily, fontWeight}: {fontSize?: number, fontFamily?: string, fontWeight?: string}) {
+    export function getLabelSize(
+        text: string,
+        {fontSize, fontFamily, fontWeight}: {fontSize?: number, fontFamily?: string, fontWeight?: string}
+    ) {
 
         var xFontSize = typeof (fontSize) === 'string' ? fontSize : (`${fontSize}px`);
         var w = 0;

@@ -201,7 +201,7 @@ export class Parallel extends Element {
         var onBrushStartEventHandler = (e) => e;
         var onBrushEndEventHandler = (e) => e;
         var onBrushEventHandler = () => {
-            
+
             var targetKey = Object.keys(columnsBrushes)
                 .find((k) => columnsBrushes[k] === d3Selection.event.target);
 
@@ -217,7 +217,7 @@ export class Parallel extends Element {
                 .map((k) => {
                     var rng = [];
                     if (columnsScalesMap[k].discrete) {
-                        var ext = columnsSelections[k];
+                        let ext = columnsSelections[k];
                         rng = columnsScalesMap[k]
                             .domain()
                             .filter((val) => {
@@ -225,7 +225,7 @@ export class Parallel extends Element {
                                 return (ext[0] <= pos) && (ext[1] >= pos);
                             });
                     } else {
-                        var ext = columnsSelections[k].map(columnsScalesMap[k].invert);
+                        let ext = columnsSelections[k].map(columnsScalesMap[k].invert);
                         rng = [ext[0], ext[1]];
                     }
 

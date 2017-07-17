@@ -14,7 +14,11 @@ export interface LabelPenaltyModel {
     extr: string;
 }
 
-type LabelPenaltyFunction = (labels: LabelPenaltyModel[], edges: EdgeInfo[], penaltyRate?: number) => (index: number) => number;
+type LabelPenaltyFunction = (
+    labels: LabelPenaltyModel[],
+    edges: EdgeInfo[],
+    penaltyRate?: number
+) => (index: number) => number;
 
 var intersect = (x1, x2, x3, x4, y1, y2, y3, y4) => utilsDraw.isIntersect(
     x1, y1,

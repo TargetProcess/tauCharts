@@ -91,6 +91,8 @@
     "run-sequence": "^1.2.2",
     "tau-tooltip": "^1.1.2",
     "ts-loader": "^2.1.0",
+    "tslint": "^5.5.0",
+    "tslint-eslint-rules": "^4.1.1",
     "typescript": "^2.4.1",
     "vinyl-source-stream": "^1.1.0",
     "webpack": "^2.6.1"
@@ -98,7 +100,8 @@
   "scripts": {
     "start": "gulp watch",
     "build": "gulp build",
-    "test": "gulp build && karma start",
+    "test": "npm run lint && gulp build && karma start",
+    "lint": "tslint src/**/*.ts src/**/*.js plugins/**/*.ts gulpfile.js tasks/**/*.js --exclude src/addons/**/*.*",
     "devtest": "gulp debug-css && karma start --taucharts-debug",
     "prepublish": "bower install && gulp build"
   },

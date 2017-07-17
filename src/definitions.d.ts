@@ -93,7 +93,10 @@ export interface GrammarElement {
     regScale?(paramId: string, scaleObj: ScaleFunction): GrammarElement;
     getScale?(paramId: string): ScaleFunction;
     fireNameSpaceEvent?(eventName: string, eventData: any);
-    subscribe?(sel: GrammarElement | d3Selection, dataInterceptor?: (x: any) => any, eventInterceptor?: (x: Event) => Event);
+    subscribe?(
+        sel: GrammarElement | d3Selection,
+        dataInterceptor?: (x: any) => any, eventInterceptor?: (x: Event) => Event
+    );
     allocateRect?(key?: DataKey): ElementOptions;
     defineGrammarModel?(fnCreateScale: ScaleFactoryMethod): GrammarModel;
     getGrammarRules?(): GrammarRule[];
@@ -104,7 +107,7 @@ export interface GrammarElement {
     draw?();
     data?(): any[];
     node?(): GrammarElement;
-    parentUnit?: Unit;
+    parentUnit?: GrammarElement;
 }
 
 export interface ClosestElementInfo {

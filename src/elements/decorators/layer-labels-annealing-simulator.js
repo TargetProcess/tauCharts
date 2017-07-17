@@ -38,16 +38,14 @@ export class AnnealingSimulator {
         var ti = 1.0;
         const t0 = 1.0;
         const itemsLength = this.items.length;
-        mining: {
-            for (let i = 0; i < nIterations; i++) {
-                for (let m = 0; m < itemsLength; m++) {
-                    this.move(ti);
-                    if (this.minError <= 10) {
-                        break mining;
-                    }
+        mining: for (let i = 0; i < nIterations; i++) {
+            for (let m = 0; m < itemsLength; m++) {
+                this.move(ti);
+                if (this.minError <= 10) {
+                    break mining;
                 }
-                ti = this.cooling_schedule(ti, t0, nIterations);
             }
+            ti = this.cooling_schedule(ti, t0, nIterations);
         }
 
         return this.revision;

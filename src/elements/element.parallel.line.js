@@ -65,7 +65,7 @@ export class ParallelLine extends Element {
         };
 
         var markPath = function (sel) {
-            sel.attr('stroke', (row) => color.toColor(color(row[color.dim])))
+            sel.attr('stroke', (row) => color.toColor(color(row[color.dim])));
             sel.attr('class', (row) => `${CSS_PREFIX}__line line ${color.toClass(color(row[color.dim]))} foreground`);
         };
 

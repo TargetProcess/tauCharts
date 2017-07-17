@@ -20,7 +20,7 @@ const banner = () => {
         `*/`,
         ``
     ].join('\n');
-}
+};
 
 const plugins = {
     banner,
