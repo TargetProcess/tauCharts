@@ -592,7 +592,7 @@ let templateSettings = {
         return arr;
     }
 
-    export function flatten<T>(array: T[][]): T[];
+    export function flatten<T>(array: Array<T | T[]>): T[];
     export function flatten(array: any): any[] {
         if (!Array.isArray(array)) {
             return array;
@@ -775,6 +775,98 @@ let templateSettings = {
 
         return template;
     }
+
+export function escapeHtml(x: string) {
+    return String(x)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#039;');
+}
+
+const XML_INDENT = '  ';
+const XML_ATTR_WRAP = 32;
+
+const VOID_TAGS = [
+    'img',
+    'input',
+    'br',
+    'embed',
+    'link',
+    'meta',
+    'area',
+    'base',
+    'basefont',
+    'bgsound',
+    'col',
+    'command',
+    'frame',
+    'hr',
+    'image',
+    'isindex',
+    'keygen',
+    'menuitem',
+    'nextid',
+    'param',
+    'source',
+    'track',
+    'wbr',
+
+    'circle',
+    'ellipse',
+    'line',
+    'path',
+    'polygon',
+    'rect'
+].reduce((map, tag) => (map[tag] = true, map), {} as {[tag: string]: boolean});
+
+type StringOrArray = (string | string[]);
+
+export function xml(tag: string, ...children: StringOrArray[]): string;
+export function xml(tag: string, attrs: {[attr: string]: any}, ...children: StringOrArray[]): string;
+export function xml(tag: string) {
+    var childrenArgIndex = 2;
+    var attrs = arguments[1];
+    if (typeof arguments[1] !== 'object' || Array.isArray(arguments[1])) {
+        childrenArgIndex = 1;
+        attrs = {};
+    }
+    const children = flatten(Array.prototype.slice.call(arguments, childrenArgIndex) as StringOrArray[]);
+
+    const hasSingleTextChild = (children.length === 1 && children[0].trim()[0] !== '<');
+    const isVoidTag = VOID_TAGS[tag];
+    if (isVoidTag && children.length > 0) {
+        throw new Error(`Tag "${tag}" is void but content is assigned to it`);
+    }
+
+    const tagBeginning = `<${tag}`;
+    var attrsString = Object.keys(attrs).map(function (key) {
+        return ` ${key}="${attrs[key]}"`;
+    }).join('');
+    if (attrsString.length > XML_ATTR_WRAP) {
+        attrsString = Object.keys(attrs).map(function (key) {
+            return `\n${XML_INDENT}${key}="${attrs[key]}"`;
+        }).join('');
+    }
+    const childrenString = (hasSingleTextChild ?
+        children[0] :
+        ('\n' + children
+            .map((c) => {
+                const content = String(c);
+                return content
+                    .split('\n')
+                    .map((line) => `${XML_INDENT}${line}`)
+                    .join('\n');
+            })
+            .join('\n') + '\n')
+    );
+    const tagEnding = (isVoidTag ?
+        '/>' :
+        (`>${childrenString}</${tag}>`));
+
+    return `${tagBeginning}${attrsString}${tagEnding}`;
+}
 
 interface NextObj<T> {
     next<K>(fn: (x: T) => K): NextObj<K>;
