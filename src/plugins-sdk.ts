@@ -57,7 +57,11 @@ class PluginsSDK {
 
     static traverseSpec(spec: GPLSpec, iterator: (node: SpecUnit, parent: SpecUnit) => void) {
 
-        var traverse = (node: SpecUnit, fnIterator: (node: SpecUnit, parent: SpecUnit) => void, parentNode: SpecUnit) => {
+        const traverse = (
+            node: SpecUnit,
+            fnIterator: (node: SpecUnit, parent: SpecUnit) => void,
+            parentNode: SpecUnit
+        ) => {
             fnIterator(node, parentNode);
             (node.units || []).map((x) => traverse(x, fnIterator, node));
         };
