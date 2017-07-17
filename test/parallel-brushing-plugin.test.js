@@ -1,4 +1,5 @@
 import {expect} from 'chai';
+import * as d3 from 'd3-selection';
 import schemes from './utils/schemes';
 import tauChart from '../src/tau.charts';
 import plugin from '../plugins/parallel-brushing';

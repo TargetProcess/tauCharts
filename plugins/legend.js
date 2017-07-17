@@ -1,5 +1,5 @@
 import Taucharts from 'taucharts';
-import * as d3 from 'd3';
+import * as d3 from 'd3-format';
 
     var utils = Taucharts.api.utils;
     var pluginsSDK = Taucharts.api.pluginsSDK;

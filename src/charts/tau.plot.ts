@@ -22,8 +22,10 @@ import {SpecTransformExtractAxes} from '../spec-transform-extract-axes';
 import {CSS_PREFIX} from '../const';
 
 import {GPL} from './tau.gpl';
-import {UnitDomainPeriodGenerator, PeriodGenerator} from '../unit-domain-period-generator';
-import * as d3 from 'd3';
+import {UnitDomainPeriodGenerator} from '../unit-domain-period-generator';
+import * as d3_selection from 'd3-selection';
+const d3 = {...d3_selection};
+import 'd3-transition';
 import TaskRunner from './task-runner';
 var selectOrAppend = utilsDom.selectOrAppend;
 var selectImmediate = utilsDom.selectImmediate;
@@ -81,16 +83,16 @@ export class Plot extends Emitter {
     protected _defaultSize: Size;
     protected _renderedItems: GrammarElement[];
 
-    on(event: 'render', callback: (chart: Plot, svg: SVGSVGElement) => void, context?);
-    on(event: 'beforerender', callback: (chart: Plot, svg: SVGSVGElement) => void, context?);
-    on(event: 'specready', callback: (chart: Plot, spec: GPLSpec) => void, context?);
-    on(event: 'unitsstructureexpanded', callback: (chart: Plot, spec: GPLSpec) => void, context?);
+    on(event: 'render' | 'beforerender', callback: (chart: Plot, svg: SVGSVGElement) => void, context?);
+    on(event: 'specready' | 'unitsstructureexpanded', callback: (chart: Plot, spec: GPLSpec) => void, context?);
     on(event: 'renderingtimeout', callback: (chart: Plot) => void, context?);
     on(event: 'renderingerror', callback: (chart: Plot, error: Error) => void, context?);
     on(event: 'unitdraw', callback: (chart: Plot, unit: GrammarElement) => void, context?);
-    on(event: 'elementclick', callback: (chart: Plot, data: PointerEvent) => void, context?);
-    on(event: 'elementmouseout', callback: (chart: Plot, data: PointerEvent) => void, context?);
-    on(event: 'elementmouseover', callback: (chart: Plot, data: PointerEvent) => void, context?);
+    on(
+        event: 'elementclick' | 'elementmouseout' | 'elementmouseover',
+        callback: (chart: Plot, data: PointerEvent) => void,
+        context?
+    );
     on(event: string, callback: (chart: Plot, data) => void, context?) {
         super.on(event, callback, context);
     }
@@ -198,46 +200,18 @@ export class Plot extends Emitter {
             .keys(spec.scales)
             .map(s => spec.scales[s]);
 
-        interface PeriodScaleMeta {
-            source: string;
-            dim: string;
-            period: PeriodGenerator;
-        }
-
-        var workPlan = scales
+        scales
             .filter(s => (s.type === 'period'))
-            .reduce((memo, scaleRef) => {
+            .forEach((scaleRef) => {
                 var periodCaster = tickPeriod.get(scaleRef.period, {utc: spec.settings.utcTime});
-                if (periodCaster) {
-                    memo.push({source: scaleRef.source, dim: scaleRef.dim, period: periodCaster});
-                } else {
+                if (!periodCaster) {
                     log([
                         `Unknown period "${scaleRef.period}".`,
                         `Docs: http://api.taucharts.com/plugins/customticks.html#how-to-add-custom-tick-period`
                     ], 'WARN');
                     scaleRef.period = null;
                 }
-
-                return memo;
-            }, [] as PeriodScaleMeta[]);
-
-        var isNullOrUndefined = ((x) => ((x === null) || (x === undefined)));
-
-        var reducer = (refSources: DataSources, metaDim: PeriodScaleMeta) => {
-            refSources[metaDim.source].data = refSources[metaDim.source]
-                .data
-                .map(row => {
-                    var val = row[metaDim.dim];
-                    if (!isNullOrUndefined(val)) {
-                        row[metaDim.dim] = metaDim.period.cast(val);
-                    }
-                    return row;
-                });
-
-            return refSources;
-        };
-
-        spec.sources = workPlan.reduce(reducer, spec.sources);
+            });
 
         return spec;
     }
@@ -381,9 +355,9 @@ export class Plot extends Emitter {
         }
         const svg = d3.select(this._svg);
         const wrapEventHandler = (this._liveSpec.settings.syncPointerEvents ?
-            ((handler) => () => handler(d3.event)) :
+            ((handler) => () => handler(d3_selection.event)) :
             ((handler) => (() => {
-                var e = d3.event;
+                var e = d3_selection.event;
                 if (this._pointerAnimationFrameId && e.type !== 'mousemove') {
                     this._cancelPointerAnimationFrame();
                 }

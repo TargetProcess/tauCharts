@@ -23,6 +23,7 @@ module.exports = (gulp, {
     connect,
     insert,
     merge,
+    runSequence,
 }) => {
 
     const getSrc = (name, isPlugin = false) => {
@@ -61,15 +62,22 @@ module.exports = (gulp, {
 
         if (production) {
             stream = stream
-                .pipe(insert.prepend(banner()))
+                .pipe(insert.prepend(banner()));
         }
 
         return stream
             .pipe(gulp.dest(destDir));
     };
 
-    const concatThemeStreams = (theme, streams) => {
-        return merge(...streams)
+    const concatTheme = (theme) => {
+
+        const root = getDestDir({production: true, isPlugin: false});
+        const pluginsDir = getDestDir({production: true, isPlugin: true});
+        const sources = [`./${root}/${getDestFile('taucharts', theme)}`]
+            .concat(plugins.map((plugin) => `./${pluginsDir}/${getDestFile(plugin, theme)}`))
+            .concat(`./${root}/${getDestFile('colorbrewer')}`);
+
+        return gulp.src(sources)
             .pipe(concat(`taucharts${getThemePrefix(theme)}.min.css`))
             .pipe(cssmin())
             .pipe(insert.prepend(banner()))
@@ -88,9 +96,7 @@ module.exports = (gulp, {
 
         themes.forEach((theme) => {
 
-            const themeStreams = [];
-
-            themeStreams.push(createStream({
+            streams.push(createStream({
                 name: 'taucharts',
                 theme,
                 isPlugin: false,
@@ -98,23 +104,16 @@ module.exports = (gulp, {
             }));
 
             plugins.forEach((plugin) => {
-                themeStreams.push(createStream({
+                streams.push(createStream({
                     name: plugin,
                     theme,
                     isPlugin: true,
                     production
                 }));
             });
-
-            if (production) {
-                let concatStream = concatThemeStreams(theme, themeStreams.concat(brewerStream));
-                themeStreams.push(concatStream);
-            }
-
-            streams.push(...themeStreams);
         });
 
-        const mergedStream = merge(streams);
+        const mergedStream = merge(...streams);
 
         if (production) {
             return mergedStream;
@@ -124,6 +123,15 @@ module.exports = (gulp, {
             .pipe(connect.reload());
     };
 
-    gulp.task('prod-css', () => buildCSS({production: true}));
+    const minifyCSS = () => {
+        return merge(...themes.map(concatTheme));
+    };
+
+    gulp.task('prod-css_compile', () => buildCSS({production: true}));
+    gulp.task('prod-css_minify', () => minifyCSS());
+    gulp.task('prod-css', (done) => runSequence(
+        'prod-css_compile',
+        'prod-css_minify',
+        done));
     gulp.task('debug-css', () => buildCSS({production: false}));
 };

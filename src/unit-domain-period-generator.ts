@@ -155,7 +155,7 @@ var PERIODS_MAP_UTC: PeriodMap = {
 
 var UnitDomainPeriodGenerator = {
 
-    add(periodAlias: string, obj:PeriodGenerator, {utc} = {utc: false}) {
+    add(periodAlias: string, obj: PeriodGenerator, {utc} = {utc: false}) {
         (utc ? PERIODS_MAP_UTC : PERIODS_MAP)[periodAlias.toLowerCase()] = obj;
         return this;
     },
@@ -165,7 +165,12 @@ var UnitDomainPeriodGenerator = {
         return (utc ? PERIODS_MAP_UTC : PERIODS_MAP)[alias.toLowerCase()] || null;
     },
 
-    generate: (lTick: Date | number | string, rTick: Date | number | string, periodAlias: string, {utc} = {utc: false}) => {
+    generate: (
+        lTick: Date | number | string,
+        rTick: Date | number | string,
+        periodAlias: string,
+        {utc} = {utc: false}
+    ) => {
         var r: Date[] = [];
         var period = UnitDomainPeriodGenerator.get(periodAlias, {utc});
         if (period) {

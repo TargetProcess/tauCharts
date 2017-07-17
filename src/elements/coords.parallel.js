@@ -1,4 +1,11 @@
-import * as d3 from 'd3';
+import * as d3Axis from 'd3-axis';
+import * as d3Brush from 'd3-brush';
+import * as d3Selection from 'd3-selection';
+const d3 = {
+    ...d3Axis,
+    ...d3Brush,
+    ...d3Selection,
+};
 import {Element} from './element';
 import * as utilsDraw from '../utils/utils-draw';
 import * as utils from '../utils/utils';
@@ -194,11 +201,11 @@ export class Parallel extends Element {
         var onBrushStartEventHandler = (e) => e;
         var onBrushEndEventHandler = (e) => e;
         var onBrushEventHandler = () => {
-            
-            var targetKey = Object.keys(columnsBrushes)
-                .find((k) => columnsBrushes[k] === d3.event.target);
 
-            columnsSelections[targetKey] = d3.event.selection;
+            var targetKey = Object.keys(columnsBrushes)
+                .find((k) => columnsBrushes[k] === d3Selection.event.target);
+
+            columnsSelections[targetKey] = d3Selection.event.selection;
 
             if (!fireBrushEvents) {
                 return;
@@ -210,7 +217,7 @@ export class Parallel extends Element {
                 .map((k) => {
                     var rng = [];
                     if (columnsScalesMap[k].discrete) {
-                        var ext = columnsSelections[k];
+                        let ext = columnsSelections[k];
                         rng = columnsScalesMap[k]
                             .domain()
                             .filter((val) => {
@@ -218,7 +225,7 @@ export class Parallel extends Element {
                                 return (ext[0] <= pos) && (ext[1] >= pos);
                             });
                     } else {
-                        var ext = columnsSelections[k].map(columnsScalesMap[k].invert);
+                        let ext = columnsSelections[k].map(columnsScalesMap[k].invert);
                         rng = [ext[0], ext[1]];
                     }
 

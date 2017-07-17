@@ -19,7 +19,7 @@ export function getLineInterpolator(type: string) {
     return (polylineInterpolators[type] || curveInterpolators[type]);
 }
 
-export function getInterpolatorSplineType(type:string) {
+export function getInterpolatorSplineType(type: string) {
     if (curveInterpolators[type] !== undefined) {
         return 'cubic';
     }

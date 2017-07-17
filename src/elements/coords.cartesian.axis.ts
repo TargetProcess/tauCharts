@@ -3,7 +3,8 @@ import {selectOrAppend, classes} from '../utils/utils-dom';
 import {cutText, wrapText, avoidTickTextCollision} from '../utils/d3-decorators';
 import {CSS_PREFIX} from '../const';
 import * as utilsDraw from '../utils/utils-draw';
-import * as d3 from 'd3';
+import {Selection} from 'd3-selection';
+import {Transition} from 'd3-transition';
 
 import {AxisLabelGuide, ScaleFunction, ScaleGuide} from '../definitions';
 
@@ -27,8 +28,8 @@ interface GridConfig {
     tickSize: number;
 }
 
-type d3Selection = d3.Selection<any, any, any, any>;
-type d3Transition = d3.Transition<any, any, any, any>;
+type d3Selection = Selection<any, any, any, any>;
+type d3Transition = Transition<any, any, any, any>;
 
 function identity<T>(x: T) {
     return x;
@@ -41,14 +42,14 @@ function translateX(x: number) {
 }
 
 function translateY(y: number) {
-    return `translate(0,${y + 0.5})`;;
+    return `translate(0,${y + 0.5})`;
 }
 
 function center(scale: ScaleFunction) {
     var offset = Math.max(0, scale.bandwidth() - 1) / 2; // Adjust for 0.5px offset.
     if (scale.round()) {
-        offset = Math.round(offset)
-    };
+        offset = Math.round(offset);
+    }
     return function (d) {
         return (scale(d) + offset);
     };
@@ -90,10 +91,21 @@ function createAxis(config: AxisConfig) {
 
     return ((context: d3Selection | d3Transition) => {
 
-        var values = (scale.ticks ? scale.ticks(ticksCount) : scale.domain());
+        var values: any[];
+        if (scale.ticks) {
+            values = scale.ticks(ticksCount);
+            // Prevent generating too much ticks
+            let count = Math.floor(ticksCount * 1.25);
+            while ((values.length > count) && (count > 2) && (values.length > 2)) {
+                values = scale.ticks(--count);
+            }
+        } else {
+            values = scale.domain();
+        }
         if (scaleGuide.hideTicks) {
             values = gridOnly ? values.filter((d => d == 0)) : [];
         }
+
         const format = (tickFormat == null ? (scale.tickFormat ? scale.tickFormat(ticksCount) : identity) : tickFormat);
         const spacing = (Math.max(tickSize, 0) + tickPadding);
         const range = scale.range();
@@ -426,13 +438,13 @@ function createAxis(config: AxisConfig) {
                 .attr('x1', position(value0))
                 .attr('x2', position(value0))
                 .attr('y1', 0)
-                .attr('y2', 1) as d3.Selection<SVGLineElement, any, any, any>;
+                .attr('y2', 1) as d3Selection;
             const tempRight = selection
                 .append('line')
                 .attr('x1', position(value1))
                 .attr('x2', position(value1))
                 .attr('y1', 0)
-                .attr('y2', 1) as d3.Selection<SVGLineElement, any, any, any>;
+                .attr('y2', 1) as d3Selection;
             const available = {
                 left: (tempLeft.node().getBoundingClientRect().left - svgRect.left),
                 right: (svgRect.right - tempRight.node().getBoundingClientRect().right)
@@ -477,7 +489,7 @@ function createAxis(config: AxisConfig) {
                 .next((label) => {
 
                     const ly = (kh * guide.padding);
-                    const size = (range1 - range0);
+                    const size = Math.abs(range1 - range0);
                     var lx = (kh * size * 0.5);
                     if (guide.dock === 'left' || guide.dock === 'right') {
                         lx = (guide.dock === 'left' ?
@@ -518,9 +530,11 @@ function createAxis(config: AxisConfig) {
         if (isOrdinalScale && gridOnly) { // Todo: Explicitly determine if grid 
             drawExtraOrdinalLine();
         }
-        if (!gridOnly && !labelGuide.hide) {
+        if (!gridOnly) {
             drawText(ticks);
-            drawAxisLabel();
+            if (!labelGuide.hide) {
+                drawAxisLabel();
+            }
         }
 
     });

@@ -1,4 +1,9 @@
-import * as d3 from 'd3';
+import * as d3Color from 'd3-color';
+import * as d3Selection from 'd3-selection';
+const d3 = {
+    ...d3Color,
+    ...d3Selection,
+};
 import {CSS_PREFIX} from '../const';
 import * as utils from '../utils/utils';
 import * as utilsDraw from '../utils/utils-draw';

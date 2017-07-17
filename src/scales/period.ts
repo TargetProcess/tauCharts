@@ -1,8 +1,13 @@
 import {BaseScale} from './base';
-import {UnitDomainPeriodGenerator} from '../unit-domain-period-generator';
+import {UnitDomainPeriodGenerator, PeriodGenerator} from '../unit-domain-period-generator';
 import {DataFrame} from '../data-frame';
 import * as utils from '../utils/utils';
-import * as d3 from 'd3';
+import * as d3Array from 'd3-array';
+import * as d3Scale from 'd3-scale';
+const d3 = {
+    ...d3Array,
+    ...d3Scale,
+};
 import {
     ScaleConfig,
     ScaleFunction
@@ -11,6 +16,7 @@ import {
 export class PeriodScale extends BaseScale {
 
     vars: Date[];
+    periodGenerator: PeriodGenerator;
 
     constructor(xSource: DataFrame, scaleConfig: ScaleConfig) {
 
@@ -36,18 +42,23 @@ export class PeriodScale extends BaseScale {
             this.vars = UnitDomainPeriodGenerator.generate(range[0], range[1], props.period, {utc: props.utcTime});
         }
 
+        this.periodGenerator = periodGenerator;
+
         this.addField('scaleType', 'period')
             .addField('period', this.scaleConfig.period)
             .addField('discrete', true);
     }
 
     isInDomain(aTime) {
-        var gen = UnitDomainPeriodGenerator.get(this.scaleConfig.period, {utc: this.scaleConfig.utcTime});
-        var val = gen.cast(new Date(aTime)).getTime();
+        const gen = this.periodGenerator;
+        const date = new Date(aTime);
+        const val = (gen ? gen.cast(date) : date).getTime();
         return (this.domain().map(x => x.getTime()).indexOf(val) >= 0);
     }
 
     create(interval) {
+
+        const gen = this.periodGenerator;
 
         var varSet = this.vars;
         var varSetTicks = this.vars.map(t => t.getTime());
@@ -57,7 +68,7 @@ export class PeriodScale extends BaseScale {
         var d3Scale = d3Domain.range(interval)
             .padding(0.5);
 
-        var d3DomainTicks = d3.scalePoint<String>().domain(varSetTicks.map(String));
+        var d3DomainTicks = d3.scalePoint<string>().domain(varSetTicks.map(String));
         var d3ScaleTicks = d3DomainTicks.range(interval)
             .padding(0.5);
 
@@ -80,8 +91,9 @@ export class PeriodScale extends BaseScale {
         var scale = ((x) => {
 
             var r;
-            var dx = new Date(x);
-            var tx = dx.getTime();
+            const dx = new Date(x);
+            const px = (gen ? gen.cast(dx) : dx);
+            const tx = px.getTime();
 
             if (!props.ratio) {
                 r = d3ScaleTicks(String(tx));

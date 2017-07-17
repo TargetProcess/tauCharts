@@ -1,5 +1,5 @@
 import Taucharts from 'taucharts';
-import * as d3 from 'd3';
+import * as d3 from 'd3-color';
 
     var utils = Taucharts.api.utils;
     var pluginsSDK = Taucharts.api.pluginsSDK;
@@ -309,8 +309,8 @@ import * as d3 from 'd3';
                         .map(function (item, i) {
 
                             var color = (item.color || '#BD10E0').toLowerCase();
-                            var rgbCode = d3.rgb(color).toString().toUpperCase();
-                            if ((color !== 'black') && (rgbCode === '#000000')) {
+                            var rgbCode = d3.rgb(color).toString();
+                            if ((color !== 'black') && (rgbCode === 'rgb(0, 0, 0)')) {
                                 rgbCode = null;
                             }
                             var colorStr = rgbCode || color;

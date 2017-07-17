@@ -9,7 +9,7 @@ import {
 import * as utils from '../utils/utils';
 import * as utilsDom from '../utils/utils-dom';
 import * as utilsDraw from '../utils/utils-draw';
-import * as d3 from 'd3';
+import * as d3 from 'd3-selection';
 import {drawAnchors, highlightAnchors} from './decorators/anchors';
 import {getClosestPointInfo} from '../utils/utils-position';
 
