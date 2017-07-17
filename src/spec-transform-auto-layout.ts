@@ -24,7 +24,7 @@ interface EngineMeta {
         scaleType: string;
         values: any[];
         isEmpty: boolean;
-    }
+    };
 }
 
 var sum = ((arr: number[]) => arr.reduce((sum, x) => (sum + x), 0));
@@ -388,7 +388,16 @@ var calcXYGuide = function (guide: UnitGuide, settings: ChartSettings, xMeta, yM
     return guide;
 };
 
-var calcUnitGuide = function ({unit, meta, settings, allowXVertical, allowYVertical, inlineLabels}: {unit: Unit, meta: EngineMeta, settings: ChartSettings, allowXVertical: boolean, allowYVertical: boolean, inlineLabels: boolean}) {
+interface CalcUnitArgs {
+    unit: Unit;
+    meta: EngineMeta;
+    settings: ChartSettings;
+    allowXVertical: boolean;
+    allowYVertical: boolean;
+    inlineLabels: boolean;
+}
+
+var calcUnitGuide = function ({unit, meta, settings, allowXVertical, allowYVertical, inlineLabels}: CalcUnitArgs) {
 
     var dimX = meta.dimension(unit.x);
     var dimY = meta.dimension(unit.y);

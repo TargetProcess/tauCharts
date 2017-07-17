@@ -83,16 +83,16 @@ export class Plot extends Emitter {
     protected _defaultSize: Size;
     protected _renderedItems: GrammarElement[];
 
-    on(event: 'render', callback: (chart: Plot, svg: SVGSVGElement) => void, context?);
-    on(event: 'beforerender', callback: (chart: Plot, svg: SVGSVGElement) => void, context?);
-    on(event: 'specready', callback: (chart: Plot, spec: GPLSpec) => void, context?);
-    on(event: 'unitsstructureexpanded', callback: (chart: Plot, spec: GPLSpec) => void, context?);
+    on(event: 'render' | 'beforerender', callback: (chart: Plot, svg: SVGSVGElement) => void, context?);
+    on(event: 'specready' | 'unitsstructureexpanded', callback: (chart: Plot, spec: GPLSpec) => void, context?);
     on(event: 'renderingtimeout', callback: (chart: Plot) => void, context?);
     on(event: 'renderingerror', callback: (chart: Plot, error: Error) => void, context?);
     on(event: 'unitdraw', callback: (chart: Plot, unit: GrammarElement) => void, context?);
-    on(event: 'elementclick', callback: (chart: Plot, data: PointerEvent) => void, context?);
-    on(event: 'elementmouseout', callback: (chart: Plot, data: PointerEvent) => void, context?);
-    on(event: 'elementmouseover', callback: (chart: Plot, data: PointerEvent) => void, context?);
+    on(
+        event: 'elementclick' | 'elementmouseout' | 'elementmouseover',
+        callback: (chart: Plot, data: PointerEvent) => void,
+        context?
+    );
     on(event: string, callback: (chart: Plot, data) => void, context?) {
         super.on(event, callback, context);
     }

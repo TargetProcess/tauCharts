@@ -68,7 +68,7 @@ export class PeriodScale extends BaseScale {
         var d3Scale = d3Domain.range(interval)
             .padding(0.5);
 
-        var d3DomainTicks = d3.scalePoint<String>().domain(varSetTicks.map(String));
+        var d3DomainTicks = d3.scalePoint<string>().domain(varSetTicks.map(String));
         var d3ScaleTicks = d3DomainTicks.range(interval)
             .padding(0.5);
 

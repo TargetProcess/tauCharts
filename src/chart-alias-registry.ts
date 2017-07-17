@@ -9,8 +9,8 @@ var chartRules: {[alias: string]: ConfigRule[]} = {};
 
 var throwNotSupported = (alias: string) => {
     let msg = `Chart type ${alias} is not supported.`;
-    console.log(msg); // eslint-disable-line
-    console.log(`Use one of ${Object.keys(chartTypes).join(', ')}.`); // eslint-disable-line
+    console.log(msg); // tslint:disable-line
+    console.log(`Use one of ${Object.keys(chartTypes).join(', ')}.`); // tslint:disable-line
     throw new Error(msg, errorCodes.NOT_SUPPORTED_TYPE_CHART);
 };
 

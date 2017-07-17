@@ -12,7 +12,16 @@ import * as d3 from 'd3-selection';
         return ((['bottom', 'top'].indexOf(scaleOrient.toLowerCase()) >= 0) ? 'h' : 'v');
     }
 
-    export function isIntersect(ax0: number, ay0: number, ax1: number, ay1: number, bx0: number, by0: number, bx1: number, by1: number) {
+    export function isIntersect(
+        ax0: number,
+        ay0: number,
+        ax1: number,
+        ay1: number,
+        bx0: number,
+        by0: number,
+        bx1: number,
+        by1: number
+    ) {
         var s1_x, s1_y, s2_x, s2_y;
         s1_x = ax1 - ax0;
         s1_y = ay1 - ay0;
@@ -56,7 +65,11 @@ import * as d3 from 'd3-selection';
         return translate;
     }
 
-    export function raiseElements(container: d3.Selection<Element, any, Element, any>, selector: string, filter: (d) => boolean) {
+    export function raiseElements(
+        container: d3.Selection<Element, any, Element, any>,
+        selector: string,
+        filter: (d) => boolean
+    ) {
         const highlighted: d3.Selection<Element, any, Element, any> = <any>container
             .selectAll(selector)
             .filter(filter);

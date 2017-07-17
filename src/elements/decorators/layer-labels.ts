@@ -18,7 +18,7 @@ export interface TextInfo {
     y: number;
     w: number;
     h: number;
-    hide: boolean,
+    hide: boolean;
     extr: string;
     size: number;
     angle: number;
@@ -55,7 +55,12 @@ export class LayerLabels {
     h: number;
     guide: ScaleGuide;
 
-    constructor(model: GrammarModel, isHorizontal: boolean, labelGuide: ScaleGuide, {width, height, container}: {width?: number, height?: number, container?: d3Selection}) {
+    constructor(
+        model: GrammarModel,
+        isHorizontal: boolean,
+        labelGuide: ScaleGuide,
+        {width, height, container}: {width?: number, height?: number, container?: d3Selection}
+    ) {
         this.container = container;
         this.model = model;
         this.flip = isHorizontal;

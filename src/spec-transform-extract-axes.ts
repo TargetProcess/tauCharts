@@ -28,7 +28,7 @@ export class SpecTransformExtractAxes implements SpecTransformer {
             this.ruleExtractAxes(refSpec);
         } catch (ex) {
             if (ex.message === 'Not applicable') {
-                console.log(`[TauCharts]: can't extract axes for the given chart specification`); // eslint-disable-line
+                console.log(`[TauCharts]: can't extract axes for the given chart specification`); // tslint:disable-line
             } else {
                 throw ex;
             }
