@@ -84,7 +84,12 @@ dev.spec({
     },
     data: getCFDData(),
     plugins: [
-        Taucharts.api.plugins.get('time-diff-tooltip')()
+        Taucharts.api.plugins.get('time-diff-tooltip')({
+            fields: [
+                'entityStateName',
+                'entityStateId'
+            ]
+        })
     ],
     guide: {
         showGridLines: 'y',

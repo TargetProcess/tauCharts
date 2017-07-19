@@ -536,31 +536,32 @@ function TimeDiffTooltip(xSettings) {
         ].join('\n');
 
         const table = ({rows}) => [
-            `<table class="${HL_TOOLTIP_CLS}__table" cellpadding="0" cellspacing="0" border="0">`,
+            `<div class="${HL_TOOLTIP_CLS}__table" cellpadding="0" cellspacing="0" border="0">`,
             rows(),
-            '</table>'
+            '</div>'
         ].join('\n');
 
         const ROW_CLS = `${HL_TOOLTIP_CLS}__item`;
         const HEADER_CLS = `${HL_TOOLTIP_CLS}__header`;
 
         const tableHeader = ({groupLabel, valueLabel}) => [
-            `<tr class="${HEADER_CLS}">`,
-            `  <th class="${HEADER_CLS}__cell">${groupLabel}</th>`,
-            `  <th class="${HEADER_CLS}__cell">${valueLabel}</th>`,
-            `  <th class="${HEADER_CLS}__cell ${HEADER_CLS}__arrows">&#x25BC;&#x25B2;</th>`
+            `<div class="${HEADER_CLS}">`,
+            `  <span class="${HEADER_CLS}__text">${groupLabel}</span>`,
+            `  <span class="${HEADER_CLS}__value">${valueLabel}</span>`,
+            `  <span class="${HEADER_CLS}__arrow">&#x25BC;&#x25B2;</span>`,
+            '</div>'
         ].join('\n');
 
         const tableRow = ({name, width, color, diff, value, sign, isCurrent}) => [
-            `<tr class="${ROW_CLS}${isCurrent ? ` ${ROW_CLS}_highlighted` : ''}">`,
-            `  <td>${name}</td>`,
-            '  <td>',
-            '    <div',
-            `        class="${ROW_CLS}__value"`,
-            `        style="width: ${width}px; background-color: ${color};"`,
-            `        >${value}</div>`,
-            '  </td>',
-            `  ${arrow({diff, sign})}`
+            `<div class="${ROW_CLS}${isCurrent ? ` ${ROW_CLS}_highlighted` : ''}">`,
+            '  <span',
+            `      class="${ROW_CLS}__bg"`,
+            `      style="width: ${width * 100}%; background-color: ${color};"`,
+            `      ></span>`,
+            `  <span class="${ROW_CLS}__text">${name}</span>`,
+            `  <span class="${ROW_CLS}__value">${value}</span>`,
+            `  ${arrow({diff, sign})}`,
+            '</div>'
         ].join('\n');
 
         const arrow = ({diff, sign}) => {
@@ -570,12 +571,10 @@ function TimeDiffTooltip(xSettings) {
             const diffVal = (sign === 0 ? '' : diff);
 
             return [
-                `<td class="${arrowCls} ${arrowSignCls}">`,
-                `  <div class="${arrowCls}__val">`,
-                `    <span class="${arrowCls}__dir">${arrowSymbol}${diffVal}</span>`,
-                '  </div>',
-                '</td>'
-            ].join('\n');
+                `<span class="${arrowCls} ${arrowSignCls}">`,
+                `${arrowSymbol}${diffVal}`,
+                '</span>'
+            ].join('');
         };
 
         return {
@@ -634,7 +633,7 @@ function TimeDiffTooltip(xSettings) {
                     const format = tooltip.getFieldFormat(scaleY.dim);
                     const value = format(v);
                     const name = tooltip.getFieldLabel(d[scaleColor.dim]);
-                    const width = (80 * v / maxV); // TODO: Use percent.
+                    const width = (v / maxV);
                     const g = unit.screenModel.model.group(d);
                     const prevV = Number.isFinite(prevX) && groupedData[prevX][g] ? groupedData[prevX][g][0][scaleY.dim] : null;
                     const dv = Number.isFinite(prevV) ? (v - prevV) : 0;
