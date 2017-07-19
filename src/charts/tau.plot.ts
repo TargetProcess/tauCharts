@@ -85,7 +85,7 @@ export class Plot extends Emitter {
 
     on(event: 'render' | 'beforerender', callback: (chart: Plot, svg: SVGSVGElement) => void, context?);
     on(event: 'specready' | 'unitsstructureexpanded', callback: (chart: Plot, spec: GPLSpec) => void, context?);
-    on(event: 'renderingtimeout', callback: (chart: Plot) => void, context?);
+    on(event: 'renderingtimeout', callback: (chart: Plot, timeout: number) => void, context?);
     on(event: 'renderingerror', callback: (chart: Plot, error: Error) => void, context?);
     on(event: 'unitdraw', callback: (chart: Plot, unit: GrammarElement) => void, context?);
     on(
@@ -410,7 +410,7 @@ export class Plot extends Emitter {
                         }
                     });
                     this.enablePointerEvents();
-                    this.fire('renderingtimeout');
+                    this.fire('renderingtimeout', timeout);
                 },
                 progress: (progress) => {
                     var phases = {

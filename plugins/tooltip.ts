@@ -2,40 +2,51 @@ import Taucharts from 'taucharts';
 import * as d3 from 'd3-selection';
 import {Plot} from '../src/charts/tau.plot';
 import {DimMap} from '../src/plugins-sdk';
-import {GrammarElement} from '../src/definitions';
+import {
+    GrammarElement,
+    PluginObject,
+} from '../src/definitions';
 
 const utils = Taucharts.api.utils;
 const pluginsSDK = Taucharts.api.pluginsSDK;
-const TARGET_SVG_CLASS = 'graphical-report__tooltip-target';
+const TOOLTIP_CLS = 'graphical-report__tooltip';
 
 const defaultTemplateFactory: TooltipTemplateFactory = (tooltip, settings) => {
 
-    const templateRoot = ({excludeTemplate, itemsTemplate}) => [
-        '<div class="i-role-content graphical-report__tooltip__content">',
-        itemsTemplate(),
+    const root = ({content, buttons}) => [
+        `<div class="i-role-content ${TOOLTIP_CLS}__content">`,
+        content(),
         '</div>',
-        excludeTemplate()
+        buttons()
     ].join('\n');
 
-    const itemTemplate = ({label, value}) => [
-        '<div class="graphical-report__tooltip__list__item">',
-        `  <div class="graphical-report__tooltip__list__elem">${label}</div>`,
-        `  <div class="graphical-report__tooltip__list__elem">${value}</div>`,
+    const item = ({label, value}) => [
+        `<div class="${TOOLTIP_CLS}__list__item">`,
+        `  <div class="${TOOLTIP_CLS}__list__elem">${label}</div>`,
+        `  <div class="${TOOLTIP_CLS}__list__elem">${value}</div>`,
         '</div>'
     ].join('\n');
 
-    const excludeTemplate = () => [
-        '<div class="i-role-exclude graphical-report__tooltip__exclude">',
-        '   <div class="graphical-report__tooltip__exclude__wrap">',
-        '       <span class="tau-icon-close-gray"></span> Exclude',
-        '   </div>',
+    const buttons = () => [
+        `<div class="i-role-exclude ${TOOLTIP_CLS}__exclude">`,
+        `  <div class="${TOOLTIP_CLS}__exclude__wrap">`,
+        '    <span class="tau-icon-close-gray"></span> Exclude',
+        '  </div>',
         '</div>'
     ].join('\n');
+
+    const onExcludeClick = () => {
+        tooltip.excludeHighlightedElement();
+        tooltip.setState({
+            highlight: null,
+            isStuck: false
+        });
+    };
 
     return {
 
-        getHtml(data, fields) {
-            const itemsTemplate = (() => fields
+        render(data, fields) {
+            const content = (() => fields
                 .filter((field) => {
                     const tokens = field.split('.');
                     const matchX = ((tokens.length === 2) && tooltip.skipInfo[tokens[0]]);
@@ -45,34 +56,17 @@ const defaultTemplateFactory: TooltipTemplateFactory = (tooltip, settings) => {
                     const v = data[field];
                     const label = tooltip.getFieldLabel(field);
                     const value = tooltip.getFieldFormat(field)(v);
-                    return itemTemplate({label, value});
+                    return item({label, value});
                 })
                 .join('\n'));
 
-            return templateRoot({itemsTemplate, excludeTemplate});
+            return root({content, buttons});
         },
 
-        afterRender(tooltipNode) {
-        },
-
-        init(tooltipNode) {
-            tooltipNode.addEventListener('click', (e) => {
-
-                var target = e.target as HTMLElement;
-
-                while (target !== e.currentTarget && target !== null) {
-                    if (target.classList.contains('i-role-exclude')) {
-                        tooltip.excludeHighlightedElement();
-                        tooltip.setState({
-                            highlight: null,
-                            isStuck: false
-                        });
-                    }
-
-                    target = target.parentNode as HTMLElement;
-                }
-
-            }, false);
+        didMount(tooltipNode) {
+            tooltipNode
+                .querySelector('.i-role-exclude')
+                .addEventListener('click', onExcludeClick);
         }
     };
 };
@@ -82,11 +76,13 @@ function Tooltip(xSettings: TooltipSettings) {
     const settings = utils.defaults(
         xSettings || {},
         {
-            getTemplate: defaultTemplateFactory,
             align: 'bottom-right',
+            classStuck: 'stuck',
+            classTarget: `${TOOLTIP_CLS}-target`,
             escapeHtml: true,
             fields: null as string[],
             formatters: {} as Formatter | FormatterObject,
+            getTemplate: defaultTemplateFactory,
             spacing: 24
         });
 
@@ -110,12 +106,7 @@ function Tooltip(xSettings: TooltipSettings) {
             // Handle initial state
             this.setState(this.state);
 
-            const template = settings.getTemplate(this, settings);
-            const tooltipNode = this._getTooltipNode();
-            if (template.init) {
-                template.init(tooltipNode);
-            }
-            this._template = template;
+            this._template = settings.getTemplate(this, settings);
         },
 
         _initDomEvents() {
@@ -195,13 +186,13 @@ function Tooltip(xSettings: TooltipSettings) {
             if (state.isStuck !== prev.isStuck) {
                 if (state.isStuck) {
                     window.addEventListener('click', this._outerClickHandler, true);
-                    tooltipNode.classList.add('stuck');
+                    tooltipNode.classList.add(settings.classStuck);
                     this._setTargetEventsEnabled(false);
                     this._accentFocus(state.highlight.data);
                     this._tooltip.updateSize();
                 } else {
                     window.removeEventListener('click', this._outerClickHandler, true);
-                    tooltipNode.classList.remove('stuck');
+                    tooltipNode.classList.remove(settings.classStuck);
                     // NOTE: Prevent showing tooltip immediately
                     // after pointer events appear.
                     requestAnimationFrame(() => {
@@ -221,7 +212,7 @@ function Tooltip(xSettings: TooltipSettings) {
                 Object.keys(data)
             );
 
-            const content = this._template.getHtml(data, fields);
+            const content = this._template.render(data, fields);
 
             this._tooltip
                 .content(content)
@@ -230,13 +221,16 @@ function Tooltip(xSettings: TooltipSettings) {
                 .show()
                 .updateSize();
 
-            if (this._template.afterRender) {
-                this._template.afterRender(this._getTooltipNode());
+            if (this._template.didMount) {
+                this._template.didMount(this._getTooltipNode());
             }
         },
 
         _hideTooltip() {
             window.removeEventListener('click', this._outerClickHandler, true);
+            if (this._template.willUnmount) {
+                this._template.willUnmount(this._getTooltipNode());
+            }
             this._tooltip.hide();
         },
 
@@ -341,7 +335,8 @@ function Tooltip(xSettings: TooltipSettings) {
                 .addFilter({
                     tag: 'exclude',
                     predicate: (row) => {
-                        return JSON.stringify(row) !== JSON.stringify(highlightedRow);
+                        return (row !== highlightedRow);
+                        // return JSON.stringify(row) !== JSON.stringify(highlightedRow);
                     }
                 });
             this._chart.refresh();
@@ -362,7 +357,7 @@ function Tooltip(xSettings: TooltipSettings) {
         },
 
         _setTargetSvgClass(isSet) {
-            d3.select(this._chart.getSVG()).classed(TARGET_SVG_CLASS, isSet);
+            d3.select(this._chart.getSVG()).classed(settings.classTarget, isSet);
         },
 
         _setTargetEventsEnabled(isSet) {
@@ -438,13 +433,15 @@ function Tooltip(xSettings: TooltipSettings) {
 Taucharts.api.plugins.add('tooltip', Tooltip);
 
 interface TooltipSettings {
+    align?: string;
+    classStuck?: string;
+    classTarget?: string;
+    escapeHtml?: boolean;
     fields?: string[];
     formatters?: {[field: string]: (Formatter | FormatterObject)};
-    align?: string;
-    escapeHtml?: boolean;
-    spacing?: number;
     getFields?: (chart: Plot) => string[];
     getTemplate?: TooltipTemplateFactory;
+    spacing?: number;
 }
 
 type Formatter = (x: any) => string;
@@ -470,13 +467,13 @@ interface TooltipCursor {
 }
 
 interface TooltipTemplate {
-    getHtml(data: any[], fields: string[]): string;
-    afterRender?(node: HTMLElement);
-    init?(tooltipNode: HTMLElement);
+    render(data: any[], fields: string[]): string;
+    didMount?(node: HTMLElement);
+    willUnmount?(node: HTMLElement);
 }
 type TooltipTemplateFactory = (tooltip: TooltipObject, settings: TooltipSettings) => TooltipTemplate;
 
-interface TooltipObject {
+interface TooltipObject extends PluginObject {
     init(this: TooltipObject, chart: Plot): void;
     state: TooltipState;
     setState(this: TooltipObject, newState: TooltipState): void;

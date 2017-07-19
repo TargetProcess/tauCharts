@@ -896,9 +896,9 @@ export function take<T>(src?: T) {
 }
 
 import {GenericCartesian} from '../elements/element.generic.cartesian';
-var chartElement = [
+const chartElements = [
     GenericCartesian
 ];
 export function isChartElement(element) {
-    return chartElement.some(Element => element instanceof Element);
+    return chartElements.some((E) => element instanceof E);
 }

@@ -1,5 +1,6 @@
 @interval-highlight_positive: #4ca383;
 @interval-highlight_negative: #df6772;
+@interval-highlight_fill: #c4b3e6;
 
 .interval-highlight-tooltip {
     padding: 15px 15px 12px;    
@@ -28,14 +29,24 @@
     }
 
     &__header {
+        font-weight: 600;
         margin: 0 0 8px;
 
-        &__date-range {
+        &__arrows {
+            font-size: 75%;
+            padding-left: 5px;
+        }
+
+        &__cell {
             font-weight: 600;
         }
     }
 
     &__item {
+        &_highlighted {
+            background-color: fadeout(@interval-highlight_fill, 75%);
+        }
+
         &__value {
             text-indent: 4px;
             margin: 0 0 1px 10px;
@@ -69,7 +80,7 @@
 
 .interval-highlight {
     &__cursor {
-        fill: #c4b3e6;
+        fill: @interval-highlight_fill;
         opacity: 0.25;
     }
     &__cover-rect {

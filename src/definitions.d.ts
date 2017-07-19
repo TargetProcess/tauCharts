@@ -457,13 +457,19 @@ export interface SpecTransformer {
 }
 
 export interface SpecTransformConstructor {
-    new (spec: GPLSpec): SpecTransformer;
+    new(spec: GPLSpec): SpecTransformer;
 }
 
 export type PluginObject = Object & {
-    init?: (chart: Plot) => void;
-    destroy?: () => void;
-    onRender?: () => void;
+    init?(chart: Plot): void;
+    destroy?(): void;
+    onRender?(chart: Plot, svg: SVGSVGElement): void;
+    onBeforeRender?(chart: Plot, svg: SVGSVGElement): void;
+    onSpecReady?(chart: Plot, spec: GPLSpec): void;
+    onUnitsStructureExpanded?(chart: Plot, spec: GPLSpec): void;
+    onRenderingTimeout?(chart: Plot, timeout: number): void;
+    onRenderingError?(chart: Plot, error: Error): void;
+    onUnitDraw?(chart: Plot, unit: GrammarElement): void;
 };
 
 export interface PointerEventArgs {
@@ -471,3 +477,5 @@ export interface PointerEventArgs {
     data;
     event: MouseEvent;
 }
+
+export type Plot = Plot;

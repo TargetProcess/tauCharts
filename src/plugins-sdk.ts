@@ -10,7 +10,7 @@ import {
 
 export interface DimInfo {
     label: string;
-    format: (x) => string;
+    format: (x, nullAlias?) => string;
     nullAlias: string;
     tickLabel: string;
     isComplexField?: boolean;
