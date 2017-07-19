@@ -1,3 +1,4 @@
+@import "../variable";
 @interval-highlight_positive: #4ca383;
 @interval-highlight_negative: #df6772;
 @interval-highlight_fill: #c4b3e6;
@@ -28,13 +29,20 @@
         margin-top: 8px;
     }
 
+    &__table {
+        border-top: 1px solid fade(@font-color, 20%);
+        margin-top: 5px;
+        padding-top: 5px;
+    }
+
     &__header {
         font-weight: 600;
         margin: 0 0 8px;
 
         &__arrows {
-            font-size: 75%;
-            padding-left: 5px;
+            display: none;
+            // font-size: 75%;
+            // padding-left: 5px;
         }
 
         &__cell {
@@ -44,7 +52,7 @@
 
     &__item {
         &_highlighted {
-            background-color: fadeout(@interval-highlight_fill, 75%);
+            background-color: fade(@interval-highlight_fill, 25%);
         }
 
         &__value {

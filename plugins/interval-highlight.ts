@@ -536,7 +536,7 @@ function TimeDiffTooltip(xSettings) {
         ].join('\n');
 
         const table = ({rows}) => [
-            '<table cellpadding="0" cellspacing="0" border="0">',
+            `<table class="${HL_TOOLTIP_CLS}__table" cellpadding="0" cellspacing="0" border="0">`,
             rows(),
             '</table>'
         ].join('\n');
@@ -612,7 +612,7 @@ function TimeDiffTooltip(xSettings) {
 
                 const x = unit.screenModel.model.xi(data);
                 const groupedData = unitsGroupedData.get(unit);
-                const allX = Object.keys(groupedData).map(Number);
+                const allX = Object.keys(groupedData).map(Number).sort((a, b) => a - b);
                 const prevX = allX[allX.indexOf(x) - 1];
                 const colorsIndices = scaleColor.domain().slice().reverse().reduce((map, c, i) => {
                     map[c] = i;
