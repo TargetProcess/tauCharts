@@ -39,6 +39,7 @@ const IntervalHighlight = <HighlightElement>{
     _drawRange(range: number[]) {
         const node = this.node();
         const config = node.config;
+        // Todo: Fix undefined container
         // const container = config.options.container; // undefined
         const container = this._container;
 
@@ -168,169 +169,153 @@ Taucharts.api.unitsRegistry.reg(
     IntervalHighlight,
     'ELEMENT.GENERIC.CARTESIAN');
 
+const IntervalTooltipTemplateFactory = (tooltip, settings, templateSettings) => {
+
+    const TOOLTIP_CLS = 'graphical-report__tooltip';
+    const HL_TOOLTIP_CLS = 'interval-highlight-tooltip';
+
+    const root = templateSettings.rootTemplate;
+
+    const item = (templateSettings.itemTemplate || (({label, value, isXDim}) => [
+        `<div class="${TOOLTIP_CLS}__list__item${isXDim ? ` ${HL_TOOLTIP_CLS}__header` : ''}">`,
+        `  <div class="${TOOLTIP_CLS}__list__elem">${label}</div>`,
+        `  <div class="${TOOLTIP_CLS}__list__elem">${value}</div>`,
+        '</div>'
+    ].join('\n')));
+
+    const buttons = templateSettings.buttonsTemplate;
+
+    const table = (templateSettings.tableTemplate || (({rows}) => [
+        `<div class="${HL_TOOLTIP_CLS}__table" cellpadding="0" cellspacing="0" border="0">`,
+        rows(),
+        '</div>'
+    ].join('\n')));
+
+    const ROW_CLS = `${HL_TOOLTIP_CLS}__item`;
+    const HEADER_CLS = `${HL_TOOLTIP_CLS}__header`;
+
+    const tableHeader = (templateSettings.tableHeaderTemplate || (({groupLabel, valueLabel}) => [
+        `<div class="${HEADER_CLS}">`,
+        `  <span class="${HEADER_CLS}__text">${groupLabel}</span>`,
+        `  <span class="${HEADER_CLS}__value">${valueLabel}</span>`,
+        `  <span class="${HEADER_CLS}__arrow">&#x25BC;&#x25B2;</span>`,
+        '</div>'
+    ].join('\n')));
+
+    const tableRow = (templateSettings.tableRowTemplate || (({name, width, color, diff, value, sign, isCurrent}) => [
+        `<div class="${ROW_CLS}${isCurrent ? ` ${ROW_CLS}_highlighted` : ''}">`,
+        '  <span',
+        `      class="${ROW_CLS}__bg"`,
+        `      style="width: ${width * 100}%; background-color: ${color};"`,
+        `      ></span>`,
+        `  <span class="${ROW_CLS}__text">${name}</span>`,
+        `  <span class="${ROW_CLS}__value">${value}</span>`,
+        `  ${arrow({diff, sign})}`,
+        '</div>'
+    ].join('\n')));
+
+    const arrow = (templateSettings.arrowTemplate || (({diff, sign}) => {
+        const arrowCls = `${ROW_CLS}__arrow`;
+        const arrowSignCls = `${arrowCls}_${sign > 0 ? 'positive' : 'negative'}`;
+        const arrowSymbol = (sign > 0 ? '&#x25B2;' : sign < 0 ? '&#x25BC;' : '');
+        const diffVal = (sign === 0 ? '' : diff);
+
+        return [
+            `<span class="${arrowCls} ${arrowSignCls}">`,
+            `${arrowSymbol}${diffVal}`,
+            '</span>'
+        ].join('');
+    }));
+
+    return {
+
+        render(data, xFields) {
+
+            const unit = tooltip.state.highlight.unit as GrammarElement;
+            const {scaleColor, scaleX, scaleY} = unit.screenModel.model;
+
+            const fields = xFields
+                .filter((field) => {
+                    return (
+                        (field !== scaleColor.dim) &&
+                        (field !== scaleX.dim) &&
+                        (field !== scaleY.dim)
+                    );
+                })
+                .concat(scaleX.dim);
+
+            const fieldsRows = fields
+                .filter((field) => {
+                    const tokens = field.split('.');
+                    const matchX = ((tokens.length === 2) && tooltip.skipInfo[tokens[0]]);
+                    return !matchX;
+                })
+                .map((field) => {
+                    const v = data[field];
+                    const label = tooltip.getFieldLabel(field);
+                    const value = tooltip.getFieldFormat(field)(v);
+                    const isXDim = (field === scaleX.dim);
+                    return item({label, value, isXDim});
+                })
+                .join('\n');
+
+            const groupedData = tooltip.unitsGroupedData.get(unit);
+            const [prevX, x] = tooltip.getHighlightRange(data, unit);
+            const colorsIndices = scaleColor.domain().slice().reverse().reduce((map, c, i) => {
+                map[c] = i;
+                return map;
+            }, {} as {[c: string]: number});
+            const neighbors = Object.keys(groupedData[x])
+                .reduce((arr, g) => arr.concat(groupedData[x][g]), [])
+                .sort((a, b) => colorsIndices[a[scaleColor.dim]] - colorsIndices[b[scaleColor.dim]]);
+            const maxV = Math.max(...neighbors.map((d) => d[scaleY.dim]));
+
+            const tableRows = (() => [tableHeader({
+                groupLabel: tooltip.getFieldLabel(scaleColor.dim),
+                valueLabel: tooltip.getFieldLabel(scaleY.dim)
+            })].concat(neighbors.map((d) => {
+                const v = d[scaleY.dim];
+                const format = tooltip.getFieldFormat(scaleY.dim);
+                const value = format(v);
+                const name = tooltip.getFieldLabel(d[scaleColor.dim]);
+                const width = (v / maxV);
+                const g = unit.screenModel.model.group(d);
+                const prevV = (Number.isFinite(prevX) && groupedData[prevX][g] ?
+                    groupedData[prevX][g][0][scaleY.dim] :
+                    null);
+                const dv = Number.isFinite(prevV) ? (v - prevV) : 0;
+                const diff = format(Math.abs(dv));
+                const sign = Math.sign(dv);
+                const color = scaleColor(d[scaleColor.dim]);
+                const isCurrent = (d === data);
+
+                return tableRow({name, width, color, diff, value, sign, isCurrent});
+            })).join('\n'));
+
+            const diffTable = table({rows: tableRows});
+
+            return root({content: () => [fieldsRows, diffTable].join('\n'), buttons});
+        },
+
+        didMount(tooltip) {
+            templateSettings.didMount(tooltip);
+        }
+    };
+};
+
 function IntervalHighlightTooltip(xSettings) {
 
-    const settings = utils.defaults(xSettings || {}, {
-        fields: null as string[]
-    });
+    const Tooltip = (xSettings.Tooltip || Taucharts.api.plugins.get('tooltip'));
 
-    const Tooltip = Taucharts.api.plugins.get('tooltip');
-
-    const getTemplate = (tooltip) => {
-
-        const TOOLTIP_CLS = 'graphical-report__tooltip';
-        const HL_TOOLTIP_CLS = 'interval-highlight-tooltip';
-
-        const root = ({content, buttons}) => [
-            `<div class="i-role-content ${TOOLTIP_CLS}__content">`,
-            content(),
-            '</div>',
-            buttons()
-        ].join('\n');
-
-        const item = ({label, value, isXDim}) => [
-            `<div class="${TOOLTIP_CLS}__list__item${isXDim ? ` ${HL_TOOLTIP_CLS}__header` : ''}">`,
-            `  <div class="${TOOLTIP_CLS}__list__elem">${label}</div>`,
-            `  <div class="${TOOLTIP_CLS}__list__elem">${value}</div>`,
-            '</div>'
-        ].join('\n');
-
-        const buttons = () => [
-            `<div class="i-role-exclude ${TOOLTIP_CLS}__exclude">`,
-            `  <div class="${TOOLTIP_CLS}__exclude__wrap">`,
-            '    <span class="tau-icon-close-gray"></span> Exclude',
-            '  </div>',
-            '</div>'
-        ].join('\n');
-
-        const table = ({rows}) => [
-            `<div class="${HL_TOOLTIP_CLS}__table" cellpadding="0" cellspacing="0" border="0">`,
-            rows(),
-            '</div>'
-        ].join('\n');
-
-        const ROW_CLS = `${HL_TOOLTIP_CLS}__item`;
-        const HEADER_CLS = `${HL_TOOLTIP_CLS}__header`;
-
-        const tableHeader = ({groupLabel, valueLabel}) => [
-            `<div class="${HEADER_CLS}">`,
-            `  <span class="${HEADER_CLS}__text">${groupLabel}</span>`,
-            `  <span class="${HEADER_CLS}__value">${valueLabel}</span>`,
-            `  <span class="${HEADER_CLS}__arrow">&#x25BC;&#x25B2;</span>`,
-            '</div>'
-        ].join('\n');
-
-        const tableRow = ({name, width, color, diff, value, sign, isCurrent}) => [
-            `<div class="${ROW_CLS}${isCurrent ? ` ${ROW_CLS}_highlighted` : ''}">`,
-            '  <span',
-            `      class="${ROW_CLS}__bg"`,
-            `      style="width: ${width * 100}%; background-color: ${color};"`,
-            `      ></span>`,
-            `  <span class="${ROW_CLS}__text">${name}</span>`,
-            `  <span class="${ROW_CLS}__value">${value}</span>`,
-            `  ${arrow({diff, sign})}`,
-            '</div>'
-        ].join('\n');
-
-        const arrow = ({diff, sign}) => {
-            const arrowCls = `${ROW_CLS}__arrow`;
-            const arrowSignCls = `${arrowCls}_${sign > 0 ? 'positive' : 'negative'}`;
-            const arrowSymbol = (sign > 0 ? '&#x25B2;' : sign < 0 ? '&#x25BC;' : '');
-            const diffVal = (sign === 0 ? '' : diff);
-
-            return [
-                `<span class="${arrowCls} ${arrowSignCls}">`,
-                `${arrowSymbol}${diffVal}`,
-                '</span>'
-            ].join('');
-        };
-
-        // Todo: reuse Tooltip functionality
-        const onExcludeClick = () => {
-            tooltip.excludeHighlightedElement();
-            tooltip.setState({
-                highlight: null,
-                isStuck: false
-            });
-        };
-
-        return {
-
-            render(data, xFields) {
-
-                const unit = tooltip.state.highlight.unit as GrammarElement;
-                const {scaleColor, scaleX, scaleY} = unit.screenModel.model;
-
-                const fields = xFields
-                    .filter((field) => {
-                        return (
-                            (field !== scaleColor.dim) &&
-                            (field !== scaleX.dim) &&
-                            (field !== scaleY.dim)
-                        );
-                    })
-                    .concat(scaleX.dim);
-
-                const fieldsRows = fields
-                    .filter((field) => {
-                        const tokens = field.split('.');
-                        const matchX = ((tokens.length === 2) && tooltip.skipInfo[tokens[0]]);
-                        return !matchX;
-                    })
-                    .map((field) => {
-                        const v = data[field];
-                        const label = tooltip.getFieldLabel(field);
-                        const value = tooltip.getFieldFormat(field)(v);
-                        const isXDim = (field === scaleX.dim);
-                        return item({label, value, isXDim});
-                    })
-                    .join('\n');
-
-                const groupedData = unitsGroupedData.get(unit);
-                const [prevX, x] = getHighlightRange(data, unit);
-                const colorsIndices = scaleColor.domain().slice().reverse().reduce((map, c, i) => {
-                    map[c] = i;
-                    return map;
-                }, {} as {[c: string]: number});
-                const neighbors = Object.keys(groupedData[x])
-                    .reduce((arr, g) => arr.concat(groupedData[x][g]), [])
-                    .sort((a, b) => colorsIndices[a[scaleColor.dim]] - colorsIndices[b[scaleColor.dim]]);
-                const maxV = Math.max(...neighbors.map((d) => d[scaleY.dim]));
-
-                const tableRows = (() => [tableHeader({
-                    groupLabel: tooltip.getFieldLabel(scaleColor.dim),
-                    valueLabel: tooltip.getFieldLabel(scaleY.dim)
-                })].concat(neighbors.map((d) => {
-                    const v = d[scaleY.dim];
-                    const format = tooltip.getFieldFormat(scaleY.dim);
-                    const value = format(v);
-                    const name = tooltip.getFieldLabel(d[scaleColor.dim]);
-                    const width = (v / maxV);
-                    const g = unit.screenModel.model.group(d);
-                    const prevV = (Number.isFinite(prevX) && groupedData[prevX][g] ?
-                        groupedData[prevX][g][0][scaleY.dim] :
-                        null);
-                    const dv = Number.isFinite(prevV) ? (v - prevV) : 0;
-                    const diff = format(Math.abs(dv));
-                    const sign = Math.sign(dv);
-                    const color = scaleColor(d[scaleColor.dim]);
-                    const isCurrent = (d === data);
-
-                    return tableRow({name, width, color, diff, value, sign, isCurrent});
-                })).join('\n'));
-
-                const diffTable = table({rows: tableRows});
-
-                return root({content: () => [fieldsRows, diffTable].join('\n'), buttons});
-            },
-
-            didMount(tooltipNode) {
-                tooltipNode
-                    .querySelector('.i-role-exclude')
-                    .addEventListener('click', onExcludeClick);
-            }
-        };
-    };
+    const settings = utils.defaults(
+        xSettings || {},
+        {
+            getTemplate: IntervalTooltipTemplateFactory
+        },
+        Tooltip.defaults);
+    settings.templateSettings = utils.defaults(
+        settings.templateSettings || {},
+        Tooltip.defaults.templateSettings);
 
     const extend = (instance, extension) => {
         Object.keys(extension).forEach((prop) => {
@@ -339,17 +324,11 @@ function IntervalHighlightTooltip(xSettings) {
                 if (instanceProp) {
                     instanceProp.apply(this, arguments);
                 }
-                extension[prop].apply(this, arguments);
+                return extension[prop].apply(this, arguments);
             };
         });
         return instance;
     };
-
-    interface GroupedData {
-        [x: string]: {
-            [g: string]: any[];
-        };
-    }
 
     function getGroupedData(data: any[], screenModel: ScreenModel) {
         const groupByX = utils.groupBy(data, (d) => screenModel.model.xi(d).toString());
@@ -360,32 +339,22 @@ function IntervalHighlightTooltip(xSettings) {
         return groupByXAndGroup;
     }
 
-    const unitsGroupedData = new Map<GrammarElement, GroupedData>();
+    const tooltipExt: IntervalTooltipObject = {
 
-    const getHighlightRange = (data, unit: GrammarElement) => {
-        const x = unit.screenModel.model.xi(data);
-        const groupedData = unitsGroupedData.get(unit);
-        const allX = Object.keys(groupedData).map(Number).sort((a, b) => a - b);
-        const xIndex = allX.indexOf(x);
-        if (xIndex === 0) {
-            return [x, x];
-        }
-        const prevX = allX[xIndex - 1];
-        return [prevX, x];
-    };
-
-    const tooltipExt: PluginObject = {
+        init() {
+            this.unitsGroupedData = new Map();
+        },
 
         onRender(chart) {
             const highlights = chart.select((u) => u.config.type === ELEMENT_HIGHLIGHT);
             const units = chart.select((u) => u.config.type.indexOf('ELEMENT.') === 0);
             units.forEach((u) => {
-                unitsGroupedData.set(u, getGroupedData(u.data(), u.screenModel));
+                this.unitsGroupedData.set(u, getGroupedData(u.data(), u.screenModel));
                 u.on('data-hover', (sender, e) => {
                     highlights.forEach((h) => {
                         // Todo: Speed-up by direct linking.
                         const hasData = e.data ? h.data().some((d) => d === e.data) : false;
-                        h.fire('interval-highlight', hasData ? getHighlightRange(e.data, u) : null);
+                        h.fire('interval-highlight', hasData ? this.getHighlightRange(e.data, u) : null);
                     });
                 });
             });
@@ -408,13 +377,37 @@ function IntervalHighlightTooltip(xSettings) {
             });
         },
 
+        getHighlightRange(data, unit: GrammarElement) {
+            const x = unit.screenModel.model.xi(data);
+            const groupedData = this.unitsGroupedData.get(unit);
+            const allX = Object.keys(groupedData).map(Number).sort((a, b) => a - b);
+            const xIndex = allX.indexOf(x);
+            if (xIndex === 0) {
+                return [x, x];
+            }
+            const prevX = allX[xIndex - 1];
+            return [prevX, x];
+        }
+
     };
 
     return extend(
-        Tooltip({...settings, getTemplate}),
+        Tooltip({...settings}),
         tooltipExt);
 }
 
 Taucharts.api.plugins.add('interval-highlight', IntervalHighlightTooltip);
+
+interface IntervalTooltipObject extends PluginObject {
+    onRender(this: IntervalTooltipObject, chart: Plot);
+    getHighlightRange(this: IntervalTooltipObject, data, unit: GrammarElement): number[];
+    unitsGroupedData?: Map<GrammarElement, GroupedData>;
+}
+
+interface GroupedData {
+    [x: string]: {
+        [g: string]: any[];
+    };
+}
 
 export default IntervalHighlightTooltip;

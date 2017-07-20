@@ -28,7 +28,7 @@ dev.spec({
         Taucharts.api.plugins.get('interval-highlight')({
             fields: [
                 'entityStateName',
-                'entityStateId'
+                'entityStateID'
             ]
         })
     ],

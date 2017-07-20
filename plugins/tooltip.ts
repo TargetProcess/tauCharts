@@ -11,37 +11,55 @@ const utils = Taucharts.api.utils;
 const pluginsSDK = Taucharts.api.pluginsSDK;
 const TOOLTIP_CLS = 'graphical-report__tooltip';
 
-const defaultTemplateFactory: TooltipTemplateFactory = (tooltip, settings) => {
+const defaultTemplateSettings = {
 
-    const root = ({content, buttons}) => [
+    rootTemplate: ({content, buttons}) => [
         `<div class="i-role-content ${TOOLTIP_CLS}__content">`,
         content(),
         '</div>',
         buttons()
-    ].join('\n');
+    ].join('\n'),
 
-    const item = ({label, value}) => [
+    itemTemplate: ({label, value}) => [
         `<div class="${TOOLTIP_CLS}__list__item">`,
         `  <div class="${TOOLTIP_CLS}__list__elem">${label}</div>`,
         `  <div class="${TOOLTIP_CLS}__list__elem">${value}</div>`,
         '</div>'
-    ].join('\n');
+    ].join('\n'),
 
-    const buttons = () => [
+    buttonsTemplate: () => [
         `<div class="i-role-exclude ${TOOLTIP_CLS}__exclude">`,
         `  <div class="${TOOLTIP_CLS}__exclude__wrap">`,
         '    <span class="tau-icon-close-gray"></span> Exclude',
         '  </div>',
         '</div>'
-    ].join('\n');
+    ].join('\n'),
 
-    const onExcludeClick = () => {
-        tooltip.excludeHighlightedElement();
-        tooltip.setState({
-            highlight: null,
-            isStuck: false
-        });
-    };
+    didMount: (tooltip: TooltipObject) => {
+        tooltip.getDomNode()
+            .querySelector('.i-role-exclude')
+            .addEventListener('click', () => {
+                tooltip.excludeHighlightedElement();
+                tooltip.setState({
+                    highlight: null,
+                    isStuck: false
+                });
+            });
+    }
+};
+
+const defaultTemplateFactory: TooltipTemplateFactory = (
+    tooltip,
+    settings,
+    templateSettings: typeof defaultTemplateSettings
+) => {
+
+    templateSettings = Object.assign({}, templateSettings, defaultTemplateSettings);
+
+    const root = templateSettings.rootTemplate;
+    const item = templateSettings.itemTemplate;
+    const buttons = templateSettings.buttonsTemplate;
+    const didMount = templateSettings.didMount;
 
     return {
 
@@ -63,10 +81,8 @@ const defaultTemplateFactory: TooltipTemplateFactory = (tooltip, settings) => {
             return root({content, buttons});
         },
 
-        didMount(tooltipNode) {
-            tooltipNode
-                .querySelector('.i-role-exclude')
-                .addEventListener('click', onExcludeClick);
+        didMount(tooltip) {
+            didMount(tooltip);
         }
     };
 };
@@ -75,16 +91,10 @@ function Tooltip(xSettings: TooltipSettings) {
 
     const settings = utils.defaults(
         xSettings || {},
-        {
-            align: 'bottom-right',
-            classStuck: 'stuck',
-            classTarget: `${TOOLTIP_CLS}-target`,
-            escapeHtml: true,
-            fields: null as string[],
-            formatters: {} as Formatter | FormatterObject,
-            getTemplate: defaultTemplateFactory,
-            spacing: 24
-        });
+        (Tooltip as any).defaults);
+    settings.templateSettings = utils.defaults(
+        settings.templateSettings || {},
+        (Tooltip as any).defaults.templateSettings);
 
     return <TooltipObject>{
 
@@ -106,7 +116,7 @@ function Tooltip(xSettings: TooltipSettings) {
             // Handle initial state
             this.setState(this.state);
 
-            this._template = settings.getTemplate(this, settings);
+            this._template = settings.getTemplate(this, settings, settings.templateSettings);
         },
 
         _initDomEvents() {
@@ -119,7 +129,7 @@ function Tooltip(xSettings: TooltipSettings) {
             window.addEventListener('scroll', this._scrollHandler, true);
 
             this._outerClickHandler = (e) => {
-                var tooltipRect = this._getTooltipNode().getBoundingClientRect();
+                var tooltipRect = this.getDomNode().getBoundingClientRect();
                 if ((e.clientX < tooltipRect.left) ||
                     (e.clientX > tooltipRect.right) ||
                     (e.clientY < tooltipRect.top) ||
@@ -133,7 +143,7 @@ function Tooltip(xSettings: TooltipSettings) {
             };
         },
 
-        _getTooltipNode() {
+        getDomNode() {
             return this._tooltip.getElement();
         },
 
@@ -182,7 +192,7 @@ function Tooltip(xSettings: TooltipSettings) {
             }
 
             // Stick/unstick tooltip
-            const tooltipNode = this._getTooltipNode();
+            const tooltipNode = this.getDomNode();
             if (state.isStuck !== prev.isStuck) {
                 if (state.isStuck) {
                     window.addEventListener('click', this._outerClickHandler, true);
@@ -222,14 +232,14 @@ function Tooltip(xSettings: TooltipSettings) {
                 .updateSize();
 
             if (this._template.didMount) {
-                this._template.didMount(this._getTooltipNode());
+                this._template.didMount(this);
             }
         },
 
         _hideTooltip() {
             window.removeEventListener('click', this._outerClickHandler, true);
             if (this._template.willUnmount) {
-                this._template.willUnmount(this._getTooltipNode());
+                this._template.willUnmount(this);
             }
             this._tooltip.hide();
         },
@@ -430,6 +440,18 @@ function Tooltip(xSettings: TooltipSettings) {
     };
 }
 
+(Tooltip as any).defaults = <TooltipSettings>{
+    align: 'bottom-right',
+    classStuck: 'stuck',
+    classTarget: `${TOOLTIP_CLS}-target`,
+    escapeHtml: true,
+    fields: null as string[],
+    formatters: {} as {[field: string]: (Formatter | FormatterObject)},
+    getTemplate: defaultTemplateFactory,
+    spacing: 24,
+    templateSettings: defaultTemplateSettings,
+};
+
 Taucharts.api.plugins.add('tooltip', Tooltip);
 
 interface TooltipSettings {
@@ -441,6 +463,7 @@ interface TooltipSettings {
     formatters?: {[field: string]: (Formatter | FormatterObject)};
     getFields?: (chart: Plot) => string[];
     getTemplate?: TooltipTemplateFactory;
+    templateSettings?: any;
     spacing?: number;
 }
 
@@ -468,10 +491,14 @@ interface TooltipCursor {
 
 interface TooltipTemplate {
     render(data: any[], fields: string[]): string;
-    didMount?(node: HTMLElement);
-    willUnmount?(node: HTMLElement);
+    didMount?(tooltip: TooltipObject);
+    willUnmount?(tooltip: TooltipObject);
 }
-type TooltipTemplateFactory = (tooltip: TooltipObject, settings: TooltipSettings) => TooltipTemplate;
+type TooltipTemplateFactory = (
+    tooltip: TooltipObject,
+    settings: TooltipSettings,
+    templateSettings
+) => TooltipTemplate;
 
 interface TooltipObject extends PluginObject {
     init(this: TooltipObject, chart: Plot): void;
@@ -480,12 +507,12 @@ interface TooltipObject extends PluginObject {
     destroy(this: TooltipObject): void;
     getFieldFormat(this: TooltipObject, k: string): any;
     getFieldLabel(this: TooltipObject, k: string): string;
+    getDomNode(this: TooltipObject): HTMLElement;
     excludeHighlightedElement(this: TooltipObject): void;
     onRender(this: TooltipObject): void;
     metaInfo?: DimMap;
     skipInfo?: {[key: string]: boolean};
     _initDomEvents(this: TooltipObject);
-    _getTooltipNode(this: TooltipObject): HTMLElement;
     _showTooltip(this: TooltipObject, data: any, cursor: TooltipCursor);
     _hideTooltip(this: TooltipObject): void;
     _subscribeToHover(this: TooltipObject): void;
