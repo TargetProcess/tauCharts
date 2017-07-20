@@ -2,16 +2,12 @@ import Taucharts from 'taucharts';
 import * as d3 from 'd3-selection';
 import {Plot} from '../src/charts/tau.plot';
 import {DimMap} from '../src/plugins-sdk';
-import {
-    GrammarElement,
-    PluginObject,
-} from '../src/definitions';
 
 const utils = Taucharts.api.utils;
 const pluginsSDK = Taucharts.api.pluginsSDK;
 const TOOLTIP_CLS = 'graphical-report__tooltip';
 
-const defaultTemplateFactory: TooltipTemplateFactory = (tooltip, settings) => {
+const defaultTemplateFactory = (tooltip, settings) => {
 
     const root = ({content, buttons}) => [
         `<div class="i-role-content ${TOOLTIP_CLS}__content">`,
@@ -71,7 +67,7 @@ const defaultTemplateFactory: TooltipTemplateFactory = (tooltip, settings) => {
     };
 };
 
-function Tooltip(xSettings: TooltipSettings) {
+function Tooltip(xSettings) {
 
     const settings = utils.defaults(
         xSettings || {},
@@ -80,15 +76,15 @@ function Tooltip(xSettings: TooltipSettings) {
             classStuck: 'stuck',
             classTarget: `${TOOLTIP_CLS}-target`,
             escapeHtml: true,
-            fields: null as string[],
-            formatters: {} as Formatter | FormatterObject,
+            fields: null,
+            formatters: {},
             getTemplate: defaultTemplateFactory,
             spacing: 24
         });
 
-    return <TooltipObject>{
+    return {
 
-        init(chart: Plot) {
+        init(chart) {
 
             this._chart = chart;
             this.metaInfo = {};
@@ -371,7 +367,7 @@ function Tooltip(xSettings: TooltipSettings) {
         _getFormatters() {
 
             const info = pluginsSDK.extractFieldsFormatInfo(this._chart.getSpec());
-            const skip = {} as {[key: string]: boolean};
+            const skip = {};
             Object.keys(info).forEach((k) => {
 
                 if (info[k].isComplexField) {
@@ -383,20 +379,14 @@ function Tooltip(xSettings: TooltipSettings) {
                 }
             });
 
-            const toLabelValuePair = (x: Formatter | FormatterObject) => {
+            const toLabelValuePair = (x) => {
 
-                interface Pair {
-                    format: Formatter | FormatterObject;
-                    label?: string;
-                    nullAlias?: string;
-                }
-
-                var res = {} as Pair;
+                var res = {};
 
                 if (typeof x === 'function' || typeof x === 'string') {
                     res = {format: x};
                 } else if (utils.isObject(x)) {
-                    res = utils.pick(x, 'label', 'format', 'nullAlias') as Pair;
+                    res = utils.pick(x, 'label', 'format', 'nullAlias');
                 }
 
                 return res;
@@ -409,12 +399,12 @@ function Tooltip(xSettings: TooltipSettings) {
                 info[k] = Object.assign(
                     ({label: k, nullAlias: ('No ' + k)}),
                     (info[k] || {}),
-                    (utils.pick(fmt, 'label', 'nullAlias'))) as any;
+                    (utils.pick(fmt, 'label', 'nullAlias')));
 
                 if (fmt.hasOwnProperty('format')) {
                     info[k].format = (typeof fmt.format === 'function') ?
                         (fmt.format) :
-                        (Taucharts.api.tickFormat.get(fmt.format as any, info[k].nullAlias));
+                        (Taucharts.api.tickFormat.get(fmt.format, info[k].nullAlias));
                 } else {
                     info[k].format = (info[k].hasOwnProperty('format')) ?
                         (info[k].format) :
@@ -431,77 +421,5 @@ function Tooltip(xSettings: TooltipSettings) {
 }
 
 Taucharts.api.plugins.add('tooltip', Tooltip);
-
-interface TooltipSettings {
-    align?: string;
-    classStuck?: string;
-    classTarget?: string;
-    escapeHtml?: boolean;
-    fields?: string[];
-    formatters?: {[field: string]: (Formatter | FormatterObject)};
-    getFields?: (chart: Plot) => string[];
-    getTemplate?: TooltipTemplateFactory;
-    spacing?: number;
-}
-
-type Formatter = (x: any) => string;
-
-interface FormatterObject {
-    label?: string;
-    format: (x: any) => string;
-    nullAlias?: string;
-}
-
-interface TooltipState {
-    highlight?: {
-        data: any;
-        cursor: TooltipCursor;
-        unit: GrammarElement;
-    };
-    isStuck?: boolean;
-}
-
-interface TooltipCursor {
-    x: number;
-    y: number;
-}
-
-interface TooltipTemplate {
-    render(data: any[], fields: string[]): string;
-    didMount?(node: HTMLElement);
-    willUnmount?(node: HTMLElement);
-}
-type TooltipTemplateFactory = (tooltip: TooltipObject, settings: TooltipSettings) => TooltipTemplate;
-
-interface TooltipObject extends PluginObject {
-    init(this: TooltipObject, chart: Plot): void;
-    state: TooltipState;
-    setState(this: TooltipObject, newState: TooltipState): void;
-    destroy(this: TooltipObject): void;
-    getFieldFormat(this: TooltipObject, k: string): any;
-    getFieldLabel(this: TooltipObject, k: string): string;
-    excludeHighlightedElement(this: TooltipObject): void;
-    onRender(this: TooltipObject): void;
-    metaInfo?: DimMap;
-    skipInfo?: {[key: string]: boolean};
-    _initDomEvents(this: TooltipObject);
-    _getTooltipNode(this: TooltipObject): HTMLElement;
-    _showTooltip(this: TooltipObject, data: any, cursor: TooltipCursor);
-    _hideTooltip(this: TooltipObject): void;
-    _subscribeToHover(this: TooltipObject): void;
-    _accentFocus(this: TooltipObject, data): void;
-    _removeFocus(this: TooltipObject): void;
-    _setTargetSvgClass(this: TooltipObject, isSet: boolean): void;
-    _setTargetEventsEnabled(this: TooltipObject, isSet: boolean): void;
-    _getFormatters(this: TooltipObject): {
-        meta: DimMap;
-        skip: {[key: string]: boolean};
-    };
-    _chart?: Plot;
-    _tooltip?: any;
-    _template?: TooltipTemplate;
-    _scrollHandler?: (this: TooltipObject) => void;
-    _outerClickHandler?: (this: TooltipObject, e) => void;
-}
 
 export default Tooltip;
