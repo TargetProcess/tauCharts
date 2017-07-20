@@ -111,7 +111,7 @@
         }
 
         &__arrow {
-            align-items: flex-start;
+            align-items: center;
             display: inline-flex;
             justify-content: center;
             left: 100%;
@@ -141,12 +141,24 @@
 }
 
 .interval-highlight {
-    &__cursor {
-        fill: @interval-highlight_fill;
-        opacity: 0.25;
+    &__range {
+        shape-rendering: crispEdges;
     }
-    &__cover-rect {
-        cursor: pointer;
-        opacity: 0;
+    &__range-start {
+        stroke: mix(@font-color, @bg-color, 25%);
+        stroke-dasharray: 1 2;
+        shape-rendering: crispEdges;
+    }
+    &__range-end {
+        stroke: mix(@font-color, @bg-color, 25%);
+        shape-rendering: crispEdges;
+    }
+    &__gradient-start {
+        stop-color: @interval-highlight_fill;
+        stop-opacity: 0;
+    }
+    &__gradient-end {
+        stop-color: @interval-highlight_fill;
+        stop-opacity: 0.2;
     }
 }

@@ -2,6 +2,7 @@ import Taucharts from 'taucharts';
 import {timeFormat as d3TimeFormat} from 'd3-time-format';
 import * as d3Selection from 'd3-selection';
 import {
+    d3Selection as Selection,
     GrammarElement,
     Plot,
     PluginObject,
@@ -491,38 +492,125 @@ const TimeDiffHighlight = <TimeDiffHighlightObject>{
         const config = node.config;
         // const container = config.options.container; // undefined
         const container = this._container;
-        const screenModel = node.screenModel;
 
-        const HIGHLIGHT_CLS = 'interval-highlight__cursor';
+        const ROOT_CLS = 'interval-highlight';
+        const GRADIENT_ID = `${ROOT_CLS}__gradient`;
 
-        const rect = container
-            .selectAll(`.${HIGHLIGHT_CLS}`)
-            .data(range ? [1] : []);
-
-        rect
-            .exit()
-            .remove();
-
-        if (!range) {
-            return;
-        }
-
-        // const x0 = screenModel.model.scaleX(range[0]);
-        // const x1 = screenModel.model.scaleX(range[1]);
-        const [x0, x1] = range;
+        const x0 = (range ? range[0] : null);
+        const x1 = (range ? range[1] : null);
         const y0 = 0;
         const y1 = node.config.options.height;
 
-        rect
-            .enter()
-            .append('rect')
-            .attr('class', HIGHLIGHT_CLS)
-            .merge(rect)
-            .attr('x', x0)
-            .attr('y', y0)
-            .attr('width', x1 - x0)
-            .attr('height', y1 - y0)
-            .attr('pointer-events', 'none');
+        function drawDefs() {
+
+            const DEFS_CLS = `${ROOT_CLS}__defs`;
+            const START_CLS = `${ROOT_CLS}__gradient-start`;
+            const END_CLS = `${ROOT_CLS}__gradient-end`;
+
+            var svg = container.node();
+            while ((svg = svg.parentElement).tagName !== 'svg') {}
+
+            const defs = d3Selection.select(svg)
+                .selectAll(`.${DEFS_CLS}`)
+                .data(range ? [1] : []);
+
+            defs.exit().remove();
+
+            const defsEnter = defs.enter()
+                .append('defs')
+                .attr('class', DEFS_CLS)
+                .append('linearGradient')
+                .attr('id', GRADIENT_ID);
+
+            defsEnter
+                .append('stop')
+                .attr('class', START_CLS)
+                .attr('offset', '0%');
+
+            defsEnter
+                .append('stop')
+                .attr('class', END_CLS)
+                .attr('offset', '100%');
+        }
+
+        interface HighlightDataBinding {
+            g: Selection;
+            gEnter: Selection;
+        }
+
+        function drawGroups(): HighlightDataBinding {
+
+            const g = container
+                .selectAll(`.${ROOT_CLS}`)
+                .data(range ? [1] : []) as Selection;
+
+            g.exit().remove();
+
+            const gEnter = g
+                .enter()
+                .append('g')
+                .attr('class', ROOT_CLS)
+                .attr('pointer-events', 'none') as Selection;
+
+            return {g, gEnter};
+        }
+
+        function drawRange({g, gEnter}: HighlightDataBinding) {
+
+            const RANGE_CLS = `${ROOT_CLS}__range`;
+
+            const rect = g.select(`.${RANGE_CLS}`)
+            const rectEnter = gEnter
+                .append('rect')
+                .attr('class', RANGE_CLS)
+                .attr('fill', `url(#${GRADIENT_ID})`);
+
+            rectEnter.merge(rect)
+                .attr('x', x0)
+                .attr('y', y0)
+                .attr('width', x1 - x0)
+                .attr('height', y1 - y0);
+        }
+
+        function drawStart({g, gEnter}: HighlightDataBinding) {
+
+            const START_CLS = `${ROOT_CLS}__range-start`;
+
+            const line = g.select(`.${START_CLS}`);
+            const lineEnter = gEnter
+                .append('line')
+                .attr('class', START_CLS);
+
+            lineEnter.merge(line)
+                .attr('x1', x0)
+                .attr('y1', y0)
+                .attr('x2', x0)
+                .attr('y2', y1);
+        }
+
+        function drawEnd({g, gEnter}: HighlightDataBinding) {
+
+            const END_CLS = `${ROOT_CLS}__range-end`;
+
+            const line = g.select(`.${END_CLS}`);
+            const lineEnter = gEnter
+                .append('line')
+                .attr('class', END_CLS);
+
+            lineEnter.merge(line)
+                .attr('x1', x1)
+                .attr('y1', y0)
+                .attr('x2', x1)
+                .attr('y2', y1);
+        }
+
+        utils.take(drawGroups())
+            .next((binding) => {
+                drawDefs();
+                drawRange(binding);
+                drawStart(binding);
+                drawEnd(binding);
+            });
     }
 };
 
@@ -608,6 +696,15 @@ function TimeDiffTooltip(xSettings) {
             ].join('');
         };
 
+        // Todo: reuse Tooltip functionality
+        const onExcludeClick = () => {
+            tooltip.excludeHighlightedElement();
+            tooltip.setState({
+                highlight: null,
+                isStuck: false
+            });
+        };
+
         return {
 
             render(data, xFields) {
@@ -677,6 +774,12 @@ function TimeDiffTooltip(xSettings) {
                 const diffTable = table({rows: tableRows});
 
                 return root({content: () => [fieldsRows, diffTable].join('\n'), buttons});
+            },
+
+            didMount(tooltipNode) {
+                tooltipNode
+                    .querySelector('.i-role-exclude')
+                    .addEventListener('click', onExcludeClick);
             }
         };
     };
@@ -748,16 +851,10 @@ function TimeDiffTooltip(xSettings) {
                 const over = JSON.parse(JSON.stringify(unit));
                 over.type = ELEMENT_HIGHLIGHT;
                 over.namespace = 'highlight';
-                over.guide = over.guide || {};
 
-                // unit.guide = utils.defaults(unit.guide || {}, {
-                //     // showAnchors: 'never'
-                // });
-
-                // const index = parentUnit.units.indexOf(unit);
-
-                // parentUnit.units.splice(index, 0, over);
-                parentUnit.units.push(over);
+                // Place highlight under element
+                const index = parentUnit.units.indexOf(unit);
+                parentUnit.units.splice(index, 0, over);
             });
         },
 

@@ -84,6 +84,7 @@ dev.spec({
     },
     data: getCFDData(),
     plugins: [
+        Taucharts.api.plugins.get('legend')(),
         Taucharts.api.plugins.get('time-diff-tooltip')({
             fields: [
                 'entityStateName',
