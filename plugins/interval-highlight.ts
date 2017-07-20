@@ -39,6 +39,7 @@ const IntervalHighlight = <HighlightElement>{
     _drawRange(range: number[]) {
         const node = this.node();
         const config = node.config;
+        const flip = node.screenModel.flip;
         // Todo: Fix undefined container
         // const container = config.options.container; // undefined
         const container = this._container;
@@ -46,12 +47,11 @@ const IntervalHighlight = <HighlightElement>{
         const ROOT_CLS = 'interval-highlight';
         const GRADIENT_ID = `${ROOT_CLS}__gradient`;
 
-        const x0 = (range ? range[0] : null);
-        const x1 = (range ? range[1] : null);
-        const y0 = 0;
-        const y1 = node.config.options.height;
+        const start = (range ? range[0] : null);
+        const end = (range ? range[1] : null);
+        const size = (flip ? config.options.width : config.options.height);
 
-        function drawDefs() {
+        function defineGradient() {
 
             const DEFS_CLS = `${ROOT_CLS}__defs`;
             const START_CLS = `${ROOT_CLS}__gradient-start`;
@@ -70,7 +70,11 @@ const IntervalHighlight = <HighlightElement>{
                 .append('defs')
                 .attr('class', DEFS_CLS)
                 .append('linearGradient')
-                .attr('id', GRADIENT_ID);
+                .attr('id', GRADIENT_ID)
+                .attr('x1', '0%')
+                .attr('y1', flip ? '100%' : '0%')
+                .attr('x2', flip ? '0%' : '100%')
+                .attr('y2', '0%');
 
             defsEnter
                 .append('stop')
@@ -115,11 +119,24 @@ const IntervalHighlight = <HighlightElement>{
                 .attr('class', RANGE_CLS)
                 .attr('fill', `url(#${GRADIENT_ID})`);
 
+            const {x, y, width, height} = (flip ?
+                {
+                    x: 0,
+                    y: end,
+                    width: size,
+                    height: (start - end)
+                } : {
+                    x: start,
+                    y: 0,
+                    width: (end - start),
+                    height: size
+                });
+
             rectEnter.merge(rect)
-                .attr('x', x0)
-                .attr('y', y0)
-                .attr('width', x1 - x0)
-                .attr('height', y1 - y0);
+                .attr('x', x)
+                .attr('y', y)
+                .attr('width', width)
+                .attr('height', height);
         }
 
         function drawStart({g, gEnter}: HighlightDataBinding) {
@@ -131,11 +148,24 @@ const IntervalHighlight = <HighlightElement>{
                 .append('line')
                 .attr('class', START_CLS);
 
+            const {x1, y1, x2, y2} = (flip ?
+                {
+                    x1: 0,
+                    y1: start,
+                    x2: size,
+                    y2: start
+                } : {
+                    x1: start,
+                    y1: 0,
+                    x2: start,
+                    y2: size
+                });
+
             lineEnter.merge(line)
-                .attr('x1', x0)
-                .attr('y1', y0)
-                .attr('x2', x0)
-                .attr('y2', y1);
+                .attr('x1', x1)
+                .attr('y1', y1)
+                .attr('x2', x2)
+                .attr('y2', y2);
         }
 
         function drawEnd({g, gEnter}: HighlightDataBinding) {
@@ -147,16 +177,29 @@ const IntervalHighlight = <HighlightElement>{
                 .append('line')
                 .attr('class', END_CLS);
 
+            const {x1, y1, x2, y2} = (flip ?
+                {
+                    x1: 0,
+                    y1: end,
+                    x2: size,
+                    y2: end
+                } : {
+                    x1: end,
+                    y1: 0,
+                    x2: end,
+                    y2: size
+                });
+
             lineEnter.merge(line)
                 .attr('x1', x1)
-                .attr('y1', y0)
-                .attr('x2', x1)
-                .attr('y2', y1);
+                .attr('y1', y1)
+                .attr('x2', x2)
+                .attr('y2', y2);
         }
 
         utils.take(drawGroups())
             .next((binding) => {
-                drawDefs();
+                defineGradient();
                 drawRange(binding);
                 drawStart(binding);
                 drawEnd(binding);
@@ -202,10 +245,10 @@ const IntervalTooltipTemplateFactory = (tooltip, settings, templateSettings) => 
         '</div>'
     ].join('\n')));
 
-    const tableRow = (templateSettings.tableRowTemplate || (({name, width, color, diff, value, sign, isCurrent}) => [
+    const tableRow = (templateSettings.tableRowTemplate || (({name, width, color, cls, diff, value, sign, isCurrent}) => [
         `<div class="${ROW_CLS}${isCurrent ? ` ${ROW_CLS}_highlighted` : ''}">`,
         '  <span',
-        `      class="${ROW_CLS}__bg"`,
+        `      class="${ROW_CLS}__bg${cls ? ` ${cls}` : ''}"`,
         `      style="width: ${width * 100}%; background-color: ${color};"`,
         `      ></span>`,
         `  <span class="${ROW_CLS}__text">${name}</span>`,
@@ -232,7 +275,8 @@ const IntervalTooltipTemplateFactory = (tooltip, settings, templateSettings) => 
         render(data, xFields) {
 
             const unit = tooltip.state.highlight.unit as GrammarElement;
-            const {scaleColor, scaleX, scaleY} = unit.screenModel.model;
+            const screenModel = unit.screenModel;
+            const {scaleColor, scaleX, scaleY} = screenModel.model;
 
             const fields = xFields
                 .filter((field) => {
@@ -274,22 +318,28 @@ const IntervalTooltipTemplateFactory = (tooltip, settings, templateSettings) => 
                 groupLabel: tooltip.getFieldLabel(scaleColor.dim),
                 valueLabel: tooltip.getFieldLabel(scaleY.dim)
             })].concat(neighbors.map((d) => {
+
+                const name = tooltip.getFieldLabel(d[scaleColor.dim]);
+
                 const v = d[scaleY.dim];
                 const format = tooltip.getFieldFormat(scaleY.dim);
                 const value = format(v);
-                const name = tooltip.getFieldLabel(d[scaleColor.dim]);
                 const width = (v / maxV);
-                const g = unit.screenModel.model.group(d);
+
+                const g = screenModel.model.group(d);
                 const prevV = (Number.isFinite(prevX) && groupedData[prevX][g] ?
                     groupedData[prevX][g][0][scaleY.dim] :
                     null);
                 const dv = Number.isFinite(prevV) ? (v - prevV) : 0;
                 const diff = format(Math.abs(dv));
                 const sign = Math.sign(dv);
-                const color = scaleColor(d[scaleColor.dim]);
+
+                const color = screenModel.color(d);
+                const cls = screenModel.class(d);
+
                 const isCurrent = (d === data);
 
-                return tableRow({name, width, color, diff, value, sign, isCurrent});
+                return tableRow({name, width, color, cls, diff, value, sign, isCurrent});
             })).join('\n'));
 
             const diffTable = table({rows: tableRows});
@@ -305,7 +355,7 @@ const IntervalTooltipTemplateFactory = (tooltip, settings, templateSettings) => 
 
 function IntervalHighlightTooltip(xSettings) {
 
-    const Tooltip = (xSettings.Tooltip || Taucharts.api.plugins.get('tooltip'));
+    const Tooltip = ((xSettings && xSettings.Tooltip) || Taucharts.api.plugins.get('tooltip'));
 
     const settings = utils.defaults(
         xSettings || {},
@@ -331,7 +381,8 @@ function IntervalHighlightTooltip(xSettings) {
     };
 
     function getGroupedData(data: any[], screenModel: ScreenModel) {
-        const groupByX = utils.groupBy(data, (d) => screenModel.model.xi(d).toString());
+        const scaleX = screenModel.model.scaleX;
+        const groupByX = utils.groupBy(data, (d) => scaleX(d[scaleX.dim]).toString());
         const groupByXAndGroup = Object.keys(groupByX).reduce((map, x) => {
             map[x] = utils.groupBy(groupByX[x], (d) => screenModel.model.group(d));
             return map;
@@ -378,9 +429,13 @@ function IntervalHighlightTooltip(xSettings) {
         },
 
         getHighlightRange(data, unit: GrammarElement) {
-            const x = unit.screenModel.model.xi(data);
+            const flip = unit.screenModel.flip;
+            const scaleX = unit.screenModel.model.scaleX;
+            const x = scaleX(data[scaleX.dim]);
             const groupedData = this.unitsGroupedData.get(unit);
-            const allX = Object.keys(groupedData).map(Number).sort((a, b) => a - b);
+            const asc = ((a, b) => a - b);
+            const desc = ((a, b) => b - a);
+            const allX = Object.keys(groupedData).map(Number).sort(flip ? desc : asc);
             const xIndex = allX.indexOf(x);
             if (xIndex === 0) {
                 return [x, x];

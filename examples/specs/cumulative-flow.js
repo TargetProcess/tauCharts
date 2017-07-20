@@ -1,4 +1,5 @@
 dev.spec({
+    description: 'Cumulative flow diagram (stacked area with tooltip showing diff vs previous period)',
     type: 'stacked-area',
     'x': 'endDate',
     'y': 'count',
@@ -35,6 +36,73 @@ dev.spec({
     guide: {
         showGridLines: 'y',
         'x': {
+            timeInterval: 'week',
+            nice: false
+        },
+        'color': {
+            brewer: function (state) {
+                var states = getOrderedStates();
+                var stateOrder = states.indexOf(state);
+                var color = d3.scaleLinear()
+                    .domain(splitEvenly([0, states.length], 8))
+                    .range([
+                        d3.hsl(260, 0.5, 0.8),
+                        d3.hsl(300, 0.5, 0.8),
+                        d3.hsl(340, 0.5, 0.8),
+                        d3.hsl(20, 0.5, 0.8),
+                        d3.hsl(60, 0.5, 0.8),
+                        d3.hsl(100, 0.5, 0.8),
+                        d3.hsl(140, 0.5, 0.8),
+                        d3.hsl(180, 0.5, 0.8)
+                    ]);
+
+                return color(stateOrder);
+            }
+        }
+    },
+    settings: {
+        utcTime: true
+    }
+});
+
+dev.spec({
+    description: 'Diff by periods horizontally',
+    type: 'horizontal-stacked-bar',
+    'y': 'endDate',
+    'x': 'count',
+    'color': 'entityState',
+    dimensions: {
+        'endDate': {
+            type: 'measure',
+            scale: 'time'
+        },
+        'count': {
+            type: 'measure',
+            scale: 'linear'
+        },
+        'effort': {
+            type: 'measure',
+            scale: 'linear'
+        },
+        'entityState': {
+            type: 'category',
+            scale: 'ordinal',
+            order: getOrderedStates().reverse()
+        }
+    },
+    data: getCFDData(),
+    plugins: [
+        Taucharts.api.plugins.get('legend')(),
+        Taucharts.api.plugins.get('interval-highlight')({
+            fields: [
+                'entityStateName',
+                'entityStateID'
+            ]
+        })
+    ],
+    guide: {
+        showGridLines: 'x',
+        'y': {
             timeInterval: 'week',
             nice: false
         },

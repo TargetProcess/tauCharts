@@ -2,6 +2,7 @@
 @interval-highlight_positive: #4ca383;
 @interval-highlight_negative: #df6772;
 @interval-highlight_fill: #c4b3e6;
+@interval-highlight_stroke: mix(@bg-color, mix(@font-color, @interval-highlight_fill, 25%), 25%);
 
 .interval-highlight-tooltip {
 
@@ -56,7 +57,7 @@
             display: inline-flex;
             height: 100%;
             justify-content: center;
-            opacity: 0.8;
+            opacity: 0.6;
             position: absolute;
             z-index: 0;
         }
@@ -112,12 +113,12 @@
     }
     &__range-start {
         shape-rendering: crispEdges;
-        stroke: mix(@font-color, @bg-color, 25%);
-        stroke-dasharray: 1 2;
+        stroke: @interval-highlight_stroke;
+        stroke-dasharray: 1 1;
     }
     &__range-end {
         shape-rendering: crispEdges;
-        stroke: mix(@font-color, @bg-color, 25%);
+        stroke: @interval-highlight_stroke;
     }
     &__gradient-start {
         stop-color: @interval-highlight_fill;
@@ -128,3 +129,14 @@
         stop-opacity: 0.2;
     }
 }
+
+.generate-interval-highlight-colors(@n; @i: 1) when (@i =< @n) {
+
+    .interval-highlight-tooltip__item__bg.color@{n}-@{i} {
+        background-color: extract(@category-colors, @i);
+    }
+
+    .generate-interval-highlight-colors(@n; (@i + 1));
+}
+
+.generate-interval-highlight-colors(@list_category-colors);
