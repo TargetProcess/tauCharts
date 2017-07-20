@@ -8,22 +8,19 @@ import {
     PluginObject,
     ScreenModel,
 } from '../src/definitions';
-const {
-    utils,
-    pluginsSDK,
-    d3_animationInterceptor: createUpdateFunc
-} = Taucharts.api;
+
+const utils = Taucharts.api.utils;
 
 const ELEMENT_HIGHLIGHT = 'ELEMENT.INTERVAL_HIGHLIGHT';
 
-interface TimeDiffHighlightObject extends GrammarElement {
-    addInteraction(this: TimeDiffHighlightObject);
-    draw(this: TimeDiffHighlightObject);
-    _drawRange(this: TimeDiffHighlightObject, range: number[]);
+interface HighlightElement extends GrammarElement {
+    addInteraction(this: HighlightElement);
+    draw(this: HighlightElement);
+    _drawRange(this: HighlightElement, range: number[]);
     _container?: d3.Selection<Element, any, Element, any>;
 }
 
-const TimeDiffHighlight = <TimeDiffHighlightObject>{
+const IntervalHighlight = <HighlightElement>{
 
     draw() {
         const node = this.node();
@@ -111,7 +108,7 @@ const TimeDiffHighlight = <TimeDiffHighlightObject>{
 
             const RANGE_CLS = `${ROOT_CLS}__range`;
 
-            const rect = g.select(`.${RANGE_CLS}`)
+            const rect = g.select(`.${RANGE_CLS}`);
             const rectEnter = gEnter
                 .append('rect')
                 .attr('class', RANGE_CLS)
@@ -168,10 +165,10 @@ const TimeDiffHighlight = <TimeDiffHighlightObject>{
 
 Taucharts.api.unitsRegistry.reg(
     ELEMENT_HIGHLIGHT,
-    TimeDiffHighlight,
+    IntervalHighlight,
     'ELEMENT.GENERIC.CARTESIAN');
 
-function TimeDiffTooltip(xSettings) {
+function IntervalHighlightTooltip(xSettings) {
 
     const settings = utils.defaults(xSettings || {}, {
         fields: null as string[]
@@ -299,9 +296,6 @@ function TimeDiffTooltip(xSettings) {
                     .reduce((arr, g) => arr.concat(groupedData[x][g]), [])
                     .sort((a, b) => colorsIndices[a[scaleColor.dim]] - colorsIndices[b[scaleColor.dim]]);
                 const maxV = Math.max(...neighbors.map((d) => d[scaleY.dim]));
-                if (x < prevX) {
-                    throw new Error('Bug')
-                }
 
                 const tableRows = (() => [tableHeader({
                     groupLabel: tooltip.getFieldLabel(scaleColor.dim),
@@ -313,7 +307,9 @@ function TimeDiffTooltip(xSettings) {
                     const name = tooltip.getFieldLabel(d[scaleColor.dim]);
                     const width = (v / maxV);
                     const g = unit.screenModel.model.group(d);
-                    const prevV = Number.isFinite(prevX) && groupedData[prevX][g] ? groupedData[prevX][g][0][scaleY.dim] : null;
+                    const prevV = (Number.isFinite(prevX) && groupedData[prevX][g] ?
+                        groupedData[prevX][g][0][scaleY.dim] :
+                        null);
                     const dv = Number.isFinite(prevV) ? (v - prevV) : 0;
                     const diff = format(Math.abs(dv));
                     const sign = Math.sign(dv);
@@ -349,7 +345,11 @@ function TimeDiffTooltip(xSettings) {
         return instance;
     };
 
-    interface GroupedData {[x: string]: {[g: string]: any[]}};
+    interface GroupedData {
+        [x: string]: {
+            [g: string]: any[];
+        };
+    }
 
     function getGroupedData(data: any[], screenModel: ScreenModel) {
         const groupByX = utils.groupBy(data, (d) => screenModel.model.xi(d).toString());
@@ -415,6 +415,6 @@ function TimeDiffTooltip(xSettings) {
         tooltipExt);
 }
 
-Taucharts.api.plugins.add('time-diff-tooltip', TimeDiffTooltip);
+Taucharts.api.plugins.add('interval-highlight', IntervalHighlightTooltip);
 
-export default TimeDiffTooltip;
+export default IntervalHighlightTooltip;

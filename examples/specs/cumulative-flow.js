@@ -25,7 +25,7 @@ dev.spec({
     data: getCFDData(),
     plugins: [
         Taucharts.api.plugins.get('legend')(),
-        Taucharts.api.plugins.get('time-diff-tooltip')({
+        Taucharts.api.plugins.get('interval-highlight')({
             fields: [
                 'entityStateName',
                 'entityStateId'
