@@ -257,17 +257,28 @@ const IntervalTooltipTemplateFactory = (tooltip, tooltipSettings, settings) => {
     ].join('\n')));
 
     // Todo: If there are negative values, color bar should start from zero
-    const tableRow = (settings.tableRowTemplate || (({name, width, color, cls, diff, value, sign, isCurrent}) => [
+    const tableRow = (settings.tableRowTemplate || (({name, diff, value, sign, isCurrent, bar}) => [
         `<div class="${ROW_CLS}${isCurrent ? ` ${ROW_CLS}_highlighted` : ''}">`,
-        '  <span',
-        `      class="${ROW_CLS}__bg${cls ? ` ${cls}` : ''}"`,
-        `      style="width: ${width * 100}%; background-color: ${color};"`,
-        `      ></span>`,
+        `  ${bar()}`,
         `  <span class="${ROW_CLS}__text">${name}</span>`,
         `  <span class="${ROW_CLS}__value">${value}</span>`,
         `  ${arrow({diff, sign})}`,
         '</div>'
     ].join('\n')));
+
+    const valueBar = (settings.valueBarTemplate || (({min, max, v, color, cls}) => {
+        min = Math.min(min, 0);
+        max = Math.max(0, max);
+        const range = (max - min);
+        const left = ((v < 0 ? v - min : -min) / range);
+        const width = ((v < 0 ? -v : v) / range);
+        return [
+            '<span',
+            `    class="${ROW_CLS}__bg${cls ? ` ${cls}` : ''}"`,
+            `    style="left: ${left * 100}%; width: ${width * 100}%; background-color: ${color};"`,
+            `    ></span>`,
+        ].join('\n');
+    }));
 
     const arrow = (settings.arrowTemplate || (({diff, sign}) => {
         const arrowCls = `${ROW_CLS}__arrow`;
@@ -330,7 +341,9 @@ const IntervalTooltipTemplateFactory = (tooltip, tooltipSettings, settings) => {
             const neighbors = Object.keys(groupedData[x])
                 .reduce((arr, g) => arr.concat(groupedData[x][g]), [])
                 .sort(unit.config.stack ? sortByColor : sortByY);
-            const maxV = Math.max(...neighbors.map((d) => d[scaleY.dim]));
+            const vals = neighbors.map((d) => d[scaleY.dim]);
+            const minV = Math.min(...vals);
+            const maxV = Math.max(...vals);
 
             const header = tableHeader({
                 groupLabel: tooltip.getFieldLabel(scaleColor.dim),
@@ -359,7 +372,20 @@ const IntervalTooltipTemplateFactory = (tooltip, tooltipSettings, settings) => {
 
                 const isCurrent = (d === data);
 
-                return tableRow({name, width, color, cls, diff, value, sign, isCurrent});
+                return tableRow({
+                    name,
+                    diff,
+                    value,
+                    sign,
+                    isCurrent,
+                    bar: () => valueBar({
+                        min: minV,
+                        max: maxV,
+                        v,
+                        color,
+                        cls,
+                    })
+                });
             }).join('\n');
 
             const body = tableBody({rows: () => tableRows});
@@ -395,16 +421,11 @@ const IntervalTooltipTemplateFactory = (tooltip, tooltipSettings, settings) => {
             }
 
             if (h.bottom > b.bottom) {
-                // Scroll highlighted item
-                // const dy = ((h.bottom + h.top) / 2 - b.bottom + (b.bottom - b.top) / 2);
+                // Scroll to highlighted item
                 const dy = ((h.bottom - b.bottom) + h.height);
                 const limitDy = (c.bottom - b.bottom);
-                // content.style.position = 'relative';
-                // content.style.top = `${-Math.min(dy, limitDy)}px`;
                 content.style.transform = `translateY(${-Math.min(dy, limitDy)}px)`;
             }
-            // if(table.getBoundingClientRect().)
-            // highlighted.scrollIntoView();
 
             settings.didMount(tooltip);
         }
