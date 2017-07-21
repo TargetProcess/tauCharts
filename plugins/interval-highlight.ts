@@ -248,6 +248,7 @@ const IntervalTooltipTemplateFactory = (tooltip, tooltipSettings, settings) => {
         '</div>'
     ].join('\n')));
 
+    // Todo: If there are negative values, color bar should start from zero
     const tableRow = (settings.tableRowTemplate || (({name, width, color, cls, diff, value, sign, isCurrent}) => [
         `<div class="${ROW_CLS}${isCurrent ? ` ${ROW_CLS}_highlighted` : ''}">`,
         '  <span',
@@ -289,9 +290,7 @@ const IntervalTooltipTemplateFactory = (tooltip, tooltipSettings, settings) => {
                         (field !== scaleY.dim)
                     );
                 })
-                .concat(scaleX.dim);
-
-            const fieldsRows = fields
+                .concat(scaleX.dim) // Place X field at end
                 .filter((field) => {
                     const tokens = field.split('.');
                     const matchX = ((tokens.length === 2) && tooltip.skipInfo[tokens[0]]);
@@ -308,13 +307,21 @@ const IntervalTooltipTemplateFactory = (tooltip, tooltipSettings, settings) => {
 
             const groupedData = tooltip.unitsGroupedData.get(unit);
             const [prevX, x] = tooltip.getHighlightRange(data, unit);
-            const colorsIndices = scaleColor.domain().slice().reverse().reduce((map, c, i) => {
-                map[c] = i;
-                return map;
-            }, {} as {[c: string]: number});
+
+            // Sort stacked elements by color, other by Y
+            const sortByColor = (() => {
+                const ci = scaleColor.domain().slice().reverse().reduce((map, c, i) => {
+                    map[c] = i;
+                    return map;
+                }, {} as {[c: string]: number});
+                return ((a, b) => ci[a[scaleColor.dim]] - ci[b[scaleColor.dim]]);
+            })();
+            const sortByY = (unit.config.flip ?
+                ((a, b) => scaleY(b[scaleY.dim]) - scaleY(a[scaleY.dim])) :
+                ((a, b) => scaleY(a[scaleY.dim]) - scaleY(b[scaleY.dim])));
             const neighbors = Object.keys(groupedData[x])
                 .reduce((arr, g) => arr.concat(groupedData[x][g]), [])
-                .sort((a, b) => colorsIndices[a[scaleColor.dim]] - colorsIndices[b[scaleColor.dim]]);
+                .sort(unit.config.stack ? sortByColor : sortByY);
             const maxV = Math.max(...neighbors.map((d) => d[scaleY.dim]));
 
             const tableRows = (() => [tableHeader({
@@ -347,7 +354,13 @@ const IntervalTooltipTemplateFactory = (tooltip, tooltipSettings, settings) => {
 
             const diffTable = table({rows: tableRows});
 
-            return root({content: () => [fieldsRows, diffTable].join('\n'), buttons});
+            return root({
+                content: () => [
+                    fields,
+                    diffTable
+                ].join('\n'),
+                buttons
+            });
         },
 
         didMount(tooltip) {
@@ -400,19 +413,25 @@ function IntervalHighlightTooltip(xSettings) {
         },
 
         onRender(chart) {
-            const highlights = chart.select((u) => u.config.type === ELEMENT_HIGHLIGHT);
             const units = chart.select((u) => {
                 return (
                     (u.config.type.indexOf('ELEMENT.') === 0) &&
                     (u.config.type !== ELEMENT_HIGHLIGHT)
                 );
             });
+            const highlights = chart.select((u) => u.config.type === ELEMENT_HIGHLIGHT);
+            const highlightsMap = highlights.reduce((map, h) => {
+                map[(h.config as any).highlightId] = h;
+                return map;
+            }, {});
             units.forEach((u) => {
-                this.unitsGroupedData.set(u, getGroupedData(u.data(), u.screenModel));
+                const data = u.data();
+                this.unitsGroupedData.set(u, getGroupedData(data, u.screenModel));
                 u.on('data-hover', (sender, e) => {
                     highlights.forEach((h) => {
                         // Todo: Speed-up by direct linking.
-                        const hasData = e.data ? h.data().some((d) => d === e.data) : false;
+                        const unitHighlight = highlightsMap[(u.config as any).highlightId];
+                        const hasData = e.data ? (unitHighlight === h) : false;
                         h.fire('interval-highlight', hasData ? this.getHighlightRange(e.data, u) : null);
                     });
                 });
@@ -421,6 +440,7 @@ function IntervalHighlightTooltip(xSettings) {
         },
 
         onSpecReady(chart, specRef) {
+            var highlightsCount = 0;
             chart.traverseSpec(specRef, (unit, parentUnit) => {
                 if (unit.type.indexOf('ELEMENT.') !== 0) {
                     return;
@@ -429,6 +449,10 @@ function IntervalHighlightTooltip(xSettings) {
                 const over = JSON.parse(JSON.stringify(unit));
                 over.type = ELEMENT_HIGHLIGHT;
                 over.namespace = 'highlight';
+
+                const id = ++highlightsCount;
+                (unit as any).highlightId = id;
+                (over as any).highlightId = id;
 
                 // Place highlight under element
                 const index = parentUnit.units.indexOf(unit);
@@ -445,6 +469,10 @@ function IntervalHighlightTooltip(xSettings) {
             const desc = ((a, b) => b - a);
             const allX = Object.keys(groupedData).map(Number).sort(flip ? desc : asc);
             const xIndex = allX.indexOf(x);
+            if (xIndex < 0) {
+                // Todo: determine why this happens (highlighted data is out of group)
+                return [x, x];
+            }
             if (xIndex === 0) {
                 return [x, x];
             }
