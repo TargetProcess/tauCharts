@@ -483,20 +483,21 @@ function IntervalHighlightTooltip(xSettings) {
                 );
             });
             const highlights = chart.select((u) => u.config.type === ELEMENT_HIGHLIGHT);
-            const highlightsMap = highlights.reduce((map, h) => {
-                map[(h.config as any).highlightId] = h;
+
+            // Link highlights with units
+            const highlightsMap = highlights.reduce((map, h, i) => {
+                map[i] = h;
                 return map;
             }, {});
-            units.forEach((u) => {
+
+            units.forEach((u, i) => {
                 const data = u.data();
                 this.unitsGroupedData.set(u, getGroupedData(data, u.screenModel));
                 u.on('data-hover', (sender, e) => {
-                    highlights.forEach((h) => {
-                        // Todo: Speed-up by direct linking.
-                        const unitHighlight = highlightsMap[(u.config as any).highlightId];
-                        const hasData = e.data ? (unitHighlight === h) : false;
-                        h.fire('interval-highlight', hasData ? this.getHighlightRange(e.data, u) : null);
-                    });
+                    const highlight = highlightsMap[i];
+                    const isTarget = (e.unit && e.unit === u);
+                    const range = (isTarget ? this.getHighlightRange(e.data, e.unit) : null);
+                    highlight.fire('interval-highlight', range);
                 });
             });
 
@@ -512,10 +513,6 @@ function IntervalHighlightTooltip(xSettings) {
                 const over = JSON.parse(JSON.stringify(unit));
                 over.type = ELEMENT_HIGHLIGHT;
                 over.namespace = 'highlight';
-
-                const id = ++highlightsCount;
-                (unit as any).highlightId = id;
-                (over as any).highlightId = id;
 
                 // Place highlight under element
                 const index = parentUnit.units.indexOf(unit);
