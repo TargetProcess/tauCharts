@@ -280,7 +280,7 @@ function Tooltip(xSettings: TooltipSettings) {
                                     x: (e.event.clientX - bodyRect.left),
                                     y: (e.event.clientY - bodyRect.top)
                                 },
-                                unit: sender
+                                unit: e.unit
                             } : null)
                         });
                     });
@@ -294,7 +294,7 @@ function Tooltip(xSettings: TooltipSettings) {
                                     x: (e.event.clientX - bodyRect.left),
                                     y: (e.event.clientY - bodyRect.top)
                                 },
-                                unit: sender
+                                unit: e.unit
                             },
                             isStuck: true
                         } : {

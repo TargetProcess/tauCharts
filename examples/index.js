@@ -96,6 +96,18 @@
                 '../dist/plugins/annotations.css',
                 '../dist/plugins/quick-filter.css'
             ]
+        },
+        'interval-highlight': function (spec) {
+            var fields = [];
+            var addField = function (scale) {
+                if (spec[scale]) {
+                    fields = fields.concat(spec[scale]);
+                }
+            };
+            ['x', 'y', 'color', 'size', 'id', 'split'].forEach(addField);
+            return {
+                fields: fields
+            };
         }
     };
 
@@ -255,6 +267,9 @@
                 s.plugins.splice(0);
                 settings.plugins.forEach(function (p) {
                     var config = pluginConfigs[p];
+                    if (typeof config === 'function') {
+                        config = config(s);
+                    }
                     s.plugins.push(Taucharts.api.plugins.get(p)(config));
                 });
             }

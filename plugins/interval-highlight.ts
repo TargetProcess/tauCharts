@@ -60,8 +60,10 @@ const IntervalHighlight = <HighlightElement>{
             var svg = container.node();
             while ((svg = svg.parentElement).tagName !== 'svg') {}
 
+            const id = `${DEFS_CLS}__${config.uid}`;
+
             const defs = d3Selection.select(svg)
-                .selectAll(`.${DEFS_CLS}`)
+                .selectAll(`#${id}`)
                 .data(range ? [1] : []);
 
             defs.exit().remove();
@@ -69,6 +71,7 @@ const IntervalHighlight = <HighlightElement>{
             const defsEnter = defs.enter()
                 .append('defs')
                 .attr('class', DEFS_CLS)
+                .attr('id', id)
                 .append('linearGradient')
                 .attr('id', GRADIENT_ID)
                 .attr('x1', '0%')
@@ -212,23 +215,23 @@ Taucharts.api.unitsRegistry.reg(
     IntervalHighlight,
     'ELEMENT.GENERIC.CARTESIAN');
 
-const IntervalTooltipTemplateFactory = (tooltip, settings, templateSettings) => {
+const IntervalTooltipTemplateFactory = (tooltip, tooltipSettings, settings) => {
 
     const TOOLTIP_CLS = 'graphical-report__tooltip';
     const HL_TOOLTIP_CLS = 'interval-highlight-tooltip';
 
-    const root = templateSettings.rootTemplate;
+    const root = settings.rootTemplate;
 
-    const item = (templateSettings.itemTemplate || (({label, value, isXDim}) => [
+    const item = (settings.itemTemplate || (({label, value, isXDim}) => [
         `<div class="${TOOLTIP_CLS}__list__item${isXDim ? ` ${HL_TOOLTIP_CLS}__header` : ''}">`,
         `  <div class="${TOOLTIP_CLS}__list__elem">${label}</div>`,
         `  <div class="${TOOLTIP_CLS}__list__elem">${value}</div>`,
         '</div>'
     ].join('\n')));
 
-    const buttons = templateSettings.buttonsTemplate;
+    const buttons = settings.buttonsTemplate;
 
-    const table = (templateSettings.tableTemplate || (({rows}) => [
+    const table = (settings.tableTemplate || (({rows}) => [
         `<div class="${HL_TOOLTIP_CLS}__table" cellpadding="0" cellspacing="0" border="0">`,
         rows(),
         '</div>'
@@ -237,7 +240,7 @@ const IntervalTooltipTemplateFactory = (tooltip, settings, templateSettings) => 
     const ROW_CLS = `${HL_TOOLTIP_CLS}__item`;
     const HEADER_CLS = `${HL_TOOLTIP_CLS}__header`;
 
-    const tableHeader = (templateSettings.tableHeaderTemplate || (({groupLabel, valueLabel}) => [
+    const tableHeader = (settings.tableHeaderTemplate || (({groupLabel, valueLabel}) => [
         `<div class="${HEADER_CLS}">`,
         `  <span class="${HEADER_CLS}__text">${groupLabel}</span>`,
         `  <span class="${HEADER_CLS}__value">${valueLabel}</span>`,
@@ -245,7 +248,7 @@ const IntervalTooltipTemplateFactory = (tooltip, settings, templateSettings) => 
         '</div>'
     ].join('\n')));
 
-    const tableRow = (templateSettings.tableRowTemplate || (({name, width, color, cls, diff, value, sign, isCurrent}) => [
+    const tableRow = (settings.tableRowTemplate || (({name, width, color, cls, diff, value, sign, isCurrent}) => [
         `<div class="${ROW_CLS}${isCurrent ? ` ${ROW_CLS}_highlighted` : ''}">`,
         '  <span',
         `      class="${ROW_CLS}__bg${cls ? ` ${cls}` : ''}"`,
@@ -257,7 +260,7 @@ const IntervalTooltipTemplateFactory = (tooltip, settings, templateSettings) => 
         '</div>'
     ].join('\n')));
 
-    const arrow = (templateSettings.arrowTemplate || (({diff, sign}) => {
+    const arrow = (settings.arrowTemplate || (({diff, sign}) => {
         const arrowCls = `${ROW_CLS}__arrow`;
         const arrowSignCls = `${arrowCls}_${sign > 0 ? 'positive' : 'negative'}`;
         const arrowSymbol = (sign > 0 ? '&#x25B2;' : sign < 0 ? '&#x25BC;' : '');
@@ -348,7 +351,7 @@ const IntervalTooltipTemplateFactory = (tooltip, settings, templateSettings) => 
         },
 
         didMount(tooltip) {
-            templateSettings.didMount(tooltip);
+            settings.didMount(tooltip);
         }
     };
 };
@@ -398,7 +401,12 @@ function IntervalHighlightTooltip(xSettings) {
 
         onRender(chart) {
             const highlights = chart.select((u) => u.config.type === ELEMENT_HIGHLIGHT);
-            const units = chart.select((u) => u.config.type.indexOf('ELEMENT.') === 0);
+            const units = chart.select((u) => {
+                return (
+                    (u.config.type.indexOf('ELEMENT.') === 0) &&
+                    (u.config.type !== ELEMENT_HIGHLIGHT)
+                );
+            });
             units.forEach((u) => {
                 this.unitsGroupedData.set(u, getGroupedData(u.data(), u.screenModel));
                 u.on('data-hover', (sender, e) => {
