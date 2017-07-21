@@ -231,9 +231,9 @@ const IntervalTooltipTemplateFactory = (tooltip, tooltipSettings, settings) => {
 
     const buttons = settings.buttonsTemplate;
 
-    const table = (settings.tableTemplate || (({rows}) => [
-        `<div class="${HL_TOOLTIP_CLS}__table" cellpadding="0" cellspacing="0" border="0">`,
-        rows(),
+    const table = (settings.tableTemplate || (({content}) => [
+        `<div class="${HL_TOOLTIP_CLS}__table">`,
+        content(),
         '</div>'
     ].join('\n')));
 
@@ -246,6 +246,14 @@ const IntervalTooltipTemplateFactory = (tooltip, tooltipSettings, settings) => {
         `  <span class="${HEADER_CLS}__value">${valueLabel}</span>`,
         `  <span class="${HEADER_CLS}__arrow">&#x25BC;&#x25B2;</span>`,
         '</div>'
+    ].join('\n')));
+
+    const tableBody = (settings.tableBodyTemplate || (({rows}) => [
+        `<div class="${HL_TOOLTIP_CLS}__body">`,
+        `<div class="${HL_TOOLTIP_CLS}__body__content">`,
+        rows(),
+        `</div>`,
+        `</div>`
     ].join('\n')));
 
     // Todo: If there are negative values, color bar should start from zero
@@ -324,10 +332,12 @@ const IntervalTooltipTemplateFactory = (tooltip, tooltipSettings, settings) => {
                 .sort(unit.config.stack ? sortByColor : sortByY);
             const maxV = Math.max(...neighbors.map((d) => d[scaleY.dim]));
 
-            const tableRows = (() => [tableHeader({
+            const header = tableHeader({
                 groupLabel: tooltip.getFieldLabel(scaleColor.dim),
                 valueLabel: tooltip.getFieldLabel(scaleY.dim)
-            })].concat(neighbors.map((d) => {
+            });
+
+            const tableRows = neighbors.map((d) => {
 
                 const name = tooltip.getFieldLabel(d[scaleColor.dim]);
 
@@ -350,9 +360,16 @@ const IntervalTooltipTemplateFactory = (tooltip, tooltipSettings, settings) => {
                 const isCurrent = (d === data);
 
                 return tableRow({name, width, color, cls, diff, value, sign, isCurrent});
-            })).join('\n'));
+            }).join('\n');
 
-            const diffTable = table({rows: tableRows});
+            const body = tableBody({rows: () => tableRows});
+
+            const diffTable = table({
+                content: () => [
+                    header,
+                    body
+                ].join('\n')
+            });
 
             return root({
                 content: () => [
@@ -364,6 +381,31 @@ const IntervalTooltipTemplateFactory = (tooltip, tooltipSettings, settings) => {
         },
 
         didMount(tooltip) {
+            const node = tooltip.getDomNode() as HTMLElement;
+            const body = node.querySelector(`.${HL_TOOLTIP_CLS}__body`) as HTMLElement;
+            const content = node.querySelector(`.${HL_TOOLTIP_CLS}__body__content`) as HTMLElement;
+            const highlighted = node.querySelector(`.${ROW_CLS}_highlighted`) as HTMLElement;
+
+            const b = body.getBoundingClientRect();
+            const c = content.getBoundingClientRect();
+            const h = highlighted.getBoundingClientRect();
+
+            if (c.bottom > b.bottom) {
+                body.classList.add(`${HL_TOOLTIP_CLS}__body_overflow`);
+            }
+
+            if (h.bottom > b.bottom) {
+                // Scroll highlighted item
+                // const dy = ((h.bottom + h.top) / 2 - b.bottom + (b.bottom - b.top) / 2);
+                const dy = ((h.bottom - b.bottom) + h.height);
+                const limitDy = (c.bottom - b.bottom);
+                // content.style.position = 'relative';
+                // content.style.top = `${-Math.min(dy, limitDy)}px`;
+                content.style.transform = `translateY(${-Math.min(dy, limitDy)}px)`;
+            }
+            // if(table.getBoundingClientRect().)
+            // highlighted.scrollIntoView();
+
             settings.didMount(tooltip);
         }
     };
