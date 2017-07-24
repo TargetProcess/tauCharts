@@ -14,6 +14,7 @@
             'bar-labels',
             'big-data',
             'category-labels-overflow',
+            'cumulative-flow',
             'horizontal-scroll',
             'legend-flip',
             'linear-bars',
@@ -28,7 +29,7 @@
             'ex-',
             range(0, 31),
             range(40, 48),
-            range(50, 55)
+            range(50, 54)
         ),
         'datasets/': [
             'cars',
@@ -72,6 +73,7 @@
         'annotations',
         'box-whiskers',
         'crosshair',
+        'diff-tooltip',
         'export-to',
         'floating-axes',
         'layers',
@@ -85,6 +87,18 @@
     var LAZY_RENDERING = true;
 
     var pluginConfigs = {
+        'diff-tooltip': function (spec) {
+            var fields = [];
+            var addField = function (scale) {
+                if (spec[scale]) {
+                    fields = fields.concat(spec[scale]);
+                }
+            };
+            ['x', 'y', 'color', 'size', 'id', 'split'].forEach(addField);
+            return {
+                fields: fields
+            };
+        },
         'export-to': {
             cssPaths: [
                 '../dist/taucharts.css',
@@ -197,7 +211,7 @@
                 settings.width ? ('  width: ' + settings.width + ';') : null,
                 settings.height ? ('  height: ' + settings.height + ';') : null,
                 '}'
-            ].filter(function (d) { return Boolean(d); }).join('\n');
+            ].filter(function (d) {return Boolean(d);}).join('\n');
 
         //
         // Filter specs
@@ -211,7 +225,9 @@
         if (settings.path) {
             var regex = new RegExp(settings.path.replace('\\', '\\\\'), 'i');
             specs = specs.filter(function (s) {
-                return s.filePath.match(regex);
+                return (
+                    s.filePath.match(regex) ||
+                    (s.description && s.description.match(regex)));
             });
         }
         this._reportFilterResult(specs.length, this._specs.length);
@@ -230,7 +246,7 @@
                 '</div>'
             ], {
                     name: s.filePath || i,
-                    description: ('type: ' + s.type)
+                    description: s.description || ('type: ' + s.type)
                 });
             container.appendChild(block);
             var target = block.querySelector('.sample__chart');
@@ -251,6 +267,9 @@
                 s.plugins.splice(0);
                 settings.plugins.forEach(function (p) {
                     var config = pluginConfigs[p];
+                    if (typeof config === 'function') {
+                        config = config(s);
+                    }
                     s.plugins.push(Taucharts.api.plugins.get(p)(config));
                 });
             }

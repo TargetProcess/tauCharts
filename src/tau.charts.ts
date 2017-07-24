@@ -87,7 +87,7 @@ var api = {
         },
         get: function (name) {
             return plugins[name] || ((x) => {
-                throw new Error(`${x} plugin is not defined`);
+                throw new Error(`"${name}" plugin is not defined`);
             });
         }
     },
@@ -223,7 +223,7 @@ api.unitsRegistry
     .reg('COORDS.RECT', Cartesian)
     .reg('COORDS.MAP', GeoMap)
     .reg('COORDS.PARALLEL', Parallel)
-    .reg('ELEMENT.GENERIC.CARTESIAN', GenericCartesian)
+    .reg('ELEMENT.GENERIC.CARTESIAN', GenericCartesian as any)
     .reg('ELEMENT.POINT', Point, 'ELEMENT.GENERIC.CARTESIAN')
     .reg('ELEMENT.LINE', Line, 'ELEMENT.GENERIC.CARTESIAN')
     .reg('ELEMENT.PATH', Path, 'ELEMENT.GENERIC.CARTESIAN')

@@ -22,6 +22,6 @@ module.exports = (gulp, {connect}) => {
             });
             gulp.watch(['src/**/*.js', 'src/**/*.ts'], ['debug-js']);
             gulp.watch('less/**/*.less', ['debug-css']);
-            gulp.watch('plugins/**/*.js', ['debug-plugins-js']);
+            gulp.watch(['plugins/**/*.js', 'plugins/**/*.ts'], ['debug-plugins-js']);
         });
 };

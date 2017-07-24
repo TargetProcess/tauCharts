@@ -1,6 +1,25 @@
 import {FormatterRegistry} from './formatter-registry';
 import {Unit} from './plugins-sdk/unit';
 import {Spec} from './plugins-sdk/spec';
+import {
+    GPLSpec,
+    Unit as SpecUnit,
+    ScaleGuide,
+    AxisLabelGuide,
+} from './definitions';
+
+export interface DimInfo {
+    label: string;
+    format: (x, nullAlias?) => string;
+    nullAlias: string;
+    tickLabel: string;
+    isComplexField?: boolean;
+    parentField?: string;
+}
+
+export interface DimMap {
+    [dim: string]: DimInfo;
+}
 
 var customTokens = {};
 
@@ -36,9 +55,13 @@ class PluginsSDK {
         }
     }
 
-    static traverseSpec(spec, iterator) {
+    static traverseSpec(spec: GPLSpec, iterator: (node: SpecUnit, parent: SpecUnit) => void) {
 
-        var traverse = (node, fnIterator, parentNode) => {
+        const traverse = (
+            node: SpecUnit,
+            fnIterator: (node: SpecUnit, parent: SpecUnit) => void,
+            parentNode: SpecUnit
+        ) => {
             fnIterator(node, parentNode);
             (node.units || []).map((x) => traverse(x, fnIterator, node));
         };
@@ -46,22 +69,33 @@ class PluginsSDK {
         traverse(spec.unit, iterator, null);
     }
 
-    static extractFieldsFormatInfo(spec) {
+    static extractFieldsFormatInfo(spec: GPLSpec) {
 
         var specScales = spec.scales;
 
-        var isEmptyScale = function (key) {
+        var isEmptyScale = function (key: string) {
             return !specScales[key].dim;
         };
 
-        var fillSlot = function (memoRef, config, key) {
+        interface RawDimInfo {
+            label: string[];
+            format: string[];
+            nullAlias: string[];
+            tickLabel: string[];
+        }
+
+        interface RawDimMap {
+            [dim: string]: RawDimInfo;
+        }
+
+        var fillSlot = function (memoRef: RawDimMap, config: SpecUnit, key: string) {
             var GUIDE = config.guide || {};
             var scale = specScales[config[key]];
-            var guide = GUIDE[key] || {};
+            var guide: ScaleGuide = GUIDE[key] || {};
             memoRef[scale.dim] = memoRef[scale.dim] || {label: [], format: [], nullAlias:[], tickLabel:[]};
 
             var label = guide.label;
-            var guideLabel = (guide.label || {});
+            var guideLabel = (guide.label || {}) as AxisLabelGuide;
             memoRef[scale.dim].label.push((typeof label === 'string') ?
                     (label) :
                     (guideLabel._original_text || guideLabel.text)
@@ -76,7 +110,7 @@ class PluginsSDK {
             memoRef[scale.dim].tickLabel.push(guide.tickLabel);
         };
 
-        var configs = [];
+        var configs: SpecUnit[] = [];
         PluginsSDK.traverseSpec(spec, function (node) {
             configs.push(node);
         });
@@ -105,30 +139,29 @@ class PluginsSDK {
 
             return memo;
 
-        }, {});
+        }, {} as RawDimMap);
 
-        var choiceRule = function (arr, defaultValue) {
+        var choiceRule = function (arr: string[], defaultValue: string) {
             return arr.filter((x) => x)[0] || defaultValue;
         };
 
         return Object
             .keys(summary)
             .reduce(function (memo, k) {
-                memo[k].label = choiceRule(memo[k].label, k);
-                memo[k].format = choiceRule(memo[k].format, null);
-                memo[k].nullAlias = choiceRule(memo[k].nullAlias, ('No ' + memo[k].label));
-                memo[k].tickLabel = choiceRule(memo[k].tickLabel, null);
+                memo[k] = {} as DimInfo;
+                memo[k].label = choiceRule(summary[k].label, k);
+                const chosenFormat = choiceRule(summary[k].format, null);
+                memo[k].nullAlias = choiceRule(summary[k].nullAlias, (`No ${memo[k].label}`));
+                memo[k].tickLabel = choiceRule(summary[k].tickLabel, null);
 
                 // very special case for dates
-                var format = (memo[k].format === 'x-time-auto') ?
+                const format = (chosenFormat === 'x-time-auto') ?
                     (spec.settings.utcTime ? 'day-utc' : 'day') :
-                    memo[k].format;
+                    chosenFormat;
                 var nonVal = memo[k].nullAlias;
                 var fnForm = format ?
                     (FormatterRegistry.get(format, nonVal)) :
-                    (function (raw) {
-                        return (raw === null) ? nonVal : raw;
-                    });
+                    ((raw) => (raw === null) ? nonVal : String(raw));
 
                 memo[k].format = fnForm;
 
@@ -149,7 +182,7 @@ class PluginsSDK {
                 }
 
                 return memo;
-            }, summary);
+            }, {} as DimMap);
     }
 
     static tokens() {

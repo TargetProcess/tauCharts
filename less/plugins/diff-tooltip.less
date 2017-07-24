@@ -1,0 +1,164 @@
+@import "../variable";
+@diff-tooltip_positive: #4ca383;
+@diff-tooltip_negative: #df6772;
+@diff-tooltip_row-bg: rgba(241, 233, 255, 0.5);
+@diff-tooltip_row-border: #877aa1;
+@interval-highlight_fill: #c4b3e6;
+@interval-highlight_stroke: #b8aecb;
+
+.diff-tooltip {
+
+    &__table {
+        border-top: 1px solid fade(@font-color, 20%);
+        margin-top: 5px;
+        padding-top: 5px;
+        width: ~"calc(100% + 15px)";
+    }
+
+    &__header {
+        display: flex;
+        font-weight: 600;
+        padding: 2px 0;
+
+        &__text {
+            align-items: center;
+            display: inline-flex;
+            flex: 1 1 auto;
+            justify-content: flex-start;
+            text-align: center;
+            width: 60%;
+        }
+
+        &__value {
+            align-items: center;
+            display: inline-flex;
+            flex: 1 1 auto;
+            justify-content: flex-end;
+            text-align: center;
+            width: 40%;
+        }
+
+        &__arrow {
+            align-items: center;
+            display: inline-flex;
+            flex: 1 1 auto;
+            font-size: 75%;
+            justify-content: flex-start;
+            padding-left: 2px;
+            text-align: center;
+            visibility: hidden; // Hide arrow header
+            width: 28px;
+        }
+    }
+
+    &__body {
+        max-height: 250px;
+        overflow: hidden;
+        padding: 1px; // Fix to make highlighted border visible
+        padding-right: 30px; // Padding for up/down arrow
+
+        &__content {
+            padding-bottom: 1px; // Fix to make last highlighted border visible
+        }
+    }
+
+    &__item {
+        display: flex;
+        position: relative;
+
+        &_highlighted {
+            background-color: @diff-tooltip_row-bg;
+            box-shadow: 0 0 0 1px @diff-tooltip_row-border;
+            z-index: 1;
+        }
+
+        &__bg {
+            align-items: center;
+            display: inline-flex;
+            height: 100%;
+            justify-content: center;
+            opacity: 0.6;
+            position: absolute;
+            z-index: 0;
+        }
+
+        &__text {
+            align-items: center;
+            display: inline-flex;
+            flex: 6;
+            justify-content: flex-start;
+            padding: 2px 4px;
+            position: relative;
+            text-align: left;
+            white-space: nowrap;
+            width: 100%;
+            z-index: 1;
+        }
+
+        &__value {
+            align-items: center;
+            display: inline-flex;
+            flex: 4;
+            justify-content: flex-end;
+            padding: 2px 4px;
+            position: relative;
+            text-align: right;
+            width: 80px;
+            z-index: 1;
+        }
+
+        &__arrow {
+            align-items: center;
+            display: inline-flex;
+            flex: 4;
+            justify-content: flex-start;
+            left: 100%;
+            height: 100%;
+            padding-left: 4px;
+            position: absolute;
+            width: 80px;
+
+            &_positive {
+                color: @diff-tooltip_positive;
+            }
+
+            &_negative {
+                color: @diff-tooltip_negative;
+            }
+        }
+    }
+}
+
+.interval-highlight {
+    &__range {
+        shape-rendering: crispEdges;
+    }
+    &__range-start {
+        shape-rendering: crispEdges;
+        stroke: @interval-highlight_stroke;
+        stroke-dasharray: 1 2;
+    }
+    &__range-end {
+        shape-rendering: crispEdges;
+        stroke: @interval-highlight_stroke;
+    }
+    &__gradient-start {
+        stop-color: @interval-highlight_fill;
+        stop-opacity: 0.02;
+    }
+    &__gradient-end {
+        stop-color: @interval-highlight_fill;
+        stop-opacity: 0.2;
+    }
+}
+
+.generate-diff-tooltip-colors(@n; @i: 1) when (@i =< @n) {
+
+    .diff-tooltip__item__bg.color@{n}-@{i} {
+        background-color: extract(@category-colors, @i);
+    }
+
+    .generate-diff-tooltip-colors(@n; (@i + 1));
+}
+
+.generate-diff-tooltip-colors(@list_category-colors);

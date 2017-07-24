@@ -49,7 +49,7 @@ import {
 
 interface Filter {
     tag: string;
-    src: string;
+    src?: string;
     predicate: (row) => boolean;
     id?: number;
 }
@@ -85,7 +85,7 @@ export class Plot extends Emitter {
 
     on(event: 'render' | 'beforerender', callback: (chart: Plot, svg: SVGSVGElement) => void, context?);
     on(event: 'specready' | 'unitsstructureexpanded', callback: (chart: Plot, spec: GPLSpec) => void, context?);
-    on(event: 'renderingtimeout', callback: (chart: Plot) => void, context?);
+    on(event: 'renderingtimeout', callback: (chart: Plot, timeout: number) => void, context?);
     on(event: 'renderingerror', callback: (chart: Plot, error: Error) => void, context?);
     on(event: 'unitdraw', callback: (chart: Plot, unit: GrammarElement) => void, context?);
     on(
@@ -321,6 +321,7 @@ export class Plot extends Emitter {
         const dataEvent = (isClick ? 'data-click' : 'data-hover');
         var data = null;
         var node: Element = null;
+        var unit: GrammarElement = null;
         const items = this._getClosestElementPerUnit(x, y);
         const nonEmpty = items
             .filter((d) => d.closest)
@@ -336,17 +337,20 @@ export class Plot extends Emitter {
             if (sameDistItems.length === 1) {
                 data = sameDistItems[0].closest.data;
                 node = sameDistItems[0].closest.node;
+                unit = sameDistItems[0].unit;
             } else {
                 const mx = (sameDistItems.reduce((sum, item) => sum + item.closest.x, 0) / sameDistItems.length);
                 const my = (sameDistItems.reduce((sum, item) => sum + item.closest.y, 0) / sameDistItems.length);
                 const angle = (Math.atan2(my - y, mx - x) + Math.PI);
-                const {closest} = sameDistItems[Math.round((sameDistItems.length - 1) * angle / 2 / Math.PI)];
+                const index = Math.round((sameDistItems.length - 1) * angle / 2 / Math.PI);
+                const {closest} = sameDistItems[index];
                 data = closest.data;
                 node = closest.node;
+                unit = sameDistItems[index].unit;
             }
         }
 
-        items.forEach((item) => item.unit.fire(dataEvent, {event, data, node}));
+        items.forEach((item) => item.unit.fire(dataEvent, {event, data, node, unit}));
     }
 
     _initPointerEvents() {
@@ -375,7 +379,7 @@ export class Plot extends Emitter {
         svg.on('mouseleave', wrapEventHandler((event) => {
             if (window.getComputedStyle(this._svg).pointerEvents !== 'none') {
                 this.select(() => true)
-                    .forEach((unit) => unit.fire('data-hover', {event, data: null, node: null}));
+                    .forEach((unit) => unit.fire('data-hover', {event, data: null, node: null, unit: null}));
             }
         }));
     }
@@ -410,7 +414,7 @@ export class Plot extends Emitter {
                         }
                     });
                     this.enablePointerEvents();
-                    this.fire('renderingtimeout');
+                    this.fire('renderingtimeout', timeout);
                 },
                 progress: (progress) => {
                     var phases = {
@@ -773,7 +777,7 @@ export class Plot extends Emitter {
         this.renderTo(this._target, sizes);
     }
 
-    select(queryFilter: (unit?: Unit) => boolean) {
+    select(queryFilter: (unit?: GrammarElement) => boolean) {
         return this._nodes.filter(queryFilter);
     }
 

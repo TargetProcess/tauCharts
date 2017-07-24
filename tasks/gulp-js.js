@@ -103,6 +103,7 @@ const plugins = [
     'bar-as-span',
     'box-whiskers',
     'crosshair',
+    'diff-tooltip',
     ['export-to', {
         onwarn: function (warning) {
             // Note: 'fetch' causes a warning.

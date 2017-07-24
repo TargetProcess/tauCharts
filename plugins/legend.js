@@ -14,22 +14,7 @@ import * as d3 from 'd3-format';
         return ++counter;
     };
 
-    var xml = function (tag, _attrs) {
-        var childrenArgIndex = 2;
-        var attrs = _attrs;
-        if (typeof attrs !== 'object') {
-            childrenArgIndex = 1;
-            attrs = {};
-        }
-        var children = Array.prototype.slice.call(arguments, childrenArgIndex);
-        return (
-            '<' + tag +
-            Object.keys(attrs).map(function (key) {
-                return ' ' + key + '="' + attrs[key] + '"';
-            }).join('') +
-            (children.length > 0 ? ('>' + children.join('') + '</' + tag + '>') : '/>')
-        );
-    };
+    const xml = Taucharts.api.utils.xml;
 
     var splitEvenly = function (domain, parts) {
         var min = domain[0];
@@ -506,9 +491,10 @@ import * as d3 from 'd3-format';
                         var stops = splitEvenly(numDomain, brewerLength)
                             .map(function (x, i) {
                                 var p = (i / (brewerLength - 1)) * 100;
-                                return (
-                                    '<stop offset="' + p + '%"' +
-                                    '      style="stop-color:' + fillScale(x) + ';stop-opacity:1" />');
+                                return xml('stop', {
+                                    offset: `${p}%`,
+                                    style: `stop-color:${fillScale(x)};stop-opacity:1"`
+                                });
                             });
 
                         var gradientId = 'legend-gradient-' + self.instanceId;
@@ -529,7 +515,7 @@ import * as d3 from 'd3-format';
                                             x2: (isVerticalLayout ? '0%' : '100%'),
                                             y2: '0%'
                                         },
-                                        stops.join('')
+                                        ...stops
                                     )
                                 ),
                                 xml('rect', {
@@ -540,13 +526,13 @@ import * as d3 from 'd3-format';
                                     height: layout.barHeight,
                                     fill: 'url(#' + gradientId + ')'
                                 }),
-                                labels.map(function (text, i) {
+                                ...labels.map(function (text, i) {
                                     return xml('text', {
                                         x: layout.textX[i],
                                         y: layout.textY[i],
                                         'text-anchor': layout.textAnchor
                                     }, text);
-                                }).join('')
+                                })
                             )
                         );
 
@@ -712,7 +698,7 @@ import * as d3 from 'd3-format';
                                     width: layout.width,
                                     height: layout.height
                                 },
-                                sizes.map(function (size, i) {
+                                ...sizes.map(function (size, i) {
                                     return xml('circle', {
                                         class: (
                                             'graphical-report__legend__size__item__circle ' +
@@ -722,15 +708,15 @@ import * as d3 from 'd3-format';
                                         cy: layout.circleY[i],
                                         r: (size / 2)
                                     });
-                                }).join(''),
-                                labels.map(function (text, i) {
+                                }),
+                                ...labels.map(function (text, i) {
                                     return xml('text', {
                                         class: 'graphical-report__legend__size__item__label',
                                         x: layout.textX[i],
                                         y: layout.textY[i],
                                         'text-anchor': layout.textAnchor
                                     }, text);
-                                }).join('')
+                                })
                             )
                         );
 
