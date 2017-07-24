@@ -256,7 +256,6 @@ const IntervalTooltipTemplateFactory = (tooltip, tooltipSettings, settings) => {
         `</div>`
     ].join('\n')));
 
-    // Todo: If there are negative values, color bar should start from zero
     const tableRow = (settings.tableRowTemplate || (({name, diff, value, sign, isCurrent, bar}) => [
         `<div class="${ROW_CLS}${isCurrent ? ` ${ROW_CLS}_highlighted` : ''}">`,
         `  ${bar()}`,
@@ -529,10 +528,6 @@ function IntervalHighlightTooltip(xSettings) {
             const desc = ((a, b) => b - a);
             const allX = Object.keys(groupedData).map(Number).sort(flip ? desc : asc);
             const xIndex = allX.indexOf(x);
-            if (xIndex < 0) {
-                // Todo: determine why this happens (highlighted data is out of group)
-                return [x, x];
-            }
             if (xIndex === 0) {
                 return [x, x];
             }
