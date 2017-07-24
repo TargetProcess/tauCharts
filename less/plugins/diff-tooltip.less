@@ -1,12 +1,12 @@
 @import "../variable";
-@interval-highlight_positive: #4ca383;
-@interval-highlight_negative: #df6772;
+@diff-tooltip_positive: #4ca383;
+@diff-tooltip_negative: #df6772;
+@diff-tooltip_row-bg: rgba(241, 233, 255, 0.5);
+@diff-tooltip_row-border: #877aa1;
 @interval-highlight_fill: #c4b3e6;
 @interval-highlight_stroke: #b8aecb;
-@interval-highlight_row-bg: rgba(241, 233, 255, 0.5);
-@interval-highlight_row-border: #877aa1;
 
-.interval-highlight-tooltip {
+.diff-tooltip {
 
     &__table {
         border-top: 1px solid fade(@font-color, 20%);
@@ -67,8 +67,8 @@
         position: relative;
 
         &_highlighted {
-            background-color: @interval-highlight_row-bg;
-            box-shadow: 0 0 0 1px @interval-highlight_row-border;
+            background-color: @diff-tooltip_row-bg;
+            box-shadow: 0 0 0 1px @diff-tooltip_row-border;
             z-index: 1;
         }
 
@@ -119,11 +119,11 @@
             width: 80px;
 
             &_positive {
-                color: @interval-highlight_positive;
+                color: @diff-tooltip_positive;
             }
 
             &_negative {
-                color: @interval-highlight_negative;
+                color: @diff-tooltip_negative;
             }
         }
     }
@@ -152,13 +152,13 @@
     }
 }
 
-.generate-interval-highlight-colors(@n; @i: 1) when (@i =< @n) {
+.generate-diff-tooltip-colors(@n; @i: 1) when (@i =< @n) {
 
-    .interval-highlight-tooltip__item__bg.color@{n}-@{i} {
+    .diff-tooltip__item__bg.color@{n}-@{i} {
         background-color: extract(@category-colors, @i);
     }
 
-    .generate-interval-highlight-colors(@n; (@i + 1));
+    .generate-diff-tooltip-colors(@n; (@i + 1));
 }
 
-.generate-interval-highlight-colors(@list_category-colors);
+.generate-diff-tooltip-colors(@list_category-colors);

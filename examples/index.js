@@ -73,9 +73,9 @@
         'annotations',
         'box-whiskers',
         'crosshair',
+        'diff-tooltip',
         'export-to',
         'floating-axes',
-        'interval-highlight',
         'layers',
         'legend',
         'quick-filter',
@@ -87,17 +87,7 @@
     var LAZY_RENDERING = true;
 
     var pluginConfigs = {
-        'export-to': {
-            cssPaths: [
-                '../dist/taucharts.css',
-                '../dist/plugins/export-to.css',
-                '../dist/plugins/legend.css',
-                '../dist/plugins/trendline.css',
-                '../dist/plugins/annotations.css',
-                '../dist/plugins/quick-filter.css'
-            ]
-        },
-        'interval-highlight': function (spec) {
+        'diff-tooltip': function (spec) {
             var fields = [];
             var addField = function (scale) {
                 if (spec[scale]) {
@@ -108,6 +98,16 @@
             return {
                 fields: fields
             };
+        },
+        'export-to': {
+            cssPaths: [
+                '../dist/taucharts.css',
+                '../dist/plugins/export-to.css',
+                '../dist/plugins/legend.css',
+                '../dist/plugins/trendline.css',
+                '../dist/plugins/annotations.css',
+                '../dist/plugins/quick-filter.css'
+            ]
         }
     };
 

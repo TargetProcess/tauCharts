@@ -218,12 +218,12 @@ Taucharts.api.unitsRegistry.reg(
 const IntervalTooltipTemplateFactory = (tooltip, tooltipSettings, settings) => {
 
     const TOOLTIP_CLS = 'graphical-report__tooltip';
-    const HL_TOOLTIP_CLS = 'interval-highlight-tooltip';
+    const DIFF_TOOLTIP_CLS = 'diff-tooltip';
 
     const root = settings.rootTemplate;
 
     const item = (settings.itemTemplate || (({label, value, isXDim}) => [
-        `<div class="${TOOLTIP_CLS}__list__item${isXDim ? ` ${HL_TOOLTIP_CLS}__header` : ''}">`,
+        `<div class="${TOOLTIP_CLS}__list__item${isXDim ? ` ${DIFF_TOOLTIP_CLS}__header` : ''}">`,
         `  <div class="${TOOLTIP_CLS}__list__elem">${label}</div>`,
         `  <div class="${TOOLTIP_CLS}__list__elem">${value}</div>`,
         '</div>'
@@ -232,13 +232,13 @@ const IntervalTooltipTemplateFactory = (tooltip, tooltipSettings, settings) => {
     const buttons = settings.buttonsTemplate;
 
     const table = (settings.tableTemplate || (({content}) => [
-        `<div class="${HL_TOOLTIP_CLS}__table">`,
+        `<div class="${DIFF_TOOLTIP_CLS}__table">`,
         content(),
         '</div>'
     ].join('\n')));
 
-    const ROW_CLS = `${HL_TOOLTIP_CLS}__item`;
-    const HEADER_CLS = `${HL_TOOLTIP_CLS}__header`;
+    const ROW_CLS = `${DIFF_TOOLTIP_CLS}__item`;
+    const HEADER_CLS = `${DIFF_TOOLTIP_CLS}__header`;
 
     const tableHeader = (settings.tableHeaderTemplate || (({groupLabel, valueLabel}) => [
         `<div class="${HEADER_CLS}">`,
@@ -249,8 +249,8 @@ const IntervalTooltipTemplateFactory = (tooltip, tooltipSettings, settings) => {
     ].join('\n')));
 
     const tableBody = (settings.tableBodyTemplate || (({rows}) => [
-        `<div class="${HL_TOOLTIP_CLS}__body">`,
-        `<div class="${HL_TOOLTIP_CLS}__body__content">`,
+        `<div class="${DIFF_TOOLTIP_CLS}__body">`,
+        `<div class="${DIFF_TOOLTIP_CLS}__body__content">`,
         rows(),
         `</div>`,
         `</div>`
@@ -407,8 +407,8 @@ const IntervalTooltipTemplateFactory = (tooltip, tooltipSettings, settings) => {
 
         didMount(tooltip) {
             const node = tooltip.getDomNode() as HTMLElement;
-            const body = node.querySelector(`.${HL_TOOLTIP_CLS}__body`) as HTMLElement;
-            const content = node.querySelector(`.${HL_TOOLTIP_CLS}__body__content`) as HTMLElement;
+            const body = node.querySelector(`.${DIFF_TOOLTIP_CLS}__body`) as HTMLElement;
+            const content = node.querySelector(`.${DIFF_TOOLTIP_CLS}__body__content`) as HTMLElement;
             const highlighted = node.querySelector(`.${ROW_CLS}_highlighted`) as HTMLElement;
 
             const b = body.getBoundingClientRect();
@@ -416,7 +416,7 @@ const IntervalTooltipTemplateFactory = (tooltip, tooltipSettings, settings) => {
             const h = highlighted.getBoundingClientRect();
 
             if (c.bottom > b.bottom) {
-                body.classList.add(`${HL_TOOLTIP_CLS}__body_overflow`);
+                body.classList.add(`${DIFF_TOOLTIP_CLS}__body_overflow`);
             }
 
             if (h.bottom > b.bottom) {
@@ -431,7 +431,7 @@ const IntervalTooltipTemplateFactory = (tooltip, tooltipSettings, settings) => {
     };
 };
 
-function IntervalHighlightTooltip(xSettings) {
+function DiffTooltip(xSettings) {
 
     const Tooltip = ((xSettings && xSettings.Tooltip) || Taucharts.api.plugins.get('tooltip'));
 
@@ -542,7 +542,7 @@ function IntervalHighlightTooltip(xSettings) {
         tooltipExt);
 }
 
-Taucharts.api.plugins.add('interval-highlight', IntervalHighlightTooltip);
+Taucharts.api.plugins.add('diff-tooltip', DiffTooltip);
 
 interface IntervalTooltipObject extends PluginObject {
     onRender(this: IntervalTooltipObject, chart: Plot);
@@ -556,4 +556,4 @@ interface GroupedData {
     };
 }
 
-export default IntervalHighlightTooltip;
+export default DiffTooltip;
