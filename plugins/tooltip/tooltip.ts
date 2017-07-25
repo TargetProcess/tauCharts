@@ -1,6 +1,6 @@
 import Taucharts from 'taucharts';
 import * as d3 from 'd3-selection';
-import FieldsTemplate from './fields-template';
+import getFieldsTemplate from './fields-template';
 import {GrammarElement, Plot} from '../../src/definitions';
 import {DimInfo, DimMap} from '../../src/plugins-sdk';
 
@@ -62,7 +62,7 @@ export default class Tooltip {
     }
 
     _getTemplate() {
-        const defaultTemplate = new FieldsTemplate(this, this.settings);
+        const defaultTemplate = getFieldsTemplate(this, this.settings);
         if (typeof this.settings.getTemplate === 'function') {
             return this.settings.getTemplate(defaultTemplate, this, this.settings);
         }
@@ -186,14 +186,14 @@ export default class Tooltip {
             .updateSize();
 
         if (this._template.didMount) {
-            this._template.didMount(this, settings);
+            this._template.didMount();
         }
     }
 
     _hideTooltip() {
         window.removeEventListener('click', this._outerClickHandler, true);
         if (this._template.willUnmount) {
-            this._template.willUnmount(this, this.settings);
+            this._template.willUnmount();
         }
         this._tooltip.hide();
     }
