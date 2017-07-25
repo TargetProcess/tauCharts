@@ -1,10 +1,10 @@
 import Taucharts from 'taucharts';
-import ElementTooltip, {TooltipSettings} from './tooltip/tooltip';
+import Tooltip, {TooltipSettings} from './tooltip/tooltip';
 
-function Tooltip(settings: TooltipSettings) {
-    return new ElementTooltip(settings);
+function TooltipPlugin(settings: TooltipSettings) {
+    return new Tooltip(settings);
 }
 
-Taucharts.api.plugins.add('tooltip', Tooltip);
+Taucharts.api.plugins.add('tooltip', TooltipPlugin);
 
-export default Tooltip;
+export default TooltipPlugin;

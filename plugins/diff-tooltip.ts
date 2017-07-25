@@ -1,5 +1,5 @@
 import Taucharts from 'taucharts';
-import ElementTooltip, {TooltipSettings} from './tooltip/tooltip';
+import Tooltip, {TooltipSettings} from './tooltip/tooltip';
 import getDiffTemplate, {DIFF_TOOLTIP_CLS, HEADER_CLS, ROW_CLS} from './diff-tooltip/diff-template';
 import IntervalHighlight, {ELEMENT_HIGHLIGHT} from './diff-tooltip/interval-highlight';
 import {
@@ -18,7 +18,7 @@ interface GroupedData {
     };
 }
 
-class DiffTooltip extends ElementTooltip {
+class DiffTooltip extends Tooltip {
 
     onSpecReady: (chart: Plot, specRef: GPLSpec) => void;
 
