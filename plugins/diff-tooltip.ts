@@ -1,6 +1,6 @@
 import Taucharts from 'taucharts';
 import Tooltip, {TooltipSettings} from './tooltip/tooltip';
-import getDiffTemplate, {DIFF_TOOLTIP_CLS, HEADER_CLS, ROW_CLS} from './diff-tooltip/diff-template';
+import DiffTemplate, {DIFF_TOOLTIP_CLS, HEADER_CLS, ROW_CLS} from './diff-tooltip/diff-template';
 import IntervalHighlight, {ELEMENT_HIGHLIGHT} from './diff-tooltip/interval-highlight';
 import {
     GPLSpec,
@@ -35,7 +35,7 @@ class DiffTooltip extends Tooltip {
     }
 
     _getTemplate() {
-        const defaultTemplate = getDiffTemplate(this, this.settings);
+        const defaultTemplate = new DiffTemplate(this, this.settings);
         if (typeof this.settings.getTemplate === 'function') {
             return this.settings.getTemplate(defaultTemplate, this, this.settings);
         }

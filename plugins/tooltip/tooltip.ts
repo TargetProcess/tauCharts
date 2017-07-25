@@ -1,6 +1,6 @@
 import Taucharts from 'taucharts';
 import * as d3 from 'd3-selection';
-import getFieldsTemplate from './fields-template';
+import FieldsTemplate from './fields-template';
 import {GrammarElement, Plot} from '../../src/definitions';
 import {DimInfo, DimMap} from '../../src/plugins-sdk';
 
@@ -62,7 +62,7 @@ export default class Tooltip {
     }
 
     _getTemplate() {
-        const defaultTemplate = getFieldsTemplate(this, this.settings);
+        const defaultTemplate = new FieldsTemplate(this, this.settings);
         if (typeof this.settings.getTemplate === 'function') {
             return this.settings.getTemplate(defaultTemplate, this, this.settings);
         }
