@@ -47,7 +47,7 @@ export default function DiffTemplate(tooltip: ElementTooltip, settings: TooltipS
         },
 
         tableHeaderTemplate({colorField, valueField}) {
-            const groupLabel = this.getLabel(colorField);
+            const groupLabel = (colorField != null ? this.getLabel(colorField) : 'Group');
             const valueLabel = this.getLabel(valueField);
             return [
                 `<div class="${HEADER_CLS}">`,
@@ -78,7 +78,7 @@ export default function DiffTemplate(tooltip: ElementTooltip, settings: TooltipS
 
         tableRowTemplate({data, prev, highlighted, valueField, colorField, min, max}) {
 
-            const name = this.getLabel(data[colorField]);
+            const name = (colorField != null ? this.getLabel(data[colorField]) : '&mdash;');
             const format = this.getFormatter(valueField);
             const value = format(data[valueField]);
             const isHighlighted = (data === highlighted);
