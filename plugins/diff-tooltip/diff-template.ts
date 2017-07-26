@@ -47,7 +47,7 @@ export default function DiffTemplate(tooltip: ElementTooltip, settings: TooltipS
         },
 
         tableHeaderTemplate({colorField, valueField}) {
-            const groupLabel = this.getLabel(colorField);
+            const groupLabel = (colorField != null ? this.getLabel(colorField) : 'Group');
             const valueLabel = this.getLabel(valueField);
             return [
                 `<div class="${HEADER_CLS}">`,
@@ -78,7 +78,7 @@ export default function DiffTemplate(tooltip: ElementTooltip, settings: TooltipS
 
         tableRowTemplate({data, prev, highlighted, valueField, colorField, min, max}) {
 
-            const name = this.getLabel(data[colorField]);
+            const name = (colorField != null ? this.getLabel(data[colorField]) : 'no group');
             const format = this.getFormatter(valueField);
             const value = format(data[valueField]);
             const isHighlighted = (data === highlighted);
@@ -106,8 +106,8 @@ export default function DiffTemplate(tooltip: ElementTooltip, settings: TooltipS
             min = Math.min(min, 0);
             max = Math.max(0, max);
             const range = (max - min);
-            const left = ((v < 0 ? v - min : -min) / range);
-            const width = ((v < 0 ? -v : v) / range);
+            const left = (range === 0 ? 0 : ((v < 0 ? v - min : -min) / range));
+            const width = (range === 0 ? 0 : ((v < 0 ? -v : v) / range));
             return [
                 '<span',
                 `    class="${ROW_CLS}__bg${colorCls ? ` ${colorCls}` : ''}"`,
@@ -141,10 +141,19 @@ export default function DiffTemplate(tooltip: ElementTooltip, settings: TooltipS
         didMount() {
             base.didMount.call(this);
 
+            this._scrollToHighlighted();
+            this._reserveSpaceForUpdown();
+        },
+
+        _scrollToHighlighted() {
             const node = tooltip.getDomNode() as HTMLElement;
             const body = node.querySelector(`.${DIFF_TOOLTIP_CLS}__body`) as HTMLElement;
             const content = node.querySelector(`.${DIFF_TOOLTIP_CLS}__body__content`) as HTMLElement;
             const highlighted = node.querySelector(`.${ROW_CLS}_highlighted`) as HTMLElement;
+
+            if (!(body && content && highlighted)) {
+                return;
+            }
 
             const b = body.getBoundingClientRect();
             const c = content.getBoundingClientRect();
@@ -155,11 +164,31 @@ export default function DiffTemplate(tooltip: ElementTooltip, settings: TooltipS
             }
 
             if (h.bottom > b.bottom) {
-                // Scroll to highlighted item
                 const dy = ((h.bottom - b.bottom) + h.height);
                 const limitDy = (c.bottom - b.bottom);
                 content.style.transform = `translateY(${-Math.min(dy, limitDy)}px)`;
             }
+        },
+
+        _reserveSpaceForUpdown() {
+            const node = tooltip.getDomNode() as HTMLElement;
+            const body = node.querySelector(`.${DIFF_TOOLTIP_CLS}__body`) as HTMLElement;
+            const header = node.querySelector(`.${HEADER_CLS}`) as HTMLElement;
+
+            if (!(body && header)) {
+                return;
+            }
+
+            // Todo: Use CSS table layout, no need in JS hack
+            const updownSelector = `.${ROW_CLS}__updown:not(:empty)`;
+            const updowns = Array.from(node.querySelectorAll(updownSelector));
+            const widths = updowns.map((el) => el.getBoundingClientRect().width);
+            const maxWidth = Math.max(...widths);
+            const tooltipPad = 15;
+            const pad = Math.max(0, Math.ceil(maxWidth - tooltipPad));
+
+            body.style.paddingRight = `${pad}px`;
+            header.style.paddingRight = `${pad}px`;
         }
     });
 }

@@ -6,27 +6,32 @@
 @interval-highlight_fill: #c4b3e6;
 @interval-highlight_stroke: #b8aecb;
 
+@diff-tooltip_overflow: 15px; // Allows showing updown out of content
+
 .diff-tooltip {
 
     &__table {
         border-top: 1px solid fade(@font-color, 20%);
         margin-top: 5px;
         padding-top: 5px;
-        width: ~"calc(100% + 15px)";
+        width: ~"calc(100% + @{diff-tooltip_overflow})";
     }
 
     &__header {
+        align-items: stretch;
         display: flex;
         font-weight: 600;
-        padding: 2px 0;
+        justify-content: space-between;
+        padding: 2px 0px;
+        // padding-right: is set dynamically;
+        position: relative;
 
         &__text {
             align-items: center;
             display: inline-flex;
             flex: 1 1 auto;
             justify-content: flex-start;
-            text-align: center;
-            width: 60%;
+            max-width: 120px;
         }
 
         &__value {
@@ -34,8 +39,10 @@
             display: inline-flex;
             flex: 1 1 auto;
             justify-content: flex-end;
-            text-align: center;
-            width: 40%;
+            margin-right: @diff-tooltip_overflow;
+            max-width: 120px;
+            padding-left: 10px;
+            text-align: right;
         }
 
         &__updown {
@@ -43,11 +50,12 @@
             display: inline-flex;
             flex: 1 1 auto;
             font-size: 75%;
+            height: 100%;
             justify-content: flex-start;
             padding-left: 2px;
-            text-align: center;
+            position: absolute;
+            right: 0;
             visibility: hidden; // Hide up/down header
-            width: 28px;
         }
     }
 
@@ -55,7 +63,7 @@
         max-height: 250px;
         overflow: hidden;
         padding: 1px; // Fix to make highlighted border visible
-        padding-right: 30px; // Padding for up/down
+        // padding-right: is set dynamically;
 
         &__content {
             padding-bottom: 1px; // Fix to make last highlighted border visible
@@ -64,6 +72,9 @@
 
     &__item {
         display: flex;
+        justify-content: space-between;
+        margin-right: @diff-tooltip_overflow;
+        min-width: 100px;
         position: relative;
 
         &_highlighted {
@@ -77,33 +88,25 @@
             display: inline-flex;
             height: 100%;
             justify-content: center;
+            min-width: 3px;
             opacity: 0.6;
             position: absolute;
             z-index: 0;
         }
 
         &__text {
-            align-items: center;
-            display: inline-flex;
-            flex: 6;
-            justify-content: flex-start;
+            flex: 1 1 auto;
+            overflow: hidden;
             padding: 2px 4px;
-            position: relative;
-            text-align: left;
+            text-overflow: ellipsis;
             white-space: nowrap;
             width: 100%;
             z-index: 1;
         }
 
         &__value {
-            align-items: center;
-            display: inline-flex;
-            flex: 4;
-            justify-content: flex-end;
-            padding: 2px 4px;
-            position: relative;
-            text-align: right;
-            width: 80px;
+            flex: none;
+            padding: 2px 4px 2px 30px;
             z-index: 1;
         }
 
@@ -114,9 +117,8 @@
             justify-content: flex-start;
             left: 100%;
             height: 100%;
-            padding-left: 4px;
+            padding: 0 4px 0 4px;
             position: absolute;
-            width: 80px;
 
             &_positive {
                 color: @diff-tooltip_positive;
