@@ -106,8 +106,8 @@ export default function DiffTemplate(tooltip: ElementTooltip, settings: TooltipS
             min = Math.min(min, 0);
             max = Math.max(0, max);
             const range = (max - min);
-            const left = ((v < 0 ? v - min : -min) / range);
-            const width = ((v < 0 ? -v : v) / range);
+            const left = (range === 0 ? 0 : ((v < 0 ? v - min : -min) / range));
+            const width = (range === 0 ? 0 : ((v < 0 ? -v : v) / range));
             return [
                 '<span',
                 `    class="${ROW_CLS}__bg${colorCls ? ` ${colorCls}` : ''}"`,
