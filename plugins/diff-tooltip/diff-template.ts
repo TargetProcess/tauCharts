@@ -146,6 +146,10 @@ export default function DiffTemplate(tooltip: ElementTooltip, settings: TooltipS
             const content = node.querySelector(`.${DIFF_TOOLTIP_CLS}__body__content`) as HTMLElement;
             const highlighted = node.querySelector(`.${ROW_CLS}_highlighted`) as HTMLElement;
 
+            if (!(body && content && highlighted)) {
+                return;
+            }
+
             const b = body.getBoundingClientRect();
             const c = content.getBoundingClientRect();
             const h = highlighted.getBoundingClientRect();

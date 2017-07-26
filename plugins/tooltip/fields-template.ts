@@ -72,15 +72,17 @@ export default function FieldsTemplate(tooltip: ElementTooltip, settings: Toolti
         },
 
         didMount() {
-            tooltip.getDomNode()
-                .querySelector('.i-role-exclude')
-                .addEventListener('click', () => {
+            const excludeBtn = tooltip.getDomNode().querySelector('.i-role-exclude');
+
+            if (excludeBtn) {
+                excludeBtn.addEventListener('click', () => {
                     tooltip.excludeHighlightedElement();
                     tooltip.setState({
                         highlight: null,
                         isStuck: false
                     });
                 });
+            }
         }
     };
 }
