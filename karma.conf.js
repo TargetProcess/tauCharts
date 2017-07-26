@@ -69,7 +69,7 @@ function getTestWebpackConfig(DEBUG) {
                 'fetch': 'bower_components/fetch/fetch.js',
                 'file-saver': 'test/utils/saveAs.js',
                 'print.style.css': 'plugins/print.style.css',
-                'rgbcolor': 'bower_components/canvg/rgbcolor.js',
+                'rgbcolor': 'bower_components/rgb-color/dist/rgb-color.js',
                 'stackblur': 'bower_components/canvg/StackBlur.js',
                 'taucharts': 'src/tau.charts.ts',
                 'tau-tooltip': 'node_modules/tau-tooltip/tooltip.js'

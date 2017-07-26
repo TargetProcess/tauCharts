@@ -6,6 +6,8 @@ import 'fetch';
 import printCss from './print.style.css';
 import * as d3 from 'd3-selection';
 
+const MSG_TITLE = 'Taucharts Export Plug-in:';
+
     var utils = Taucharts.api.utils;
     var pluginsSDK = Taucharts.api.pluginsSDK;
     var tokens = pluginsSDK.tokens();
@@ -163,11 +165,15 @@ import * as d3 from 'd3-selection';
                     }));
             },
 
+            _handleError(err) {
+                Taucharts.api.globalSettings.log([MSG_TITLE, err], 'error');
+            },
+
             _createDataUrl: function (chart) {
                 var cssPromises = this._cssPaths.map(function (css) {
                     return fetch(css).then(function (r) {
                         return r.text();
-                    });
+                    }).catch((err) => this._handleError(err));
                 });
                 return Promise
                     .all(cssPromises)
@@ -206,7 +212,8 @@ import * as d3 from 'd3-selection';
                                     }
                                 });
                         });
-                    }.bind(this));
+                    }.bind(this))
+                    .catch((err) => this._handleError(err));
             },
 
             _findUnit: function (chart) {
@@ -246,7 +253,8 @@ import * as d3 from 'd3-selection';
 
                         var blob = new Blob([asArray.buffer], {type: 'image/png'});
                         saveAs(blob, (this._fileName || 'export') + '.png');
-                    }.bind(this));
+                    }.bind(this))
+                    .catch((err) => this._handleError(err));
             },
 
             _toPrint: function (chart) {
@@ -261,7 +269,8 @@ import * as d3 from 'd3-selection';
                         img.onload = function () {
                             window.print();
                         };
-                    });
+                    })
+                    .catch((err) => this._handleError(err));
             },
 
             _toJson: function (chart) {
@@ -765,7 +774,7 @@ import * as d3 from 'd3-selection';
                     this._select(type, chart);
                 }.bind(this));
                 chart.on('exportTo', function (chart, type) {
-                    console.warn('Taucharts Export Plug-in: `exportTo` event is deprecated, use `export-to` instead.');
+                    Taucharts.api.globalSettings.log([MSG_TITLE, '`exportTo` event is deprecated, use `export-to` instead.'], 'warn');
                     this._select(type, chart);
                 }.bind(this));
                 this._onDestroy(function () {
