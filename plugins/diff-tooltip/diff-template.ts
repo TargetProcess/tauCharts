@@ -240,7 +240,7 @@ export default function DiffTemplate(tooltip: ElementTooltip, settings: TooltipS
             // Todo: Use CSS table layout, no need in JS hack
             const updownSelector = `.${ROW_CLS}__updown:not(:empty)`;
             const updowns = Array.from(node.querySelectorAll(updownSelector));
-            const widths = updowns.map((el) => el.getBoundingClientRect().width);
+            const widths = updowns.map((el) => el.scrollWidth);
             const maxWidth = Math.max(...widths);
             const tooltipPad = 15;
             const pad = Math.max(0, Math.ceil(maxWidth - tooltipPad));
