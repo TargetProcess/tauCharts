@@ -50,6 +50,14 @@ class DiffTooltip extends Tooltip {
         const groupedData = this._unitsGroupedData.get(unit);
         const [prevX, x] = this._getHighlightRange(data, unit);
 
+        const getPrevItem = (d) => {
+            const g = screenModel.model.group(d);
+            const hasPrevItem = (isFinite(prevX) && groupedData[prevX][g]);
+            // Note: If there are more than 1 items per X, the result is unpredictable.
+            return (hasPrevItem ? groupedData[prevX][g][0] : null);
+        };
+        const prev = getPrevItem(data);
+
         // Sort stacked elements by color, other by Y
         const sortByColor = (() => {
             const ci = scaleColor.domain().slice().reverse().reduce((map, c, i) => {
@@ -69,8 +77,7 @@ class DiffTooltip extends Tooltip {
         const groups = neighbors.map((data) => {
             const g = screenModel.model.group(data);
             const hasPrevItem = (isFinite(prevX) && groupedData[prevX][g]);
-            // Note: If there are more than 1 items per X, the result is unpredictable.
-            const prev = (hasPrevItem ? groupedData[prevX][g][0] : null);
+            const prev = getPrevItem(data);
             return {
                 data,
                 prev
@@ -79,6 +86,7 @@ class DiffTooltip extends Tooltip {
 
         return this._template.render({
             data,
+            prev,
             fields,
             groups,
             valueField: scaleY.dim,
