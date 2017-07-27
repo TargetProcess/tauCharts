@@ -61,6 +61,12 @@ if (!Number.MAX_SAFE_INTEGER) {
     });
 }
 
+if (!Math.sign) {
+    Math.sign = function (x) {
+        return ((x > 0) - (x < 0)) || Number(x);
+    };
+}
+
 if (!Array.prototype.find) {
     Object.defineProperty(Array.prototype, 'find', {
         value: function (predicate) {

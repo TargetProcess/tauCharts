@@ -12,6 +12,11 @@ export default function DiffTemplate(tooltip: ElementTooltip, settings: TooltipS
 
     return Object.assign({}, base, {
 
+        hasColor() {
+            const {colorField} = this.args;
+            return (colorField != null);
+        },
+
         contentTemplate(args) {
             return [
                 this.fieldsTemplate(args),
@@ -24,7 +29,7 @@ export default function DiffTemplate(tooltip: ElementTooltip, settings: TooltipS
             const screenModel = unit.screenModel;
             const {scaleColor, scaleX, scaleY} = screenModel.model;
 
-            const filtered = fields
+            const filterForColorTable = (fields) => fields
                 .filter((field) => {
                     return (
                         (field !== scaleColor.dim) &&
@@ -34,10 +39,68 @@ export default function DiffTemplate(tooltip: ElementTooltip, settings: TooltipS
                 })
                 .concat(scaleX.dim); // Place X field at end
 
+            const filtered = (this.hasColor() ? filterForColorTable(fields) : fields);
+
             return base.filterFields.call(this, filtered);
         },
 
+        itemTemplate({data, field}) {
+            const label = this.getLabel(field);
+            const value = this.getFormatter(field)(data[field]);
+            const prev = this.args.prev;
+            const valueField = this.args.valueField;
+            const hasDiff = (prev && this.shouldShowDiff(field));
+
+            const valueElement = [
+                `<span class="${ROW_CLS}__value">`,
+                `${value}`,
+                (hasDiff ? ` ${this.fieldUpdownTemplate(this.getDiff({data, prev, field}))}` : ''),
+                '</span>'
+            ].join('');
+
+            return [
+                `<div class="${TOOLTIP_CLS}__list__item">`,
+                `  <div class="${TOOLTIP_CLS}__list__elem">${label}</div>`,
+                `  ${valueElement}`,
+                '</div>'
+            ].join('\n');
+        },
+
+        shouldShowDiff(field) {
+            const valueField = this.args.valueField;
+            return (field === valueField);
+        },
+
+        getDiff({data, prev, field}) {
+            const format = this.getFormatter(field);
+
+            const v = data[field];
+            const p = (prev ? prev[field] : 0);
+            const dv = (v - p);
+
+            const diff = format(dv);
+            const sign = Math.sign(dv);
+
+            return {diff, sign};
+        },
+
+        fieldUpdownTemplate({diff, sign}) {
+            const updownCls = `${DIFF_TOOLTIP_CLS}__field__updown`;
+            const updownSignCls = `${updownCls}_${sign > 0 ? 'positive' : 'negative'}`;
+            const updownSymbol = (sign > 0 ? '&#x25B2;' : sign < 0 ? '&#x25BC;' : '');
+            const diffVal = (sign === 0 ? '' : diff);
+
+            return [
+                `<span class="${updownCls} ${updownSignCls}">`,
+                `${updownSymbol}${diffVal}`,
+                '</span>'
+            ].join('');
+        },
+
         tableTemplate(args) {
+            if (!this.hasColor()) {
+                return '';
+            }
             return [
                 `<div class="${DIFF_TOOLTIP_CLS}__table">`,
                 this.tableHeaderTemplate(args),
@@ -78,18 +141,13 @@ export default function DiffTemplate(tooltip: ElementTooltip, settings: TooltipS
 
         tableRowTemplate({data, prev, highlighted, valueField, colorField, min, max}) {
 
+            const v = data[valueField];
             const name = (colorField != null ? this.getLabel(data[colorField]) : 'no group');
             const format = this.getFormatter(valueField);
-            const value = format(data[valueField]);
+            const value = format(v);
             const isHighlighted = (data === highlighted);
 
-            const v = data[valueField];
-            const p = (prev ? prev[valueField] : 0);
-            const dv = (v - p);
-
-            const diff = format(dv);
-            const sign = Math.sign(dv);
-
+            const {diff, sign} = this.getDiff({data, prev, field: valueField});
             const {color, colorCls} = this.getColor(data);
 
             return [
@@ -182,7 +240,7 @@ export default function DiffTemplate(tooltip: ElementTooltip, settings: TooltipS
             // Todo: Use CSS table layout, no need in JS hack
             const updownSelector = `.${ROW_CLS}__updown:not(:empty)`;
             const updowns = Array.from(node.querySelectorAll(updownSelector));
-            const widths = updowns.map((el) => el.getBoundingClientRect().width);
+            const widths = updowns.map((el) => el.scrollWidth);
             const maxWidth = Math.max(...widths);
             const tooltipPad = 15;
             const pad = Math.max(0, Math.ceil(maxWidth - tooltipPad));

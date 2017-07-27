@@ -53,7 +53,7 @@ const IntervalHighlight = <HighlightElement>{
             const END_CLS = `${ROOT_CLS}__gradient-end`;
 
             var svg = container.node();
-            while ((svg = svg.parentElement).tagName !== 'svg') {}
+            while ((svg = svg.parentNode as Element).tagName !== 'svg');
 
             const id = `${DEFS_CLS}__${config.uid}`;
 

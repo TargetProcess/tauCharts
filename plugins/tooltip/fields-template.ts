@@ -7,6 +7,7 @@ export default function FieldsTemplate(tooltip: ElementTooltip, settings: Toolti
     return {
 
         render(args) {
+            this.args = args;
             args = Object.assign({}, args, {
                 fields: this.filterFields(args.fields)
             });
