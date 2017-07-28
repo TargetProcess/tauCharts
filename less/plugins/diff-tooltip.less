@@ -64,9 +64,36 @@
         overflow: hidden;
         padding: 1px; // Fix to make highlighted border visible
         // padding-right: is set dynamically;
+        position: relative;
 
         &__content {
             padding-bottom: 1px; // Fix to make last highlighted border visible
+        }
+
+        &_overflow-top::before,
+        &_overflow-bottom::after {
+            align-items: center;
+            color: fade(@font-color, 70%);
+            content: "...";
+            display: flex;
+            flex-direction: column;
+            height: 26px;
+            left: 0;
+            position: absolute;
+            width: 100%;
+            z-index: 2;
+        }
+
+        &_overflow-top::before {
+            background: linear-gradient(to bottom, @bg-color, fade(@bg-color, 0%));
+            justify-content: flex-start;
+            top: 0;
+        }
+
+        &_overflow-bottom::after {
+            background: linear-gradient(to top, @bg-color, fade(@bg-color, 0%));
+            justify-content: flex-end;
+            bottom: 0;
         }
     }
 
