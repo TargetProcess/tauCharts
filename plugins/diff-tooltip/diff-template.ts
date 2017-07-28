@@ -29,17 +29,26 @@ export default function DiffTemplate(tooltip: ElementTooltip, settings: TooltipS
             const screenModel = unit.screenModel;
             const {scaleColor, scaleX, scaleY} = screenModel.model;
 
-            const filterForColorTable = (fields) => fields
+            const filtered = fields
                 .filter((field) => {
                     return (
                         (field !== scaleColor.dim) &&
                         (field !== scaleX.dim) &&
                         (field !== scaleY.dim)
                     );
-                })
-                .concat(scaleX.dim); // Place X field at end
+                });
 
-            const filtered = (this.hasColor() ? filterForColorTable(fields) : fields);
+            const addX = () => filtered.push(scaleX.dim);
+            const addY = () => filtered.push(scaleY.dim);
+            const addColor = () => scaleColor.dim && filtered.push(scaleColor.dim);
+
+            if (this.shouldShowColorTable()) {
+                addX();
+            } else {
+                addX();
+                addColor();
+                addY();
+            }
 
             return base.filterFields.call(this, filtered);
         },
@@ -97,8 +106,13 @@ export default function DiffTemplate(tooltip: ElementTooltip, settings: TooltipS
             ].join('');
         },
 
+        shouldShowColorTable() {
+            const groups = this.args.groups;
+            return (this.hasColor() && groups.length > 1);
+        },
+
         tableTemplate(args) {
-            if (!this.hasColor()) {
+            if (!this.shouldShowColorTable()) {
                 return '';
             }
             return [

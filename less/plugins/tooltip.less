@@ -1,5 +1,8 @@
 @import "../variable";
 
+@tooltip_max-width: 500px;
+@tooltip_shadow: 0 1px 4px 0 fade(@shadow-color, 20%), 0 0 0 1px fade(@shadow-color, 0.5%);
+
 .graphical-report {
     &__tooltip {
         position: absolute;
@@ -8,13 +11,12 @@
         max-width: none;
         z-index: 900;
 
-        display: flex;
         align-items: stretch;
+        display: flex;
+        flex-direction: column;
 
+        box-shadow: @tooltip_shadow;
         font-size: @font-size-xs;
-        background: fade(@bg-color, 90%);
-        box-shadow: 0 1px 4px 0 fade(@shadow-color, 20%), 0 0 0 1px fade(@shadow-color, 0.5%);
-        overflow: hidden;
         font-family: @fontFamily;
 
         /* Fade */
@@ -35,66 +37,90 @@
         &.bottom-left {
             margin-left: -8px;
         }
+        &.top,
         &.top-right,
         &.top-left {
             margin-top: 8px;
         }
 
         &__content {
-            max-width: 500px;
+            background: fade(@bg-color, 90%);
+            box-sizing: border-box;
+            max-width: @tooltip_max-width;
+            min-width: 100px;
             overflow: hidden;
             padding: 15px 15px 10px 15px;
-            box-sizing: border-box;
         }
 
-        &.stuck &__exclude,
-        &.stuck &__vertical {
-            width: 26px;
-        }
-
-        &__vertical,
-        &__exclude {
-            box-shadow: inset 2px 0 2px -2px fade(@shadow-color, 20%);
-            flex: 0 0 auto;
-            color: fade(@exclude-font-color, 80%);
-            cursor: pointer;
-            min-height: 86px;
+        &__buttons {
+            background: @tooltip_btn-bg-color;
+            bottom: 100%;
+            box-shadow: @tooltip_shadow;
+            display: flex;
+            flex-direction: row;
+            flex-wrap: wrap;
+            max-width: @tooltip_max-width;
+            min-width: 86px;
             overflow: hidden;
-            position: relative;
-            transition: width 500ms;
-            width: 0;
+            position: absolute;
+            width: 100%;
+            z-index: -1;
+        }
+
+        &__button {
+            color: @tooltip_btn-font-color;
+            cursor: pointer;
+            display: inline-flex;
+            flex: 1 0 auto;
+            height: 0;
+            overflow: hidden;
+            transition: height 500ms;
 
             &__wrap {
-                // NOTE: While buttons are sliding out,
-                // stick right border to tooltip right.
-                left: ~"calc(100% - 26px)";
                 line-height: 26px;
                 padding: 0 15px;
-                transform: rotate(-90deg);
-                transform-origin: 0 0;
-                height: 100%;
-
-                white-space: nowrap;
-                position: absolute;
-                top: 100%;
-                box-sizing: border-box;
             }
 
             &:hover {
-                color: @exclude-font-color;
-                background: linear-gradient(to right, fade(@exclude-bg-color, 90%) 0%, fade(@exclude-bg-color, 0%) 100%);
+                background: mix(@bg-color, @tooltip_btn-bg-color, 50%);
+                color: @font-color;
             }
 
             .tau-icon-close-gray {
+                background-image: url(data:image/svg+xml;base64,PHN2ZyB2ZXJzaW9uPSIxLjEiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyIgeD0iMHB4IiB5PSIwcHgiIHdpZHRoPSIzMHB4IiBoZWlnaHQ9IjMwcHgiIHZpZXdCb3g9IjAgMCAzMCAzMCI+PHBhdGggZmlsbD0iIzg0OTZBNyIgZD0iTTEwLDAuNzE1TDkuMjg1LDBMNSw0LjI4NUwwLjcxNSwwTDAsMC43MTVMNC4yODUsNUwwLDkuMjg1TDAuNzE1LDEwTDUsNS43MTVMOS4yODUsMTBMMTAsOS4yODVMNS43MTUsNUwxMCwwLjcxNXoiLz48L3N2Zz4=);
                 display: inline-block;
                 width: 12px;
                 height: 12px;
                 position: relative;
                 top: 3px;
                 margin-right: 5px;
-                background-image: url(data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0idXRmLTgiPz48IURPQ1RZUEUgc3ZnIFBVQkxJQyAiLS8vVzNDLy9EVEQgU1ZHIDEuMS8vRU4iICJodHRwOi8vd3d3LnczLm9yZy9HcmFwaGljcy9TVkcvMS4xL0RURC9zdmcxMS5kdGQiPjxzdmcgdmVyc2lvbj0iMS4xIiBpZD0iTGF5ZXJfMSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIiB4bWxuczp4bGluaz0iaHR0cDovL3d3dy53My5vcmcvMTk5OS94bGluayIgeD0iMHB4IiB5PSIwcHgiIHdpZHRoPSIzMHB4IiBoZWlnaHQ9IjMwcHgiIHZpZXdCb3g9IjAgMCAzMCAzMCIgZW5hYmxlLWJhY2tncm91bmQ9Im5ldyAwIDAgMzAgMzAiIHhtbDpzcGFjZT0icHJlc2VydmUiPjxwYXRoIGlkPSJTaGFwZV8zNV8iIGZpbGw9IiM4NDk2QTciIGQ9Ik0xMCwwLjcxNUw5LjI4NSwwTDUsNC4yODVMMC43MTUsMEwwLDAuNzE1TDQuMjg1LDVMMCw5LjI4NUwwLjcxNSwxMEw1LDUuNzE1TDkuMjg1LDEwTDEwLDkuMjg1TDUuNzE1LDVMMTAsMC43MTV6Ii8+PC9zdmc+);
             }
         }
+
+        &.stuck &__button {
+            height: 26px;
+        }
+
+        // buttons slide from bottom
+        &.top &__buttons,
+        &.top-right &__buttons,
+        &.top-left &__buttons {
+            bottom: initial;
+            top: 100%;
+
+            &__wrap {
+                // stick button content to bottom
+                position: relative;
+                top: ~"calc(100% - 26px)";
+            }
+        }
+
+        &.top-right &__button__wrap,
+        &.top-left &__button__wrap {
+            position: relative;
+            top: ~"calc(100% - 26px)";
+        }
+
         &__list {
             display: table;
 
