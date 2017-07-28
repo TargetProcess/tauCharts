@@ -16,10 +16,12 @@ export default function FieldsTemplate(tooltip: ElementTooltip, settings: Toolti
 
         rootTemplate(args) {
             return [
+                `<div class="${TOOLTIP_CLS}__buttons ${TOOLTIP_CLS}__clickable">`,
+                this.buttonsTemplate(),
+                `</div>`,
                 `<div class="i-role-content ${TOOLTIP_CLS}__content">`,
                 this.contentTemplate(args),
-                '</div>',
-                this.buttonsTemplate()
+                '</div>'
             ].join('\n');
         },
 
@@ -64,9 +66,19 @@ export default function FieldsTemplate(tooltip: ElementTooltip, settings: Toolti
 
         buttonsTemplate() {
             return [
-                `<div class="i-role-exclude ${TOOLTIP_CLS}__exclude">`,
-                `  <div class="${TOOLTIP_CLS}__exclude__wrap">`,
-                '    <span class="tau-icon-close-gray"></span> Exclude',
+                this.buttonTemplate({
+                    cls: 'i-role-exclude',
+                    text: 'Exclude',
+                    icon: () => '<span class="tau-icon-close-gray"></span>'
+                })
+            ].join('\n');
+        },
+
+        buttonTemplate({icon, text, cls}) {
+            return [
+                `<div class="${TOOLTIP_CLS}__button ${cls}">`,
+                `  <div class="${TOOLTIP_CLS}__button__wrap">`,
+                `    ${icon ? `${icon()} ` : ''}${text}`,
                 '  </div>',
                 '</div>'
             ].join('\n');
