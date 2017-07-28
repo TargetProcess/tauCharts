@@ -2,6 +2,8 @@ import Taucharts from 'taucharts';
 import * as d3Selection from 'd3-selection';
 const d3 = {...d3Selection};
 
+const domUtils = Taucharts.api.domUtils;
+
     var utils = Taucharts.api.utils;
 
     var SHADOW_SIZE = 16;
@@ -409,10 +411,7 @@ const d3 = {...d3Selection};
                 // Fix invoking unexpected chart pointer events
                 d3Svg.selectAll('.floating-axes')
                     .on('mouseenter', function () {
-                        var evt = document.createEvent('MouseEvents');
-                        evt.initMouseEvent('mouseleave',
-                            true, true, window, 0, 0, 0, 0, 0, false, false, false, false, 0, null);
-                        svg.dispatchEvent(evt);
+                        domUtils.dispatchMouseEvent(svg, 'mouseleave');
                     })
                     .on('mousemove', function () {
                         d3Selection.event.stopPropagation();

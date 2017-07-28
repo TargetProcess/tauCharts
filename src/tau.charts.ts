@@ -64,6 +64,7 @@ var api = {
     isChartElement: utils.isChartElement,
     utils,
     svgUtils: utilsDraw,
+    domUtils: utilsDom,
     tickPeriod: UnitDomainPeriodGenerator,
     colorBrewers: {
         add: function (name, brewer) {

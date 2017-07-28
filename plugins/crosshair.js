@@ -371,7 +371,7 @@ const svgNS = 'http://www.w3.org/2000/svg';
                                 this._hideCrosshair();
                                 return;
                             }
-                            if (unit.data().indexOf(e.data) >= 0) {
+                            if (unit === e.unit) {
                                 var parentUnit = pluginsSDK.getParentUnit(this._chart.getSpec(), unit.config);
                                 this._showCrosshair(e, unit, parentUnit);
                             }

@@ -397,3 +397,11 @@ var scrollbarSizes: WeakMap<Node, {width: number; height: number;}> = new WeakMa
                 .replace(/\s{2,}/g, ' ')
         );
     }
+
+export function dispatchMouseEvent(target: Element, eventName: string, ...args) {
+    const event = document.createEvent('MouseEvents');
+    const defaults = [true, true, window, 0, 0, 0, 0, 0, false, false, false, false, 0, null];
+    const results = args.concat(defaults.slice(args.length));
+    (event as any).initMouseEvent(eventName, ...results);
+    target.dispatchEvent(event);
+}
