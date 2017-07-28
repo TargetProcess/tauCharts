@@ -5,6 +5,7 @@ import {GrammarElement, Plot} from '../../src/definitions';
 import {DimInfo, DimMap} from '../../src/plugins-sdk';
 
 const utils = Taucharts.api.utils;
+const domUtils = Taucharts.api.domUtils;
 const pluginsSDK = Taucharts.api.pluginsSDK;
 const TOOLTIP_CLS = 'graphical-report__tooltip';
 
@@ -173,9 +174,7 @@ export default class Tooltip {
                     // Dispatch `mouseleave` (should cause `data-hover` with empty data
                     // and should dispatch leaving focus for some plugins like Crosshair)
                     const svg = this._chart.getSVG();
-                    const evt = document.createEvent('MouseEvents');
-                    evt.initMouseEvent('mouseleave', true, true, window, 0, 0, 0, 0, 0, false, false, false, false, 0, null);
-                    svg.dispatchEvent(evt);
+                    domUtils.dispatchMouseEvent(svg, 'mouseleave');
                 });
             }
         }
