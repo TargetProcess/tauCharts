@@ -367,13 +367,11 @@ const svgNS = 'http://www.w3.org/2000/svg';
                     .forEach(function (node) {
 
                         node.on('data-hover', function (unit, e) {
-                            if (!e.data) {
-                                this._hideCrosshair();
-                                return;
-                            }
-                            if (unit.data().indexOf(e.data) >= 0) {
+                            if (unit === e.unit) {
                                 var parentUnit = pluginsSDK.getParentUnit(this._chart.getSpec(), unit.config);
                                 this._showCrosshair(e, unit, parentUnit);
+                            } else {
+                                this._hideCrosshair();
                             }
                         }.bind(this));
                     }, this);

@@ -169,6 +169,13 @@ export default class Tooltip {
                 // after pointer events appear.
                 requestAnimationFrame(() => {
                     this._setTargetEventsEnabled(true);
+
+                    // Dispatch `mouseleave` (should cause `data-hover` with empty data
+                    // and should dispatch leaving focus for some plugins like Crosshair)
+                    const svg = this._chart.getSVG();
+                    const evt = document.createEvent('MouseEvents');
+                    evt.initMouseEvent('mouseleave', true, true, window, 0, 0, 0, 0, 0, false, false, false, false, 0, null);
+                    svg.dispatchEvent(evt);
                 });
             }
         }
