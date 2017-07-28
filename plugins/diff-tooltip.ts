@@ -103,6 +103,7 @@ class DiffTooltip extends Tooltip {
 
             const units = chart.select((u) => {
                 return (
+                    (u.config.namespace === 'chart') &&
                     (u.config.type.indexOf('ELEMENT.') === 0) &&
                     (u.config.type !== ELEMENT_HIGHLIGHT)
                 );
