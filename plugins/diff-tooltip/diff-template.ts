@@ -231,14 +231,20 @@ export default function DiffTemplate(tooltip: ElementTooltip, settings: TooltipS
             const c = content.getBoundingClientRect();
             const h = highlighted.getBoundingClientRect();
 
-            if (c.bottom > b.bottom) {
-                body.classList.add(`${DIFF_TOOLTIP_CLS}__body_overflow`);
-            }
+            var shift = 0;
 
             if (h.bottom > b.bottom) {
                 const dy = ((h.bottom - b.bottom) + h.height);
                 const limitDy = (c.bottom - b.bottom);
-                content.style.transform = `translateY(${-Math.min(dy, limitDy)}px)`;
+                shift = -Math.min(dy, limitDy);
+                content.style.transform = `translateY(${shift}px)`;
+            }
+
+            if (c.top + shift < b.top) {
+                body.classList.add(`${DIFF_TOOLTIP_CLS}__body_overflow-top`);
+            }
+            if (c.bottom + shift > b.bottom) {
+                body.classList.add(`${DIFF_TOOLTIP_CLS}__body_overflow-bottom`);
             }
         },
 

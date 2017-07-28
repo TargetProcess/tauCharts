@@ -178,6 +178,8 @@ const Point: PointClass = {
             cy: ((d) => screenModel.y(d))
         };
 
+        const activeDots = [];
+
         const updateGroups = function (g: d3Selection) {
 
             g.attr('class', 'frame')
@@ -200,6 +202,7 @@ const Point: PointClass = {
                         .attr('r', 0)
                         .remove();
 
+                    activeDots.push(...dotsMerge.nodes());
                     node.subscribe(dotsMerge as d3Selection);
                 });
 
@@ -228,8 +231,7 @@ const Point: PointClass = {
             .merge(frameGroups)
             .call(updateGroups);
 
-        // TODO: Render bars into single container, exclude removed elements from calculation.
-        this._boundsInfo = this._getBoundsInfo((merged.selectAll('.dot') as d3Selection).nodes());
+        this._boundsInfo = this._getBoundsInfo(activeDots);
 
         transition(frameGroups.exit())
             .attr('opacity', 0)
