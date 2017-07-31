@@ -124,21 +124,21 @@ import Taucharts from 'taucharts';
             },
 
             template: [
-                '<div class="graphical-report__tooltip__buttons graphical-report__tooltip__clickable">',
-                '<div class="graphical-report__tooltip__button i-role-exclude">',
-                '<div class="graphical-report__tooltip__button__wrap">',
+                '<div class="graphical-report__tooltip-v2__buttons graphical-report__tooltip-v2__clickable">',
+                '<div class="graphical-report__tooltip-v2__button i-role-exclude">',
+                '<div class="graphical-report__tooltip-v2__button__wrap">',
                 '<span class="tau-icon-close-gray"></span>',
                 'Exclude',
                 '</div>',
                 '</div>',
                 '</div>',
-                '<div class="i-role-content graphical-report__tooltip__content"></div>'
+                '<div class="i-role-content graphical-report__tooltip-v2__content"></div>'
             ].join(''),
 
             itemTemplate: utils.template([
-                '<div class="graphical-report__tooltip__list__item">',
-                '<div class="graphical-report__tooltip__list__elem"><%=label%></div>',
-                '<div class="graphical-report__tooltip__list__elem"><%=value%></div>',
+                '<div class="graphical-report__tooltip-v2__list__item">',
+                '<div class="graphical-report__tooltip-v2__list__elem"><%=label%></div>',
+                '<div class="graphical-report__tooltip-v2__list__elem"><%=value%></div>',
                 '</div>'
             ].join('')),
 

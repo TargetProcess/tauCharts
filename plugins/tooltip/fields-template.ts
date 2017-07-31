@@ -1,6 +1,6 @@
 import ElementTooltip, {TooltipSettings} from '../tooltip/tooltip';
 
-export const TOOLTIP_CLS = 'graphical-report__tooltip';
+export const TOOLTIP_CLS = 'graphical-report__tooltip-v2';
 
 export default function FieldsTemplate(tooltip: ElementTooltip, settings: TooltipSettings) {
 
