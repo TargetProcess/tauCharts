@@ -1,8 +1,8 @@
-.graphical-report__tooltip.fade {
+.graphical-report__tooltip-v2.fade {
     opacity: 0;
     transition: none !important;
 }
-.graphical-report__tooltip.fade.in {
+.graphical-report__tooltip-v2.fade.in {
     opacity: 1;
     transition-duration: 0s;
 }
