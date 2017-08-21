@@ -156,7 +156,7 @@ export default function DiffTemplate(tooltip: ElementTooltip, settings: TooltipS
         tableRowTemplate({data, prev, highlighted, valueField, colorField, min, max}) {
 
             const v = data[valueField];
-            const name = (colorField != null ? this.getLabel(data[colorField]) : 'no group');
+            const name = (colorField != null ? this.getFormatter(colorField)(data[colorField]) : 'no group');
             const format = this.getFormatter(valueField);
             const value = format(v);
             const isHighlighted = (data === highlighted);
