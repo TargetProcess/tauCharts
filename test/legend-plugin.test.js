@@ -17,10 +17,10 @@ import Taucharts from '../src/tau.charts';
         var prefix = 'color20';
         var sidebar = chart._layout.rightSidebar;
 
-        var legendBlock = sidebar.querySelector('.graphical-report__legend');
+        var legendBlock = sidebar.querySelector('.tau-chart__legend');
         expect(legendBlock).to.be.ok;
-        expect(legendBlock.querySelector('.graphical-report__legend__title').textContent).to.equal('color');
-        var nodeList = legendBlock.querySelectorAll('.graphical-report__legend__guide');
+        expect(legendBlock.querySelector('.tau-chart__legend__title').textContent).to.equal('color');
+        var nodeList = legendBlock.querySelectorAll('.tau-chart__legend__guide');
 
         expect(getText(nodeList[0])).to.equal('No color');
         expect(nodeList[0].classList.contains(prefix + '-1')).to.be.ok;
@@ -100,8 +100,8 @@ import Taucharts from '../src/tau.charts';
         var item1, item2;
         var svg;
         var prefix = '.color20';
-        var selector = '.graphical-report__legend__guide' + prefix + '-1';
-        var selector2 = '.graphical-report__legend__guide' + prefix + '-2';
+        var selector = '.tau-chart__legend__guide' + prefix + '-1';
+        var selector2 = '.tau-chart__legend__guide' + prefix + '-2';
 
         item1 = chart._layout.rightSidebar.querySelectorAll(selector)[0].parentNode.parentNode;
         svg = chart.getSVG();
@@ -131,14 +131,14 @@ import Taucharts from '../src/tau.charts';
         var item1;
         var svg;
         var prefix = '.color20';
-        var selector = '.graphical-report__legend__guide' + prefix + '-1';
+        var selector = '.tau-chart__legend__guide' + prefix + '-1';
 
         item1 = chart._layout.rightSidebar.querySelectorAll(selector)[0].parentNode;
 
         svg = chart.getSVG();
         var isHighlight = function (elements) {
             return Array.from(elements).every(function (element) {
-                return testUtils.hasClass(element, 'graphical-report__highlighted');
+                return testUtils.hasClass(element, 'tau-chart__highlighted');
             });
         };
 
@@ -268,8 +268,8 @@ import Taucharts from '../src/tau.charts';
         function (context) {
             it("should No color", function () {
                 var sidebar = context.chart._layout.rightSidebar;
-                var legendBlock = sidebar.querySelector('.graphical-report__legend');
-                var nodeList = legendBlock.querySelectorAll('.graphical-report__legend__guide');
+                var legendBlock = sidebar.querySelector('.tau-chart__legend');
+                var nodeList = legendBlock.querySelectorAll('.tau-chart__legend__guide');
                 expect(getText(nodeList[0])).to.equal('No color');
             });
         },
@@ -325,8 +325,8 @@ import Taucharts from '../src/tau.charts';
         function (context) {
             it("should respect order", function () {
                 var sidebar = context.chart._layout.rightSidebar;
-                var legendBlock = sidebar.querySelector('.graphical-report__legend');
-                var nodeList = legendBlock.querySelectorAll('.graphical-report__legend__guide');
+                var legendBlock = sidebar.querySelector('.tau-chart__legend');
+                var nodeList = legendBlock.querySelectorAll('.tau-chart__legend__guide');
 
                 expect(nodeList.length).to.equal(4);
 
@@ -371,9 +371,9 @@ import Taucharts from '../src/tau.charts';
         function (context) {
             it("should support size scale", function () {
                 var sidebar = context.chart._layout.rightSidebar;
-                var legendBlock = sidebar.querySelector('.graphical-report__legend');
-                var nodeList = legendBlock.querySelectorAll('.graphical-report__legend__size__item__circle');
-                var texts = legendBlock.querySelectorAll('.graphical-report__legend__size__item__label');
+                var legendBlock = sidebar.querySelector('.tau-chart__legend');
+                var nodeList = legendBlock.querySelectorAll('.tau-chart__legend__size__item__circle');
+                var texts = legendBlock.querySelectorAll('.tau-chart__legend__size__item__label');
 
                 expect(nodeList.length).to.equal(2);
 

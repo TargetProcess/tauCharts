@@ -26,10 +26,10 @@ const describeChart = testUtils.describeChart;
         function (context) {
             it('print', function (done) {
                 var header = context.chart._layout.header;
-                testUtils.simulateEvent('click', header.querySelector('.graphical-report__export'));
+                testUtils.simulateEvent('click', header.querySelector('.tau-chart__export'));
                 mock.printCallbacks.push(function () {
                     expect(true).to.be.ok;
-                    $('.graphical-report__print-block').remove();
+                    $('.tau-chart__print-block').remove();
                     testUtils.simulateEvent('click', document.body);
                      done();
                 });
@@ -60,7 +60,7 @@ const describeChart = testUtils.describeChart;
         function (context) {
             it('export to png', function (done) {
                 var header = context.chart._layout.header;
-                var exportMenu = header.querySelector('.graphical-report__export');
+                var exportMenu = header.querySelector('.tau-chart__export');
                 expect(exportMenu.style.display).to.be.equal('');
                 testUtils.simulateEvent('click', exportMenu);
                 saveAs.callbacks.items.push(function () {
@@ -94,7 +94,7 @@ const describeChart = testUtils.describeChart;
         function (context) {
             it('should allow to hide menu', function (done) {
                 var header = context.chart._layout.header;
-                var exportMenu = header.querySelector('.graphical-report__export');
+                var exportMenu = header.querySelector('.tau-chart__export');
                 expect(exportMenu.style.display).to.be.equal('none');
                 done();
             });

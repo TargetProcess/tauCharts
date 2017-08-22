@@ -84,10 +84,10 @@ const d3 = {
                 this._filtersContainer.style.maxHeight = 'none';
             },
 
-            _filtersContainer: '<div class="graphical-report__filter"></div>',
+            _filtersContainer: '<div class="tau-chart__filter"></div>',
             _filterWrapper: utils.template(
-                '<div class="graphical-report__filter__wrap">' +
-                    '<div class="graphical-report__legend__title"><%=name%></div>' +
+                '<div class="tau-chart__filter__wrap">' +
+                    '<div class="tau-chart__legend__title"><%=name%></div>' +
                 '</div>'
             ),
 

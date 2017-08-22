@@ -1,6 +1,6 @@
 @import "../variable";
 
-.graphical-report__layout .tau-crosshair {
+.tau-chart__layout .tau-crosshair {
 
     &__line {
         shape-rendering: crispEdges;
@@ -49,11 +49,11 @@
 
 .generate-crosshair-colors(@n; @i: 1) when (@i =< @n) {
 
-    .graphical-report__layout .tau-crosshair__line.color@{n}-@{i} {
+    .tau-chart__layout .tau-crosshair__line.color@{n}-@{i} {
         stroke: extract(@category-colors, @i);
     }
 
-    .graphical-report__layout .tau-crosshair__label.color@{n}-@{i} {
+    .tau-chart__layout .tau-crosshair__label.color@{n}-@{i} {
         .tau-crosshair__label__text-shadow {
             stroke: extract(@category-colors, @i);
         }

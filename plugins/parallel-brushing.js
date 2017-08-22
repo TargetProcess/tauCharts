@@ -115,7 +115,7 @@ import Taucharts from 'taucharts';
                 });
             },
 
-            template: utils.template('<div class="graphical-report__chart_brushing_panel"></div>')
+            template: utils.template('<div class="tau-chart__chart_brushing_panel"></div>')
         };
 
         return plugin;

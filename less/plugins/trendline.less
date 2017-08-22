@@ -2,21 +2,21 @@
 
 //Generate colors for trendlines
 .generate-colors(@n; @i: 1) when (@i =< @n) {
-    .graphical-report__svg  .graphical-report__trendline.color@{n}-@{i} {
+    .tau-chart__svg  .tau-chart__trendline.color@{n}-@{i} {
         stroke: darken(extract(@category-colors, @i), 15%);
     }
     .generate-colors(@n; (@i + 1));
 }
 
 .generate-colors(@list_category-colors);
-.graphical-report__svg {
-    .graphical-report__trendline.color-default {
+.tau-chart__svg {
+    .tau-chart__trendline.color-default {
         stroke: darken(@default-color, 15%);
     }
 }
 
 
-.graphical-report {
+.tau-chart {
 
     &__trendlinepanel {
         padding: 20px 0 20px 20px;

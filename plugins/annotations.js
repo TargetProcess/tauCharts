@@ -222,7 +222,7 @@ import * as d3 from 'd3-color';
                     ],
                     guide: {
                         showAnchors: 'never',
-                        cssClass: 'graphical-report__annotation-area',
+                        cssClass: 'tau-chart__annotation-area',
                         label: {
                             fontColor: noteItem.color,
                             position: ['r', 'b', 'keep-in-box']
@@ -279,8 +279,8 @@ import * as d3 from 'd3-color';
                     ],
                     guide: {
                         showAnchors: 'never',
-                        widthCssClass: 'graphical-report__line-width-2',
-                        cssClass: 'graphical-report__annotation-line',
+                        widthCssClass: 'tau-chart__line-width-2',
+                        cssClass: 'tau-chart__annotation-line',
                         label: {
                             fontColor: noteItem.color,
                             position: ['r', 'b', 'keep-in-box']

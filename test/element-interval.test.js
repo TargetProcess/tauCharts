@@ -972,52 +972,52 @@ import testUtils from './utils/utils';
                 var svg0 = context.chart.getSVG();
                 expect(svg0.querySelectorAll('.bar').length).to.equals(4);
                 expect(svg0.querySelectorAll('.i-role-label').length).to.equals(4);
-                expect(svg0.querySelectorAll('.graphical-report__highlighted').length).to.equals(0);
-                expect(svg0.querySelectorAll('.graphical-report__dimmed').length).to.equals(0);
+                expect(svg0.querySelectorAll('.tau-chart__highlighted').length).to.equals(0);
+                expect(svg0.querySelectorAll('.tau-chart__dimmed').length).to.equals(0);
 
                 var intervalNode = context.chart.select((n) => n.config.type === 'ELEMENT.INTERVAL')[0];
                 intervalNode.fire('highlight', ((row) => (row.color === 'green')));
 
                 var svg1 = context.chart.getSVG();
                 expect(svg1.querySelectorAll('.bar').length).to.equals(4);
-                expect(svg1.querySelectorAll('.bar.graphical-report__highlighted').length).to.equals(1);
-                expect(svg1.querySelectorAll('.bar.graphical-report__dimmed').length).to.equals(3);
+                expect(svg1.querySelectorAll('.bar.tau-chart__highlighted').length).to.equals(1);
+                expect(svg1.querySelectorAll('.bar.tau-chart__dimmed').length).to.equals(3);
 
-                expect(svg1.querySelectorAll('.i-role-label.graphical-report__highlighted').length).to.equals(1);
-                expect(svg1.querySelectorAll('.i-role-label.graphical-report__dimmed').length).to.equals(3);
+                expect(svg1.querySelectorAll('.i-role-label.tau-chart__highlighted').length).to.equals(1);
+                expect(svg1.querySelectorAll('.i-role-label.tau-chart__dimmed').length).to.equals(3);
 
                 intervalNode.fire('highlight', ((row) => null));
 
                 var svg2 = context.chart.getSVG();
                 expect(svg2.querySelectorAll('.bar').length).to.equals(4);
-                expect(svg2.querySelectorAll('.bar.graphical-report__highlighted').length).to.equals(0);
-                expect(svg2.querySelectorAll('.bar.graphical-report__dimmed').length).to.equals(0);
+                expect(svg2.querySelectorAll('.bar.tau-chart__highlighted').length).to.equals(0);
+                expect(svg2.querySelectorAll('.bar.tau-chart__dimmed').length).to.equals(0);
 
-                expect(svg1.querySelectorAll('.i-role-label.graphical-report__highlighted').length).to.equals(0);
-                expect(svg1.querySelectorAll('.i-role-label.graphical-report__dimmed').length).to.equals(0);
+                expect(svg1.querySelectorAll('.i-role-label.tau-chart__highlighted').length).to.equals(0);
+                expect(svg1.querySelectorAll('.i-role-label.tau-chart__dimmed').length).to.equals(0);
             });
 
             it("should react on mouseover / mouseout events", function () {
                 var svg0 = context.chart.getSVG();
                 expect(svg0.querySelectorAll('.bar').length).to.equals(4);
                 expect(svg0.querySelectorAll('.i-role-label').length).to.equals(4);
-                expect(svg0.querySelectorAll('.graphical-report__highlighted').length).to.equals(0);
-                expect(svg0.querySelectorAll('.graphical-report__dimmed').length).to.equals(0);
+                expect(svg0.querySelectorAll('.tau-chart__highlighted').length).to.equals(0);
+                expect(svg0.querySelectorAll('.tau-chart__dimmed').length).to.equals(0);
 
                 var intervalNode = context.chart.select((n) => n.config.type === 'ELEMENT.INTERVAL')[0];
                 intervalNode.fire('data-hover', {data:context.chart.getData()[0]});
 
                 var svg1 = context.chart.getSVG();
                 expect(svg1.querySelectorAll('.bar').length).to.equals(4);
-                expect(svg1.querySelectorAll('.bar.graphical-report__highlighted').length).to.equals(1);
-                expect(svg1.querySelectorAll('.bar.graphical-report__dimmed').length).to.equals(0);
+                expect(svg1.querySelectorAll('.bar.tau-chart__highlighted').length).to.equals(1);
+                expect(svg1.querySelectorAll('.bar.tau-chart__dimmed').length).to.equals(0);
 
                 intervalNode.fire('data-hover', {});
 
                 var svg2 = context.chart.getSVG();
                 expect(svg2.querySelectorAll('.bar').length).to.equals(4);
-                expect(svg2.querySelectorAll('.bar.graphical-report__highlighted').length).to.equals(0);
-                expect(svg2.querySelectorAll('.bar.graphical-report__dimmed').length).to.equals(0);
+                expect(svg2.querySelectorAll('.bar.tau-chart__highlighted').length).to.equals(0);
+                expect(svg2.querySelectorAll('.bar.tau-chart__dimmed').length).to.equals(0);
             });
         },
         {
@@ -1054,7 +1054,7 @@ import testUtils from './utils/utils';
                 var testCursorAt = (part, value) => {
                     var y = ((1 - part) * top + part * bottom);
                     testUtils.simulateEvent('mousemove', svg, cx, y);
-                    var highlighted = d3.select('.graphical-report__highlighted');
+                    var highlighted = d3.select('.tau-chart__highlighted');
                     expect(highlighted.data()[0].effort).to.equal(value);
                     expect(testUtils.elementFromPoint(cx, y)).to.equal(highlighted.node());
                 };

@@ -23,7 +23,7 @@ import trendline from '../plugins/trendline';
 
                 var chart = context.chart;
 
-                var selector = '.graphical-report__trendline';
+                var selector = '.tau-chart__trendline';
                 var d3Lines = chart.getSVG().querySelectorAll(selector);
 
                 expect(d3Lines.length).to.equal(0);
@@ -53,7 +53,7 @@ import trendline from '../plugins/trendline';
 
                 var chart = context.chart;
 
-                var selector = '.graphical-report__trendlinepanel__error-message';
+                var selector = '.tau-chart__trendlinepanel__error-message';
                 var message = chart._layout.rightSidebar.querySelectorAll(selector)[0];
 
                 expect(message.innerHTML).to.equal("Trend line can't be computed for categorical data. Each axis should be either a measure or a date.");
@@ -88,7 +88,7 @@ import trendline from '../plugins/trendline';
             it('should be applied for period scale', function () {
 
                 var chart = context.chart;
-                var marker = '.graphical-report__trendline';
+                var marker = '.tau-chart__trendline';
 
                 var lineSelector = function (nodeItem) {
                     return nodeItem.config.type === 'ELEMENT.LINE';
@@ -147,7 +147,7 @@ import trendline from '../plugins/trendline';
             it('should be applied for transponed period scale', function () {
 
                 var chart = context.chart;
-                var marker = '.graphical-report__trendline';
+                var marker = '.tau-chart__trendline';
 
                 var lineSelector = function (nodeItem) {
                     return nodeItem.config.type === 'ELEMENT.LINE';
@@ -205,7 +205,7 @@ import trendline from '../plugins/trendline';
             it('should build trendline for each color category', function () {
 
                 var chart = context.chart;
-                var marker = '.graphical-report__trendline';
+                var marker = '.tau-chart__trendline';
 
                 var lineSelector = function (nodeItem) {
                     return nodeItem.config.type === 'ELEMENT.LINE';

@@ -2,19 +2,19 @@
 
 .generate-colors(@n; @i: 1) when (@i =< @n) {
 
-    .graphical-report__legend__item .color@{n}-@{i} {
+    .tau-chart__legend__item .color@{n}-@{i} {
         background: extract(@category-colors, @i);
         border: 1px solid extract(@category-colors, @i);
     }
 
-    .graphical-report__legend__item.disabled .color@{n}-@{i} {
+    .tau-chart__legend__item.disabled .color@{n}-@{i} {
         background-color: transparent;
     }
 
     .generate-colors(@n; (@i + 1));
 }
 
-.graphical-report {
+.tau-chart {
 
     &__legend {
         padding: 20px 0 10px 10px;

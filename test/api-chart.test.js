@@ -446,7 +446,7 @@ import layers from '../plugins/layers';
                 .map((el) => el.getBoundingClientRect());
             var cx = (Math.min(...rects.map(r => r.left)) + Math.max(...rects.map(r => r.right)) / 2);
             var bottom = Math.max(...rects.map(r => r.bottom));
-            var getHighlightedData = (() => d3.select('.graphical-report__highlighted').data()[0]);
+            var getHighlightedData = (() => d3.select('.tau-chart__highlighted').data()[0]);
 
             utils.simulateEvent('mousemove', svg, cx, bottom);
             expect(getHighlightedData().x).to.equal(1);
@@ -459,7 +459,7 @@ import layers from '../plugins/layers';
                 .map((el) => el.getBoundingClientRect());
             var cx = (Math.min(...rects.map(r => r.left)) + Math.max(...rects.map(r => r.right)) / 2);
             var bottom = Math.max(...rects.map(r => r.bottom));
-            var getHighlightedData = (() => d3.select('.graphical-report__highlighted').data()[0]);
+            var getHighlightedData = (() => d3.select('.tau-chart__highlighted').data()[0]);
 
             utils.simulateEvent('mousemove', svg, cx, bottom);
             setTimeout(() => {
@@ -475,7 +475,7 @@ import layers from '../plugins/layers';
                 .map((el) => el.getBoundingClientRect());
             var cx = (Math.min(...rects.map(r => r.left)) + Math.max(...rects.map(r => r.right)) / 2);
             var bottom = Math.max(...rects.map(r => r.bottom));
-            var getHighlightedData = (() => d3.select('.graphical-report__highlighted').data()[0]);
+            var getHighlightedData = (() => d3.select('.tau-chart__highlighted').data()[0]);
 
             var hoverCount = 0;
             var clickCount = 0;
@@ -534,9 +534,9 @@ import layers from '../plugins/layers';
         var cx = ((rect.left + rect.right) / 2);
         var cy = ((rect.bottom + rect.top) / 2);
         utils.simulateEvent('mousemove', svg, cx, cy - 10);
-        expect(d3.select('.graphical-report__highlighted').data()[0]['Layer Type']).to.equal('count');
+        expect(d3.select('.tau-chart__highlighted').data()[0]['Layer Type']).to.equal('count');
         utils.simulateEvent('mousemove', svg, cx, cy + 10);
-        expect(d3.select('.graphical-report__highlighted').data()[0]['Layer Type']).to.equal('value');
+        expect(d3.select('.tau-chart__highlighted').data()[0]['Layer Type']).to.equal('value');
 
         chart.destroy();
         document.body.removeChild(container);
@@ -701,7 +701,7 @@ import layers from '../plugins/layers';
 
             describe('insert dom element', function () {
                 expect(divTest).to.eql(res);
-                expect($.contains(div.querySelector('.graphical-report__layout__header'), divTest)).to.be.ok;
+                expect($.contains(div.querySelector('.tau-chart__layout__header'), divTest)).to.be.ok;
                 $div.remove();
             });
 
@@ -720,7 +720,7 @@ import layers from '../plugins/layers';
 
             describe('insert dom element', function () {
                 expect(divTest).to.eql(res);
-                expect($.contains(div.querySelector('.graphical-report__layout__footer'), divTest)).to.be.ok;
+                expect($.contains(div.querySelector('.tau-chart__layout__footer'), divTest)).to.be.ok;
                 $div.remove();
             });
 

@@ -84,28 +84,28 @@ const MIN_ANCHOR_RADIUS = 4;
             expect(testUtils.hasClass(paths[0], 'color20-1')).to.equal(true);
             expect(testUtils.hasClass(paths[1], 'color20-2')).to.equal(true);
 
-            expect(testUtils.hasClass(paths[0], 'graphical-report__highlighted')).to.equal(false);
-            expect(testUtils.hasClass(paths[0], 'graphical-report__dimmed')).to.equal(false);
-            expect(testUtils.hasClass(paths[1], 'graphical-report__highlighted')).to.equal(false);
-            expect(testUtils.hasClass(paths[1], 'graphical-report__dimmed')).to.equal(false);
+            expect(testUtils.hasClass(paths[0], 'tau-chart__highlighted')).to.equal(false);
+            expect(testUtils.hasClass(paths[0], 'tau-chart__dimmed')).to.equal(false);
+            expect(testUtils.hasClass(paths[1], 'tau-chart__highlighted')).to.equal(false);
+            expect(testUtils.hasClass(paths[1], 'tau-chart__dimmed')).to.equal(false);
 
             var pathNode = chart.select((n) => n.config.type === 'ELEMENT.PATH')[0];
 
             pathNode.fire('highlight', ((row) => (row.color === 'up')));
 
-            expect(testUtils.hasClass(paths[0], 'graphical-report__highlighted')).to.equal(true);
-            expect(testUtils.hasClass(paths[0], 'graphical-report__dimmed')).to.equal(false);
+            expect(testUtils.hasClass(paths[0], 'tau-chart__highlighted')).to.equal(true);
+            expect(testUtils.hasClass(paths[0], 'tau-chart__dimmed')).to.equal(false);
 
-            expect(testUtils.hasClass(paths[1], 'graphical-report__highlighted')).to.equal(false);
-            expect(testUtils.hasClass(paths[1], 'graphical-report__dimmed')).to.equal(true);
+            expect(testUtils.hasClass(paths[1], 'tau-chart__highlighted')).to.equal(false);
+            expect(testUtils.hasClass(paths[1], 'tau-chart__dimmed')).to.equal(true);
 
             pathNode.fire('highlight', ((row) => null));
 
-            expect(testUtils.hasClass(paths[0], 'graphical-report__highlighted')).to.equal(false);
-            expect(testUtils.hasClass(paths[0], 'graphical-report__dimmed')).to.equal(false);
+            expect(testUtils.hasClass(paths[0], 'tau-chart__highlighted')).to.equal(false);
+            expect(testUtils.hasClass(paths[0], 'tau-chart__dimmed')).to.equal(false);
 
-            expect(testUtils.hasClass(paths[1], 'graphical-report__highlighted')).to.equal(false);
-            expect(testUtils.hasClass(paths[1], 'graphical-report__dimmed')).to.equal(false);
+            expect(testUtils.hasClass(paths[1], 'tau-chart__highlighted')).to.equal(false);
+            expect(testUtils.hasClass(paths[1], 'tau-chart__dimmed')).to.equal(false);
 
             pathNode.fire('highlight-data-points', ((row) => (row.x === 0)));
 

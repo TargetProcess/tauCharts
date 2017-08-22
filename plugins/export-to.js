@@ -261,7 +261,7 @@ const MSG_TITLE = 'Taucharts Export Plug-in:';
                 this._createDataUrl(chart)
                     .then(function (dataURL) {
                         imagePlaceHolder = document.createElement('img');
-                        imagePlaceHolder.classList.add('graphical-report__print-block');
+                        imagePlaceHolder.classList.add('tau-chart__print-block');
                         var img = imagePlaceHolder;
                         document.body.appendChild(img);
                         img.src = dataURL;
@@ -744,23 +744,23 @@ const MSG_TITLE = 'Taucharts Export Plug-in:';
 
                 var menuStyle = settings.visible ? '' : 'display:none';
                 this._container = chart
-                    .insertToHeader('<a class="graphical-report__export" style="' + menuStyle + '">Export</a>');
+                    .insertToHeader('<a class="tau-chart__export" style="' + menuStyle + '">Export</a>');
                 var popup = chart.addBalloon({
                     place: 'bottom-left'
                 });
                 // jscs:disable maximumLineLength
                 popup.content([
-                    '<ul class="graphical-report__export__list">',
-                    '<li class="graphical-report__export__item">',
+                    '<ul class="tau-chart__export__list">',
+                    '<li class="tau-chart__export__item">',
                     '   <a data-value="print" tabindex="1">' + tokens.get('Print') + '</a>',
                     '</li>',
-                    '<li class="graphical-report__export__item">',
+                    '<li class="tau-chart__export__item">',
                     '   <a data-value="png" tabindex="2">' + tokens.get('Export to png') + '</a>',
                     '</li>',
-                    '<li class="graphical-report__export__item">',
+                    '<li class="tau-chart__export__item">',
                     '   <a data-value="csv" tabindex="3">' + tokens.get('Export to CSV') + '</a>',
                     '</li>',
-                    '<li class="graphical-report__export__item">',
+                    '<li class="tau-chart__export__item">',
                     '   <a data-value="json" tabindex="4">' + tokens.get('Export to JSON') + '</a>',
                     '</li>',
                     '</ul>'

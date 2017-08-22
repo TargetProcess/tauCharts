@@ -72,7 +72,7 @@ import * as d3 from 'd3-selection';
             new tauChart.Plot(spec)
                 .renderTo(testDiv);
 
-            expect(testDiv.querySelector('.graphical-report__layout__content div').innerHTML).to.equal('NODATA');
+            expect(testDiv.querySelector('.tau-chart__layout__content div').innerHTML).to.equal('NODATA');
         });
 
         it('should auto-detect dimension types', function () {

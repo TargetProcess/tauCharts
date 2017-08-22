@@ -36,13 +36,13 @@ var showTooltip = function (expect, chart, index, selectorClass, data) {
     }
     var {x, y} = getElementPosition(element);
     testUtils.simulateEvent('mousemove', element, x, y);
-    return d.resolve(document.querySelectorAll('.graphical-report__tooltip-v2'));
+    return d.resolve(document.querySelectorAll('.tau-chart__tooltip'));
 };
 
 var hideTooltip = function (expect, chart) {
     var d = testUtils.Deferred();
     testUtils.simulateEvent('mousemove', chart.getSVG(), 0, 0);
-    return d.resolve(document.querySelectorAll('.graphical-report__tooltip-v2__content'));
+    return d.resolve(document.querySelectorAll('.tau-chart__tooltip__content'));
 };
 
 var getSelectorByChartType = function (type) {
@@ -100,7 +100,7 @@ chartType.forEach(function (item) {
                 this.timeout(5000);
                 showTooltip(expect, context.chart, 0, getSelectorByChartType(item), data)
                     .then(function (content) {
-                        var items = content[0].querySelectorAll('.graphical-report__tooltip-v2__list__item');
+                        var items = content[0].querySelectorAll('.tau-chart__tooltip__list__item');
                         expect(items[0].textContent).to.be.equal('x2');
                         expect(items[1].textContent).to.be.equal('y2');
                         expect(items[2].textContent).to.be.equal('coloryellow');
@@ -109,17 +109,17 @@ chartType.forEach(function (item) {
                         return hideTooltip(expect, context.chart, 0, getSelectorByChartType(item), data);
                     })
                     .then(function () {
-                        var content = document.querySelectorAll('.graphical-report__tooltip-v2__content');
+                        var content = document.querySelectorAll('.tau-chart__tooltip__content');
                         expect(content.length).to.equal(0);
                         return showTooltip(expect, context.chart, 0, getSelectorByChartType(item), data);
                     })
                     .then(function () {
-                        var content = document.querySelectorAll('.graphical-report__tooltip-v2__content');
+                        var content = document.querySelectorAll('.tau-chart__tooltip__content');
                         expect(content.length).to.be.above(0);
                         var excluder = document.querySelectorAll('.i-role-exclude')[0];
                         testUtils.simulateEvent('click', excluder);
                         var d = testUtils.Deferred();
-                        content = document.querySelectorAll('.graphical-report__tooltip-v2__content');
+                        content = document.querySelectorAll('.tau-chart__tooltip__content');
                         expect(content.length).to.equal(0);
                         var data = context.chart.getChartModelData();
                         var expected = data.sort((a1, a2) => a1.x - a2.x);
@@ -152,10 +152,10 @@ chartType.forEach(function (item) {
                         return showTooltip(expect, context.chart, 0, getSelectorByChartType(item), data);
                     })
                     .then(function () {
-                        var content = document.querySelectorAll('.graphical-report__tooltip-v2__content');
+                        var content = document.querySelectorAll('.tau-chart__tooltip__content');
                         expect(content.length).to.be.above(0);
                         context.chart.destroy();
-                        content = document.querySelectorAll('.graphical-report__tooltip-v2__content');
+                        content = document.querySelectorAll('.tau-chart__tooltip__content');
                         expect(content.length).to.equal(0);
                         window.setTimeout = originTimeout;
                         return hideTooltip(expect, context.chart, 0, getSelectorByChartType(item), data);
@@ -241,7 +241,7 @@ chartType.forEach(function (item) {
                 showTooltip(expect, context.chart, 0, elementSelector)
                     .then(function (content) {
                         expect(content.length).to.be.above(0);
-                        var tooltipElements = content[0].querySelectorAll('.graphical-report__tooltip-v2__list__elem');
+                        var tooltipElements = content[0].querySelectorAll('.tau-chart__tooltip__list__elem');
                         var texts = Array.from(tooltipElements).map((x) => x.textContent);
                         expect(texts).to.be.eql(['x', '2', 'color', 'yellow']);
 
@@ -258,7 +258,7 @@ chartType.forEach(function (item) {
                     })
                     .then(function (content) {
                         expect(content.length).to.be.above(0);
-                        var tooltipElements = content[0].querySelectorAll('.graphical-report__tooltip-v2__list__elem');
+                        var tooltipElements = content[0].querySelectorAll('.tau-chart__tooltip__list__elem');
                         var texts = Array.from(tooltipElements).map((x) => x.textContent);
                         expect(texts).to.be.eql(['y', '3']);
                         return hideTooltip(expect, context.chart, 0, elementSelector);
@@ -380,7 +380,7 @@ describeChart("tooltip formatting",
 
             var validateLabel = function ($content, label, value) {
                 var $label = $content
-                    .find('.graphical-report__tooltip-v2__list__elem:contains("' + label + '"):first').parent();
+                    .find('.tau-chart__tooltip__list__elem:contains("' + label + '"):first').parent();
 
                 expect($label.length).to.be.eql(1, 'Label ' + label + ' present');
                 expect($label.children()[1].innerText).to.be.eql(value, 'Label value is correct');
@@ -443,9 +443,9 @@ describeChart(
             var {x, y} = getElementPosition(datum)
             testUtils.simulateEvent('mousemove', datum, x, y);
 
-            var content = document.querySelectorAll('.graphical-report__tooltip-v2');
+            var content = document.querySelectorAll('.tau-chart__tooltip');
 
-            var tooltipElements = content[0].querySelectorAll('.graphical-report__tooltip-v2__list__elem');
+            var tooltipElements = content[0].querySelectorAll('.tau-chart__tooltip__list__elem');
             var texts = Array.from(tooltipElements).map((x) => x.textContent);
             expect(texts).to.be.eql(['x', '2', 'y', '2']);
 

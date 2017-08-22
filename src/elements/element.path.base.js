@@ -411,8 +411,8 @@ const BasePath = {
 
         const container = this.node().config.options.container;
 
-        const x = 'graphical-report__highlighted';
-        const _ = 'graphical-report__dimmed';
+        const x = 'tau-chart__highlighted';
+        const _ = 'tau-chart__dimmed';
 
         const paths = container.selectAll('.i-role-path');
         const targetFibers = paths.data()
