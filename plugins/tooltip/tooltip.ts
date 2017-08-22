@@ -174,7 +174,9 @@ export default class Tooltip {
                     // Dispatch `mouseleave` (should cause `data-hover` with empty data
                     // and should dispatch leaving focus for some plugins like Crosshair)
                     const svg = this._chart.getSVG();
-                    domUtils.dispatchMouseEvent(svg, 'mouseleave');
+                    if (svg) {
+                        domUtils.dispatchMouseEvent(svg, 'mouseleave');
+                    }
                 });
             }
         }
