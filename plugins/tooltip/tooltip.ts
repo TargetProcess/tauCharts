@@ -324,7 +324,7 @@ export default class Tooltip {
     }
 
     _getRenderHandler() {
-        return () => {
+        return function (this: Tooltip) {
             const info = this._getFormatters();
             this.metaInfo = info.meta;
             this.skipInfo = info.skip;
