@@ -96,8 +96,8 @@ class DiffTooltip extends Tooltip {
 
     _getRenderHandler() {
         const baseOnRender = super._getRenderHandler();
-        return () => {
-            baseOnRender();
+        return function (this: DiffTooltip) {
+            baseOnRender.call(this);
 
             const chart = this._chart;
 
@@ -128,7 +128,7 @@ class DiffTooltip extends Tooltip {
     }
 
     _getSpecReadyHandler() {
-        return (chart, specRef: GPLSpec) => {
+        return function (this: DiffTooltip, chart: Plot, specRef: GPLSpec) {
             var highlightsCount = 0;
             chart.traverseSpec(specRef, (unit, parentUnit) => {
                 if (unit.type.indexOf('ELEMENT.') !== 0) {
