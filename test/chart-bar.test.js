@@ -208,7 +208,7 @@ const {noScrollStyle} = testUtils;
             });
             bar.renderTo(testDiv);
             assert.equal(Number(bar.getSVG().getAttribute('width')), 800, 'chart width');
-            assert.equal(Number(bar.getSVG().getAttribute('height')), 1075, 'chart height');
+            assert.equal(Number(bar.getSVG().getAttribute('height')), 2075, 'chart height');
             bar.destroy();
             removeTestDiv();
         });

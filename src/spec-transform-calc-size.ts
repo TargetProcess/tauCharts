@@ -300,7 +300,8 @@ export class SpecTransformCalcSize implements SpecTransformer {
             ) {
 
                 const labelFontSize = (guide.label && guide.label.fontSize ? guide.label.fontSize : 10);
-                var rowsTotal = root.frames.reduce((sum, f) => f.full().length * labelFontSize, 0);
+                const labelHeight = (labelFontSize * 2);
+                const rowsTotal = root.frames.reduce((sum, f) => f.part().length * labelHeight, 0);
                 var scaleSize = calcScaleSize(chart.getScaleInfo(xCfg, frame), xSize);
                 return resScaleSize + Math.max(rowsTotal, scaleSize);
 
