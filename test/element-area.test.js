@@ -66,28 +66,28 @@ const MIN_ANCHOR_RADIUS = 4;
             var areas = getArea();
             expect(areas.length).to.equal(2, 'should render two area elements');
 
-            expect(testUtils.hasClass(areas[0], 'graphical-report__highlighted')).to.equal(false);
-            expect(testUtils.hasClass(areas[0], 'graphical-report__dimmed')).to.equal(false);
-            expect(testUtils.hasClass(areas[1], 'graphical-report__highlighted')).to.equal(false);
-            expect(testUtils.hasClass(areas[1], 'graphical-report__dimmed')).to.equal(false);
+            expect(testUtils.hasClass(areas[0], 'tau-chart__highlighted')).to.equal(false);
+            expect(testUtils.hasClass(areas[0], 'tau-chart__dimmed')).to.equal(false);
+            expect(testUtils.hasClass(areas[1], 'tau-chart__highlighted')).to.equal(false);
+            expect(testUtils.hasClass(areas[1], 'tau-chart__dimmed')).to.equal(false);
 
             var areaNode = chart.select((n) => n.config.type === 'ELEMENT.AREA')[0];
 
             areaNode.fire('highlight', ((row) => (row.color === 'up')));
 
-            expect(testUtils.hasClass(areas[0], 'graphical-report__highlighted')).to.equal(true);
-            expect(testUtils.hasClass(areas[0], 'graphical-report__dimmed')).to.equal(false);
+            expect(testUtils.hasClass(areas[0], 'tau-chart__highlighted')).to.equal(true);
+            expect(testUtils.hasClass(areas[0], 'tau-chart__dimmed')).to.equal(false);
 
-            expect(testUtils.hasClass(areas[1], 'graphical-report__highlighted')).to.equal(false);
-            expect(testUtils.hasClass(areas[1], 'graphical-report__dimmed')).to.equal(true);
+            expect(testUtils.hasClass(areas[1], 'tau-chart__highlighted')).to.equal(false);
+            expect(testUtils.hasClass(areas[1], 'tau-chart__dimmed')).to.equal(true);
 
             areaNode.fire('highlight', ((row) => null));
 
-            expect(testUtils.hasClass(areas[0], 'graphical-report__highlighted')).to.equal(false);
-            expect(testUtils.hasClass(areas[0], 'graphical-report__dimmed')).to.equal(false);
+            expect(testUtils.hasClass(areas[0], 'tau-chart__highlighted')).to.equal(false);
+            expect(testUtils.hasClass(areas[0], 'tau-chart__dimmed')).to.equal(false);
 
-            expect(testUtils.hasClass(areas[1], 'graphical-report__highlighted')).to.equal(false);
-            expect(testUtils.hasClass(areas[1], 'graphical-report__dimmed')).to.equal(false);
+            expect(testUtils.hasClass(areas[1], 'tau-chart__highlighted')).to.equal(false);
+            expect(testUtils.hasClass(areas[1], 'tau-chart__dimmed')).to.equal(false);
 
             areaNode.fire('highlight-data-points', ((row) => (row.x === 0)));
 

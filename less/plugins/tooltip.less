@@ -3,8 +3,8 @@
 @tooltip_max-width: 500px;
 @tooltip_shadow: 0 1px 4px 0 fade(@shadow-color, 20%), 0 0 0 1px fade(@shadow-color, 0.5%);
 
-.graphical-report {
-    &__tooltip-v2 {
+.tau-chart {
+    &__tooltip {
         background: fade(@bg-color, 90%);
         position: absolute;
         top: 0;
@@ -166,18 +166,18 @@
         }
     }
 
-    &__tooltip-v2-target {
+    &__tooltip-target {
         cursor: pointer;
     }
 
-    &__tooltip-v2-target &__dot&__highlighted,
-    &__tooltip-v2-target &__bar&__highlighted,
-    &__tooltip-v2-target .i-data-anchor&__highlighted {
+    &__tooltip-target &__dot&__highlighted,
+    &__tooltip-target &__bar&__highlighted,
+    &__tooltip-target .i-data-anchor&__highlighted {
         stroke: @font-color;
         stroke-width: 1;
     }
 
-    &__tooltip-v2-target &__bar&__highlighted {
+    &__tooltip-target &__bar&__highlighted {
         shape-rendering: crispEdges;
     }
 }

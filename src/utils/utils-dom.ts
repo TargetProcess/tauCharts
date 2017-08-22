@@ -102,8 +102,8 @@ var scrollbarSizes: WeakMap<Node, {width: number; height: number;}> = new WeakMa
         div.style.top = '0';
         document.body.appendChild(div);
 
-        div.innerHTML = `<svg class="graphical-report__svg">
-                <g class="graphical-report__cell cell">
+        div.innerHTML = `<svg class="tau-chart__svg">
+                <g class="tau-chart__cell cell">
                 <g class="x axis">
                 <g class="tick"><text>${text}</text></g>
                 </g>

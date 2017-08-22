@@ -202,7 +202,7 @@ Taucharts.api.globalSettings.experimentalShouldAnimate = () => true;
                 style = document.createElement('style');
                 style.id = 'noScrollStyle';
                 style.textContent = [
-                    '.graphical-report__layout__content, .graphical-report__layout__sidebar-right {',
+                    '.tau-chart__layout__content, .tau-chart__layout__sidebar-right {',
                     '  overflow: visible !important;',
                     '  padding: 0 !important;',
                     '}'

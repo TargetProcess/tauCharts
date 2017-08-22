@@ -677,23 +677,23 @@ describe('ELEMENT.INTERVAL.STACKED', function () {
 
         var svg0 = chart.getSVG();
         expect(svg0.querySelectorAll('.bar').length).to.equals(3);
-        expect(svg0.querySelectorAll('.graphical-report__highlighted').length).to.equals(0);
-        expect(svg0.querySelectorAll('.graphical-report__dimmed').length).to.equals(0);
+        expect(svg0.querySelectorAll('.tau-chart__highlighted').length).to.equals(0);
+        expect(svg0.querySelectorAll('.tau-chart__dimmed').length).to.equals(0);
 
         var intervalNode = chart.select((n) => n.config.type === 'ELEMENT.INTERVAL')[0];
         intervalNode.fire('highlight', ((row) => (row.s > 0)));
 
         var svg1 = chart.getSVG();
         expect(svg1.querySelectorAll('.bar').length).to.equals(3);
-        expect(svg1.querySelectorAll('.graphical-report__highlighted').length).to.equals(2);
-        expect(svg1.querySelectorAll('.graphical-report__dimmed').length).to.equals(1);
+        expect(svg1.querySelectorAll('.tau-chart__highlighted').length).to.equals(2);
+        expect(svg1.querySelectorAll('.tau-chart__dimmed').length).to.equals(1);
 
         intervalNode.fire('highlight', ((row) => (null)));
 
         var svg2 = chart.getSVG();
         expect(svg2.querySelectorAll('.bar').length).to.equals(3);
-        expect(svg2.querySelectorAll('.graphical-report__highlighted').length).to.equals(0);
-        expect(svg2.querySelectorAll('.graphical-report__dimmed').length).to.equals(0);
+        expect(svg2.querySelectorAll('.tau-chart__highlighted').length).to.equals(0);
+        expect(svg2.querySelectorAll('.tau-chart__dimmed').length).to.equals(0);
     });
 
     it('should infer color order from data by default', function () {

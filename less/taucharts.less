@@ -12,7 +12,7 @@
 
 .generate-colors(@n; @i: 1) when (@i =< @n) {
 
-    .graphical-report__svg .color@{n}-@{i} {
+    .tau-chart__svg .color@{n}-@{i} {
         stroke: extract(@category-colors, @i);
         fill: extract(@category-colors, @i);
     }
@@ -21,7 +21,7 @@
 }
 
 .generate-colors(@list_category-colors);
-.graphical-report__svg {
+.tau-chart__svg {
     .color-default {
         stroke: @default-color;
         fill: @default-color;
@@ -34,7 +34,7 @@
 
 .generate-line-params(@params; @default-size; @step; @n; @i: 1) when (@i =< @n) {
 
-    .graphical-report__line-@{params}-@{i} {
+    .tau-chart__line-@{params}-@{i} {
         stroke-@{params}: @default-size;
     }
 
@@ -51,7 +51,7 @@
 
 /* endregion */
 
-.graphical-report {
+.tau-chart {
     /* Links */
     a {
         color: @link-color;
@@ -290,7 +290,7 @@
 
     /* TODO: fix to avoid conflict on "stroke" with color brewer */
     /* TODO: remove this when CSS for color brewer is fixed */
-    .graphical-report__svg &__bar {
+    .tau-chart__svg &__bar {
         stroke: #fff;
     }
 

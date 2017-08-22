@@ -57,8 +57,8 @@ import * as cssClassMap from '../src/utils/css-class-map';
             assert.ok(schemes.lineGPL(chart.getSpec()), 'spec is right');
             expect(lines.length).to.equal(2);
             assert.notEqual(attrib(lines[0], 'class'), attrib(lines[1], 'class'), 'should different class');
-            assert.ok(testUtils.hasClass(lines[0],'graphical-report__line-width-5'), 'should different class');
-            assert.ok(testUtils.hasClass(lines[0],'graphical-report__line-opacity-2'), 'should different class');
+            assert.ok(testUtils.hasClass(lines[0],'tau-chart__line-width-5'), 'should different class');
+            assert.ok(testUtils.hasClass(lines[0],'tau-chart__line-opacity-2'), 'should different class');
         });
     });
     describe("ELEMENT.LINE WITH ONE POINT", function () {
@@ -107,10 +107,10 @@ import * as cssClassMap from '../src/utils/css-class-map';
 
     describe("ELEMENT.LINE generates class in depend on size and count line", function(){
         var assertClassByCount = function(value,index){
-            expect(value).to.equal('graphical-report__line-opacity-' + index);
+            expect(value).to.equal('tau-chart__line-opacity-' + index);
         };
         var assertClassByWidth = function(value,index){
-            expect(value).to.equal('graphical-report__line-width-' + index);
+            expect(value).to.equal('tau-chart__line-width-' + index);
         };
         assertClassByCount(cssClassMap.getLineClassesByCount(1),1);
         assertClassByCount(cssClassMap.getLineClassesByCount(2),2);
@@ -392,22 +392,22 @@ import * as cssClassMap from '../src/utils/css-class-map';
             it("should support highlight event", function () {
                 var svg0 = context.chart.getSVG();
                 expect(svg0.querySelectorAll('.i-role-label').length).to.equals(4);
-                expect(svg0.querySelectorAll('.graphical-report__highlighted').length).to.equals(0);
-                expect(svg0.querySelectorAll('.graphical-report__dimmed').length).to.equals(0);
+                expect(svg0.querySelectorAll('.tau-chart__highlighted').length).to.equals(0);
+                expect(svg0.querySelectorAll('.tau-chart__dimmed').length).to.equals(0);
 
                 var pointNode = context.chart.select((n) => n.config.type === 'ELEMENT.LINE')[0];
                 pointNode.fire('highlight', ((row) => (row.color === 'green')));
 
                 var svg1 = context.chart.getSVG();
-                expect(svg1.querySelectorAll('.i-role-label.graphical-report__highlighted').length).to.equals(1);
-                expect(svg1.querySelectorAll('.i-role-label.graphical-report__dimmed').length).to.equals(3);
+                expect(svg1.querySelectorAll('.i-role-label.tau-chart__highlighted').length).to.equals(1);
+                expect(svg1.querySelectorAll('.i-role-label.tau-chart__dimmed').length).to.equals(3);
 
                 pointNode.fire('highlight', ((row) => null));
 
                 var svg2 = context.chart.getSVG();
                 expect(svg2.querySelectorAll('.i-role-label').length).to.equals(4);
-                expect(svg2.querySelectorAll('.i-role-label.graphical-report__highlighted').length).to.equals(0);
-                expect(svg2.querySelectorAll('.i-role-label.graphical-report__dimmed').length).to.equals(0);
+                expect(svg2.querySelectorAll('.i-role-label.tau-chart__highlighted').length).to.equals(0);
+                expect(svg2.querySelectorAll('.i-role-label.tau-chart__dimmed').length).to.equals(0);
             });
         }
     );
@@ -483,9 +483,9 @@ import * as cssClassMap from '../src/utils/css-class-map';
                 var points = svg.querySelectorAll('.i-data-anchor');
 
                 testUtils.simulateEvent('mousemove', svg, cx, cy - 10);
-                expect(d3.select('.graphical-report__highlighted').data()[0]).to.deep.equal({x: 2, y: 2, t: 'A'});
+                expect(d3.select('.tau-chart__highlighted').data()[0]).to.deep.equal({x: 2, y: 2, t: 'A'});
                 testUtils.simulateEvent('mousemove', svg, cx, cy + 10);
-                expect(d3.select('.graphical-report__highlighted').data()[0]).to.deep.equal({x: 2, y: 2, t: 'B'});
+                expect(d3.select('.tau-chart__highlighted').data()[0]).to.deep.equal({x: 2, y: 2, t: 'B'});
             });
         }
     );

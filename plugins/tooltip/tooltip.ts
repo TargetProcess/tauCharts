@@ -7,7 +7,7 @@ import {DimInfo, DimMap} from '../../src/plugins-sdk';
 const utils = Taucharts.api.utils;
 const domUtils = Taucharts.api.domUtils;
 const pluginsSDK = Taucharts.api.pluginsSDK;
-const TOOLTIP_CLS = 'graphical-report__tooltip-v2';
+const TOOLTIP_CLS = 'tau-chart__tooltip';
 
 export default class Tooltip {
 
