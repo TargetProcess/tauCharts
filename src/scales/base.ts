@@ -30,6 +30,7 @@ export abstract class BaseScale implements ScaleFields {
     scaleType: string;
     source: string;
     domain: () => any[];
+    discrete: boolean;
     isInteger: boolean;
     originalSeries: () => any[];
     isContains: (x) => boolean;
