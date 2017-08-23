@@ -1,5 +1,6 @@
 import * as utils from './utils/utils';
 import {SpecTransformOptimize} from './spec-transform-optimize';
+import {DataFrame} from './data-frame';
 import {
     ChartSettings,
     DataFrameObject,
@@ -301,8 +302,12 @@ export class SpecTransformCalcSize implements SpecTransformer {
 
                 const labelFontSize = (guide.label && guide.label.fontSize ? guide.label.fontSize : 10);
                 const labelHeight = (labelFontSize * 2);
-                const rowsTotal = root.frames.reduce((sum, f) => f.part().length * labelHeight, 0);
-                var scaleSize = calcScaleSize(chart.getScaleInfo(xCfg, frame), xSize);
+                const xScale = chart.getScaleInfo(xCfg, frame);
+                const getFrameHeight = (root.units[0].stack ?
+                    ((f: DataFrame) => utils.unique(f.part().map((d) => d[xScale.dim])).length * labelHeight) :
+                    ((f: DataFrame) => f.part().length * labelHeight));
+                const rowsTotal = root.frames.reduce((sum, f) => sum + getFrameHeight(f), 0);
+                const scaleSize = calcScaleSize(xScale, xSize);
                 return resScaleSize + Math.max(rowsTotal, scaleSize);
 
             } else if (root.units[0].type !== 'COORDS.RECT') {
