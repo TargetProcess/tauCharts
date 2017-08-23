@@ -304,16 +304,18 @@ export class SpecTransformCalcSize implements SpecTransformer {
                 const labelFontSize = (guide.label && guide.label.fontSize ? guide.label.fontSize : 10);
                 const labelHeight = (labelFontSize * 2);
                 const xScale = chart.getScaleInfo(xCfg, frame);
-                const distributeByColor = (firstUnit.guide.enableColorToBarPosition == null ?
+                const distributeByColor = (xScale.discrete && (firstUnit.guide.enableColorToBarPosition == null ?
                     !firstUnit.stack :
-                    firstUnit.guide.enableColorToBarPosition);
+                    firstUnit.guide.enableColorToBarPosition));
                 let kColor = 1;
                 if (distributeByColor) {
                     const colorCfg = firstUnit.color;
                     if (colorCfg) {
                         const colorScale = chart.getScaleInfo(colorCfg, frame);
-                        const allColors = colorScale.domain();
-                        kColor = allColors.length;
+                        if (colorScale.discrete) {
+                            const allColors = colorScale.domain();
+                            kColor = allColors.length;
+                        }
                     }
                 }
                 const getFrameHeight = ((f: DataFrame) => {
