@@ -289,28 +289,44 @@ export class SpecTransformCalcSize implements SpecTransformer {
             var yCfg = (prop === 'x') ? root.y : root.x;
             var guide = root.guide;
             var xSize = (prop === 'x') ? takeStepSizeStrategy(guide.x) : takeStepSizeStrategy(guide.y);
+            const firstUnit = root.units[0];
 
             var resScaleSize = (prop === 'x') ?
                 (guide.padding.l + guide.padding.r) :
                 (guide.padding.b + guide.padding.t);
 
-            if (root.units[0].type === 'ELEMENT.INTERVAL' &&
-                (prop === 'y') === Boolean(root.units[0].flip) &&
-                root.units[0].label &&
-                !chart.getScaleInfo(root.units[0].label, frame).isEmpty()
+            if (firstUnit.type === 'ELEMENT.INTERVAL' &&
+                (prop === 'y') === Boolean(firstUnit.flip) &&
+                firstUnit.label &&
+                !chart.getScaleInfo(firstUnit.label, frame).isEmpty()
             ) {
 
                 const labelFontSize = (guide.label && guide.label.fontSize ? guide.label.fontSize : 10);
                 const labelHeight = (labelFontSize * 2);
                 const xScale = chart.getScaleInfo(xCfg, frame);
-                const getFrameHeight = (root.units[0].stack ?
-                    ((f: DataFrame) => utils.unique(f.part().map((d) => d[xScale.dim])).length * labelHeight) :
-                    ((f: DataFrame) => f.part().length * labelHeight));
+                const distributeByColor = (firstUnit.guide.enableColorToBarPosition == null ?
+                    !firstUnit.stack :
+                    firstUnit.guide.enableColorToBarPosition);
+                let kColor = 1;
+                if (distributeByColor) {
+                    const colorCfg = firstUnit.color;
+                    if (colorCfg) {
+                        const colorScale = chart.getScaleInfo(colorCfg, frame);
+                        const allColors = colorScale.domain();
+                        kColor = allColors.length;
+                    }
+                }
+                const getFrameHeight = ((f: DataFrame) => {
+                    const allX = f.part().map((d) => d[xScale.dim]);
+                    const allUnitX = f.part().map((d) => d[xScale.dim]);
+                    const xCount = utils.unique(allX).length;
+                    return (xCount * kColor * labelHeight);
+                });
                 const rowsTotal = root.frames.reduce((sum, f) => sum + getFrameHeight(f), 0);
                 const scaleSize = calcScaleSize(xScale, xSize);
                 return resScaleSize + Math.max(rowsTotal, scaleSize);
 
-            } else if (root.units[0].type !== 'COORDS.RECT') {
+            } else if (firstUnit.type !== 'COORDS.RECT') {
 
                 var xScale = chart.getScaleInfo(xCfg, frame);
                 return resScaleSize + calcScaleSize(xScale, xSize);
