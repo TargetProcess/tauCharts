@@ -173,7 +173,8 @@ const {noScrollStyle} = testUtils;
         var testData = tauChart.api.utils.range(100).map(function (i) {
             return {
                 x: 20,
-                y: i
+                y: i,
+                c: ['a', 'b', 'c'][i % 3]
             };
         });
 
@@ -208,7 +209,24 @@ const {noScrollStyle} = testUtils;
             });
             bar.renderTo(testDiv);
             assert.equal(Number(bar.getSVG().getAttribute('width')), 800, 'chart width');
-            assert.equal(Number(bar.getSVG().getAttribute('height')), 1075, 'chart height');
+            assert.equal(Number(bar.getSVG().getAttribute('height')), 2075, 'chart height');
+            bar.destroy();
+            removeTestDiv();
+        });
+
+        it('should reserve space when stacked bar label is set', function () {
+            var testDiv = createTestDiv('should reserve space when stacked bar label is set');
+            var bar = new tauChart.Chart({
+                type: 'horizontal-stacked-bar',
+                data: testData.map((d, i) => Object.assign({}, d, {dy: String(i % 40)})),
+                x: 'x',
+                y: 'dy',
+                color: 'c',
+                label: 'y'
+            });
+            bar.renderTo(testDiv);
+            assert.equal(Number(bar.getSVG().getAttribute('width')), 800, 'chart width');
+            assert.equal(Number(bar.getSVG().getAttribute('height')), 875, 'chart height');
             bar.destroy();
             removeTestDiv();
         });

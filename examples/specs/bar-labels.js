@@ -8,7 +8,7 @@
     }
 
     var barData = utils.flatten(utils.range(3).map(function (i) {
-        var team = ['Team A', 'Team B', 'Team C', 'Team D', 'Team E'][i];
+        var team = ['Team A', 'Team B', 'Team C', 'Team D', 'Team E', 'Team F', 'Team G', 'Team H'][i];
         return utils.range(5).map(function (i) {
             var status = ['No Epic', 'Ideation', 'Planning', 'Development', 'Sourcing'][i];
             return utils.range(2).map(function (i) {
@@ -28,6 +28,22 @@
             type: 'horizontal-bar',
             x: 'hours',
             y: ['team', 'type'],
+            color: 'status',
+            label: 'hours',
+            guide: [{}, {
+                label: {
+                    fontSize: 12
+                }
+            }],
+            data: barData
+        };
+    })());
+
+    dev.spec((function () {
+        return {
+            type: 'horizontal-stacked-bar',
+            x: 'hours',
+            y: 'team',
             color: 'status',
             label: 'hours',
             guide: [{}, {
