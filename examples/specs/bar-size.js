@@ -1,7 +1,7 @@
 dev.spec({
 
-    _name: 'Funnel',
-    _desc: 'Look, it is a stacked bar chart with size assigned',
+    title: 'Funnel',
+    description: 'Look, it is a stacked bar chart with size assigned',
 
     type: 'stacked-bar',
     y: ['count'],

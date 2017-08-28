@@ -1,21 +1,18 @@
 dev.spec({
 
-    _name: 'Histogram: amount of olympic medals per athlete age',
-    _desc: 'Looks like there are no chances to get medals in Rhythmic Gymnastics after 25...',
+    _name: 'Amount of olympic medals per athlete age',
+    _desc: 'Same data in one place. Sport encoded by color',
 
-    type: 'bar',
-    y: ['Sport', 'SUM(Total Medals)'],
+    type: 'line',
+    y: ['SUM(Total Medals)'],
     x: ['Age'],
-    // color: 'Sport',
+    color: 'Sport',
 
     plugins: [
         Taucharts.api.plugins.get('legend')(),
+        Taucharts.api.plugins.get('crosshair')(),
         Taucharts.api.plugins.get('tooltip')()
     ],
-
-    settings: {
-        layoutEngine: 'NONE'
-    },
 
     data: dev.dataset('olympics', function (data) {
         var processedData = data
@@ -34,10 +31,9 @@ dev.spec({
                 return memo;
             },
             {});
-
         return Object.keys(processedData).map(function (key) {
             return processedData[key];
         });
-    })
 
+    })
 });

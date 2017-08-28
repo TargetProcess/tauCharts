@@ -1,7 +1,7 @@
 dev.spec({
 
-    _name: 'Compare USA and Canada in amount of olympic medals per athlete age',
-    _desc: 'Looks like colored bar chart is mush better',
+    title: 'Compare USA and Canada in amount of olympic medals per athlete age',
+    description: 'Looks like colored bar chart is mush better',
 
     type: 'bar',
     y: ['Sport', 'SUM(Total Medals)'],

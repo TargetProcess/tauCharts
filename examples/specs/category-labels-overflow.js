@@ -1,4 +1,7 @@
 dev.spec({
+
+    description: 'Labels should be placed inside or outside of bars',
+
     "flip": false,
     // "stack": true,
     "type": "horizontal-bar",    
