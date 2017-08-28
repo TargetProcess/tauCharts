@@ -9,21 +9,34 @@
     //
     var PATHS = {
         'specs/': [
-            fileRange('ex-', range(0, 3), 5, range(9, 15)),
+            'cumulative-flow',
+            'scatterplot',
+            'stacked-bar',
+            'many-lines',
+            'colored-bar',
+            'horizontal-scroll',
+
             'area-interpolation',
             'bar-labels',
-            'big-data',
+            'bar-size',
             'category-labels-overflow',
-            'cumulative-flow',
-            'horizontal-scroll',
+            'continuous-bar_facet',
+            'facets_no-layout-engine',
             'legend-flip',
             'linear-bars',
             'logarithmic-scale',
+            'map',
+            'ordinal-facets',
+            'scatterplot_facet_trendline',
+            'scatterplot_legend-at-bottom',
             'smooth-line',
             'time-interval',
             'timeline',
             'utc',
-            'whiskers'
+            'vertical-ordinal-facets',
+            'whiskers',
+
+            'slow-rendering'
         ],
         'dev-quick-test/': fileRange(
             'ex-',
@@ -133,7 +146,7 @@
         var l = window.location;
         Object.defineProperty(spec, 'filePath', {
             value: (document.currentScript ?
-                document.currentScript.src.replace(l.protocol + '//' + l.host + '/', '') :
+                document.currentScript.src.replace(l.protocol + '//' + l.host + '/', '').replace(/^examples\//, '') :
                 'Unknown path ' + this._unknownPathCounter++
             )
         });
@@ -181,6 +194,7 @@
             s.onload = s.onerror = function () {
                 loaded++;
                 if (loaded === pathsToLoad.length) {
+                    this._sortSpecsByPaths(pathsToLoad);
                     this._renderCharts();
                 }
             }.bind(this);
@@ -296,6 +310,16 @@
                 this._charts.push(chart);
             }
         };
+    };
+
+    DevApp.prototype._sortSpecsByPaths = function (paths) {
+        var indices = paths.reduce(function (map, p, i) {
+            map[p] = i;
+            return map;
+        }, {});
+        this._specs.sort(function (a, b) {
+            return (indices[a.filePath] - indices[b.filePath]);
+        });
     };
 
     DevApp.prototype._renderVisibleCharts = function () {

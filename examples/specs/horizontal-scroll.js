@@ -65,6 +65,7 @@ dev.spec({
 
     plugins: [
         Taucharts.api.plugins.get('legend')(),
+        Taucharts.api.plugins.get('floating-axes')(),
         Taucharts.api.plugins.get('tooltip')()
     ]
 });

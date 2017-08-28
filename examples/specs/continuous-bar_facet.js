@@ -1,7 +1,7 @@
 dev.spec({
 
-    _name: 'Sin / Cos plot',
-    _desc: 'Streaming with trend lines',
+    title: 'Sin / Cos plot',
+    description: 'Streaming with trend lines',
 
     type: 'bar',
     x: ['x'],
@@ -11,8 +11,8 @@ dev.spec({
     guide: [
         {},
         {
-            x: { nice: false },
-            y: { nice: false, min: -1.5, max: 1.5 },
+            x: {nice: false},
+            y: {nice: false, min: -1.5, max: 1.5},
             interpolate: 'basis'
         }
     ],

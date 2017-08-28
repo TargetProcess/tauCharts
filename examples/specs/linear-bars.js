@@ -8,6 +8,10 @@ dev.spec({
         price: {type: 'measure', scale: 'linear'},
         company: {type: 'category', scale: 'ordinal'}
     },
+    plugins: [
+        Taucharts.api.plugins.get('diff-tooltip'),
+        Taucharts.api.plugins.get('legend')
+    ],
     data: [
         {
             company: 'MSFT',

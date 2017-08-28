@@ -1,5 +1,8 @@
 dev.spec({
-    description: 'Cumulative flow diagram (stacked area with tooltip showing diff vs previous period)',
+
+    title: 'Cumulative flow diagram',
+    description: 'stacked area with tooltip showing diff vs previous period',
+
     type: 'stacked-area',
     'x': 'endDate',
     'y': 'count',
