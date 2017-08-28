@@ -31,6 +31,7 @@
             'scatterplot_legend-at-bottom',
             'smooth-line',
             'time-interval',
+            'time-interval-missing-data',
             'timeline',
             'utc',
             'vertical-ordinal-facets',

@@ -34,7 +34,7 @@ const Area = {
         config.transformRules = [
             config.flip && GrammarRegistry.get('flip'),
             !enableStack && GrammarRegistry.get('groupOrderByAvg'),
-            enableStack && BasePath.grammarRuleFillGaps,
+            enableStack && GrammarRegistry.get('fillGaps'),
             enableStack && GrammarRegistry.get('stack')
         ];
 

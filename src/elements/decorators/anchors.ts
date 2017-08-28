@@ -4,6 +4,7 @@ import {
     d3_setAttrs as attrs,
 } from '../../utils/d3-decorators';
 import * as utilsDom from '../../utils/utils-dom';
+import {syntheticRecordField as synthetic, isNonSyntheticRecord} from '../../utils/utils-grammar';
 import {
     d3Selection,
     GrammarElement,
@@ -11,9 +12,6 @@ import {
     UnitGuide,
 } from '../../definitions';
 import {getBrushLine} from '../../utils/path/svg/brush-line';
-
-const synthetic = 'taucharts_synthetic_record';
-const isNonSyntheticRecord = ((row) => row[synthetic] !== true);
 
 export function drawAnchors(node: GrammarElement, model: any, selection: d3Selection) {
     const shape = model.anchorShape;

@@ -1,4 +1,5 @@
 import * as utils from './utils/utils';
+import {UnitDomainPeriodGenerator} from './unit-domain-period-generator';
 import {TauChartError as Error, errorCodes} from './error';
 import {
     GrammarModel,
@@ -24,6 +25,9 @@ var GrammarRegistry: GrammarRegistryInstance = {
         return this;
     }
 };
+
+const synthetic = 'taucharts_synthetic_record';
+const isNonSyntheticRecord = ((row) => row[synthetic] !== true);
 
 GrammarRegistry
     .reg('identity', () => {
@@ -454,6 +458,60 @@ GrammarRegistry
         }));
 
         return {};
+    })
+    .reg('fillGaps', (model, {xPeriod, utc}) => {
+        const data = model.data();
+        const groups = utils.groupBy(data, model.group);
+        const fibers = (Object
+            .keys(groups)
+            .sort((a, b) => model.order(a) - model.order(b)))
+            .reduce((memo, k) => memo.concat([groups[k]]), []);
+
+        const dx = model.scaleX.dim;
+        const dy = model.scaleY.dim;
+        const dc = model.scaleColor.dim;
+        const ds = model.scaleSplit.dim;
+        const calcSign = ((row) => ((row[dy] >= 0) ? 1 : -1));
+
+        const gen = (x, sampleRow, sign) => {
+            const genId = [x, model.id(sampleRow), sign].join(' ');
+            return {
+                [dx]: x,
+                [dy]: sign * (1e-10),
+                [ds]: sampleRow[ds],
+                [dc]: sampleRow[dc],
+                [synthetic]: true,
+                [`${synthetic}id`]: genId
+            };
+        };
+
+        const merge = (templateSorted, fiberSorted, sign) => {
+            const groups = utils.groupBy(fiberSorted, (row) => row[dx]);
+            const sample = fiberSorted[0];
+            return templateSorted.reduce((memo, k) => memo.concat((groups[k] || (gen(k, sample, sign)))), []);
+        };
+
+        const asc = (a, b) => a - b;
+        const getUsualXs = () => utils
+            .unique(fibers.reduce((memo, fib) => memo.concat(fib.map((row) => row[dx])), []))
+            .sort(asc);
+        const getPeriodicXs = () => {
+            const domain = model.scaleX.domain();
+            return UnitDomainPeriodGenerator.generate(domain[0], domain[1], xPeriod, {utc});
+        };
+        const xs = (xPeriod ? getPeriodicXs() : getUsualXs());
+
+        const nextData = fibers
+            .map((fib) => fib.sort((a, b) => model.xi(a) - model.xi(b)))
+            .reduce((memo, fib) => {
+                const bySign = utils.groupBy(fib, (row) => String(calcSign(row)));
+                return Object.keys(bySign).reduce((memo, s) => memo.concat(merge(xs, bySign[s], s)), memo);
+            }, []);
+
+        return {
+            data: () => nextData,
+            id: (row) => ((row[synthetic]) ? row[`${synthetic}id`] : model.id(row))
+        };
     });
 
 export {GrammarRegistry};
