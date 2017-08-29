@@ -179,7 +179,9 @@ class DiffTooltip extends Tooltip {
         if (xPeriod) {
             const domain = scaleX.domain();
             const utc = unit.config.guide.utcTime;
-            const periods = Taucharts.api.tickPeriod.generate(domain[0], domain[1], xPeriod, {utc});
+            const periods = Taucharts.api.tickPeriod
+                .generate(domain[0], domain[1], xPeriod, {utc})
+                .filter((t) => t >= domain[0] && t <= domain[1]);
             periods.forEach((t) => {
                 const tx = scaleX(t);
                 if (!groupByX[tx]) {

@@ -14,6 +14,9 @@ import * as d3 from 'd3-selection';
 import {drawAnchors, highlightAnchors} from './decorators/anchors';
 import {getClosestPointInfo} from '../utils/utils-position';
 
+const datumClass = `i-role-datum`;
+const pointPref = `${CSS_PREFIX}dot-line dot-line i-role-dot ${datumClass} ${CSS_PREFIX}dot`;
+
 const BasePath = {
 
     init(xConfig) {
@@ -61,8 +64,6 @@ const BasePath = {
 
     baseModel(screenModel) {
 
-        const datumClass = `i-role-datum`;
-        const pointPref = `${CSS_PREFIX}dot-line dot-line i-role-dot ${datumClass} ${CSS_PREFIX}dot `;
         const kRound = 10000;
         var baseModel = {
             gog: screenModel.model,
@@ -121,9 +122,31 @@ const BasePath = {
 
         const createUpdateFunc = d3_animationInterceptor;
 
+        const classToSelector = (cls) => cls.split(/\s+/g).map((c) => `.${c}`).join('');
+
         const updateGroupContainer = function (selection) {
 
             selection.call(attrs(model.groupAttributes));
+
+            const points = selection
+                .selectAll(classToSelector(pointPref))
+                .data((fiber) => (fiber.length <= 1) ? fiber : [], screenModel.id);
+            points
+                .exit()
+                .call(createUpdateFunc(
+                    guide.animationSpeed,
+                    null,
+                    {r: 0},
+                    (node) => d3.select(node).remove()));
+            points
+                .call(createUpdateFunc(guide.animationSpeed, null, model.dotAttributes));
+            const merged = points
+                .enter()
+                .append('circle')
+                .call(createUpdateFunc(guide.animationSpeed, model.dotAttributesDefault, model.dotAttributes))
+                .merge(points);
+
+            node.subscribe(merged);
 
             const updatePath = (selection) => {
                 if (config.guide.animationSpeed > 0) {
@@ -167,7 +190,7 @@ const BasePath = {
                 .merge(series)
                 .call(updatePath);
 
-            node.subscribe(allSeries);
+            node.subscribe(merged);
 
             if (guide.showAnchors !== 'never') {
                 const allDots = drawAnchors(node, model, selection);
