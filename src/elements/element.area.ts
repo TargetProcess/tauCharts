@@ -14,6 +14,7 @@ import {d3_createPathTween} from '../utils/d3-decorators';
 import {getInterpolatorSplineType} from '../utils/path/interpolators/interpolators-registry';
 import {getAreaPolygon, getSmoothAreaPath} from '../utils/path/svg/area-path';
 import {getClosestPointInfo} from '../utils/utils-position';
+import {useFillGapsRule} from '../utils/utils-grammar';
 import {
     GrammarElement
 } from '../definitions';
@@ -34,7 +35,7 @@ const Area = {
         config.transformRules = [
             config.flip && GrammarRegistry.get('flip'),
             !enableStack && GrammarRegistry.get('groupOrderByAvg'),
-            enableStack && BasePath.grammarRuleFillGaps,
+            useFillGapsRule(config),
             enableStack && GrammarRegistry.get('stack')
         ];
 

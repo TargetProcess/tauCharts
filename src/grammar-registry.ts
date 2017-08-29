@@ -1,4 +1,5 @@
 import * as utils from './utils/utils';
+import {UnitDomainPeriodGenerator} from './unit-domain-period-generator';
 import {TauChartError as Error, errorCodes} from './error';
 import {
     GrammarModel,
@@ -12,8 +13,8 @@ interface GrammarRegistryInstance {
     reg(name: string, func: GrammarRule): GrammarRegistryInstance;
 }
 
-var rules: {[rule: string]: GrammarRule} = {};
-var GrammarRegistry: GrammarRegistryInstance = {
+const rules: {[rule: string]: GrammarRule} = {};
+export const GrammarRegistry: GrammarRegistryInstance = {
 
     get(name: string) {
         return rules[name];
@@ -24,6 +25,9 @@ var GrammarRegistry: GrammarRegistryInstance = {
         return this;
     }
 };
+
+const synthetic = 'taucharts_synthetic_record';
+const isNonSyntheticRecord = ((row) => row[synthetic] !== true);
 
 GrammarRegistry
     .reg('identity', () => {
@@ -454,6 +458,74 @@ GrammarRegistry
         }));
 
         return {};
-    });
+    })
+    .reg('fillGaps', (model, {xPeriod, utc}) => {
+        const data = model.data();
+        const groups = utils.groupBy(data, model.group);
+        const fibers = (Object
+            .keys(groups)
+            .sort((a, b) => model.order(a) - model.order(b)))
+            .reduce((memo, k) => memo.concat([groups[k]]), []);
 
-export {GrammarRegistry};
+        const dx = model.scaleX.dim;
+        const dy = model.scaleY.dim;
+        const dc = model.scaleColor.dim;
+        const ds = model.scaleSplit.dim;
+        const calcSign = ((row) => ((row[dy] >= 0) ? 1 : -1));
+
+        const gen = (x, sampleRow, sign) => {
+            const genId = [x, model.id(sampleRow), sign].join(' ');
+            return {
+                [dx]: x,
+                [dy]: sign * (1e-10),
+                [ds]: sampleRow[ds],
+                [dc]: sampleRow[dc],
+                [synthetic]: true,
+                [`${synthetic}id`]: genId
+            };
+        };
+
+        const merge = (templateSorted, fiberSorted, sign) => {
+            const groups = utils.groupBy(fiberSorted, (row) => row[dx]);
+            const sample = fiberSorted[0];
+            return templateSorted.reduce((memo, k) => memo.concat((groups[k] || (gen(k, sample, sign)))), []);
+        };
+
+        const asc = (a, b) => a - b;
+        const getUsualXs = () => utils
+            .unique(fibers.reduce((memo, fib) => memo.concat(fib.map((row) => row[dx])), []))
+            .sort(asc);
+        const getPeriodicXs = () => {
+            // If there is no data for some period, we should also generate empty data
+            const xs = getUsualXs() as Date[];
+            const domain = model.scaleX.domain();
+            const ticks = UnitDomainPeriodGenerator.generate(domain[0], domain[1], xPeriod, {utc});
+            let xIndex = 0;
+            const missingTicks = [];
+            const period = UnitDomainPeriodGenerator.get(xPeriod, {utc});
+            ticks.forEach((t) => {
+                const tn = Number(t);
+                for (let i = xIndex; i < xs.length; i++) {
+                    if (Number(period.cast(xs[i])) === tn) {
+                        xIndex++;
+                        return;
+                    }
+                }
+                missingTicks.push(t);
+            });
+            return xs.concat(missingTicks).sort(asc);
+        };
+        const xs = (xPeriod ? getPeriodicXs() : getUsualXs());
+
+        const nextData = fibers
+            .map((fib) => fib.sort((a, b) => model.xi(a) - model.xi(b)))
+            .reduce((memo, fib) => {
+                const bySign = utils.groupBy(fib, (row) => String(calcSign(row)));
+                return Object.keys(bySign).reduce((memo, s) => memo.concat(merge(xs, bySign[s], s)), memo);
+            }, []);
+
+        return {
+            data: () => nextData,
+            id: (row) => ((row[synthetic]) ? row[`${synthetic}id`] : model.id(row))
+        };
+    });

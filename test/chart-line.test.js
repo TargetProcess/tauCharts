@@ -2,6 +2,9 @@ import {assert, expect} from 'chai';
 import schemes from './utils/schemes';
 import tauChart from '../src/tau.charts';
 import testUtils from './utils/utils';
+import * as d3 from 'd3-selection';
+
+const round = testUtils.roundNumbersInString;
 
     describe('Line plot chart', function () {
 
@@ -359,5 +362,48 @@ import testUtils from './utils/utils';
                 .to
                 .deep
                 .equal([1, 2, 0, 3]);
+        });
+
+        it('should add data points for missing periods', function () {
+
+            const element = document.createElement('div');
+            document.body.appendChild(element);
+
+            const line = new tauChart.Chart({
+                type: 'line',
+                x: 'date',
+                y: 'value',
+                color: 'group',
+                guide: {
+                    x: {nice: false, timeInterval: 'day'},
+                    y: {nice: false},
+                },
+                settings: {
+                    utcTime: true,
+                    specEngine: 'none',
+                    layoutEngine: 'none'
+                },
+                data: [
+                    {date: new Date('2015-01-01T00:00Z'), value: 10, group: 'a'},
+                    {date: new Date('2015-01-02T00:00Z'), value: 10, group: 'a'},
+                    {date: new Date('2015-01-01T00:00Z'), value: 10, group: 'b'},
+                    {date: new Date('2015-01-05T00:00Z'), value: 10, group: 'b'},
+                ]
+            });
+            line.renderTo(element, {width: 1000, height: 1000});
+
+            const paths = Array.from(element.querySelectorAll('.tau-chart__line path'))
+                .reduce((map, el) => {
+                    const s = d3.select(el);
+                    const path = round(s.attr('d'));
+                    const g = s.data()[0][0].group;
+                    map[g] = path;
+                    return map;
+                }, {});
+
+            expect(paths.a).to.equal('M0,500 L250,500 L500,1000 L750,1000 L1000,1000');
+            expect(paths.b).to.equal('M0,500 L250,1000 L500,1000 L750,1000 L1000,500');
+
+            document.body.removeChild(element);
         });
     });

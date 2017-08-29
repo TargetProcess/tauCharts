@@ -7,6 +7,7 @@ import {d3_createPathTween} from '../utils/d3-decorators';
 import {getInterpolatorSplineType} from '../utils/path/interpolators/interpolators-registry';
 import {getBrushLine, getBrushCurve} from '../utils/path/svg/brush-line';
 import {getPolyline, getCurve} from '../utils/path/svg/line';
+import {useFillGapsRule} from '../utils/utils-grammar';
 
 const Line = {
 
@@ -33,7 +34,7 @@ const Line = {
         config.transformRules = [
             config.flip && GrammarRegistry.get('flip'),
             !enableStack && GrammarRegistry.get('groupOrderByAvg'),
-            enableStack && BasePath.grammarRuleFillGaps,
+            useFillGapsRule(config),
             enableStack && GrammarRegistry.get('stack')
         ];
 

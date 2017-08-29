@@ -58,7 +58,8 @@ class DiffTooltip extends Tooltip {
         };
         const prev = getPrevItem(data);
 
-        // Sort stacked elements by color, other by Y
+        // Note: Sort stacked elements by color, other by Y
+        const shouldSortByColor = unit.config.stack;
         const sortByColor = (() => {
             const ci = scaleColor.domain().slice().reverse().reduce((map, c, i) => {
                 map[c] = i;
@@ -70,19 +71,44 @@ class DiffTooltip extends Tooltip {
             ((a, b) => scaleY(b[scaleY.dim]) - scaleY(a[scaleY.dim])) :
             ((a, b) => scaleY(a[scaleY.dim]) - scaleY(b[scaleY.dim])));
 
-        const neighbors = Object.keys(groupedData[x])
-            .reduce((arr, g) => arr.concat(groupedData[x][g]), [])
-            .sort(unit.config.stack ? sortByColor : sortByY);
+        const getNeighbors = (x) => {
+            return Object.keys(groupedData[x])
+                .reduce((arr, g) => arr.concat(groupedData[x][g]), [])
+                .sort(shouldSortByColor ? sortByColor : sortByY);
+        };
+
+        const neighbors = getNeighbors(x);
 
         const groups = neighbors.map((data) => {
             const g = screenModel.model.group(data);
-            const hasPrevItem = (isFinite(prevX) && groupedData[prevX][g]);
             const prev = getPrevItem(data);
             return {
                 data,
                 prev
             };
         });
+
+        if (isFinite(prevX)) {
+            // Note: Should also display data for missing group
+            // if it is available for previous X
+            const prevNeighbors = getNeighbors(prevX);
+            const gs = groups.reduce((map, g) => {
+                map[screenModel.model.group(g.data)] = true;
+                return map;
+            }, {});
+            prevNeighbors.forEach((prev) => {
+                const g = screenModel.model.group(prev);
+                if (!gs[g]) {
+                    groups.push({
+                        data: null,
+                        prev
+                    });
+                }
+            });
+            if (shouldSortByColor) {
+                groups.sort((a, b) => sortByColor(a.data || a.prev, b.data || b.prev));
+            }
+        }
 
         return this._template.render({
             data,
@@ -116,7 +142,7 @@ class DiffTooltip extends Tooltip {
 
             units.forEach((u, i) => {
                 const data = u.data();
-                this._unitsGroupedData.set(u, this._getGroupedData(data, u.screenModel));
+                this._unitsGroupedData.set(u, this._getGroupedData(data, u));
                 u.on('data-hover', (sender, e) => {
                     const highlight = highlightsMap[i];
                     const isTarget = (e.unit && e.unit === u);
@@ -146,11 +172,23 @@ class DiffTooltip extends Tooltip {
         };
     }
 
-    _getGroupedData(data, screenModel: ScreenModel) {
-        const scaleX = screenModel.model.scaleX;
+    _getGroupedData(data, unit: GrammarElement) {
+        const scaleX = unit.screenModel.model.scaleX;
         const groupByX = utils.groupBy(data, (d) => scaleX(d[scaleX.dim]).toString());
+        const xPeriod = (unit.config.guide.x.tickPeriod || unit.config.guide.x.timeInterval);
+        if (xPeriod) {
+            const domain = scaleX.domain();
+            const utc = unit.config.guide.utcTime;
+            const periods = Taucharts.api.tickPeriod.generate(domain[0], domain[1], xPeriod, {utc});
+            periods.forEach((t) => {
+                const tx = scaleX(t);
+                if (!groupByX[tx]) {
+                    groupByX[tx] = [];
+                }
+            });
+        }
         const groupByXAndGroup = Object.keys(groupByX).reduce((map, x) => {
-            map[x] = utils.groupBy(groupByX[x], (d) => screenModel.model.group(d));
+            map[x] = utils.groupBy(groupByX[x], (d) => unit.screenModel.model.group(d));
             return map;
         }, {} as GroupedData);
         return groupByXAndGroup;
