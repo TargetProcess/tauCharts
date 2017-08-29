@@ -318,7 +318,17 @@
             map[p] = i;
             return map;
         }, {});
+        var specsIndices = this._specs.reduce(function (pathMap, s) {
+            pathMap[s.filePath] = (pathMap[s.filePath] || new Map());
+            var m = pathMap[s.filePath];
+            var index = m.size;
+            m.set(s, index);
+            return pathMap;
+        }, {});
         this._specs.sort(function (a, b) {
+            if (a.filePath === b.filePath) {
+                return (specsIndices[a.filePath].get(a) - specsIndices[a.filePath].get(b));
+            }
             return (indices[a.filePath] - indices[b.filePath]);
         });
     };

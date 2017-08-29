@@ -4,7 +4,7 @@ import {
     d3_setAttrs as attrs,
 } from '../../utils/d3-decorators';
 import * as utilsDom from '../../utils/utils-dom';
-import {syntheticRecordField as synthetic, isNonSyntheticRecord} from '../../utils/utils-grammar';
+import {isNonSyntheticRecord} from '../../utils/utils-grammar';
 import {
     d3Selection,
     GrammarElement,
