@@ -58,7 +58,7 @@ export default function DiffTemplate(tooltip: ElementTooltip, settings: TooltipS
             const value = this.getFormatter(field)(data[field]);
             const prev = this.args.prev;
             const valueField = this.args.valueField;
-            const hasDiff = (prev && this.shouldShowDiff(field));
+            const hasDiff = this.shouldShowDiff(field);
 
             const valueElement = [
                 `<span class="${ROW_CLS}__value">`,

@@ -499,7 +499,9 @@ GrammarRegistry
             // If there is no data for some period, we should also generate empty data
             const xs = getUsualXs() as Date[];
             const domain = model.scaleX.domain();
-            const ticks = UnitDomainPeriodGenerator.generate(domain[0], domain[1], xPeriod, {utc});
+            const ticks = UnitDomainPeriodGenerator
+                .generate(domain[0], domain[1], xPeriod, {utc})
+                .filter((t) => t >= domain[0] && t <= domain[1]);
             let xIndex = 0;
             const missingTicks = [];
             const period = UnitDomainPeriodGenerator.get(xPeriod, {utc});

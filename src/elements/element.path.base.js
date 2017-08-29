@@ -14,6 +14,9 @@ import * as d3 from 'd3-selection';
 import {drawAnchors, highlightAnchors} from './decorators/anchors';
 import {getClosestPointInfo} from '../utils/utils-position';
 
+const datumClass = `i-role-datum`;
+const pointPref = `${CSS_PREFIX}dot-line dot-line i-role-dot ${datumClass} ${CSS_PREFIX}dot`;
+
 const BasePath = {
 
     init(xConfig) {
@@ -61,8 +64,6 @@ const BasePath = {
 
     baseModel(screenModel) {
 
-        const datumClass = `i-role-datum`;
-        const pointPref = `${CSS_PREFIX}dot-line dot-line i-role-dot ${datumClass} ${CSS_PREFIX}dot `;
         const kRound = 10000;
         var baseModel = {
             gog: screenModel.model,
@@ -121,12 +122,14 @@ const BasePath = {
 
         const createUpdateFunc = d3_animationInterceptor;
 
+        const classToSelector = (cls) => cls.split(/\s+/g).map((c) => `.${c}`).join('');
+
         const updateGroupContainer = function (selection) {
 
             selection.call(attrs(model.groupAttributes));
 
             const points = selection
-                .selectAll('circle')
+                .selectAll(classToSelector(pointPref))
                 .data((fiber) => (fiber.length <= 1) ? fiber : [], screenModel.id);
             points
                 .exit()
