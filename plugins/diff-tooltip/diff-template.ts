@@ -83,7 +83,7 @@ export default function DiffTemplate(tooltip: ElementTooltip, settings: TooltipS
         getDiff({data, prev, field}) {
             const format = this.getFormatter(field);
 
-            const v = data[field];
+            const v = (data ? data[field] : 0);
             const p = (prev ? prev[field] : 0);
             const dv = (v - p);
 
@@ -138,7 +138,7 @@ export default function DiffTemplate(tooltip: ElementTooltip, settings: TooltipS
         tableBodyTemplate({data, groups, valueField, colorField}) {
             const highlighted = data;
 
-            const values = groups.map(({data}) => data[valueField]);
+            const values = groups.map(({data}) => data ? data[valueField] : 0);
             const min = Math.min(...values);
             const max = Math.max(...values);
 
@@ -155,14 +155,14 @@ export default function DiffTemplate(tooltip: ElementTooltip, settings: TooltipS
 
         tableRowTemplate({data, prev, highlighted, valueField, colorField, min, max}) {
 
-            const v = data[valueField];
-            const name = this.getFormatter(colorField)(data[colorField]);
+            const v = (data ? data[valueField] : 0);
+            const name = this.getFormatter(colorField)((data || prev)[colorField]);
             const format = this.getFormatter(valueField);
             const value = format(v);
             const isHighlighted = (data === highlighted);
 
             const {diff, sign} = this.getDiff({data, prev, field: valueField});
-            const {color, colorCls} = this.getColor(data);
+            const {color, colorCls} = this.getColor(data || prev);
 
             return [
                 `<div class="${ROW_CLS}${isHighlighted ? ` ${ROW_CLS}_highlighted` : ''}">`,
