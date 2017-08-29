@@ -74,7 +74,7 @@ class DiffTooltip extends Tooltip {
         const getNeighbors = (x) => {
             return Object.keys(groupedData[x])
                 .reduce((arr, g) => arr.concat(groupedData[x][g]), [])
-                .sort(shouldSortByColor ? sortByColor : sortByY)
+                .sort(shouldSortByColor ? sortByColor : sortByY);
         };
 
         const neighbors = getNeighbors(x);

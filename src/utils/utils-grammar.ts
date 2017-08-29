@@ -1,5 +1,5 @@
 import {Unit, GrammarModel} from '../definitions';
-import {GrammarRegistry} from '../grammar-registry'
+import {GrammarRegistry} from '../grammar-registry';
 
 export const syntheticRecordField = 'taucharts_synthetic_record';
 
@@ -19,5 +19,5 @@ export function useFillGapsRule(config: Unit) {
             });
         }
         return {};
-    }
+    };
 }
