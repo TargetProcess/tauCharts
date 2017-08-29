@@ -7,7 +7,7 @@ import {d3_createPathTween} from '../utils/d3-decorators';
 import {getInterpolatorSplineType} from '../utils/path/interpolators/interpolators-registry';
 import {getBrushLine, getBrushCurve} from '../utils/path/svg/brush-line';
 import {getPolyline, getCurve} from '../utils/path/svg/line';
-import {shouldFillGaps} from '../utils/utils-grammar';
+import {useFillGapsRule} from '../utils/utils-grammar';
 
 const Line = {
 
@@ -34,15 +34,7 @@ const Line = {
         config.transformRules = [
             config.flip && GrammarRegistry.get('flip'),
             !enableStack && GrammarRegistry.get('groupOrderByAvg'),
-            ((prevModel) => {
-                if (shouldFillGaps(config, prevModel)) {
-                    return GrammarRegistry.get('fillGaps')(prevModel, {
-                        xPeriod: (config.guide.x.tickPeriod || config.guide.x.timeInterval),
-                        utc: config.guide.utcTime
-                    });
-                }
-                return {};
-            }),
+            useFillGapsRule(config),
             enableStack && GrammarRegistry.get('stack')
         ];
 

@@ -13,8 +13,8 @@ interface GrammarRegistryInstance {
     reg(name: string, func: GrammarRule): GrammarRegistryInstance;
 }
 
-var rules: {[rule: string]: GrammarRule} = {};
-var GrammarRegistry: GrammarRegistryInstance = {
+const rules: {[rule: string]: GrammarRule} = {};
+export const GrammarRegistry: GrammarRegistryInstance = {
 
     get(name: string) {
         return rules[name];
@@ -496,8 +496,24 @@ GrammarRegistry
             .unique(fibers.reduce((memo, fib) => memo.concat(fib.map((row) => row[dx])), []))
             .sort(asc);
         const getPeriodicXs = () => {
+            // If there is no data for some period, we should also generate empty data
+            const xs = getUsualXs() as Date[];
             const domain = model.scaleX.domain();
-            return UnitDomainPeriodGenerator.generate(domain[0], domain[1], xPeriod, {utc});
+            const ticks = UnitDomainPeriodGenerator.generate(domain[0], domain[1], xPeriod, {utc});
+            let xIndex = 0;
+            const missingTicks = [];
+            const period = UnitDomainPeriodGenerator.get(xPeriod, {utc});
+            ticks.forEach((t) => {
+                const tn = Number(t);
+                for (let i = xIndex; i < xs.length; i++) {
+                    if (Number(period.cast(xs[i])) === tn) {
+                        xIndex++;
+                        return;
+                    }
+                }
+                missingTicks.push(t);
+            });
+            return xs.concat(missingTicks).sort(asc);
         };
         const xs = (xPeriod ? getPeriodicXs() : getUsualXs());
 
@@ -513,5 +529,3 @@ GrammarRegistry
             id: (row) => ((row[synthetic]) ? row[`${synthetic}id`] : model.id(row))
         };
     });
-
-export {GrammarRegistry};
