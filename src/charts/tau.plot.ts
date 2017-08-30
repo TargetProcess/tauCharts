@@ -406,7 +406,7 @@ export class Plot extends Emitter {
                         timeout,
                         proceed: () => {
                             this.disablePointerEvents();
-                            taskRunner.setTimeout(Number.MAX_SAFE_INTEGER);
+                            taskRunner.setTimeoutDuration(Number.MAX_SAFE_INTEGER);
                             taskRunner.run();
                         },
                         cancel: () => {

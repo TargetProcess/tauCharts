@@ -53,7 +53,7 @@ import TaskRunner from '../src/charts/task-runner';
                 callbacks: {
                     timeout: (duration, t) => {
                         expect(duration).to.be.above(0);
-                        t.setTimeout(Number.MAX_SAFE_INTEGER);
+                        t.setTimeoutDuration(Number.MAX_SAFE_INTEGER);
                         t.run();
                     },
                     done: (result) => {
