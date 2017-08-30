@@ -66,8 +66,8 @@ var strategyNormalizeAxis: NormalizeAxisStrategies = {
         throw new Error((data.messages || []).join('\n') ||
             [
                 'This configuration is not supported,',
-                'See http://api.taucharts.com/basic/facet.html#easy-approach-for-creating-facet-chart'
-    ].join(' '));
+                'See https://api.taucharts.com/basic/facet.html#easy-approach-for-creating-facet-chart'
+            ].join(' '));
     },
     [status.WARNING]: (axis, config, guide) => {
         var axisName = config.axis;
@@ -119,6 +119,13 @@ function validateAxis(dimensions: ChartDimensionsMap, axis: string[], axisName: 
     });
 }
 
+function normalizeEncoding(dimensions: ChartDimensionsMap, dim: string, encoding: string) {
+    if (dim == null) {
+        return dim;
+    }
+    return String(dim);
+}
+
 function normalizeConfig(config: ChartConfig) {
 
     var x = normalizeSettings(config.x);
@@ -142,14 +149,21 @@ function normalizeConfig(config: ChartConfig) {
     x = strategyNormalizeAxis[validatedX.status](x, validatedX, guide);
     y = strategyNormalizeAxis[validatedY.status](y, validatedY, guide);
 
+    const encodings = ['identity', 'color', 'size', 'label', 'split'].reduce((map, encoding) => {
+        const dim = config[encoding];
+        const norm = normalizeEncoding(config.dimensions, dim, encoding);
+        if (norm != null) {
+            map[encoding] = norm;
+        }
+        return map;
+    }, {});
+
     return Object.assign(
         {},
         config,
-        {
-            x: x,
-            y: y,
-            guide: guide
-        });
+        {x, y, guide},
+        encodings,
+    );
 }
 
 function transformConfig(type: string, config: ChartConfig) {
