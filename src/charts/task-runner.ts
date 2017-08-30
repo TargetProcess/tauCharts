@@ -16,10 +16,13 @@ export default class TaskRunner {
     private _asyncDuration: number;
     private _syncInterval: number;
     private _requestedFrameId: number;
+    private _requestedFrameType: 'animation' | 'idle';
+    private _requestedFrameCallback: () => void;
     private _tasksCount: number;
     private _finishedTasksCount: number;
     private _timeout: number;
     private _callbacks: TaskRunnerCallbacks;
+    private _visibilityChangeHandler: () => void;
 
     constructor({
         src = null,
@@ -28,7 +31,7 @@ export default class TaskRunner {
         callbacks = {} as TaskRunnerCallbacks
     } = {}) {
 
-        this.setTimeout(timeout);
+        this.setTimeoutDuration(timeout);
         this.setSyncInterval(syncInterval);
         this.setCallbacks(callbacks);
 
@@ -38,12 +41,21 @@ export default class TaskRunner {
         this._syncDuration = 0;
         this._asyncDuration = 0;
         this._requestedFrameId = null;
+        this._visibilityChangeHandler = () => {
+            if (!this._running || !this._requestedFrameId) {
+                return;
+            }
+            const cancelFrame = this._getCancelFrameFunction();
+            const requestFrame = this._getRequestFrameFunction();
+            cancelFrame(this._requestedFrameId);
+            this._requestedFrameId = requestFrame(this._requestedFrameCallback);
+        };
 
         this._tasksCount = 0;
         this._finishedTasksCount = 0;
     }
 
-    setTimeout(timeout: number) {
+    setTimeoutDuration(timeout: number) {
         TaskRunner.checkType(timeout, 'number', 'timeout');
         this._timeout = timeout;
     }
@@ -70,6 +82,7 @@ export default class TaskRunner {
         }
         this._running = true;
         TaskRunner.runnersInProgress++;
+        document.addEventListener('visibilitychange', this._visibilityChangeHandler);
         this._loopTasks();
     }
 
@@ -161,13 +174,38 @@ export default class TaskRunner {
     }
 
     _requestFrame() {
-        var start = performance.now();
-        this._requestedFrameId = requestAnimationFrame(() => {
+        const start = performance.now();
+        const callback = () => {
             this._requestedFrameId = null;
-            var end = performance.now();
+            const end = performance.now();
             this._asyncDuration += (end - start);
             this._loopTasks();
-        });
+        };
+        const requestFrame = this._getRequestFrameFunction();
+        this._requestedFrameCallback = callback;
+        this._requestedFrameId = requestFrame(callback);
+    }
+
+    _getRequestFrameFunction() {
+        if (document.hidden) {
+            return (callback) => {
+                this._requestedFrameType = 'idle';
+                return (<any>window).requestIdleCallback(callback, {timeout: 17});
+            };
+        }
+        return (callback) => {
+            this._requestedFrameType = 'animation';
+            return requestAnimationFrame(callback);
+        };
+    }
+
+    _getCancelFrameFunction() {
+        switch (this._requestedFrameType) {
+            case 'animation':
+                return (id) => cancelAnimationFrame(id);
+            case 'idle':
+                return (id) => (<any>window).cancelIdleCallback(id);
+        }
     }
 
     stop() {
@@ -176,8 +214,10 @@ export default class TaskRunner {
         }
         this._running = false;
         TaskRunner.runnersInProgress--;
+        document.removeEventListener('visibilitychange', this._visibilityChangeHandler);
         if (this._requestedFrameId) {
-            cancelAnimationFrame(this._requestedFrameId);
+            const cancelFrame = this._getCancelFrameFunction();
+            cancelFrame(this._requestedFrameId);
             this._requestedFrameId = null;
         }
     }

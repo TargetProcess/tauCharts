@@ -17,6 +17,15 @@ if (!window.requestAnimationFrame) {
     })();
 }
 
+if (!window.requestIdleCallback) {
+    window.requestIdleCallback = function (callback, options) {
+        return setTimeout(callback, options && options.timeout ? options.timeout : 0);
+    };
+    window.cancelIdleCallback = function (id) {
+        clearTimeout(id);
+    };
+}
+
 if (!Number.isFinite) {
     Object.defineProperty(Number, 'isFinite', {
         value: function (value) {
