@@ -10,10 +10,10 @@ import {
     UnitGuide,
     Expression,
     GPLSpec,
-    GPLSpecScale,
     GrammarElement,
     GrammarModel,
     GrammarRule,
+    ScaleConfig,
     ScaleFactoryMethod,
     Unit
 } from '../definitions';
@@ -54,7 +54,7 @@ export class GPL extends Emitter {
 
     config: GPLSpec;
     sources: DataSources;
-    scales: {[scale: string]: GPLSpecScale};
+    scales: {[scale: string]: ScaleConfig};
     unitSet: UnitsRegistry;
     grammarRules: GrammarRegistry;
     scalesHub: ScalesFactory;

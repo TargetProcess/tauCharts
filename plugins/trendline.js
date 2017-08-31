@@ -440,8 +440,8 @@ import * as d3 from 'd3-selection';
                     var y = props.y.dim;
                     var g = props.g.dim;
 
-                    var isXPeriod = (props.x.type === 'period' && props.x.period);
-                    var isYPeriod = (props.y.type === 'period' && props.y.period);
+                    const isXPeriod = Boolean(props.x.period);
+                    const isYPeriod = Boolean(props.y.period);
 
                     var xMapper = isXPeriod ?
                         (createPeriodCaster(props.x.period)) :
@@ -531,6 +531,8 @@ import * as d3 from 'd3-selection';
                         trend.guide.showAnchors = 'never';
                         trend.guide.cssClass      = 'tau-chart__trendline';
                         trend.guide.widthCssClass = 'tau-chart__line-width-1';
+                        trend.guide.x = trend.guide.x || {};
+                        trend.guide.x.fillGaps = false;
                         delete trend.guide.label;
                         delete trend.label;
 

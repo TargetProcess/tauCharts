@@ -7,7 +7,6 @@ import {
     UnitGuide,
     Expression,
     GPLSpec,
-    GPLSpecScale,
     ScaleConfig,
     ScaleGuide,
     Unit
@@ -209,13 +208,13 @@ export class SpecConverter {
 
         var dims = this.spec.spec.dimensions;
 
-        var item = {} as GPLSpecScale;
+        var item = {} as ScaleConfig;
         if (scaleType === 'color' && dimName !== null) {
             item = {
                 type: 'color',
                 source: '/',
                 dim: this.ruleInferDim(dimName, guide)
-            } as GPLSpecScale;
+            } as ScaleConfig;
 
             if (guide.hasOwnProperty('brewer')) {
                 item.brewer = guide.brewer;

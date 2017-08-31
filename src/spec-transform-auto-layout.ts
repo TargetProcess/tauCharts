@@ -4,7 +4,6 @@ import * as d3 from 'd3-scale';
 import {
     ChartSettings,
     GPLSpec,
-    GPLSpecScale,
     ScaleGuide,
     SpecTransformer,
     Unit,

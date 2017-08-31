@@ -327,6 +327,7 @@ export interface ScaleGuide {
     tickFormatWordWrapLimit?: number;
     tickFontHeight?: number;
     avoidCollisions?: boolean;
+    fillGaps?: boolean;
 }
 
 export interface AxisLabelGuide {
@@ -425,30 +426,11 @@ export interface ChartSettings {
 }
 
 export interface GPLSpec {
-    scales: {[scale: string]: GPLSpecScale};
+    scales: {[scale: string]: ScaleConfig};
     sources: DataSources;
     settings: ChartSettings;
     unit?: Unit;
     transformations?: DataTransformations;
-}
-
-export interface GPLSpecScale {
-    type?: string;
-    source: string;
-    dim?: string;
-    brewer?: Brewer;
-    order?: any[];
-    min?: any;
-    max?: any;
-    nice?: boolean;
-    func?: string;
-    minSize?: number;
-    maxSize?: number;
-    autoScale?: boolean;
-    niceInterval?: string;
-    period?: string;
-    fitToFrameByDims?: string[];
-    ratio?: RatioArg;
 }
 
 export interface SpecTransformer {

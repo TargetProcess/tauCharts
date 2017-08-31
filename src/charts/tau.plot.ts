@@ -39,7 +39,6 @@ import {
     DataSources,
     d3Selection,
     GPLSpec,
-    GPLSpecScale,
     GrammarElement,
     PointerEventArgs,
     Size,
