@@ -5,7 +5,6 @@ import {
     ChartSettings,
     DataFrameObject,
     GPLSpec,
-    GPLSpecScale,
     ScaleFields,
     ScaleGuide,
     Size,

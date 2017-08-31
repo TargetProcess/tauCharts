@@ -1,7 +1,7 @@
 import * as utils from './utils/utils';
 import {
     GPLSpec,
-    GPLSpecScale,
+    ScaleConfig,
     SpecTransformer,
     Unit
 } from './definitions';
@@ -102,11 +102,11 @@ export class SpecTransformApplyRatio implements SpecTransformer {
 
         var xyProd = 2;
         if ([realXs.length, realYs.length].some(l => l === xyProd)) {
-            let exDim = ((s: GPLSpecScale) => s.dim);
-            let scalesIterator = ((s: GPLSpecScale, i: number, list: GPLSpecScale[]) => {
+            let exDim = ((s: ScaleConfig) => s.dim);
+            let scalesIterator = ((s: ScaleConfig, i: number, list: ScaleConfig[]) => {
                 s.fitToFrameByDims = list.slice(0, i).map(exDim);
             });
-            let tryApplyRatioToScales = (axis: string, scalesRef: GPLSpecScale[]) => {
+            let tryApplyRatioToScales = (axis: string, scalesRef: ScaleConfig[]) => {
                 if (scalesRef.filter(isOrdinalScale).length === xyProd) {
                     scalesRef.forEach(scalesIterator);
                     scalesRef[0].ratio = utils.generateRatioFunction(axis, scalesRef.map(exDim), chartInstance);

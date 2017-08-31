@@ -73,7 +73,8 @@ export class TimeScale extends BaseScale {
 
         this.periodGenerator = period;
 
-        this.addField('scaleType', 'time');
+        this.addField('scaleType', 'time')
+            .addField('period', this.scaleConfig.period);
     }
 
     isInDomain(aTime) {
