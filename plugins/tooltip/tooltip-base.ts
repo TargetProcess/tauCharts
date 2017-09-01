@@ -34,6 +34,7 @@ export default class Tooltip {
             formatters: {},
             getTemplate: null,
             spacing: 24,
+            winBound: 12,
         });
         this.onRender = this._getRenderHandler();
     }
@@ -47,6 +48,7 @@ export default class Tooltip {
         this._tooltip = this._chart.addBalloon(
             {
                 spacing: this.settings.spacing,
+                winBound: this.settings.winBound,
                 auto: true,
                 effectClass: 'fade'
             });
@@ -437,6 +439,7 @@ export interface TooltipSettings {
     getTemplate?: (defaults, tooltip: Tooltip, settings: TooltipSettings) => any;
     templateSettings?: any;
     spacing?: number;
+    winBound?: number;
 }
 
 type Formatter = (x: any) => string;

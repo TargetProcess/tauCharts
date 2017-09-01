@@ -1,5 +1,5 @@
 import Taucharts from 'taucharts';
-import Tooltip, {TooltipSettings} from './tooltip/tooltip';
+import Tooltip, {TooltipSettings} from './tooltip/tooltip-base';
 import getDiffTemplate, {DIFF_TOOLTIP_CLS, HEADER_CLS, ROW_CLS} from './diff-tooltip/diff-template';
 import IntervalHighlight, {ELEMENT_HIGHLIGHT} from './diff-tooltip/interval-highlight';
 import {

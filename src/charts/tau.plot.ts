@@ -1,4 +1,4 @@
-import {Tooltip} from '../api/balloon';
+import {Balloon} from '../api/balloon';
 import {Emitter} from '../event';
 import {Plugins} from '../plugins';
 import * as utils from '../utils/utils';
@@ -257,7 +257,7 @@ export class Plot extends Emitter {
     }
 
     addBalloon(conf) {
-        return new Tooltip('', conf || {});
+        return new Balloon('', conf || {});
     }
 
     destroyNodes() {
