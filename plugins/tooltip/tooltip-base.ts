@@ -154,6 +154,7 @@ export default class Tooltip {
             state.highlight.cursor.y !== prev.highlight.cursor.y
         )) {
             this._tooltip.position(state.highlight.cursor.x, state.highlight.cursor.y);
+            this._tooltip.updateSize();
         }
 
         // Stick/unstick tooltip
