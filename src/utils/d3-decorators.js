@@ -239,7 +239,7 @@ export function avoidTickTextCollision(ticks, isHorizontal) {
 }
 
 var d3_transition = (selection, animationSpeed, nameSpace) => {
-    if (animationSpeed > 0) {
+    if (animationSpeed > 0 && !document.hidden) {
         selection = selection.transition(nameSpace).duration(animationSpeed);
         selection.attr = d3_transition_attr;
     }
