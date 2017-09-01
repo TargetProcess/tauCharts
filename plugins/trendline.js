@@ -445,11 +445,15 @@ import * as d3 from 'd3-selection';
 
                     var xMapper = isXPeriod ?
                         (createPeriodCaster(props.x.period)) :
-                        ((x) => x);
+                        (function (x) {
+                            return x;
+                        });
 
                     var yMapper = isYPeriod ?
                         (createPeriodCaster(props.y.period)) :
-                        ((x) => x);
+                        (function (x) {
+                            return x;
+                        });
 
                     var src = data.map(function (item) {
                         var ix = utils.isDate(item[x]) ? item[x].getTime() : item[x];

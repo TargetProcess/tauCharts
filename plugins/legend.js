@@ -920,7 +920,7 @@ import * as d3 from 'd3-format';
 
                 var isRowMatch = doHighlight ?
                     (createIsRowMatchInterceptor(dim, val)) :
-                    ((row) => null);
+                    (function (row) { return null; });
 
                 this._chart
                     .select(function (unit) {
