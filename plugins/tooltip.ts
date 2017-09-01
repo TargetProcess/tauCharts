@@ -1,5 +1,5 @@
 import Taucharts from 'taucharts';
-import Tooltip, {TooltipSettings} from './tooltip/tooltip';
+import Tooltip, {TooltipSettings} from './tooltip/tooltip-base';
 
 function TooltipPlugin(settings: TooltipSettings) {
     return new Tooltip(settings);
