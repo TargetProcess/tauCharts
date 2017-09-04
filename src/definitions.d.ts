@@ -175,6 +175,7 @@ export interface ScaleFields {
     fixup: (fn: (config: ScaleConfig) => ScaleConfig) => void;
     commit: () => void;
     period?: string;
+    utcTime?: boolean;
 }
 
 export interface ScaleFunction extends ScaleFields {
@@ -186,7 +187,6 @@ export interface ScaleFunction extends ScaleFields {
     ticks?: (...args: any[]) => any[];
     tickFormat?(...args: any[]): (x) => string;
     copy?: () => ScaleFunction;
-    discrete?: boolean;
     toColor?: (color: string) => string;
     toClass?: (color: string) => string;
     bandwidth?(): number;

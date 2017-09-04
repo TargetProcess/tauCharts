@@ -44,7 +44,7 @@ export class TimeScale extends BaseScale {
         ];
 
         this.niceIntervalFn = null;
-        if (props.nice) {
+        if (props.nice && !period) {
             var niceInterval = props.niceInterval;
             // Todo: Some map for d3 intervals.
             var d3TimeInterval = (niceInterval && getD3Interval(niceInterval) ?
@@ -74,6 +74,7 @@ export class TimeScale extends BaseScale {
         this.periodGenerator = period;
 
         this.addField('scaleType', 'time')
+            .addField('utcTime', this.scaleConfig.utcTime)
             .addField('period', this.scaleConfig.period);
     }
 
@@ -122,11 +123,19 @@ export class TimeScale extends BaseScale {
                 }
                 return getPeriodTicks([min, max], this.scaleConfig.period, utcTime, count);
             };
+            let floorMin = period.cast(min);
+            while (floorMin < min) {
+                floorMin = period.next(floorMin);
+            }
+            const floorMax = period.cast(max);
             scale = ((x) => {
-                if (x <= min || x >= max) {
-                    return d3Scale(x);
+                let floor = period.cast(x);
+                if (floor < floorMin) {
+                    floor = floorMin;
                 }
-                const floor = period.cast(x);
+                if (floor > floorMax) {
+                    floor = floorMax;
+                }
                 return d3Scale(floor);
             }) as ScaleFunction;
         }
