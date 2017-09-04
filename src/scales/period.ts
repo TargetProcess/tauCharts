@@ -45,6 +45,7 @@ export class PeriodScale extends BaseScale {
         this.periodGenerator = periodGenerator;
 
         this.addField('scaleType', 'period')
+            .addField('utcTime', this.scaleConfig.utcTime)
             .addField('period', this.scaleConfig.period)
             .addField('discrete', true);
     }

@@ -49,9 +49,28 @@ import * as d3 from 'd3-color';
             var scale = seed.scale;
             res[method] = (function (row) {
                 var k = (koeff[row[marker]] || 0) * kAxis;
-                return (scale.discrete ?
-                    (model[method](row) + scale.stepSize(row[scale.dim]) * k) :
-                    (model[method](row)));
+                if (scale.discrete) {
+                    return (model[method](row) + scale.stepSize(row[scale.dim]) * k);
+                }
+                if (scale.period) {
+                    const gen = Taucharts.api.tickPeriod.get(scale.period, {utc: scale.utcTime});
+                    const domain = scale.domain();
+                    let min = gen.cast(domain[0]);
+                    while (min < domain[0]) {
+                        min = gen.next(min);
+                    }
+                    const max = gen.cast(domain[1]);
+                    const k = ((scale(max) - scale(min)) / (max - min));
+                    switch (row[marker]) {
+                        case 'l':
+                            const overflow = Math.min(0, domain[0] - min);
+                            return (scale(min) + k * overflow);
+                        case 'r':
+                            const overflow = Math.max(0, domain[1] - max);
+                            return (scale(max) + k * overflow);
+                    }
+                }
+                return model[method](row);
             });
             return res;
         };
