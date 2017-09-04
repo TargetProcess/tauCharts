@@ -498,9 +498,7 @@ GrammarRegistry
         const getPeriodicXs = () => {
             // If there is no data for some period, we should also generate empty data
             const xs = getUsualXs() as Date[];
-            const xsn = xs.map((d) => Number(d));
-            const min = Math.min(...xsn);
-            const max = Math.max(...xsn);
+            const max = Math.max(...xs.map((d) => Number(d)));
             const domain = model.scaleX.domain();
             const ticks = UnitDomainPeriodGenerator
                 .generate(domain[0], domain[1], xPeriod, {utc})
@@ -510,7 +508,7 @@ GrammarRegistry
             const period = UnitDomainPeriodGenerator.get(xPeriod, {utc});
             ticks.forEach((t) => {
                 const tn = Number(t);
-                if (tn <= min || tn >= max) {
+                if (tn >= max) {
                     return;
                 }
                 for (let i = xIndex; i < xs.length; i++) {

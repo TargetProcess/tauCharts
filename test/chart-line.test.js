@@ -406,8 +406,8 @@ const round = testUtils.roundNumbersInString;
                     return map;
                 }, {});
 
-            expect(paths.a).to.equal('M200,500 L400,500 L600,1000 L800,1000');
-            expect(paths.b).to.equal('M200,500 L400,1000 L600,1000 L800,500');
+            expect(paths.a).to.equal('M0,1000 L200,500 L400,500 L600,1000 L800,1000');
+            expect(paths.b).to.equal('M0,1000 L200,500 L400,1000 L600,1000 L800,500');
 
             document.body.removeChild(element);
         });
