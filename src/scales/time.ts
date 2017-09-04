@@ -123,6 +123,9 @@ export class TimeScale extends BaseScale {
                 return getPeriodTicks([min, max], this.scaleConfig.period, utcTime, count);
             };
             scale = ((x) => {
+                if (x <= min || x >= max) {
+                    return d3Scale(x);
+                }
                 const floor = period.cast(x);
                 return d3Scale(floor);
             }) as ScaleFunction;

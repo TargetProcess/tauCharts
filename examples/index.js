@@ -16,6 +16,7 @@
             'colored-bar',
             'horizontal-scroll',
 
+            'annotation-types',
             'area-interpolation',
             'bar-labels',
             'bar-size',

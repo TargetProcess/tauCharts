@@ -78,7 +78,7 @@ import * as d3 from 'd3-color';
 
                     var primaryScaleInfo = chart.getScaleInfo(metaInfo.primaryScale);
 
-                    if ((primaryScaleInfo.scaleType === 'period')) {
+                    if ((primaryScaleInfo.period)) {
                         var periodCaster = Taucharts.api.tickPeriod.get(primaryScaleInfo.period,
                             {utc: specRef.settings.utcTime});
                         from = periodCaster.cast(new Date(metaInfo.from));
@@ -138,7 +138,7 @@ import * as d3 from 'd3-color';
                     var secondary = metaInfo.secondaryScale;
 
                     var primaryScaleInfo = chart.getScaleInfo(primary);
-                    var from = ((primaryScaleInfo.scaleType === 'period') ?
+                    var from = ((primaryScaleInfo.period) ?
                         Taucharts.api.tickPeriod.get(primaryScaleInfo.period, {utc: specRef.settings.utcTime})
                             .cast(new Date(metaInfo.from)) :
                         metaInfo.from);
@@ -284,6 +284,12 @@ import * as d3 from 'd3-color';
                         label: {
                             fontColor: noteItem.color,
                             position: ['r', 'b', 'keep-in-box']
+                        },
+                        x: {
+                            fillGaps: false
+                        },
+                        y: {
+                            fillGaps: false
                         }
                     }
                 };
