@@ -149,7 +149,7 @@ const BasePath = {
             node.subscribe(merged);
 
             const updatePath = (selection) => {
-                if (config.guide.animationSpeed > 0) {
+                if (config.guide.animationSpeed > 0 && !document.hidden) {
                     // HACK: This call fixes stacked area tween (some paths are intersected on
                     // synthetic points). Maybe caused by async call of `toPoint`.
                     selection.attr(model.pathTween.attr, function (d) {
