@@ -254,7 +254,7 @@ if (!Object.assign) {
 
 if (!Element.prototype.matches) {
     Object.defineProperty(Element.prototype, 'matches', {
-        value: Element.prototype.msMatchesSelector,
+        value: Element.prototype.msMatchesSelector || Element.prototype.webkitMatchesSelector,
         configurable: true,
         enumerable: true,
         writable: true
