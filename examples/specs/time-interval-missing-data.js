@@ -8,6 +8,8 @@ dev.spec({
     color: 'team',
     guide: {
         x: {
+            min: new Date('2015-01-01'),
+            max: new Date('2015-09-01'),
             timeInterval: 'month'
         }
     },

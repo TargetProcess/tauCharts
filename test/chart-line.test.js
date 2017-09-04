@@ -375,7 +375,12 @@ const round = testUtils.roundNumbersInString;
                 y: 'value',
                 color: 'group',
                 guide: {
-                    x: {nice: false, timeInterval: 'day'},
+                    x: {
+                        nice: false,
+                        timeInterval: 'day',
+                        min: new Date('2015-01-01T00:00Z'),
+                        max: new Date('2015-01-06T00:00Z')
+                    },
                     y: {nice: false},
                 },
                 settings: {
@@ -384,9 +389,9 @@ const round = testUtils.roundNumbersInString;
                     layoutEngine: 'none'
                 },
                 data: [
-                    {date: new Date('2015-01-01T00:00Z'), value: 10, group: 'a'},
                     {date: new Date('2015-01-02T00:00Z'), value: 10, group: 'a'},
-                    {date: new Date('2015-01-01T00:00Z'), value: 10, group: 'b'},
+                    {date: new Date('2015-01-03T00:00Z'), value: 10, group: 'a'},
+                    {date: new Date('2015-01-02T00:00Z'), value: 10, group: 'b'},
                     {date: new Date('2015-01-05T00:00Z'), value: 10, group: 'b'},
                 ]
             });
@@ -401,8 +406,8 @@ const round = testUtils.roundNumbersInString;
                     return map;
                 }, {});
 
-            expect(paths.a).to.equal('M0,500 L250,500 L500,1000 L750,1000 L1000,1000');
-            expect(paths.b).to.equal('M0,500 L250,1000 L500,1000 L750,1000 L1000,500');
+            expect(paths.a).to.equal('M200,500 L400,500 L600,1000 L800,1000');
+            expect(paths.b).to.equal('M200,500 L400,1000 L600,1000 L800,500');
 
             document.body.removeChild(element);
         });
