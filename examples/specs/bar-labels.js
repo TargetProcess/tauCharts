@@ -39,6 +39,28 @@
         };
     })());
 
+    dev.spec({
+        type: 'horizontal-bar',
+        x: 'count',
+        y: 'type',
+        color: 'type2',
+        label: 'count2',
+        guide: {
+            label: {
+                fontSize: 12
+            }
+        },
+        data: [
+            {type: 'Bug', type2: 'Bug', count: 8913, count2: 8913},
+            {type: 'Request', type2: 'Request', count: 726, count2: 726},
+            {type: 'UserStory', type2: 'UserStory', count: 8013, count2: 8013},
+            {type: 'Feature', type2: 'Feature', count: 848, count2: 848},
+            {type: 'Task', type2: 'Task', count: 3615, count2: 3615},
+            {type: 'Epic', type2: 'Epic', count: 63, count2: 63},
+            {type: 'TestPlanRun', type2: 'TestPlanRun', count: 86, count2: 86},
+        ]
+    });
+
     dev.spec((function () {
         return {
             type: 'horizontal-stacked-bar',

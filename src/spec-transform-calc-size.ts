@@ -306,21 +306,35 @@ export class SpecTransformCalcSize implements SpecTransformer {
                 const distributeByColor = (xScale.discrete && (firstUnit.guide.enableColorToBarPosition == null ?
                     !firstUnit.stack :
                     firstUnit.guide.enableColorToBarPosition));
-                let kColor = 1;
+                let xColorScale: ScaleFields;
                 if (distributeByColor) {
                     const colorCfg = firstUnit.color;
                     if (colorCfg) {
                         const colorScale = chart.getScaleInfo(colorCfg, frame);
                         if (colorScale.discrete) {
                             const allColors = colorScale.domain();
-                            kColor = allColors.length;
+                            xColorScale = colorScale;
                         }
                     }
                 }
                 const getFrameHeight = ((f: DataFrame) => {
-                    const allX = f.part().map((d) => d[xScale.dim]);
-                    const allUnitX = f.part().map((d) => d[xScale.dim]);
+                    const data = f.part();
+                    const allX = data.map((d) => d[xScale.dim]);
                     const xCount = utils.unique(allX).length;
+                    let kColor = 1;
+                    if (xColorScale) {
+                        const xColors = data.reduce((map, d) => {
+                            const x = d[xScale.dim];
+                            const color = d[xColorScale.dim];
+                            map[x] = map[x] || {};
+                            if (!map[x][color]) {
+                                map[x][color] = true;
+                            }
+                            return map;
+                        }, {});
+                        const colorsCounts = Object.keys(xColors).map((x) => Object.keys(xColors[x]).length);
+                        kColor = Math.max(...colorsCounts);
+                    }
                     return (xCount * kColor * labelHeight);
                 });
                 const rowsTotal = root.frames.reduce((sum, f) => sum + getFrameHeight(f), 0);
