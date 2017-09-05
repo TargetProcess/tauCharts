@@ -35,6 +35,9 @@ import * as d3 from 'd3-color';
                     method: null
                 }
             ].find(function (a) {
+                if (Array.isArray(noteItem.dim)) {
+                    return noteItem.dim.indexOf(a.dim) >= 0;
+                }
                 return a.dim === noteItem.dim;
             });
 
@@ -75,6 +78,69 @@ import * as d3 from 'd3-color';
             return res;
         };
     };
+
+    // function isScalable(scale) {
+    //     return (scale &&
+    //         scale.scaleType === 'time' &&
+    //         scale.scaleType === 'linear'
+    //     );
+    // }
+
+    // const adjustScalesBounds = (points) => {
+    //     return (model) => {
+    //         if (points.length === 0) {
+    //             return {};
+    //         }
+
+    //         const xScale = model.scaleX;
+
+    //         const yScale = model.scaleY;
+    //         let minX = Number.MAX_VALUE;
+    //         let maxX = Number.MIN_VALUE;
+    //         let minY = Number.MAX_VALUE;
+    //         let maxY = Number.MIN_VALUE;
+    //         points.forEach(function (d) {
+    //             const x = d[xScale.dim];
+    //             const y = d[yScale.dim];
+    //             if (x < minX) {
+    //                 minX = x;
+    //             }
+    //             if (x > maxX) {
+    //                 maxX = x;
+    //             }
+    //             if (y < minX) {
+    //                 minX = y;
+    //             }
+    //             if (y > maxY) {
+    //                 maxY = y;
+    //             }
+    //         });
+
+    //         xScale.fixup(function (xScaleConfig) {
+    //             const newConf = {};
+    //             if (!xScaleConfig.hasOwnProperty('max') || xScaleConfig.max < maxX) {
+    //                 newConf.max = maxX;
+    //             }
+    //             if (!xScaleConfig.hasOwnProperty('min') || xScaleConfig.min > minX) {
+    //                 newConf.min = minX;
+    //             }
+    //             return newConf;
+    //         });
+
+    //         yScale.fixup(function (yScaleConfig) {
+    //             const newConf = {};
+    //             if (!yScaleConfig.hasOwnProperty('max') || yScaleConfig.max < maxY) {
+    //                 newConf.max = maxY;
+    //             }
+    //             if (!yScaleConfig.hasOwnProperty('min') || yScaleConfig.min > minY) {
+    //                 newConf.min = minY;
+    //             }
+    //             return newConf;
+    //         });
+
+    //         return {};
+    //     };
+    // };
 
     function annotations(xSettings) {
 
@@ -191,6 +257,47 @@ import * as d3 from 'd3-color';
 
                     return [src, dst];
                 };
+
+                specRef.transformations.lineNoteData = function (data, metaInfo) {
+
+                    const xScaleId = metaInfo.xScale;
+                    const yScaleId = metaInfo.yScale;
+
+                    const xScale = chart.getScaleInfo(xScaleId);
+                    const yScale = chart.getScaleInfo(yScaleId);
+
+                    const xPeriod = (xScale.period ?
+                        Taucharts.api.tickPeriod.get(xScale.period, {utc: xScale.utcTime}) :
+                        null);
+                    const yPeriod = (yScale.period ?
+                        Taucharts.api.tickPeriod.get(yScale.period, {utc: yScale.utcTime}) :
+                        null);
+
+                    const points = metaInfo.points.map((d) => {
+                        return [
+                            xPeriod ? xPeriod.cast(d[0]) : d[0],
+                            yPeriod ? yPeriod.cast(d[1]) : d[1]
+                        ];
+                    });
+
+                    if (points.some((d) => !xScale.isInDomain(d[0]) || !yScale.isInDomain(d[1]))) {
+                        console.log('Annotation is out of domain');
+                        return [];
+                    }
+
+                    const xDim = xScale.dim;
+                    const yDim = yScale.dim;
+
+                    const linePoints = points.map((d) => {
+                        return {
+                            [xDim]: d[0],
+                            [yDim]: d[1],
+                            text: metaInfo.text
+                        };
+                    });
+
+                    return linePoints;
+                };
             },
 
             addAreaNote: function (specRef, coordsUnit, noteItem) {
@@ -257,11 +364,25 @@ import * as d3 from 'd3-color';
                 var xScale = specRef.scales[coordsUnit.x];
                 var yScale = specRef.scales[coordsUnit.y];
 
-                var axes = ((noteItem.dim === xScale.dim) ?
-                    ['x', 'y'] :
-                    ((noteItem.dim === yScale.dim) ?
-                        ['y', 'x'] :
-                        (null)));
+                let axes = null;
+                let isAxisNote = true;
+
+                if (Array.isArray(noteItem.dim)) {
+                    isAxisNote = false;
+                    const dims = noteItem.dim;
+                    if (
+                        (dims[0] === xScale.dim && dims[1] === yScale.dim) ||
+                        (dims[0] === yScale.dim && dims[1] === xScale.dim)
+                    ) {
+                        axes = ['x', 'y']
+                    }
+                } else {
+                    if (noteItem.dim === xScale.dim) {
+                        axes = ['x', 'y'];
+                    } else if (noteItem.dim === yScale.dim) {
+                        axes = ['y', 'x'];
+                    }
+                }
 
                 if (axes === null) {
                     console.log('Annotation doesn\'t match any field');
@@ -269,7 +390,6 @@ import * as d3 from 'd3-color';
                 }
 
                 var text = noteItem.text;
-                var from = noteItem.val;
 
                 var annotatedLine = {
                     type: 'ELEMENT.LINE',
@@ -278,31 +398,22 @@ import * as d3 from 'd3-color';
                     y: coordsUnit.y,
                     label: textScaleName,
                     color: noteItem.colorScaleName,
-                    transformModel: [stretchByOrdinalAxis(noteItem)],
                     expression: {
                         inherit: false,
                         operator: 'none',
                         params: [],
                         source: '/'
                     },
-                    transformation: [
-                        {
-                            type: 'dataLimit',
-                            args: {
-                                from: from,
-                                text: text,
-                                primaryScale: coordsUnit[axes[0]],
-                                secondaryScale: coordsUnit[axes[1]]
-                            }
-                        }
-                    ],
                     guide: {
                         showAnchors: 'never',
                         widthCssClass: 'tau-chart__line-width-2',
                         cssClass: 'tau-chart__annotation-line',
                         label: {
                             fontColor: noteItem.color,
-                            position: ['r', 'b', 'keep-in-box']
+                            position: (isAxisNote ?
+                                ['r', 'b', 'keep-in-box'] :
+                                ['auto:avoid-label-edges-overlap', 'auto:adjust-on-label-overflow', 'auto:hide-on-label-edges-overlap']
+                            )
                         },
                         x: {
                             fillGaps: false
@@ -312,6 +423,44 @@ import * as d3 from 'd3-color';
                         }
                     }
                 };
+
+                let extension = (isAxisNote ?
+                    {
+                        transformModel: [stretchByOrdinalAxis(noteItem)],
+                        transformation: [
+                            {
+                                type: 'dataLimit',
+                                args: {
+                                    from: noteItem.val,
+                                    text,
+                                    primaryScale: coordsUnit[axes[0]],
+                                    secondaryScale: coordsUnit[axes[1]]
+                                }
+                            }
+                        ],
+                    } :
+                    (() => {
+                        const points = (dims[0] === xScale.dim ?
+                            noteItem.val :
+                            noteItem.val.map((d) => d.slice().reverse()));
+                        return {
+                            // adjustScales: [adjustScalesBounds(points)],
+                            transformation: [
+                                {
+                                    type: 'lineNoteData',
+                                    args: {
+                                        points,
+                                        text,
+                                        xScale: coordsUnit.x,
+                                        yScale: coordsUnit.y
+                                    }
+                                }
+                            ]
+                        };
+                    })()
+                );
+
+                Object.assign(annotatedLine, extension);
 
                 addToUnits(coordsUnit.units, annotatedLine, noteItem.position);
             },
@@ -359,7 +508,15 @@ import * as d3 from 'd3-color';
                             };
                         })
                         .forEach(function (item) {
-                            if (Array.isArray(item.val)) {
+                            if (Array.isArray(item.dim)) {
+                                if (Array.isArray(item.val) && item.val.every(Array.isArray)) {
+                                    self.addLineNote(specRef, coordsUnit, item);
+                                } else {
+                                    // Todo: point annotation.
+                                    // self.addPointNote(specRef, coordsUnit, item);
+                                    console.log('Point annotation is not impleented yet');
+                                }
+                            } else if (Array.isArray(item.val)) {
                                 self.addAreaNote(specRef, coordsUnit, item);
                             } else {
                                 self.addLineNote(specRef, coordsUnit, item);
