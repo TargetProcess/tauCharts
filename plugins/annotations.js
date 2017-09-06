@@ -79,69 +79,6 @@ import * as d3 from 'd3-color';
         };
     };
 
-    // function isScalable(scale) {
-    //     return (scale &&
-    //         scale.scaleType === 'time' &&
-    //         scale.scaleType === 'linear'
-    //     );
-    // }
-
-    // const adjustScalesBounds = (points) => {
-    //     return (model) => {
-    //         if (points.length === 0) {
-    //             return {};
-    //         }
-
-    //         const xScale = model.scaleX;
-
-    //         const yScale = model.scaleY;
-    //         let minX = Number.MAX_VALUE;
-    //         let maxX = Number.MIN_VALUE;
-    //         let minY = Number.MAX_VALUE;
-    //         let maxY = Number.MIN_VALUE;
-    //         points.forEach(function (d) {
-    //             const x = d[xScale.dim];
-    //             const y = d[yScale.dim];
-    //             if (x < minX) {
-    //                 minX = x;
-    //             }
-    //             if (x > maxX) {
-    //                 maxX = x;
-    //             }
-    //             if (y < minX) {
-    //                 minX = y;
-    //             }
-    //             if (y > maxY) {
-    //                 maxY = y;
-    //             }
-    //         });
-
-    //         xScale.fixup(function (xScaleConfig) {
-    //             const newConf = {};
-    //             if (!xScaleConfig.hasOwnProperty('max') || xScaleConfig.max < maxX) {
-    //                 newConf.max = maxX;
-    //             }
-    //             if (!xScaleConfig.hasOwnProperty('min') || xScaleConfig.min > minX) {
-    //                 newConf.min = minX;
-    //             }
-    //             return newConf;
-    //         });
-
-    //         yScale.fixup(function (yScaleConfig) {
-    //             const newConf = {};
-    //             if (!yScaleConfig.hasOwnProperty('max') || yScaleConfig.max < maxY) {
-    //                 newConf.max = maxY;
-    //             }
-    //             if (!yScaleConfig.hasOwnProperty('min') || yScaleConfig.min > minY) {
-    //                 newConf.min = minY;
-    //             }
-    //             return newConf;
-    //         });
-
-    //         return {};
-    //     };
-    // };
-
     function annotations(xSettings) {
 
         var settings = utils.defaults(xSettings || {}, {items: []});
@@ -444,7 +381,6 @@ import * as d3 from 'd3-color';
                             noteItem.val :
                             noteItem.val.map((d) => d.slice().reverse()));
                         return {
-                            // adjustScales: [adjustScalesBounds(points)],
                             transformation: [
                                 {
                                     type: 'lineNoteData',
