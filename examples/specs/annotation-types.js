@@ -1,9 +1,9 @@
 dev.spec({
     type: 'bar',
     x: 'date',
-    y: ['effort'],
+    y: ['team', 'effort'],
     color: 'team',
-    guide: [{
+    guide: [{}, {
         x: {
             timeInterval: 'day'
         }
