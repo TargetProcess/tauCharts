@@ -42,6 +42,23 @@ dev.spec({
                     color: 'darkred',
                     position: 'top'
                 },
+                {
+                    dim: ['date', 'effort'],
+                    val: [
+                        [new Date('2015-07-01'), 50],
+                        [new Date('2015-07-05'), 0],
+                    ],
+                    text: 'Ideal Line',
+                    color: 'black',
+                    position: 'front'
+                },
+                {
+                    dim: ['date', 'effort'],
+                    val: [new Date('2015-07-04'), 40],
+                    text: 'Point',
+                    color: 'black',
+                    position: 'front'
+                },
             ]
         })
     ],
