@@ -29,14 +29,14 @@ If you want to contribute - see [how to run the project locally](#how-to-run-the
 Load JavaScript dependencies
 
 ```html
-<script src="//cdn.jsdelivr.net/d3js/3.5.17/d3.min.js" charset="utf-8"></script>
-<script src="//cdn.jsdelivr.net/taucharts/latest/tauCharts.min.js" type="text/javascript"></script>
+<script src="//cdn.jsdelivr.net/npm/d3@4.10.2/build/d3.min.js" charset="utf-8"></script>
+<script src="//cdn.jsdelivr.net/npm/taucharts@latest/build/development/tauCharts.min.js" type="text/javascript"></script>
 ```
 
 Include a CSS file, as well
 
 ```html
-<link rel="stylesheet" type="text/css" href="//cdn.jsdelivr.net/taucharts/latest/tauCharts.min.css">
+<link rel="stylesheet" type="text/css" href="//cdn.jsdelivr.net/npm/taucharts@latest/build/development/css/tauCharts.min.css">
 ```
 
 #### Downloading Taucharts using Bower
