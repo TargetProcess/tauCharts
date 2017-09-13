@@ -30,13 +30,13 @@ Load JavaScript dependencies
 
 ```html
 <script src="//cdn.jsdelivr.net/npm/d3@4.10.2/build/d3.min.js" charset="utf-8"></script>
-<script src="//cdn.jsdelivr.net/npm/taucharts@latest/build/development/tauCharts.min.js" type="text/javascript"></script>
+<script src="//cdn.jsdelivr.net/npm/taucharts@1/build/production/tauCharts.min.js" type="text/javascript"></script>
 ```
 
 Include a CSS file, as well
 
 ```html
-<link rel="stylesheet" type="text/css" href="//cdn.jsdelivr.net/npm/taucharts@latest/build/development/css/tauCharts.min.css">
+<link rel="stylesheet" type="text/css" href="//cdn.jsdelivr.net/npm/taucharts@1/build/production/tauCharts.min.css">
 ```
 
 #### Downloading Taucharts using Bower
