@@ -87,6 +87,7 @@
     var PLUGINS = [
         'annotations',
         'box-whiskers',
+        'category-filter',
         'crosshair',
         'diff-tooltip',
         'export-to',

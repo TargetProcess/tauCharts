@@ -102,6 +102,7 @@ const plugins = [
     'annotations',
     'bar-as-span',
     'box-whiskers',
+    'category-filter',
     'crosshair',
     'diff-tooltip',
     ['export-to', {

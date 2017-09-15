@@ -79,9 +79,9 @@ var api = {
     d3_animationInterceptor,
     pluginsSDK: PluginsSDK,
     plugins: {
-        add: function (name, brewer) {
+        add: function (name, plugin) {
             if (!(name in plugins)) {
-                plugins[name] = brewer;
+                plugins[name] = plugin;
             } else {
                 throw new Error('Plugin is already registered.');
             }

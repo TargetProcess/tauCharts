@@ -4,6 +4,7 @@ const rename = require('gulp-rename');
 
 const plugins = [
     'annotations',
+    'category-filter',
     'crosshair',
     'diff-tooltip',
     'export-to',
