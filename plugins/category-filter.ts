@@ -30,13 +30,19 @@ const categoryTemplate = ({label, values}: CategoryInfo) => `
     </div>
 
 `;
+
 const valueTemplate = ({key, label, checked}) => `
     <div class="${CLS_VALUE}${checked ? ` ${CLS_VALUE_CHECKED}` : ''}" data-key="${key}">
-        <span class="${CLS_VALUE_TOGGLE}"></span>
+        ${toggleIconTemplate()}
         <span class="${CLS_VALUE}__label">${label}</span>
     </div>
 `;
 
+const toggleIconTemplate = () => [
+    `<span class="${CLS_VALUE_TOGGLE}">`,
+    `<span class="${CLS_VALUE_TOGGLE}__icon"></span>`,
+    '</span>'
+].join('');
 
 const createElement = (html: string) => {
     const el = document.createElement('div');
