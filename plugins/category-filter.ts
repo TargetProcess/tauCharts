@@ -82,6 +82,10 @@ class CategoryFilter {
             format: (x) => string;
         };
     };
+    _lastClickedScrollInfo: {
+        key: string;
+        top: number;
+    };
     onRender: () => void;
 
     constructor(settings: CategoryFilterSettings) {
@@ -122,6 +126,18 @@ class CategoryFilter {
 
     _createRenderHandler() {
         return function (this: CategoryFilter) {
+            if (this._lastClickedScrollInfo) {
+                const key = this._lastClickedScrollInfo.key;
+                const el = this._node.querySelector(`[data-key="${key}"]`) as HTMLElement;
+                if (el) {
+                    const top = this._lastClickedScrollInfo.top;
+                    const elTop = el.getBoundingClientRect().top;
+                    const container = this._getScrollContainer();
+                    const boxTop = container.getBoundingClientRect().top;
+                    container.scrollTop = (container.scrollTop - top - boxTop + elTop);
+                }
+                this._lastClickedScrollInfo = null;
+            }
         };
     }
 
@@ -275,6 +291,13 @@ class CategoryFilter {
             }
         }
 
+        this._lastClickedScrollInfo = {
+            key,
+            top: (
+                target.node.getBoundingClientRect().top -
+                this._getScrollContainer().getBoundingClientRect().top
+            )
+        };
         this._chart.refresh();
     }
 
@@ -283,6 +306,10 @@ class CategoryFilter {
         if (node && node.parentElement) {
             node.parentElement.removeChild(node);
         }
+    }
+
+    _getScrollContainer() {
+        return this._node.parentElement.parentElement;
     }
 
     _getFilterKey(dim: string, value: any) {
