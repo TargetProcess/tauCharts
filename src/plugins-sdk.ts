@@ -1,6 +1,7 @@
 import {FormatterRegistry} from './formatter-registry';
 import {Unit} from './plugins-sdk/unit';
 import {Spec} from './plugins-sdk/spec';
+import * as utils from './utils/utils';
 import {
     GPLSpec,
     Unit as SpecUnit,
@@ -20,6 +21,15 @@ export interface DimInfo {
 export interface DimMap {
     [dim: string]: DimInfo;
 }
+
+export type Formatter = (
+    ((x: any) => string) |
+    ({
+        label?: string;
+        format: (x: any) => string;
+        nullAlias?: string;
+    })
+);
 
 var customTokens = {};
 
@@ -43,7 +53,7 @@ class PluginsSDK {
             return node;
         }
 
-        var frames = node.hasOwnProperty('frames') ? node.frames : [{units:node.units}];
+        var frames = node.hasOwnProperty('frames') ? node.frames : [{units: node.units}];
         for (var f = 0; f < frames.length; f++) {
             var children = frames[f].units || [];
             for (var i = 0; i < children.length; i++) {
@@ -92,13 +102,13 @@ class PluginsSDK {
             var GUIDE = config.guide || {};
             var scale = specScales[config[key]];
             var guide: ScaleGuide = GUIDE[key] || {};
-            memoRef[scale.dim] = memoRef[scale.dim] || {label: [], format: [], nullAlias:[], tickLabel:[]};
+            memoRef[scale.dim] = memoRef[scale.dim] || {label: [], format: [], nullAlias: [], tickLabel: []};
 
             var label = guide.label;
             var guideLabel = (guide.label || {}) as AxisLabelGuide;
             memoRef[scale.dim].label.push((typeof label === 'string') ?
-                    (label) :
-                    (guideLabel._original_text || guideLabel.text)
+                (label) :
+                (guideLabel._original_text || guideLabel.text)
             );
 
             var format = guide.tickFormat || guide.tickPeriod;
@@ -183,6 +193,66 @@ class PluginsSDK {
 
                 return memo;
             }, {} as DimMap);
+    }
+
+    static getFieldFormatters(spec: GPLSpec, formatters: {[field: string]: Formatter}) {
+
+        const info = PluginsSDK.extractFieldsFormatInfo(spec);
+        Object.keys(info).forEach((k) => {
+            if (info[k].parentField) {
+                delete info[k];
+            }
+        });
+
+        const toLabelValuePair = (x: Formatter) => {
+
+            interface Pair {
+                format: Formatter;
+                label?: string;
+                nullAlias?: string;
+            }
+
+            let res = {} as Pair;
+
+            if (typeof x === 'function' || typeof x === 'string') {
+                res = {format: x};
+            } else if (utils.isObject(x)) {
+                res = utils.pick(x, 'label', 'format', 'nullAlias') as Pair;
+            }
+
+            return res;
+        };
+
+        Object.keys(formatters).forEach((k) => {
+
+            const fmt = toLabelValuePair(formatters[k]);
+
+            info[k] = Object.assign(
+                ({label: k, nullAlias: ('No ' + k)}),
+                (info[k] || {}),
+                (utils.pick(fmt, 'label', 'nullAlias'))) as any;
+
+            if (fmt.hasOwnProperty('format')) {
+                info[k].format = (typeof fmt.format === 'function') ?
+                    (fmt.format) :
+                    (FormatterRegistry.get(fmt.format as any, info[k].nullAlias));
+            } else {
+                info[k].format = (info[k].hasOwnProperty('format')) ?
+                    (info[k].format) :
+                    (FormatterRegistry.get(null, info[k].nullAlias));
+            }
+        });
+
+        const fieldsFormats = Object.keys(info).reduce((map, k) => {
+            const i = info[k];
+            map[k] = {
+                label: i.label,
+                format: i.format
+            };
+            return map;
+        }, {});
+
+        return fieldsFormats;
     }
 
     static tokens() {

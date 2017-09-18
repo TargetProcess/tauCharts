@@ -4,22 +4,22 @@ import {
     ScaleConfig,
     ScaleFields,
 } from '../src/definitions';
+import {Formatter} from '../src/plugins-sdk';
 
-export default function CategoryFilterPlugin(settings: CategoryFilterSettings) {
-    return new CategoryFilter(settings);
-}
+const utils = Taucharts.api.utils;
+const pluginsSDK = Taucharts.api.pluginsSDK;
 
 const CLS = 'tau-chart__category-filter';
 
 const joinLines = (lines: string[]) => lines.join('\n');
 
-const rootTemplate = ({ categories }: { categories: CategoryInfo[] }) => `
+const rootTemplate = ({categories}: {categories: CategoryInfo[]}) => `
     <div class="${CLS}">
         ${joinLines(categories.map((category) => categoryTemplate(category)))}
     </div>
 `;
 
-const categoryTemplate = ({ label, values }: CategoryInfo) => `
+const categoryTemplate = ({label, values}: CategoryInfo) => `
     <div class="${CLS}__category">
         <div class="${CLS}__category__label">${label}</div>
         <div class="${CLS}__category__values">
@@ -27,7 +27,7 @@ const categoryTemplate = ({ label, values }: CategoryInfo) => `
     </div>
 
 `;
-const valueTemplate = ({ key, label, checked }) => `
+const valueTemplate = ({key, label, checked}) => `
     <div class="${CLS}__value${checked ? ` ${CLS}__value_checked` : ''}" data-key="${key}">
         <span class="${CLS}__value__checkbox"></span>
         <span class="${CLS}__value__label">${label}</span>
@@ -60,17 +60,26 @@ class CategoryFilter {
     _fields: string[];
     _categoryScales: ScaleInfo[];
     _node: HTMLDivElement;
-    _filters: { [key: string]: number; };
+    _filters: {[key: string]: number;};
     _filterKeys: {
         [key: string]: {
             dim: string;
             value: any;
         }
     };
+    _formatters: {
+        [field: string]: {
+            label: string;
+            format: (x) => string;
+        };
+    };
     onRender: () => void;
 
     constructor(settings: CategoryFilterSettings) {
-        this.settings = settings || {};
+        this.settings = utils.defaults(settings || {}, {
+            formatters: {},
+            fields: null,
+        });
         this._filters = {};
         this.onRender = this._createRenderHandler();
     }
@@ -83,17 +92,19 @@ class CategoryFilter {
             return Object.keys(scales)
                 .map((name) => {
                     const config = scales[name];
-                    return { name, config };
+                    return {name, config};
                 })
                 .filter(predicate);
         };
 
-        const categoryScales = filterScales(({ config, name }) => {
+        const categoryScales = filterScales(({config, name}) => {
             return (config.type === 'ordinal' && config.dim);
         });
 
-        // Todo: how to use fields?
-        const fields = this.settings.fields || categoryScales.map(({ config }) => config.dim);
+        let fields = categoryScales.map(({config}) => config.dim);
+        if (this.settings.fields) {
+            fields = fields.filter((f) => this.settings.fields.indexOf(f) >= 0);
+        }
 
         this._categoryScales = categoryScales;
 
@@ -102,37 +113,39 @@ class CategoryFilter {
 
     _createRenderHandler() {
         return function (this: CategoryFilter) {
-            // this._render();
         };
     }
 
     _getContent(categories: CategoryInfo[]) {
-        return rootTemplate({ categories });
+        return rootTemplate({categories});
     }
 
     _getCategoriesInfo() {
-        const scales = this._categoryScales.map(({ name }) => {
+        const scales = this._categoryScales.map(({name}) => {
             return this._chart.getScaleInfo(name);
         });
-        // Todo: Get labels like in Tooltip.
         const categories = scales.map((scale) => {
             const dim = scale.dim;
-            const label = dim;
+            const label = this._getFieldLabel(dim);
+            const format = this._getFieldFormat(dim);
             const domain = scale.domain();
             const values = domain.map((value) => {
-                const label = value;
+                const label = format(value);
                 const key = this._getFilterKey(dim, value);
                 // const checked = !this._filters[key];
                 const checked = true;
-                return { label, checked, key, value };
+                return {label, checked, key, value};
             });
-            return { dim, label, values };
+            return {dim, label, values};
         });
         return categories;
     }
 
     _render() {
         this._clear();
+        this._formatters = pluginsSDK.getFieldFormatters(
+            this._chart.getSpec(),
+            this.settings.formatters);
         const categories = this._getCategoriesInfo();
         const content = this._getContent(categories);
         const node = createElement(content);
@@ -141,8 +154,8 @@ class CategoryFilter {
         this._subscribeToEvents();
         this._filterKeys = categories.reduce((map, cat) => {
             const dim = cat.label
-            cat.values.forEach(({ key, value }) => {
-                map[key] = { dim, value };
+            cat.values.forEach(({key, value}) => {
+                map[key] = {dim, value};
             });
             return map;
         }, {});
@@ -156,7 +169,7 @@ class CategoryFilter {
             `.${CLS}__value`,
             (e, target) => {
                 const key = target.getAttribute('data-key');
-                const { dim, value } = this._filterKeys[key];
+                const {dim, value} = this._filterKeys[key];
                 if (this._filters[key]) {
                     this._removeFilter(key);
                     target.classList.add(`${CLS}__value_checked`);
@@ -203,12 +216,25 @@ class CategoryFilter {
         this._chart.refresh();
     }
 
+    _getFieldLabel(k) {
+        return (this._formatters[k] ? this._formatters[k].label : k);
+    }
+
+    _getFieldFormat(k) {
+        return (this._formatters[k] ? this._formatters[k].format : (x) => String(x));
+    }
+
 }
 
 Taucharts.api.plugins.add('category-filter', CategoryFilterPlugin);
 
+export default function CategoryFilterPlugin(settings: CategoryFilterSettings) {
+    return new CategoryFilter(settings);
+}
+
 interface CategoryFilterSettings {
     fields?: string[];
+    formatters?: {[field: string]: Formatter};
 }
 
 interface CategoryInfo {
