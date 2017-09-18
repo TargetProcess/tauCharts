@@ -203,9 +203,9 @@ class CategoryFilter {
         this._node = node as HTMLDivElement;
         this._chart.insertToRightSidebar(node);
         this._subscribeToEvents();
-        this._filterKeys = categories.reduce((map, cat) => {
-            const dim = cat.label
-            cat.values.forEach(({key, value}) => {
+        this._filterKeys = categories.reduce((map, category) => {
+            const dim = category.dim;
+            category.values.forEach(({key, value}) => {
                 map[key] = {dim, value};
             });
             return map;
