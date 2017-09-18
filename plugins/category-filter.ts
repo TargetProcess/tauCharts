@@ -62,6 +62,17 @@ const delegateEvent = (element, eventName, selector, callback: (e: MouseEvent, t
     });
 };
 
+const createRowPredicate = (dim: string, value: any) => {
+    const isEmpty = (x) => x == null || x === '';
+    const stringify = (x) => JSON.stringify(isEmpty(x) ? null : x);
+    const v = stringify(value);
+    return (row) => {
+        const d = row[dim];
+        const r = stringify(d);
+        return (v === r);
+    };
+};
+
 class CategoryFilter {
 
     settings: CategoryFilterSettings;
@@ -190,6 +201,7 @@ class CategoryFilter {
 
     _subscribeToEvents() {
         const node = this._node;
+
         delegateEvent(
             node,
             'click',
@@ -197,17 +209,35 @@ class CategoryFilter {
             (e, target) => {
                 const key = target.getAttribute('data-key');
                 const toggle = (e.target as HTMLElement).matches(`.${CLS_VALUE_TOGGLE}`);
-                this._handleItemToggle(key, toggle ? 'toggle' : 'focus');
+                this._toggleCategory(key, toggle ? 'toggle' : 'focus');
             }
         );
 
+        delegateEvent(
+            node,
+            'mouseover',
+            `.${CLS_VALUE}`,
+            (e, target) => {
+                const key = target.getAttribute('data-key');
+                this._toggleHighlight(key, true);
+            }
+        );
+        delegateEvent(
+            node,
+            'mouseout',
+            `.${CLS_VALUE}`,
+            (e, target) => {
+                const key = target.getAttribute('data-key');
+                this._toggleHighlight(key, false);
+            }
+        );
     }
 
     _isFilteredOut(key) {
         return (key in this._filters);
     }
 
-    _handleItemToggle(key, type: 'toggle' | 'focus') {
+    _toggleCategory(key, type: 'toggle' | 'focus') {
 
         interface Item {
             node: HTMLElement;
@@ -301,6 +331,21 @@ class CategoryFilter {
         this._chart.refresh();
     }
 
+    _toggleHighlight(key: string, highlight: boolean) {
+        if (this._isFilteredOut(key)) {
+            return;
+        }
+
+        const {dim, value} = this._filterKeys[key];
+        const matches = (highlight ?
+            createRowPredicate(dim, value) :
+            ((row) => null));
+
+        this._chart
+            .select((unit) => true)
+            .forEach((unit) => unit.fire('highlight', matches));
+    }
+
     _clear() {
         const node = this._node;
         if (node && node.parentElement) {
@@ -317,16 +362,12 @@ class CategoryFilter {
     }
 
     _addFilter(key) {
-        const isEmpty = (x) => x == null || x === '';
         const {dim, value} = this._filterKeys[key];
-        const stringify = (x) => JSON.stringify(isEmpty(x) ? null : x);
-        const v = stringify(value);
+        const matches = createRowPredicate(dim, value);
         this._filters[key] = this._chart.addFilter({
             tag: 'category-filter',
             predicate: (row) => {
-                const d = row[dim];
-                var r = stringify(d);
-                return (v !== r);
+                return !matches(row);
             }
         });
     }
