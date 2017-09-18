@@ -103,6 +103,7 @@ class CategoryFilter {
         this.settings = utils.defaults(settings || {}, {
             formatters: {},
             fields: null,
+            skipColorDim: true,
         });
         this._filters = {};
         this.onRender = this._createRenderHandler();
@@ -121,14 +122,26 @@ class CategoryFilter {
                 .filter(predicate);
         };
 
-        const categoryScales = filterScales(({config, name}) => {
+        let categoryScales = filterScales(({config, name}) => {
             return (config.type === 'ordinal' && config.dim);
         });
 
-        let fields = categoryScales.map(({config}) => config.dim);
+        let fields = utils.unique(categoryScales.map(({config}) => config.dim));
         if (this.settings.fields) {
             fields = fields.filter((f) => this.settings.fields.indexOf(f) >= 0);
         }
+        if (this.settings.skipColorDim) {
+            const colorDims = filterScales(({config, name}) => {
+                return (config.type === 'color' && config.dim);
+            }).map(({config}) => config.dim);
+            fields = fields.filter((dim) => {
+                return colorDims.indexOf(dim) < 0;
+            });
+        }
+
+        categoryScales = categoryScales.filter((scale) => {
+            return fields.indexOf(scale.config.dim) >= 0;
+        });
 
         this._categoryScales = categoryScales;
 
@@ -397,6 +410,7 @@ export default function CategoryFilterPlugin(settings: CategoryFilterSettings) {
 interface CategoryFilterSettings {
     fields?: string[];
     formatters?: {[field: string]: Formatter};
+    skipColorDim?: boolean;
 }
 
 interface CategoryInfo {
