@@ -10,6 +10,9 @@ const utils = Taucharts.api.utils;
 const pluginsSDK = Taucharts.api.pluginsSDK;
 
 const CLS = 'tau-chart__category-filter';
+const CLS_VALUE = `${CLS}__value`;
+const CLS_VALUE_CHECKED = `${CLS_VALUE}_checked`;
+const CLS_VALUE_TOGGLE = `${CLS_VALUE}__toggle`;
 
 const joinLines = (lines: string[]) => lines.join('\n');
 
@@ -28,9 +31,9 @@ const categoryTemplate = ({label, values}: CategoryInfo) => `
 
 `;
 const valueTemplate = ({key, label, checked}) => `
-    <div class="${CLS}__value${checked ? ` ${CLS}__value_checked` : ''}" data-key="${key}">
-        <span class="${CLS}__value__checkbox"></span>
-        <span class="${CLS}__value__label">${label}</span>
+    <div class="${CLS_VALUE}${checked ? ` ${CLS_VALUE_CHECKED}` : ''}" data-key="${key}">
+        <span class="${CLS_VALUE_TOGGLE}"></span>
+        <span class="${CLS_VALUE}__label">${label}</span>
     </div>
 `;
 
@@ -128,12 +131,14 @@ class CategoryFilter {
             const dim = scale.dim;
             const label = this._getFieldLabel(dim);
             const format = this._getFieldFormat(dim);
-            const domain = scale.domain();
+
+            const dataSource = this._chart.getDataSources({excludeFilter: ['category-filter']});
+            const domain = utils.unique(dataSource[scale.source].data.map((d) => d[dim]));
+
             const values = domain.map((value) => {
                 const label = format(value);
                 const key = this._getFilterKey(dim, value);
-                // const checked = !this._filters[key];
-                const checked = true;
+                const checked = !this._filters[key];
                 return {label, checked, key, value};
             });
             return {dim, label, values};
@@ -166,20 +171,105 @@ class CategoryFilter {
         delegateEvent(
             node,
             'click',
-            `.${CLS}__value`,
+            `.${CLS_VALUE}`,
             (e, target) => {
                 const key = target.getAttribute('data-key');
-                const {dim, value} = this._filterKeys[key];
-                if (this._filters[key]) {
-                    this._removeFilter(key);
-                    target.classList.add(`${CLS}__value_checked`);
-                } else {
-                    this._addFilter(dim, value);
-                    target.classList.remove(`${CLS}__value_checked`);
-                }
+                const toggle = (e.target as HTMLElement).matches(`.${CLS_VALUE_TOGGLE}`);
+                this._handleItemToggle(key, toggle ? 'toggle' : 'focus');
             }
         );
 
+    }
+
+    _isFilteredOut(key) {
+        return (key in this._filters);
+    }
+
+    _handleItemToggle(key, type: 'toggle' | 'focus') {
+
+        interface Item {
+            node: HTMLElement;
+            key: string;
+            dim: string;
+            value: any;
+            isChecked: boolean;
+        }
+
+        const nodes = Array.from(this._node.querySelectorAll(`.${CLS_VALUE}`))
+            .reduce((map, node) => {
+                const k = node.getAttribute('data-key');
+                map[k] = node as HTMLElement;
+                return map;
+            }, {} as {[key: string]: HTMLElement});
+        const items = Object.keys(this._filterKeys)
+            .map((k) => {
+                const {dim, value} = this._filterKeys[k];
+                return {
+                    node: nodes[k],
+                    key: k,
+                    dim,
+                    value,
+                    isChecked: !this._isFilteredOut(k)
+                };
+            });
+        const itemsMap = items
+            .reduce((map, item) => {
+                map[item.key] = item;
+                return map;
+            }, {} as {[key: string]: Item});
+
+        const target = itemsMap[key];
+        const dimItems = items.filter((item) => item.dim === target.dim);
+
+        const toggleNode = (node: HTMLElement, checked: boolean) => {
+            if (checked) {
+                node.classList.add(CLS_VALUE_CHECKED);
+            } else {
+                node.classList.remove(CLS_VALUE_CHECKED);
+            }
+        };
+
+        switch (type) {
+
+            case 'toggle': {
+                if (target.isChecked) {
+                    this._addFilter(key);
+                    toggleNode(target.node, false);
+                } else {
+                    this._removeFilter(key);
+                    toggleNode(target.node, true);
+                }
+                break;
+            }
+
+            case 'focus': {
+                const allOthersAreFilteredOut = (target.isChecked && dimItems.every((item) => {
+                    return (item === target || !item.isChecked);
+                }));
+                if (allOthersAreFilteredOut) {
+                    dimItems.forEach((item) => {
+                        if (!item.isChecked) {
+                            toggleNode(item.node, true);
+                            this._removeFilter(item.key);
+                        }
+                    });
+                } else {
+                    dimItems.forEach((item) => {
+                        if (item !== target && item.isChecked) {
+                            toggleNode(item.node, false);
+                            this._addFilter(item.key);
+                        }
+                    });
+                    if (!target.isChecked) {
+                        toggleNode(target.node, true);
+                        this._removeFilter(target.key);
+                    }
+                }
+                break;
+            }
+        }
+
+        this._chart.refresh();
     }
 
     _clear() {
@@ -193,9 +283,9 @@ class CategoryFilter {
         return `${dim}__${value}`;
     }
 
-    _addFilter(dim: string, value: any) {
+    _addFilter(key) {
         const isEmpty = (x) => x == null || x === '';
-        const key = this._getFilterKey(dim, value);
+        const {dim, value} = this._filterKeys[key];
         const stringify = (x) => JSON.stringify(isEmpty(x) ? null : x);
         const v = stringify(value);
         this._filters[key] = this._chart.addFilter({
@@ -206,14 +296,12 @@ class CategoryFilter {
                 return (v !== r);
             }
         });
-        this._chart.refresh();
     }
 
     _removeFilter(key: string) {
         const filterId = this._filters[key];
         delete this._filters[key];
         this._chart.removeFilter(filterId);
-        this._chart.refresh();
     }
 
     _getFieldLabel(k) {
