@@ -2,7 +2,7 @@ import Taucharts from 'taucharts';
 import * as d3 from 'd3-selection';
 import getFieldsTemplate from './fields-template';
 import {GrammarElement, Plot} from '../../src/definitions';
-import {DimInfo, DimMap} from '../../src/plugins-sdk';
+import {Formatter} from '../../src/plugins-sdk';
 
 const utils = Taucharts.api.utils;
 const domUtils = Taucharts.api.domUtils;
@@ -13,11 +13,15 @@ export default class Tooltip {
 
     settings: TooltipSettings;
     state: TooltipState;
-    metaInfo: DimMap;
-    skipInfo: {[key: string]: boolean};
     _chart: Plot;
     _tooltip: any;
     _template;
+    _formatters: {
+        [field: string]: {
+            label: string;
+            format: (x) => string;
+        };
+    };
     _scrollHandler: () => void;
     _outerClickHandler: (e: MouseEvent) => void;
 
@@ -42,8 +46,6 @@ export default class Tooltip {
     init(chart: Plot) {
 
         this._chart = chart;
-        this.metaInfo = {};
-        this.skipInfo = {};
 
         this._tooltip = this._chart.addBalloon(
             {
@@ -281,8 +283,8 @@ export default class Tooltip {
     }
 
     getFieldFormat(k) {
-        const format = (this.metaInfo[k] ?
-            this.metaInfo[k].format :
+        const format = (this._formatters[k] ?
+            this._formatters[k].format :
             (x) => String(x));
         return (this.settings.escapeHtml ?
             (x) => utils.escapeHtml(format(x)) :
@@ -291,7 +293,7 @@ export default class Tooltip {
     }
 
     getFieldLabel(k) {
-        const label = (this.metaInfo[k] ? this.metaInfo[k].label : k);
+        const label = (this._formatters[k] ? this._formatters[k].label : k);
         return (this.settings.escapeHtml ? utils.escapeHtml(label) : label);
     }
 
@@ -328,9 +330,7 @@ export default class Tooltip {
 
     _getRenderHandler() {
         return function (this: Tooltip) {
-            const info = this._getFormatters();
-            this.metaInfo = info.meta;
-            this.skipInfo = info.skip;
+            this._formatters = pluginsSDK.getFieldFormatters(this._chart.getSpec(), this.settings.formatters);
 
             this._subscribeToHover();
 
@@ -351,66 +351,6 @@ export default class Tooltip {
         } else {
             this._chart.disablePointerEvents();
         }
-    }
-
-    _getFormatters() {
-
-        const info = pluginsSDK.extractFieldsFormatInfo(this._chart.getSpec());
-        const skip = {} as {[key: string]: boolean};
-        Object.keys(info).forEach((k) => {
-
-            if (info[k].isComplexField) {
-                skip[k] = true;
-            }
-
-            if (info[k].parentField) {
-                delete info[k];
-            }
-        });
-
-        const toLabelValuePair = (x: Formatter | FormatterObject) => {
-
-            interface Pair {
-                format: Formatter | FormatterObject;
-                label?: string;
-                nullAlias?: string;
-            }
-
-            var res = {} as Pair;
-
-            if (typeof x === 'function' || typeof x === 'string') {
-                res = {format: x};
-            } else if (utils.isObject(x)) {
-                res = utils.pick(x, 'label', 'format', 'nullAlias') as Pair;
-            }
-
-            return res;
-        };
-
-        Object.keys(this.settings.formatters).forEach((k) => {
-
-            var fmt = toLabelValuePair(this.settings.formatters[k]);
-
-            info[k] = Object.assign(
-                ({label: k, nullAlias: ('No ' + k)}),
-                (info[k] || {}),
-                (utils.pick(fmt, 'label', 'nullAlias'))) as any;
-
-            if (fmt.hasOwnProperty('format')) {
-                info[k].format = (typeof fmt.format === 'function') ?
-                    (fmt.format) :
-                    (Taucharts.api.tickFormat.get(fmt.format as any, info[k].nullAlias));
-            } else {
-                info[k].format = (info[k].hasOwnProperty('format')) ?
-                    (info[k].format) :
-                    (Taucharts.api.tickFormat.get(null, info[k].nullAlias));
-            }
-        });
-
-        return {
-            meta: info,
-            skip
-        };
     }
 }
 
@@ -435,18 +375,10 @@ export interface TooltipSettings {
     clsTarget?: string;
     escapeHtml?: boolean;
     fields?: string[];
-    formatters?: {[field: string]: (Formatter | FormatterObject)};
+    formatters?: {[field: string]: Formatter};
     getFields?: (chart: Plot) => string[];
     getTemplate?: (defaults, tooltip: Tooltip, settings: TooltipSettings) => any;
     templateSettings?: any;
     spacing?: number;
     winBound?: number;
-}
-
-type Formatter = (x: any) => string;
-
-interface FormatterObject {
-    label?: string;
-    format: (x: any) => string;
-    nullAlias?: string;
 }

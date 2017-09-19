@@ -380,63 +380,17 @@ const svgNS = 'http://www.w3.org/2000/svg';
             },
 
             _getFormat: function (k) {
-                var info = this._formatters[k] || {
-                    format: function (x) {
-                        return String(x);
-                    }
-                };
-                return info.format;
+                return (this._formatters[k] ?
+                    this._formatters[k].format :
+                    (x) => String(x));
             },
 
             onRender: function () {
 
-                this._formatters = this._getFormatters();
+                this._formatters = pluginsSDK.getFieldFormatters(
+                    this._chart.getSpec(),
+                    settings.formatters);
                 this._subscribeToHover();
-            },
-
-            _getFormatters: function () {
-
-                var info = pluginsSDK.extractFieldsFormatInfo(this._chart.getSpec());
-                Object.keys(info).forEach(function (k) {
-                    if (info[k].parentField) {
-                        delete info[k];
-                    }
-                });
-
-                var toLabelValuePair = function (x) {
-
-                    var res = {};
-
-                    if (typeof x === 'function' || typeof x === 'string') {
-                        res = {format: x};
-                    } else if (utils.isObject(x)) {
-                        res = utils.pick(x, 'label', 'format', 'nullAlias');
-                    }
-
-                    return res;
-                };
-
-                Object.keys(settings.formatters).forEach(function (k) {
-
-                    var fmt = toLabelValuePair(settings.formatters[k]);
-
-                    info[k] = Object.assign(
-                        ({label: k, nullAlias: ('No ' + k)}),
-                        (info[k] || {}),
-                        (utils.pick(fmt, 'label', 'nullAlias')));
-
-                    if (fmt.hasOwnProperty('format')) {
-                        info[k].format = (typeof fmt.format === 'function') ?
-                            (fmt.format) :
-                            (Taucharts.api.tickFormat.get(fmt.format, info[k].nullAlias));
-                    } else {
-                        info[k].format = (info[k].hasOwnProperty('format')) ?
-                            (info[k].format) :
-                            (Taucharts.api.tickFormat.get(null, info[k].nullAlias));
-                    }
-                });
-
-                return info;
             }
         };
 
