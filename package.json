@@ -79,6 +79,7 @@
     "karma-webpack": "^2.0.3",
     "merge-stream": "^1.0.1",
     "merge2": "^1.0.3",
+    "minimist": "^1.2.0",
     "mocha": "^3.4.2",
     "rollup": "^0.41.6",
     "rollup-plugin-alias": "^1.2.1",

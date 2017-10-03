@@ -7,6 +7,8 @@ const merge = require('merge-stream');
 const rename = require('gulp-rename');
 const runSequence = require('run-sequence');
 
+const args = require('minimist')(process.argv.slice(2));
+
 const banner = () => {
     const package = require('./package.json');
     const now = new Date();
@@ -23,6 +25,7 @@ const banner = () => {
 };
 
 const plugins = {
+    args,
     banner,
     concat,
     connect,
