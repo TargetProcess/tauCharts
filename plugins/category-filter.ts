@@ -154,7 +154,8 @@ class CategoryFilter {
         Object.keys(filters)
             .forEach((id) => chart.removeFilter(filters[id]));
 
-        this._node.parentElement.removeChild(this._node);
+        const remove = (node) => node && node.parentElement && node.parentElement.removeChild(node);
+        remove(this._node);
     }
 
     _createRenderHandler() {

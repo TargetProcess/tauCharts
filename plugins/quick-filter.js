@@ -259,7 +259,7 @@ const d3 = {
                 Object.keys(filters)
                     .forEach((id) => chart.removeFilter(filters[id]));
 
-                const remove = (node) => node.parentElement.removeChild(node);
+                const remove = (node) => node && node.parentElement && node.parentElement.removeChild(node);
                 remove(this._filtersContainer);
             },
 

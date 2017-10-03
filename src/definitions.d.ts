@@ -423,7 +423,6 @@ export interface ChartSettings {
     utcTime?: boolean;
     defaultFormats?: {[name: string]: string};
     size?: Size;
-    emptyContainer?: string;
     experimentalShouldAnimate?: (spec: GPLSpec) => boolean;
 }
 

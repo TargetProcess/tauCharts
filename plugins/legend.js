@@ -314,7 +314,9 @@ import * as d3 from 'd3-format';
                 Object.keys(filters)
                     .forEach((id) => chart.removeFilter(filters[id]));
 
-                this._container.parentElement.removeChild(this._container);
+                if (this._container && this._container.parentElement) {
+                    this._container.parentElement.removeChild(this._container);
+                }
             },
 
             onRender: function () {

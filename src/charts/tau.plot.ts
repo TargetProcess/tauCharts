@@ -76,6 +76,7 @@ export class Plot extends Emitter {
     protected _reportProgress: (value: number) => void;
     protected _taskRunner: TaskRunner;
     protected _renderingPhase: 'spec' | 'draw' | null;
+    protected _emptyContainer: string;
     protected _pointerAnimationFrameId: number;
     protected _target: HTMLElement | string;
     protected _defaultSize: Size;
@@ -85,8 +86,16 @@ export class Plot extends Emitter {
         refCounter: () => number;
     };
 
-    on(event: 'render' | 'beforerender', callback: (chart: Plot, svg: SVGSVGElement) => void, context?): EventHandlerMap;
-    on(event: 'specready' | 'unitsstructureexpanded', callback: (chart: Plot, spec: GPLSpec) => void, context?): EventHandlerMap;
+    on(
+        event: 'render' | 'beforerender',
+        callback: (chart: Plot, svg: SVGSVGElement) => void,
+        context?
+    ): EventHandlerMap;
+    on(
+        event: 'specready' | 'unitsstructureexpanded',
+        callback: (chart: Plot, spec: GPLSpec) => void,
+        context?
+    ): EventHandlerMap;
     on(event: 'renderingtimeout', callback: (chart: Plot, timeout: number) => void, context?): EventHandlerMap;
     on(event: 'renderingerror', callback: (chart: Plot, error: Error) => void, context?): EventHandlerMap;
     on(event: 'unitdraw', callback: (chart: Plot, unit: GrammarElement) => void, context?): EventHandlerMap;
@@ -137,19 +146,35 @@ export class Plot extends Emitter {
 
         config = this.setupConfigSettings(config);
 
-        if (this.isGPLConfig(config)) {
-            this.configGPL = config as GPLSpec;
-        } else {
-            config = this.setupConfig(config);
-            this.configGPL = new SpecConverter(config).convert();
-        }
-
-        this.configGPL = Plot.setupPeriodData(this.configGPL);
-
+        this.configGPL = this.createGPLConfig(config);
         this._originData = Object.assign({}, this.configGPL.sources);
         this._liveSpec = this.configGPL;
+        this._emptyContainer = config.emptyContainer || '';
 
-        let plugins = (config.plugins || []);
+        this.setupPlugins(config);
+    }
+
+    createGPLConfig(config: ChartConfig) {
+        let configGPL: GPLSpec;
+
+        if (this.isGPLConfig(config)) {
+            configGPL = config as GPLSpec;
+        } else {
+            config = this.setupConfig(config);
+            configGPL = new SpecConverter(config).convert();
+        }
+
+        configGPL = Plot.setupPeriodData(configGPL);
+
+        return configGPL;
+    }
+
+    isGPLConfig(config: ChartConfig) {
+        return (['sources', 'scales'].filter((p) => config.hasOwnProperty(p)).length === 2);
+    }
+
+    setupPlugins(config: ChartConfig) {
+        const plugins = (config.plugins || []);
         if (this._plugins) {
             this._plugins.destroy();
         }
@@ -166,16 +191,9 @@ export class Plot extends Emitter {
         })();
         config.settings = Plot.setupSettings(utils.defaults(
             (config.settings || {}),
-            this._dataRefs,
-            {
-                emptyContainer: '',
-            }
+            this._dataRefs
         ));
         return config;
-    }
-
-    isGPLConfig(config: ChartConfig) {
-        return (['sources', 'scales'].filter((p) => config.hasOwnProperty(p)).length === 2);
     }
 
     destroy() {
@@ -485,7 +503,7 @@ export class Plot extends Emitter {
         var liveSpec = this._createLiveSpec(target, xSize);
         if (!liveSpec) {
             this._svg = null;
-            this._layout.content.innerHTML = this._liveSpec.settings.emptyContainer;
+            this._layout.content.innerHTML = this._emptyContainer;
             this.enablePointerEvents();
             return;
         }
