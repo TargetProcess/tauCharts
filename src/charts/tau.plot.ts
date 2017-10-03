@@ -1,5 +1,5 @@
 import {Balloon} from '../api/balloon';
-import {Emitter} from '../event';
+import {Emitter, EventHandlerMap} from '../event';
 import {Plugins} from '../plugins';
 import * as utils from '../utils/utils';
 import * as utilsDom from '../utils/utils-dom';
@@ -76,24 +76,27 @@ export class Plot extends Emitter {
     protected _reportProgress: (value: number) => void;
     protected _taskRunner: TaskRunner;
     protected _renderingPhase: 'spec' | 'draw' | null;
-    protected _emptyContainer: string;
     protected _pointerAnimationFrameId: number;
     protected _target: HTMLElement | string;
     protected _defaultSize: Size;
     protected _renderedItems: GrammarElement[];
+    protected _dataRefs: {
+        references: WeakMap<any, number>;
+        refCounter: () => number;
+    };
 
-    on(event: 'render' | 'beforerender', callback: (chart: Plot, svg: SVGSVGElement) => void, context?);
-    on(event: 'specready' | 'unitsstructureexpanded', callback: (chart: Plot, spec: GPLSpec) => void, context?);
-    on(event: 'renderingtimeout', callback: (chart: Plot, timeout: number) => void, context?);
-    on(event: 'renderingerror', callback: (chart: Plot, error: Error) => void, context?);
-    on(event: 'unitdraw', callback: (chart: Plot, unit: GrammarElement) => void, context?);
+    on(event: 'render' | 'beforerender', callback: (chart: Plot, svg: SVGSVGElement) => void, context?): EventHandlerMap;
+    on(event: 'specready' | 'unitsstructureexpanded', callback: (chart: Plot, spec: GPLSpec) => void, context?): EventHandlerMap;
+    on(event: 'renderingtimeout', callback: (chart: Plot, timeout: number) => void, context?): EventHandlerMap;
+    on(event: 'renderingerror', callback: (chart: Plot, error: Error) => void, context?): EventHandlerMap;
+    on(event: 'unitdraw', callback: (chart: Plot, unit: GrammarElement) => void, context?): EventHandlerMap;
     on(
         event: 'elementclick' | 'elementmouseout' | 'elementmouseover',
         callback: (chart: Plot, data: PointerEvent) => void,
         context?
-    );
+    ): EventHandlerMap;
     on(event: string, callback: (chart: Plot, data) => void, context?) {
-        super.on(event, callback, context);
+        return super.on(event, callback, context);
     }
 
     constructor(config: ChartConfig) {
@@ -106,25 +109,6 @@ export class Plot extends Emitter {
         };
         this._layout = getLayout();
 
-        var iref = 0;
-        config.settings = Plot.setupSettings(utils.defaults(
-            (config.settings || {}),
-            {
-                references: new WeakMap(),
-                refCounter: (() => (++iref))
-            }
-        ));
-
-        if (['sources', 'scales'].filter((p) => config.hasOwnProperty(p)).length === 2) {
-            this.configGPL = config as GPLSpec;
-        } else {
-            this.configGPL = new SpecConverter(this.setupConfig(config)).convert();
-        }
-
-        this.configGPL = Plot.setupPeriodData(this.configGPL);
-
-        var plugins = (config.plugins || []);
-
         this.transformers = [
             SpecTransformApplyRatio,
             SpecTransformAutoLayout
@@ -135,14 +119,63 @@ export class Plot extends Emitter {
             SpecTransformCalcSize
         ];
 
-        this._originData = Object.assign({}, this.configGPL.sources);
         this._chartDataModel = (src => src);
-        this._liveSpec = this.configGPL;
-        this._plugins = new Plugins(plugins, this);
 
         this._reportProgress = null;
         this._taskRunner = null;
         this._renderingPhase = null;
+
+        this.applyConfig(config);
+    }
+
+    updateConfig(config: ChartConfig) {
+        this.applyConfig(config);
+        this.refresh();
+    }
+
+    applyConfig(config: ChartConfig) {
+
+        config = this.setupConfigSettings(config);
+
+        if (this.isGPLConfig(config)) {
+            this.configGPL = config as GPLSpec;
+        } else {
+            config = this.setupConfig(config);
+            this.configGPL = new SpecConverter(config).convert();
+        }
+
+        this.configGPL = Plot.setupPeriodData(this.configGPL);
+
+        this._originData = Object.assign({}, this.configGPL.sources);
+        this._liveSpec = this.configGPL;
+
+        let plugins = (config.plugins || []);
+        if (this._plugins) {
+            this._plugins.destroy();
+        }
+        this._plugins = new Plugins(plugins, this);
+    }
+
+    setupConfigSettings(config: ChartConfig) {
+        this._dataRefs = this._dataRefs || (() => {
+            let iref = 0;
+            return {
+                references: new WeakMap(),
+                refCounter: (() => (++iref))
+            };
+        })();
+        config.settings = Plot.setupSettings(utils.defaults(
+            (config.settings || {}),
+            this._dataRefs,
+            {
+                emptyContainer: '',
+            }
+        ));
+        return config;
+    }
+
+    isGPLConfig(config: ChartConfig) {
+        return (['sources', 'scales'].filter((p) => config.hasOwnProperty(p)).length === 2);
     }
 
     destroy() {
@@ -171,8 +204,6 @@ export class Plot extends Emitter {
                 plugins: [],
                 settings: {}
             });
-
-        this._emptyContainer = config.emptyContainer || '';
 
         resConfig.spec.dimensions = Plot.setupMetaInfo(resConfig.spec.dimensions, resConfig.data);
 
@@ -454,7 +485,7 @@ export class Plot extends Emitter {
         var liveSpec = this._createLiveSpec(target, xSize);
         if (!liveSpec) {
             this._svg = null;
-            this._layout.content.innerHTML = this._emptyContainer;
+            this._layout.content.innerHTML = this._liveSpec.settings.emptyContainer;
             this.enablePointerEvents();
             return;
         }

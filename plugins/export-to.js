@@ -790,6 +790,7 @@ const MSG_TITLE = 'Taucharts Export Plug-in:';
                 this._destroyListeners.forEach(function (listener) {
                     listener.call(this);
                 }, this);
+                this._container.parentElement.removeChild(this._container);
             }
         };
     }

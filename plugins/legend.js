@@ -308,6 +308,15 @@ import * as d3 from 'd3-format';
                 }
             },
 
+            destroy() {
+                const filters = this._currentFilters;
+                const chart = this._chart;
+                Object.keys(filters)
+                    .forEach((id) => chart.removeFilter(filters[id]));
+
+                this._container.parentElement.removeChild(this._container);
+            },
+
             onRender: function () {
                 this._clearPanel();
                 this._drawColorLegend();

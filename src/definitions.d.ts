@@ -88,6 +88,7 @@ export interface GrammarElement {
     config?: Unit;
     screenModel?: ScreenModel;
     on?(name: string, callback: EventCallback, context?: any): EventHandlerMap;
+    removeHandler?(handler: EventHandlerMap, context?: any);
     fire?(name: string, data?: any);
     destroy?();
     regScale?(paramId: string, scaleObj: ScaleFunction): GrammarElement;
@@ -422,6 +423,7 @@ export interface ChartSettings {
     utcTime?: boolean;
     defaultFormats?: {[name: string]: string};
     size?: Size;
+    emptyContainer?: string;
     experimentalShouldAnimate?: (spec: GPLSpec) => boolean;
 }
 
