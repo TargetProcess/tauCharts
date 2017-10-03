@@ -17,7 +17,7 @@
                         const spec = getSpec();
                         const text = root.select('textarea').property('value');
                         const obj = JSON.parse(text || '{}');
-                        if (!Array.isArray(obj.plugins)) {
+                        if (obj.plugins && !Array.isArray(obj.plugins)) {
                             obj.plugins = Object.keys(obj.plugins).reduce((plugins, name) => {
                                 plugins.push(Taucharts.api.plugins.get(name)(obj.plugins[name]));
                                 return plugins;
