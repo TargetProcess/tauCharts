@@ -2,6 +2,40 @@
 
     dev.spec(getSpec());
 
+    function updateSpecPlugin() {
+        return {
+            init(chart) {
+                const node = document.createElement('div');
+                const root = d3.select(node);
+                root.append('span').append('strong')
+                    .text('JSON:');
+                root.append('textarea')
+                    .property('value', '{}');
+                root.append('button')
+                    .text('Set data')
+                    .on('click', () => {
+                        const spec = getSpec();
+                        const text = root.select('textarea').property('value');
+                        const obj = JSON.parse(text || '{}');
+                        if (!Array.isArray(obj.plugins)) {
+                            obj.plugins = Object.keys(obj.plugins).reduce((plugins, name) => {
+                                plugins.push(Taucharts.api.plugins.get(name)(obj.plugins[name]));
+                                return plugins;
+                            }, []);
+                            obj.plugins.push(updateSpecPlugin());
+                        }
+                        const chartSpec = Object.assign(spec, obj);
+                        chart.updateConfig(Object.assign(spec, obj));
+                    });
+                chart.insertToHeader(node);
+                this.node = node;
+            },
+            destroy() {
+                this.node.parentElement.removeChild(this.node);
+            }
+        };
+    }
+
     function getSpec() {
         return {
             type: 'line',
@@ -43,29 +77,7 @@
                 Taucharts.api.plugins.get('crosshair')(),
                 Taucharts.api.plugins.get('floating-axes')(),
                 Taucharts.api.plugins.get('export-to')(),
-                {
-                    init(chart) {
-                        const node = document.createElement('div');
-                        const root = d3.select(node);
-                        root.append('span').append('strong')
-                            .text('JSON:');
-                        root.append('textarea')
-                            .property('value', '{}');
-                        root.append('button')
-                            .text('Set data')
-                            .on('click', () => {
-                                const spec = getSpec();
-                                const text = root.select('textarea').property('value');
-                                const obj = JSON.parse(text || '{}');
-                                chart.updateConfig(Object.assign(spec, obj));
-                            });
-                        chart.insertToHeader(node);
-                        this.node = node;
-                    },
-                    destroy() {
-                        this.node.parentElement.removeChild(this.node);
-                    }
-                }
+                updateSpecPlugin()
             ]
         }
     }
