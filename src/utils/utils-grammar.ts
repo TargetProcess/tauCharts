@@ -18,6 +18,7 @@ export function useFillGapsRule(config: Unit) {
             (isAuto && (isStack || (xPeriod && isYValue)))
         ) {
             return GrammarRegistry.get('fillGaps')(model, {
+                isStack,
                 xPeriod,
                 utc: config.guide.utcTime
             });

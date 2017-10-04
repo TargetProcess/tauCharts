@@ -459,7 +459,7 @@ GrammarRegistry
 
         return {};
     })
-    .reg('fillGaps', (model, {xPeriod, utc}) => {
+    .reg('fillGaps', (model, {isStack, xPeriod, utc}) => {
         const data = model.data();
         const groups = utils.groupBy(data, model.group);
         const fibers = (Object
@@ -525,10 +525,16 @@ GrammarRegistry
 
         const nextData = fibers
             .map((fib) => fib.sort((a, b) => model.xi(a) - model.xi(b)))
-            .reduce((memo, fib) => {
-                const bySign = utils.groupBy(fib, (row) => String(calcSign(row)));
-                return Object.keys(bySign).reduce((memo, s) => memo.concat(merge(xs, bySign[s], s)), memo);
-            }, []);
+            .reduce((isStack ?
+                ((memo, fib) => {
+                    const bySign = utils.groupBy(fib, (row) => String(calcSign(row)));
+                    return Object.keys(bySign).reduce((memo, s) => memo.concat(merge(xs, bySign[s], s)), memo);
+                }) :
+                ((memo, fib) => {
+                    const bySign = utils.groupBy(fib, (row) => String(calcSign(row)));
+                    const maxX = Math.max(...fib.map((row) => row[dx]));
+                    return memo.concat(merge(xs.filter((x) => x <= maxX), fib, 0));
+                })), []);
 
         return {
             data: () => nextData,
