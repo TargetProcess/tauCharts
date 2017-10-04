@@ -268,6 +268,61 @@ chartType.forEach(function (item) {
                         done();
                     });
             });
+
+            it('should change Tooltip config', function (done) {
+                const originTimeout = stubTimeout();
+
+                context.chart.updateConfig({
+                    type: item,
+                    x: 'x',
+                    y: 'y',
+                    color: 'color',
+                    plugins: [tooltip({
+                        getFields: function (chart) {
+                            expect(chart).to.be.ok;
+                            if (chart.getChartModelData()[0].x === 2) {
+                                return ['x'];
+                            }
+                            return ['y', 'color'];
+                        }
+                    })],
+                    data: [{
+                        x: 2,
+                        y: 2,
+                        color: 'yellow'
+                    }]
+                });
+
+                showTooltip(expect, context.chart, 0, elementSelector)
+                    .then(function (content) {
+                        expect(content.length).to.be.above(0);
+                        const tooltipElements = content[0].querySelectorAll('.tau-chart__tooltip__list__elem');
+                        const texts = Array.from(tooltipElements).map((x) => x.textContent);
+                        expect(texts).to.be.eql(['x', '2']);
+
+                        return hideTooltip(expect, context.chart, 0, elementSelector);
+                    })
+                    .then(function () {
+                        context.chart.setData([{
+                            x: 3,
+                            y: 3,
+                            color: 'red'
+                        }]);
+
+                        return showTooltip(expect, context.chart, 0, elementSelector);
+                    })
+                    .then(function (content) {
+                        expect(content.length).to.be.above(0);
+                        var tooltipElements = content[0].querySelectorAll('.tau-chart__tooltip__list__elem');
+                        var texts = Array.from(tooltipElements).map((x) => x.textContent);
+                        expect(texts).to.be.eql(['y', '3', 'color', 'red']);
+                        return hideTooltip(expect, context.chart, 0, elementSelector);
+                    })
+                    .always(function () {
+                        window.setTimeout = originTimeout;
+                        done();
+                    });
+            });
         }
     );
 });

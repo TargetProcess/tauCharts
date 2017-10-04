@@ -34,6 +34,7 @@
             'time-interval',
             'time-interval-missing-data',
             'timeline',
+            'update-config',
             'utc',
             'vertical-ordinal-facets',
             'whiskers',

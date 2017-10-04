@@ -148,6 +148,16 @@ class CategoryFilter {
         this._render();
     }
 
+    destroy() {
+        const filters = this._filters;
+        const chart = this._chart;
+        Object.keys(filters)
+            .forEach((id) => chart.removeFilter(filters[id]));
+
+        const remove = (node) => node && node.parentElement && node.parentElement.removeChild(node);
+        remove(this._node);
+    }
+
     _createRenderHandler() {
         return function (this: CategoryFilter) {
             if (this._lastClickedScrollInfo) {

@@ -7,6 +7,14 @@ class Chart extends Plot {
 
     constructor(config: ChartConfig) {
 
+        super(config);
+
+        if (config.autoResize) {
+            Chart.winAware.push(this);
+        }
+    }
+
+    applyConfig(config: ChartConfig) {
         var errors = chartTypesRegistry.validate(config.type, config);
 
         if (errors.length > 0) {
@@ -19,11 +27,7 @@ class Chart extends Plot {
         config.settings = Plot.setupSettings(config.settings);
         config.dimensions = Plot.setupMetaInfo(config.dimensions, config.data);
 
-        super(chartFactory(config));
-
-        if (config.autoResize) {
-            Chart.winAware.push(this);
-        }
+        super.applyConfig(chartFactory(config));
     }
 
     destroy() {

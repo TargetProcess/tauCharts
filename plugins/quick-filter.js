@@ -253,6 +253,16 @@ const d3 = {
                 }
             },
 
+            destroy() {
+                const filters = this._currentFilters;
+                const chart = this._chart;
+                Object.keys(filters)
+                    .forEach((id) => chart.removeFilter(filters[id]));
+
+                const remove = (node) => node && node.parentElement && node.parentElement.removeChild(node);
+                remove(this._filtersContainer);
+            },
+
             _applyFilter: function (dim) {
                 var state = this._currentFilters;
 
