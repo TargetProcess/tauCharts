@@ -112,10 +112,6 @@ export class Plot extends Emitter {
         super();
         this._nodes = [];
         this._svg = null;
-        this._filtersStore = {
-            filters: {},
-            tick: 0
-        };
         this._layout = getLayout();
 
         this.transformers = [
@@ -143,6 +139,11 @@ export class Plot extends Emitter {
     }
 
     applyConfig(config: ChartConfig) {
+
+        this._filtersStore = {
+            filters: {},
+            tick: 0
+        };
 
         config = this.setupConfigSettings(config);
 

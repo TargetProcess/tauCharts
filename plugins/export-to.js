@@ -770,13 +770,13 @@ const MSG_TITLE = 'Taucharts Export Plug-in:';
                 var popupElement = popup.getElement();
                 popupElement.setAttribute('tabindex', '-1');
                 this._handleMenu(popupElement, chart, popup);
-                chart.on('export-to', function (chart, type) {
+                this._exportHandler = chart.on('export-to', function (chart, type) {
                     this._select(type, chart);
-                }.bind(this));
-                chart.on('exportTo', function (chart, type) {
+                }.bind(this), this);
+                this._deprecatedExportHandler = chart.on('exportTo', function (chart, type) {
                     Taucharts.api.globalSettings.log([MSG_TITLE, '`exportTo` event is deprecated, use `export-to` instead.'], 'warn');
                     this._select(type, chart);
-                }.bind(this));
+                }.bind(this), this);
                 this._onDestroy(function () {
                     popup.destroy();
                 });
@@ -790,6 +790,8 @@ const MSG_TITLE = 'Taucharts Export Plug-in:';
                 this._destroyListeners.forEach(function (listener) {
                     listener.call(this);
                 }, this);
+                chart.removeHandler(this._exportHandler, this);
+                chart.removeHandler(this._deprecatedExportHandler, this);
                 const remove = (node) => node && node.parentElement && node.parentElement.removeChild(node);
                 remove(this._container);
             }
