@@ -103,3 +103,84 @@ const describeChart = testUtils.describeChart;
             autoWidth: false
         }
     );
+
+    describeChart(
+        'export plugin on config update',
+        {
+            type: 'scatterplot',
+            x: 'x',
+            y: 'y',
+            color: 'color',
+            size: 'size',
+        },
+        [
+            {x: 2, y: 2, color: undefined, size: 10},
+            {x: 4, y: 5, color: 'color', size: 123}
+        ],
+        function (context) {
+            it('should not add Export plug-in', function (done) {
+                const header = context.chart.getLayout().header;
+                const exportMenu = header.querySelector('.tau-chart__export');
+                expect(exportMenu).to.be.null;
+                done();
+            });
+            it('should add Export plug-in', function (done) {
+                context.chart.updateConfig({
+                    type: 'scatterplot',
+                    x: 'x',
+                    y: 'y',
+                    color: 'color',
+                    size: 'size',
+                    plugins: [exportTo()],
+                    data: [
+                        {x: 2, y: 2, color: undefined, size: 10},
+                        {x: 4, y: 5, color: 'color', size: 123}
+                    ]
+                });
+                const header = context.chart.getLayout().header;
+                const exportMenu = header.querySelector('.tau-chart__export');
+                expect(exportMenu).to.be.ok;
+                expect(exportMenu.style.display).to.not.equal('none');
+                done();
+            });
+            it('should update Export plug-in config', function (done) {
+                context.chart.updateConfig({
+                    type: 'scatterplot',
+                    x: 'x',
+                    y: 'y',
+                    color: 'color',
+                    size: 'size',
+                    plugins: [exportTo({visible: false})],
+                    data: [
+                        {x: 2, y: 2, color: undefined, size: 10},
+                        {x: 4, y: 5, color: 'color', size: 123}
+                    ]
+                });
+                const header = context.chart.getLayout().header;
+                const exportMenu = header.querySelector('.tau-chart__export');
+                expect(exportMenu).to.be.ok;
+                expect(exportMenu.style.display).to.equal('none');
+                done();
+            });
+            it('should remove Export plug-in', function (done) {
+                context.chart.updateConfig({
+                    type: 'scatterplot',
+                    x: 'x',
+                    y: 'y',
+                    color: 'color',
+                    size: 'size',
+                    data: [
+                        {x: 2, y: 2, color: undefined, size: 10},
+                        {x: 4, y: 5, color: 'color', size: 123}
+                    ]
+                });
+                const header = context.chart.getLayout().header;
+                const exportMenu = header.querySelector('.tau-chart__export');
+                expect(exportMenu).to.be.null;
+                done();
+            });
+        },
+        {
+            autoWidth: false
+        }
+    );

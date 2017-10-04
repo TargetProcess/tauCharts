@@ -385,3 +385,91 @@ import Taucharts from '../src/tau.charts';
             autoWidth: false
         }
     );
+
+    describeChart(
+        'add legend on spec update',
+        {
+            type: 'scatterplot',
+            x: 'x',
+            y: 'y',
+            size: 'size',
+        },
+        [
+            {x: 2, y: 2, size: 10},
+            {x: 4, y: 5, size: 123}
+        ],
+        function (context) {
+            it('should not draw legend first time', function () {
+                const sidebar = context.chart.getLayout().rightSidebar;
+                const legendBlock = sidebar.querySelector('.tau-chart__legend');
+
+                expect(legendBlock).to.be.null;
+            });
+
+            it('should draw legend', function () {
+                context.chart.updateConfig({
+                    type: 'scatterplot',
+                    x: 'x',
+                    y: 'y',
+                    size: 'size',
+                    plugins: [legend()],
+                    data: [
+                        {x: 2, y: 2, size: 10},
+                        {x: 4, y: 5, size: 123}
+                    ]
+                });
+
+                const sidebar = context.chart.getLayout().rightSidebar;
+                const legendBlock = sidebar.querySelector('.tau-chart__legend');
+                const nodeList = legendBlock.querySelectorAll('.tau-chart__legend__size__item__circle');
+                const texts = legendBlock.querySelectorAll('.tau-chart__legend__size__item__label');
+
+                expect(nodeList.length).to.equal(2);
+                expect(texts[0].textContent).to.equal('123');
+                expect(texts[1].textContent).to.equal('10');
+            });
+
+            it('should change legend from size to color', function () {
+                context.chart.updateConfig({
+                    type: 'scatterplot',
+                    x: 'x',
+                    y: 'y',
+                    color: 'size',
+                    plugins: [legend()],
+                    data: [
+                        {x: 2, y: 2, size: 10},
+                        {x: 4, y: 5, size: 123}
+                    ]
+                });
+
+                const sidebar = context.chart.getLayout().rightSidebar;
+                const legendBlock = sidebar.querySelector('.tau-chart__legend');
+                const nodeList = legendBlock.querySelectorAll('.tau-chart__legend__size__item__circle');
+                const gradients = legendBlock.querySelectorAll('.tau-chart__legend__gradient');
+
+                expect(nodeList.length).to.equal(0);
+                expect(gradients.length).to.equal(1);
+            });
+
+            it('should hide legend', function () {
+                context.chart.updateConfig({
+                    type: 'scatterplot',
+                    x: 'x',
+                    y: 'y',
+                    size: 'size',
+                    data: [
+                        {x: 2, y: 2, size: 10},
+                        {x: 4, y: 5, size: 123}
+                    ]
+                });
+
+                const sidebar = context.chart.getLayout().rightSidebar;
+                const legendBlock = sidebar.querySelector('.tau-chart__legend');
+
+                expect(legendBlock).to.be.null;
+            });
+        },
+        {
+            autoWidth: false
+        }
+    );

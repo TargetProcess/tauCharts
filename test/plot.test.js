@@ -891,4 +891,55 @@ import * as d3 from 'd3-selection';
 
             chart.renderTo(testDiv);
         });
+
+        it('should update chart spec without full redraw', function () {
+
+            const testDiv = document.getElementById('test-div');
+            testDiv.style.width = '800px';
+            testDiv.style.height = '600px';
+
+            const getSpec = (ext) => Object.assign({
+                type: 'line',
+                data: range(12).map((i) => {
+                    var m = i + 1;
+                    return {
+                        id: i,
+                        date: new Date(`2016-${m > 9 ? m : ('0' + m)}-01`),
+                        value: i * 10
+                    };
+                }),
+                identity: 'id',
+                x: ['date'],
+                y: ['value'],
+            }, ext);
+
+            const chart = new tauChart.Chart(getSpec());
+            chart.renderTo(testDiv);
+
+            const svg = chart.getSVG();
+            const xAxis = svg.querySelector('.x.axis');
+            const yAxis = svg.querySelector('.y.axis');
+
+            const lines = Array.from(svg.querySelectorAll('.line'));
+            expect(lines.length).to.equal(1);
+            expect(d3.select(lines[0]).data()[0].length).to.equal(12);
+
+            chart.updateConfig(getSpec({
+                type: 'bar'
+            }));
+            expect(svg.querySelectorAll('.line').length).to.equal(0);
+            const bars = svg.querySelectorAll('.bar');
+            expect(bars.length).to.equal(12);
+            expect(chart.getSVG()).to.equal(svg);
+            expect(svg.querySelector('.x.axis')).to.equal(xAxis);
+            expect(svg.querySelector('.y.axis')).to.equal(yAxis);
+
+            chart.updateConfig(getSpec({
+                type: 'bar',
+                data: getSpec().data.slice(3, 9)
+            }));
+            const newBars = Array.from(svg.querySelectorAll('.bar'));
+            expect(newBars.length).to.equal(6);
+            expect(newBars.every((bar, i) => bar === bars[i + 3])).to.be.true;
+        });
     });
