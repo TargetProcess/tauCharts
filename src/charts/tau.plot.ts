@@ -144,6 +144,8 @@ export class Plot extends Emitter {
 
     applyConfig(config: ChartConfig) {
 
+        this._filtersStore.filters = {};
+
         config = this.setupConfigSettings(config);
 
         this.configGPL = this.createGPLConfig(config);
