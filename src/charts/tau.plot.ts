@@ -144,13 +144,14 @@ export class Plot extends Emitter {
 
     applyConfig(config: ChartConfig) {
 
+        this._filtersStore.filters = {};
+
         config = this.setupConfigSettings(config);
 
         this.configGPL = this.createGPLConfig(config);
         this._originData = Object.assign({}, this.configGPL.sources);
         this._liveSpec = this.configGPL;
         this._emptyContainer = config.emptyContainer || '';
-        this._filtersStore.filters = {};
 
         this.setupPlugins(config);
     }
