@@ -357,6 +357,7 @@ import * as d3 from 'd3-format';
 
             _clearPanel: function () {
                 if (this._container) {
+                    clearTimeout(this._scrollTimeout);
                     this._getScrollContainer().removeEventListener('scroll', this._scrollListener);
                     this._container.innerHTML = '';
                 }
@@ -821,17 +822,17 @@ import * as d3 from 'd3-format';
 
                 if (self._color.length > 0) {
                     self._updateResetButtonPosition();
-                    var scrollTimeout = null;
+                    self._scrollTimeout = null;
                     self._scrollListener = function () {
                         var reset = self._container.querySelector(RESET_SELECTOR);
                         reset.style.display = 'none';
-                        if (scrollTimeout) {
-                            clearTimeout(scrollTimeout);
+                        if (self._scrollTimeout) {
+                            clearTimeout(self._scrollTimeout);
                         }
-                        scrollTimeout = setTimeout(function () {
+                        self._scrollTimeout = setTimeout(function () {
                             self._updateResetButtonPosition();
                             reset.style.display = '';
-                            scrollTimeout = null;
+                            self._scrollTimeout = null;
                         }, 250);
                     };
                     self._getScrollContainer().addEventListener('scroll', self._scrollListener);
