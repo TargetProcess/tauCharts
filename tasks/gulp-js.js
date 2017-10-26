@@ -8,23 +8,8 @@ const fs = require('fs');
 
 const tsConfig = {
     typescript: require('typescript'),
-    module: 'es2015',
-    lib: [
-        'es6',
-        'dom'
-    ],
-    allowJs: true,
-    target: 'es5',
-    baseUrl: '.',
-    paths: {
-        'taucharts': [
-            'src/tau.charts'
-        ]
-    },
     include: [
-        'plugins/**/*',
-        'src/**/*',
-        'test/**/*'
+        '**/*.{ts,js,tsx,jsx}',
     ],
     exclude: [
         'bower_components',
@@ -55,12 +40,11 @@ const d3Globals = d3Modules.reduce((map, d3Module) => {
 }, {});
 
 const mainConfig = {
-    entry: './src/tau.charts.ts',
-    moduleId: 'taucharts',
-    moduleName: 'Taucharts',
+    input: './src/tau.charts.ts',
+    name: 'Taucharts',
     exports: 'default',
     format: 'umd',
-    useStrict: true,
+    strict: true,
     external: [
         ...d3Modules,
         'topojson-client'
@@ -84,7 +68,7 @@ const mainConfig = {
 const pluginsCommonConfig = {
     exports: 'default',
     format: 'umd',
-    useStrict: true,
+    strict: true,
     external: [
         ...d3Modules,
         'taucharts'
@@ -153,18 +137,18 @@ module.exports = (gulp, {
 
     const createStream = ({distDir, distFile, rollupConfig, production}) => {
 
-        const {entry} = rollupConfig;
+        const entry = rollupConfig.input;
         const config = Object.assign(
             {},
             rollupConfig,
             {rollup: require('rollup')},
             (production ?
                 {
-                    sourceMap: false
+                    sourcemap: false
                 } :
                 {
                     cache: cache[entry],
-                    sourceMap: true
+                    sourcemap: 'inline'
                 })
         );
 
@@ -229,9 +213,8 @@ module.exports = (gulp, {
                     pluginsCommonConfig,
                     pluginConfig,
                     {
-                        entry: (fs.existsSync(jsPath) ? jsPath : tsPath),
-                        moduleId: `taucharts-${plugin}`,
-                        moduleName: `Taucharts${spinalCaseToCamelCase(plugin)}`
+                        input: (fs.existsSync(jsPath) ? jsPath : tsPath),
+                        name: `Taucharts${spinalCaseToCamelCase(plugin)}`
                     }
                 ),
                 production

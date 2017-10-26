@@ -65,12 +65,14 @@ import * as d3 from 'd3-color';
                     const max = gen.cast(domain[1]);
                     const k = ((scale(max) - scale(min)) / (max - min));
                     switch (row[marker]) {
-                        case 'l':
+                        case 'l': {
                             const overflow = Math.min(0, domain[0] - min);
                             return (scale(min) + k * overflow);
-                        case 'r':
+                        }
+                        case 'r': {
                             const overflow = Math.max(0, domain[1] - max);
                             return (scale(max) + k * overflow);
+                        }
                     }
                 }
                 return model[method](row);
