@@ -76,7 +76,7 @@ const pluginsCommonConfig = {
     globals: Object.assign({}, d3Globals, {
         'taucharts': 'Taucharts'
     }),
-    plugins: [,
+    plugins: [
         require('@alexlur/rollup-plugin-typescript')(tsConfig),
         require('rollup-plugin-commonjs')()
     ]
