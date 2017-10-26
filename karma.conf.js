@@ -94,7 +94,6 @@ function getTestWebpackConfig(DEBUG) {
                         compilerOptions: {
                             sourceMap: true
                         },
-                        entryFileIsJs: true,
                         transpileOnly: true
                     }
                 },
