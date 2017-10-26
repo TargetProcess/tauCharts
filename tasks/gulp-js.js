@@ -59,9 +59,9 @@ const mainConfig = {
         require('rollup-plugin-replace')({
             '{{VERSION}}': `${require('../package.json').version}`
         }),
+        require('@alexlur/rollup-plugin-typescript')(tsConfig),
         require('rollup-plugin-node-resolve')(),
-        require('rollup-plugin-commonjs')(),
-        require('@alexlur/rollup-plugin-typescript')(tsConfig)
+        require('rollup-plugin-commonjs')()
     ]
 };
 
@@ -76,9 +76,9 @@ const pluginsCommonConfig = {
     globals: Object.assign({}, d3Globals, {
         'taucharts': 'Taucharts'
     }),
-    plugins: [
-        require('rollup-plugin-commonjs')(),
-        require('@alexlur/rollup-plugin-typescript')(tsConfig)
+    plugins: [,
+        require('@alexlur/rollup-plugin-typescript')(tsConfig),
+        require('rollup-plugin-commonjs')()
     ]
 };
 
