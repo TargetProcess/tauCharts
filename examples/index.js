@@ -27,6 +27,7 @@
             'linear-bars',
             'logarithmic-scale',
             'map',
+            'negative-diff',
             'ordinal-facets',
             'scatterplot_facet_trendline',
             'scatterplot_legend-at-bottom',
@@ -693,7 +694,7 @@
 
     /**
      * Returns random number or one of arguments.
-     * @param n Max number or list of arguments.
+     * @param {number} n Max number or list of arguments.
      */
     function random(n) {
         if (arguments.length === 1 && typeof n === 'number') {
@@ -712,7 +713,7 @@
 
     /**
      * Returns random word.
-     * @param n Word length.
+     * @param {number} n Word length.
      */
     var randomWord = (function () {
 
@@ -784,7 +785,192 @@
         };
     })();
 
+    /**
+     * Generates dataset with random values.
+     * @param {object} defs Dimensions types specs.
+     * @param {number} repeats Specifies count of rows for each category.
+     */
+    function randomData(defs, repeats) {
+        if (isNaN(repeats)) {
+            repeats = 1;
+        }
+
+        var data = [];
+
+        var categories = {};
+        Object.keys(defs)
+            .forEach(function (key) {
+                var def = defs[key];
+                var type = def.type;
+                var cfg = def.values();
+                if (['string', 'date', 'enum'].indexOf(type) >= 0) {
+                    categories[key] = [];
+                    switch (type) {
+                        case 'string':
+                            utils.range(cfg.count).forEach(() => {
+                                categories[key].push(randomWord(cfg.length));
+                            });
+                            break;
+                        case 'date':
+                            utils.range(cfg.count).forEach((i) => {
+                                var d = new Date(cfg.start);
+                                switch (cfg.period) {
+                                    case 'day':
+                                        d.setDate(d.getDate() + i);
+                                        break;
+                                    case 'month':
+                                        d.setMonth(d.getMonth() + i);
+                                        break;
+                                    case 'year':
+                                        d.setFullYear(d.getFullYear() + i);
+                                        break;
+                                }
+                                categories[key].push(d);
+                            });
+                            break;
+                        case 'enum':
+                            Array.prototype.push.apply(categories[key], cfg);
+                            break;
+                    }
+                }
+            });
+
+        var catKeys = Object.keys(categories);
+        var valKeys = Object.keys(defs).filter(function (key) {
+            return catKeys.indexOf(key) < 0;
+        });
+
+        var catIndices = {};
+        catKeys.forEach(function (key) {
+            catIndices[key] = 0
+        });
+        var totalItems = catKeys.reduce(function (total, key) {
+            return total * categories[key].length;
+        }, 1);
+
+        var row;
+        while (repeats--) {
+            for (var i = 0; i < totalItems; i++) {
+                row = {};
+                catKeys.forEach(function (key) {
+                    row[key] = categories[key][catIndices[key]];
+                });
+                valKeys.forEach(function (key) {
+                    var def = defs[key];
+                    var cfg = def.values();
+                    if (def.type === 'number') {
+                        var num = cfg.min + random(cfg.max - cfg.min);
+                        // This makes numeric sequence more beautiful
+                        var beautiful = Math.round(num * (totalItems - i) / totalItems);
+                        row[key] = beautiful;
+                    }
+                });
+                for (var j = catKeys.length - 1; j >= 0; j--) {
+                    var cat = catKeys[j];
+                    var next = catKeys[j - 1];
+                    if (j === catKeys.length - 1) {
+                        catIndices[cat]++;
+                    }
+                    if (catIndices[cat] === categories[cat].length) {
+                        catIndices[cat] = 0;
+                        catIndices[next]++;
+                    }
+                }
+                data.push(row);
+            }
+        }
+
+        return data;
+    }
+
+    function randomNumberDeclaration() {
+        var min = 0;
+        var max = 100;
+        return {
+            type: 'number',
+            min: function (value) {
+                min = value;
+                return this;
+            },
+            max: function (value) {
+                max = value;
+                return this;
+            },
+            values: function () {
+                return {
+                    min: min,
+                    max: max
+                };
+            }
+        };
+    }
+
+    function randomStringDeclaration() {
+        var count = 3;
+        var length = 12;
+        return {
+            type: 'string',
+            count: function (value) {
+                count = value;
+                return this;
+            },
+            length: function (value) {
+                length = value;
+                return this;
+            },
+            values: function () {
+                return {
+                    count: count,
+                    length: length
+                };
+            }
+        };
+    }
+
+    function randomDateDeclaration(start) {
+        start = new Date(start || '2015-07-01');
+        var count = 12;
+        var period = 'day';
+        return {
+            type: 'date',
+            start: function (value) {
+                start = value;
+                return this;
+            },
+            count: function (value) {
+                count = value;
+                return this;
+            },
+            period: function (value) {
+                period = value;
+                return this;
+            },
+            values: function () {
+                return {
+                    start: start,
+                    count: count,
+                    period: period
+                };
+            }
+        };
+    }
+
+    function randomEnumDeclaration(items) {
+        items = !items ? ['A', 'B', 'C'] : Array.isArray(items) ? items : Array.from(arguments);
+        return {
+            type: 'enum',
+            values: function () {
+                return items.slice();
+            }
+        };
+    }
+
     DevApp.prototype.random = random;
     DevApp.prototype.randomWord = randomWord;
+    DevApp.prototype.randomData = randomData;
+    DevApp.prototype.random.number = randomNumberDeclaration;
+    DevApp.prototype.random.string = randomStringDeclaration;
+    DevApp.prototype.random.date = randomDateDeclaration;
+    DevApp.prototype.random.enum = randomEnumDeclaration;
 
 })();
