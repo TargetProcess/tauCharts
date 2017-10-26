@@ -231,7 +231,7 @@ module.exports = (gulp, {
                     {
                         entry: (fs.existsSync(jsPath) ? jsPath : tsPath),
                         moduleId: `taucharts-${plugin}`,
-                        moduleName: `Taucharts${spinalCaseToCamelCase(plugin)}`
+                        moduleName: `Taucharts.${spinalCaseToCamelCase(plugin)}`
                     }
                 ),
                 production
