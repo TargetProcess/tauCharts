@@ -65,8 +65,6 @@ function getTestWebpackConfig(DEBUG) {
             ],
             alias: {
                 'canvg': 'bower_components/canvg/canvg.js',
-                'es6-promise': 'bower_components/es6-promise/es6-promise.js',
-                'fetch': 'bower_components/fetch/fetch.js',
                 'file-saver': 'test/utils/saveAs.js',
                 'print.style.css': 'plugins/print.style.css',
                 'rgbcolor': 'bower_components/rgb-color/dist/rgb-color.js',
