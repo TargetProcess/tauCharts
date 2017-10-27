@@ -805,6 +805,11 @@ function loadFiles(...args) {
     const urls = args.slice(0, args.length - 1);
     const callback = args[args.length - 1];
 
+    if (urls.length === 0) {
+        setTimeout(() => callback(null, []), 0);
+        return;
+    }
+
     const results = utils.range(0, urls.length).map(() => null);
     const requests = urls.map((url, i) => {
         const req = new XMLHttpRequest();
