@@ -59,9 +59,9 @@ const mainConfig = {
         require('rollup-plugin-replace')({
             '{{VERSION}}': `${require('../package.json').version}`
         }),
+        require('@alexlur/rollup-plugin-typescript')(tsConfig),
         require('rollup-plugin-node-resolve')(),
-        require('rollup-plugin-commonjs')(),
-        require('@alexlur/rollup-plugin-typescript')(tsConfig)
+        require('rollup-plugin-commonjs')()
     ]
 };
 
@@ -77,8 +77,8 @@ const pluginsCommonConfig = {
         'taucharts': 'Taucharts'
     }),
     plugins: [
-        require('rollup-plugin-commonjs')(),
-        require('@alexlur/rollup-plugin-typescript')(tsConfig)
+        require('@alexlur/rollup-plugin-typescript')(tsConfig),
+        require('rollup-plugin-commonjs')()
     ]
 };
 
