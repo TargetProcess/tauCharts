@@ -770,7 +770,8 @@ const MSG_TITLE = 'Taucharts Export Plug-in:';
                 var popupElement = popup.getElement();
                 popupElement.setAttribute('tabindex', '-1');
                 this._handleMenu(popupElement, chart, popup);
-                const exportHandler = chart.on('export-to', function (chart, type) {
+                const exportHandler = chart.on('export-to', function (chart, {type, fileName}) {
+                    this._fileName = fileName || this._fileName;
                     this._select(type, chart);
                 }.bind(this));
                 const deprecatedExportHandler = chart.on('exportTo', function (chart, type) {
