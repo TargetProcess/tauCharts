@@ -51,7 +51,7 @@ class DiffTooltip extends Tooltip {
         const [prevX, x] = this._getHighlightRange(data, unit);
 
         const getPrevItem = (d) => {
-            const g = screenModel.model.group(d);
+            const g = screenModel.model.color(d);
             const hasPrevItem = (isFinite(prevX) && groupedData[prevX][g]);
             // Note: If there are more than 1 items per X, the result is unpredictable.
             return (hasPrevItem ? groupedData[prevX][g][0] : null);
@@ -80,7 +80,7 @@ class DiffTooltip extends Tooltip {
         const neighbors = getNeighbors(x);
 
         const groups = neighbors.map((data) => {
-            const g = screenModel.model.group(data);
+            const g = screenModel.model.color(data);
             const prev = getPrevItem(data);
             return {
                 data,
@@ -93,11 +93,11 @@ class DiffTooltip extends Tooltip {
             // if it is available for previous X
             const prevNeighbors = getNeighbors(prevX);
             const gs = groups.reduce((map, g) => {
-                map[screenModel.model.group(g.data)] = true;
+                map[screenModel.model.color(g.data)] = true;
                 return map;
             }, {});
             prevNeighbors.forEach((prev) => {
-                const g = screenModel.model.group(prev);
+                const g = screenModel.model.color(prev);
                 if (!gs[g]) {
                     groups.push({
                         data: null,
@@ -190,7 +190,7 @@ class DiffTooltip extends Tooltip {
             });
         }
         const groupByXAndGroup = Object.keys(groupByX).reduce((map, x) => {
-            map[x] = utils.groupBy(groupByX[x], (d) => unit.screenModel.model.group(d));
+            map[x] = utils.groupBy(groupByX[x], (d) => unit.screenModel.model.color(d));
             return map;
         }, {} as GroupedData);
         return groupByXAndGroup;
