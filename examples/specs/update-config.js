@@ -4,7 +4,7 @@
 
     function updateSpecPlugin() {
         return {
-            init(chart) {
+            init: function (chart) {
                 const node = document.createElement('div');
                 const root = d3.select(node);
                 root.append('span').append('strong')
@@ -13,12 +13,12 @@
                     .property('value', '{}');
                 root.append('button')
                     .text('Set data')
-                    .on('click', () => {
+                    .on('click', function () {
                         const spec = getSpec();
                         const text = root.select('textarea').property('value');
                         const obj = JSON.parse(text || '{}');
                         if (obj.plugins && !Array.isArray(obj.plugins)) {
-                            obj.plugins = Object.keys(obj.plugins).reduce((plugins, name) => {
+                            obj.plugins = Object.keys(obj.plugins).reduce(function (plugins, name) {
                                 plugins.push(Taucharts.api.plugins.get(name)(obj.plugins[name]));
                                 return plugins;
                             }, []);
@@ -30,7 +30,7 @@
                 chart.insertToHeader(node);
                 this.node = node;
             },
-            destroy() {
+            destroy: function () {
                 this.node.parentElement.removeChild(this.node);
             }
         };
@@ -288,7 +288,7 @@
                 'Project': 'Taucharts',
                 'Cycle Time': 0.0104398148
             }
-        ].map((d, i) => {
+        ].map(function (d, i) {
             d.id = 'entity-' + i;
             return d;
         });

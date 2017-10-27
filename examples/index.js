@@ -807,12 +807,12 @@
                     categories[key] = [];
                     switch (type) {
                         case 'string':
-                            utils.range(cfg.count).forEach(() => {
+                            utils.range(cfg.count).forEach(function () {
                                 categories[key].push(randomWord(cfg.length));
                             });
                             break;
                         case 'date':
-                            utils.range(cfg.count).forEach((i) => {
+                            utils.range(cfg.count).forEach(function (i) {
                                 var d = new Date(cfg.start);
                                 switch (cfg.period) {
                                     case 'day':

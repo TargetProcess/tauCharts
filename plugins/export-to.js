@@ -1,8 +1,6 @@
 import Taucharts from 'taucharts';
 import canvg from 'canvg';
-import Promise from 'es6-promise';
 import {saveAs} from 'file-saver';
-import 'fetch';
 import printCss from './print.style.css';
 import * as d3 from 'd3-selection';
 
@@ -169,18 +167,14 @@ const MSG_TITLE = 'Taucharts Export Plug-in:';
                 Taucharts.api.globalSettings.log([MSG_TITLE, err], 'error');
             },
 
-            _createDataUrl: function (chart) {
-                var cssPromises = this._cssPaths.map(function (css) {
-                    return fetch(css).then(function (r) {
-                        return r.text();
-                    }).catch((err) => this._handleError(err));
-                });
-                return Promise
-                    .all(cssPromises)
-                    .then(function (res) {
-                        return res.join(' ').replace(/&/g, '');
-                    })
-                    .then(function (res) {
+            _createDataUrl: function (chart, callback) {
+                loadFiles(...this._cssPaths, (err, files) => {
+                    if (err) {
+                        callback(err, null);
+                        return;
+                    }
+                    try {
+                        const res = files.join(' ').replace(/&/g, '');
                         var style = createStyleElement(res);
                         var div = document.createElement('div');
                         chart.fire('beforeExportSVGNode');
@@ -196,7 +190,6 @@ const MSG_TITLE = 'Taucharts Export Plug-in:';
                         var canvas = document.createElement('canvas');
                         canvas.height = svg.getAttribute('height');
                         canvas.width = svg.getAttribute('width');
-                        return new Promise(function(resolve) {
                             canvg(
                                 canvas,
                                 svg.parentNode.innerHTML,
@@ -208,12 +201,13 @@ const MSG_TITLE = 'Taucharts Export Plug-in:';
                                             Taucharts.api.globalSettings.log('[export plugin]: canvg error', 'error');
                                             Taucharts.api.globalSettings.log(domStr, 'error');
                                         }
-                                        resolve(canvas.toDataURL('image/png'));
+                                        callback(null, canvas.toDataURL('image/png'));
                                     }
                                 });
-                        });
-                    }.bind(this))
-                    .catch((err) => this._handleError(err));
+                    } catch (err) {
+                        callback(err, null);
+                    }
+                });
             },
 
             _findUnit: function (chart) {
@@ -242,8 +236,13 @@ const MSG_TITLE = 'Taucharts Export Plug-in:';
             },
 
             _toPng: function (chart) {
-                this._createDataUrl(chart)
-                    .then(function (dataURL) {
+                this._createDataUrl(
+                    chart,
+                    (err, dataURL) => {
+                        if (err) {
+                            this._handleError(err);
+                            return;
+                        }
                         var data = atob(dataURL.substring('data:image/png;base64,'.length)),
                             asArray = new Uint8Array(data.length);
 
@@ -253,13 +252,17 @@ const MSG_TITLE = 'Taucharts Export Plug-in:';
 
                         var blob = new Blob([asArray.buffer], {type: 'image/png'});
                         saveAs(blob, (this._fileName || 'export') + '.png');
-                    }.bind(this))
-                    .catch((err) => this._handleError(err));
+                    });
             },
 
             _toPrint: function (chart) {
-                this._createDataUrl(chart)
-                    .then(function (dataURL) {
+                this._createDataUrl(
+                    chart,
+                    (err, dataURL) => {
+                        if (err) {
+                            this._handleError(err);
+                            return;
+                        }
                         imagePlaceHolder = document.createElement('img');
                         imagePlaceHolder.classList.add('tau-chart__print-block');
                         var img = imagePlaceHolder;
@@ -269,8 +272,7 @@ const MSG_TITLE = 'Taucharts Export Plug-in:';
                         img.onload = function () {
                             window.print();
                         };
-                    })
-                    .catch((err) => this._handleError(err));
+                    });
             },
 
             _toJson: function (chart) {
@@ -798,6 +800,40 @@ const MSG_TITLE = 'Taucharts Export Plug-in:';
             }
         };
     }
+
+function loadFiles(...args) {
+    const urls = args.slice(0, args.length - 1);
+    const callback = args[args.length - 1];
+
+    if (urls.length === 0) {
+        setTimeout(() => callback(null, []), 0);
+        return;
+    }
+
+    const results = utils.range(0, urls.length).map(() => null);
+    const requests = urls.map((url, i) => {
+        const req = new XMLHttpRequest();
+        req.onload = () => {
+            if (req.status >= 200 && req.status < 300) {
+                const text = req.responseText;
+                results[i] = text;
+                requests.splice(requests.indexOf(req), 1);
+                if (requests.length === 0) {
+                    callback(null, results);
+                }
+            } else {
+                requests.forEach((r) => r.abort());
+                callback(new Error(`${req.status}: ${req.statusText}`), null);
+            }
+        };
+        req.onerror = (e) => {
+            requests.forEach((r) => r.abort());
+            callback(e.error, null);
+        };
+        req.open('GET', url, true);
+        req.send(null);
+    });
+}
 
 Taucharts.api.plugins.add('export-to', exportTo);
 
