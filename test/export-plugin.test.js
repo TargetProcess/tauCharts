@@ -69,7 +69,7 @@ const describeChart = testUtils.describeChart;
                     done();
                 });
                 expect($('[data-value="png"]').length).to.be.ok;
-                context.chart.fire('export-to', 'png');
+                context.chart.fire('export-to', {type: 'png', fileName: 'Document 1'});
             });
         },
         {
