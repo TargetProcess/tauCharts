@@ -29,7 +29,7 @@ If you want to contribute - see [how to run the project locally](#how-to-run-the
 Load JavaScript dependencies
 
 ```html
-<script src="//cdn.jsdelivr.net/npm/d3@4.10.2/build/d3.min.js" charset="utf-8"></script>
+<script src="//cdn.jsdelivr.net/npm/d3@3.5.17/d3.min.js" charset="utf-8"></script>
 <script src="//cdn.jsdelivr.net/npm/taucharts@1/build/production/tauCharts.min.js" type="text/javascript"></script>
 ```
 
