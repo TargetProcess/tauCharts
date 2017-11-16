@@ -2,18 +2,19 @@ import {
     DataFrameObject,
     ScaleConfig,
     ScaleFunction,
-    ScaleSettings
+    ScaleSettings,
+    ScaleFields,
 } from './definitions';
 import {BaseScale} from './scales/base';
 
 type ConfigInterceptor = (config: ScaleConfig, settings: ScaleSettings) => ScaleConfig;
 
 interface BaseScaleConstructor {
-    new (dataFrame: DataFrameObject, config: ScaleConfig): BaseScale;
+    new(dataFrame: DataFrameObject, config: ScaleConfig): BaseScale & ScaleFields;
 }
 
 export interface ScaleConstructor {
-    create(scaleType: string, dataFrame: DataFrameObject, scaleConfig: ScaleConfig): BaseScale;
+    create(scaleType: string, dataFrame: DataFrameObject, scaleConfig: ScaleConfig): BaseScale & ScaleFields;
 }
 
 var ScalesMap: {[scale: string]: BaseScaleConstructor} = {};

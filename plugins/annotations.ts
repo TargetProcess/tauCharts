@@ -1,10 +1,79 @@
 import Taucharts from 'taucharts';
 import * as d3 from 'd3-color';
+import {Plot, GPLSpec, Unit, GrammarModel} from '../src/definitions';
+
+interface Annotation {
+    dim: any;
+    val: any;
+    text?: string;
+    color?: string;
+    position?: 'front' | 'back';
+    colorScaleName?: string;
+}
+
+interface AxisAnnotation extends Annotation {
+    dim: string;
+    val: any;
+    text?: string;
+    color?: string;
+    position?: 'front' | 'back';
+}
+
+interface AreaAnnotation extends Annotation {
+    dim: string;
+    val: any[];
+    text?: string;
+    color?: string;
+    position?: 'front' | 'back';
+}
+
+interface LineAnnotation extends Annotation {
+    dim: string[];
+    val: any[][];
+    text?: string;
+    color?: string;
+    position?: 'front' | 'back';
+}
+
+interface PointAnnotation extends Annotation {
+    dim: string[];
+    val: any[];
+    text?: string;
+    color?: string;
+    position?: 'front' | 'back';
+}
+
+type SomeAnnotation = (AxisAnnotation | AreaAnnotation | LineAnnotation | PointAnnotation);
+
+interface AnnotationSettings {
+    items: SomeAnnotation[];
+}
+
+interface Bound {
+    text?: string;
+    [prop: string]: any;
+}
+
+interface MetaInfo {
+    from: any;
+    to: any;
+    primaryScale: string;
+    secondaryScale: string;
+    axis: 'x' | 'y';
+    text: string;
+}
+
+interface LineMetaInfo {
+    xScale: string;
+    yScale: string;
+    points: any[][];
+    text: string;
+}
 
     var utils = Taucharts.api.utils;
     var pluginsSDK = Taucharts.api.pluginsSDK;
 
-    var addToUnits = function (units, newUnit, position) {
+    var addToUnits = function (units: Unit[], newUnit: Unit, position: 'front' | 'back') {
         if (position === 'front') {
             units.push(newUnit);
         } else {
@@ -13,9 +82,15 @@ import * as d3 from 'd3-color';
         }
     };
 
-    var stretchByOrdinalAxis = function (noteItem) {
-        return function (model) {
-            var res = {};
+    var stretchByOrdinalAxis = function (noteItem: AreaAnnotation | AxisAnnotation) {
+        return function (model: GrammarModel) {
+
+            interface StretchModel {
+                xi?: (row) => number;
+                yi?: (row) => number;
+            }
+
+            var res: StretchModel = {};
             var seed = [
                 {
                     dim: model.scaleX.dim,
@@ -32,7 +107,8 @@ import * as d3 from 'd3-color';
                 {
                     dim: null,
                     scale: null,
-                    method: null
+                    method: null,
+                    k: null
                 }
             ].find(function (a) {
                 if (Array.isArray(noteItem.dim)) {
@@ -48,7 +124,7 @@ import * as d3 from 'd3-color';
             var marker = '__pos__';
             var kAxis = seed.k;
             var koeff = {l: -0.5, r: 0.5};
-            var method = seed.method;
+            var method = seed.method as ('xi' | 'yi');
             var scale = seed.scale;
             res[method] = (function (row) {
                 var k = (koeff[row[marker]] || 0) * kAxis;
@@ -63,14 +139,14 @@ import * as d3 from 'd3-color';
                         min = gen.next(min);
                     }
                     const max = gen.cast(domain[1]);
-                    const k = ((scale(max) - scale(min)) / (max - min));
+                    const k = ((scale(max) - scale(min)) / ((max as any) - (min as any)));
                     switch (row[marker]) {
                         case 'l': {
-                            const overflow = Math.min(0, domain[0] - min);
+                            const overflow = Math.min(0, domain[0] - (min as any));
                             return (scale(min) + k * overflow);
                         }
                         case 'r': {
-                            const overflow = Math.max(0, domain[1] - max);
+                            const overflow = Math.max(0, domain[1] - (max as any));
                             return (scale(max) + k * overflow);
                         }
                     }
@@ -81,21 +157,21 @@ import * as d3 from 'd3-color';
         };
     };
 
-    function annotations(xSettings) {
+    function annotations(xSettings: AnnotationSettings) {
 
-        var settings = utils.defaults(xSettings || {}, {items: []});
+        const settings = utils.defaults(xSettings || {}, {items: [] as SomeAnnotation[]});
         var textScaleName = 'annotation_text';
 
         return {
 
-            init: function (chart) {
+            init: function (chart: Plot) {
                 this._chart = chart;
 
                 var specRef = chart.getSpec();
                 specRef.scales[textScaleName] = {type: 'value', dim: 'text', source: '?'};
                 specRef.transformations = specRef.transformations || {};
 
-                specRef.transformations.dataRange = function (data, metaInfo) {
+                specRef.transformations.dataRange = function (data, metaInfo: MetaInfo) {
 
                     var from = metaInfo.from;
                     var to = metaInfo.to;
@@ -130,10 +206,10 @@ import * as d3 from 'd3-color';
                     var b = secondaryScaleInfo.dim;
                     var z = '__pos__';
 
-                    var leftBtm = {};
-                    var leftTop = {};
-                    var rghtTop = {};
-                    var rghtBtm = {};
+                    var leftBtm: Bound = {};
+                    var leftTop: Bound = {};
+                    var rghtTop: Bound = {};
+                    var rghtBtm: Bound = {};
 
                     leftBtm[z] = 'l';
                     leftBtm[a] = from;
@@ -156,7 +232,7 @@ import * as d3 from 'd3-color';
                     return [leftBtm, leftTop, rghtTop, rghtBtm];
                 };
 
-                specRef.transformations.dataLimit = function (data, metaInfo) {
+                specRef.transformations.dataLimit = function (data, metaInfo: MetaInfo) {
 
                     var primary = metaInfo.primaryScale;
                     var secondary = metaInfo.secondaryScale;
@@ -177,8 +253,8 @@ import * as d3 from 'd3-color';
                     var secDomain = secondaryScaleInfo.domain();
                     var boundaries = [secDomain[0], secDomain[secDomain.length - 1]];
 
-                    var src = {};
-                    var dst = {};
+                    var src: Bound = {};
+                    var dst: Bound = {};
 
                     var a = primaryScaleInfo.dim;
                     var b = secondaryScaleInfo.dim;
@@ -197,7 +273,7 @@ import * as d3 from 'd3-color';
                     return [src, dst];
                 };
 
-                specRef.transformations.lineNoteData = function (data, metaInfo) {
+                specRef.transformations.lineNoteData = function (data, metaInfo: LineMetaInfo) {
 
                     const xScaleId = metaInfo.xScale;
                     const yScaleId = metaInfo.yScale;
@@ -239,7 +315,7 @@ import * as d3 from 'd3-color';
                 };
             },
 
-            addAreaNote: function (specRef, coordsUnit, noteItem) {
+            addAreaNote: function (specRef: GPLSpec, coordsUnit: Unit, noteItem: AreaAnnotation) {
 
                 var xScale = specRef.scales[coordsUnit.x];
                 var yScale = specRef.scales[coordsUnit.y];
@@ -293,22 +369,23 @@ import * as d3 from 'd3-color';
                             position: ['r', 'b', 'keep-in-box']
                         }
                     }
-                };
+                } as Unit;
 
                 addToUnits(coordsUnit.units, annotatedArea, noteItem.position);
             },
 
-            addLineNote: function (specRef, coordsUnit, noteItem) {
+            addLineNote: function (specRef: GPLSpec, coordsUnit: Unit, noteItem: AxisAnnotation | LineAnnotation) {
 
                 var xScale = specRef.scales[coordsUnit.x];
                 var yScale = specRef.scales[coordsUnit.y];
 
-                let axes = null;
+                let axes: ('x' | 'y')[] = null;
                 let isAxisNote = true;
+                let dims: string[];
 
                 if (Array.isArray(noteItem.dim)) {
                     isAxisNote = false;
-                    const dims = noteItem.dim;
+                    dims = noteItem.dim;
                     if (
                         (dims[0] === xScale.dim && dims[1] === yScale.dim) ||
                         (dims[0] === yScale.dim && dims[1] === xScale.dim)
@@ -344,7 +421,7 @@ import * as d3 from 'd3-color';
                         source: '/'
                     },
                     guide: {
-                        showAnchors: 'never',
+                        showAnchors: 'never' as 'never',
                         widthCssClass: 'tau-chart__line-width-2',
                         cssClass: 'tau-chart__annotation-line',
                         label: {
@@ -365,7 +442,7 @@ import * as d3 from 'd3-color';
 
                 let extension = (isAxisNote ?
                     {
-                        transformModel: [stretchByOrdinalAxis(noteItem)],
+                        transformModel: [stretchByOrdinalAxis(noteItem as AxisAnnotation)],
                         transformation: [
                             {
                                 type: 'dataLimit',
@@ -403,10 +480,10 @@ import * as d3 from 'd3-color';
                 addToUnits(coordsUnit.units, annotatedLine, noteItem.position);
             },
 
-            onSpecReady: function (chart, specRef) {
+            onSpecReady: function (chart: Plot, specRef: GPLSpec) {
 
                 var self = this;
-                var units = [];
+                var units: Unit[] = [];
                 chart.traverseSpec(specRef, function (unit) {
                     if (unit && (unit.type === 'COORDS.RECT') && (unit.units)) {
                         units.push(unit);
@@ -452,7 +529,7 @@ import * as d3 from 'd3-color';
                                 } else {
                                     // Todo: point annotation.
                                     // self.addPointNote(specRef, coordsUnit, item);
-                                    console.log('Point annotation is not impleented yet');
+                                    console.log('Point annotation is not implemented yet');
                                 }
                             } else if (Array.isArray(item.val)) {
                                 self.addAreaNote(specRef, coordsUnit, item);
@@ -465,6 +542,6 @@ import * as d3 from 'd3-color';
         };
     }
 
-    Taucharts.api.plugins.add('annotations', annotations);
+Taucharts.api.plugins.add('annotations', annotations);
 
 export default annotations;

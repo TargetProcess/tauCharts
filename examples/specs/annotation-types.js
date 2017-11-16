@@ -25,6 +25,13 @@ dev.spec({
                 },
                 {
                     dim: 'effort',
+                    val: 100,
+                    text: 'Overflow',
+                    color: 'red',
+                    position: 'front'
+                },
+                {
+                    dim: 'effort',
                     val: [50, 70],
                     text: 'Good',
                     color: 'green'
