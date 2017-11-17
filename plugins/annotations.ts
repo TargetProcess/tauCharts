@@ -171,7 +171,11 @@ interface LineMetaInfo {
                 specRef.scales[textScaleName] = {type: 'value', dim: 'text', source: '?'};
                 specRef.transformations = specRef.transformations || {};
 
-                specRef.transformations.dataRange = function (data, metaInfo: MetaInfo) {
+                // NOTE: We need to save rows references to let
+                // annotations properly animate during filtering.
+                this._dataRefs = {};
+
+                specRef.transformations.dataRange = (data, metaInfo: MetaInfo) => {
 
                     var from = metaInfo.from;
                     var to = metaInfo.to;
@@ -229,10 +233,10 @@ interface LineMetaInfo {
 
                     ((metaInfo.axis === 'y') ? rghtTop : rghtBtm).text = metaInfo.text;
 
-                    return [leftBtm, leftTop, rghtTop, rghtBtm];
+                    return this._useSavedDataRefs([leftBtm, leftTop, rghtTop, rghtBtm], String([a, from, to]));
                 };
 
-                specRef.transformations.dataLimit = function (data, metaInfo: MetaInfo) {
+                specRef.transformations.dataLimit = (data, metaInfo: MetaInfo) => {
 
                     var primary = metaInfo.primaryScale;
                     var secondary = metaInfo.secondaryScale;
@@ -270,10 +274,10 @@ interface LineMetaInfo {
 
                     dst.text = metaInfo.text;
 
-                    return [src, dst];
+                    return this._useSavedDataRefs([src, dst], String(from));
                 };
 
-                specRef.transformations.lineNoteData = function (data, metaInfo: LineMetaInfo) {
+                specRef.transformations.lineNoteData = (data, metaInfo: LineMetaInfo) => {
 
                     const xScaleId = metaInfo.xScale;
                     const yScaleId = metaInfo.yScale;
@@ -311,8 +315,40 @@ interface LineMetaInfo {
                         };
                     });
 
-                    return linePoints;
+                    return this._useSavedDataRefs(linePoints, JSON.stringify([xDim, yDim, metaInfo.points]));
                 };
+            },
+
+            _useSavedDataRefs(rows: any[], key: string) {
+                const refs = this._dataRefs;
+                const usedKeys = this._usedDataRefsKeys;
+
+                usedKeys.add(key);
+
+                if (key in refs) {
+                    refs[key].forEach((ref, i) => Object.assign(ref, rows[i]));
+                    return refs[key];
+                }
+
+                refs[key] = rows;
+                return rows;
+            },
+
+            _startWatchingDataRefs() {
+                const refs = this._dataRefs;
+                this._initialDataRefsKeys = new Set(Object.keys(refs));
+                this._usedDataRefsKeys = new Set();
+            },
+
+            _clearUnusedDataRefs() {
+                const refs = this._dataRefs;
+                const initialKeys: Set<string> = this._initialDataRefsKeys;
+                const usedKeys: Set<string> = this._usedDataRefsKeys;
+                Array.from(initialKeys)
+                    .filter((key) => !usedKeys.has(key))
+                    .forEach((key) => delete refs[key]);
+                this._initialDataRefsKeys = null;
+                this._usedDataRefsKeys = null;
             },
 
             _getDataRowsFromItems(items: SomeAnnotation[]) {
@@ -401,6 +437,7 @@ interface LineMetaInfo {
                         }
                     ],
                     guide: {
+                        animationSpeed: coordsUnit.guide.animationSpeed,
                         showAnchors: 'never',
                         cssClass: 'tau-chart__annotation-area',
                         label: {
@@ -460,6 +497,7 @@ interface LineMetaInfo {
                         source: '/'
                     },
                     guide: {
+                        animationSpeed: coordsUnit.guide.animationSpeed,
                         showAnchors: 'never' as 'never',
                         widthCssClass: 'tau-chart__line-width-2',
                         cssClass: 'tau-chart__annotation-line',
@@ -537,6 +575,12 @@ interface LineMetaInfo {
                         }
                     });
                 });
+
+                this._startWatchingDataRefs();
+            },
+
+            onRender() {
+                this._clearUnusedDataRefs();
             },
 
             onSpecReady: function (chart: Plot, specRef: GPLSpec) {
