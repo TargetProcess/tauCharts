@@ -1,10 +1,79 @@
 import Taucharts from 'taucharts';
 import * as d3 from 'd3-color';
+import {Plot, GPLSpec, Unit, GrammarModel, DataSources} from '../src/definitions';
+
+interface Annotation {
+    dim: any;
+    val: any;
+    text?: string;
+    color?: string;
+    position?: 'front' | 'back';
+    colorScaleName?: string;
+}
+
+interface AxisAnnotation extends Annotation {
+    dim: string;
+    val: any;
+    text?: string;
+    color?: string;
+    position?: 'front' | 'back';
+}
+
+interface AreaAnnotation extends Annotation {
+    dim: string;
+    val: any[];
+    text?: string;
+    color?: string;
+    position?: 'front' | 'back';
+}
+
+interface LineAnnotation extends Annotation {
+    dim: string[];
+    val: any[][];
+    text?: string;
+    color?: string;
+    position?: 'front' | 'back';
+}
+
+interface PointAnnotation extends Annotation {
+    dim: string[];
+    val: any[];
+    text?: string;
+    color?: string;
+    position?: 'front' | 'back';
+}
+
+type SomeAnnotation = (AxisAnnotation | AreaAnnotation | LineAnnotation | PointAnnotation);
+
+interface AnnotationSettings {
+    items: SomeAnnotation[];
+}
+
+interface Bound {
+    text?: string;
+    [prop: string]: any;
+}
+
+interface MetaInfo {
+    from: any;
+    to: any;
+    primaryScale: string;
+    secondaryScale: string;
+    axis: 'x' | 'y';
+    text: string;
+}
+
+interface LineMetaInfo {
+    xScale: string;
+    yScale: string;
+    points: any[][];
+    text: string;
+}
 
     var utils = Taucharts.api.utils;
     var pluginsSDK = Taucharts.api.pluginsSDK;
 
-    var addToUnits = function (units, newUnit, position) {
+    var addToUnits = function (units: Unit[], newUnit: Unit, position: 'front' | 'back') {
         if (position === 'front') {
             units.push(newUnit);
         } else {
@@ -13,9 +82,15 @@ import * as d3 from 'd3-color';
         }
     };
 
-    var stretchByOrdinalAxis = function (noteItem) {
-        return function (model) {
-            var res = {};
+    var stretchByOrdinalAxis = function (noteItem: AreaAnnotation | AxisAnnotation) {
+        return function (model: GrammarModel) {
+
+            interface StretchModel {
+                xi?: (row) => number;
+                yi?: (row) => number;
+            }
+
+            var res: StretchModel = {};
             var seed = [
                 {
                     dim: model.scaleX.dim,
@@ -32,7 +107,8 @@ import * as d3 from 'd3-color';
                 {
                     dim: null,
                     scale: null,
-                    method: null
+                    method: null,
+                    k: null
                 }
             ].find(function (a) {
                 if (Array.isArray(noteItem.dim)) {
@@ -48,7 +124,7 @@ import * as d3 from 'd3-color';
             var marker = '__pos__';
             var kAxis = seed.k;
             var koeff = {l: -0.5, r: 0.5};
-            var method = seed.method;
+            var method = seed.method as ('xi' | 'yi');
             var scale = seed.scale;
             res[method] = (function (row) {
                 var k = (koeff[row[marker]] || 0) * kAxis;
@@ -63,14 +139,14 @@ import * as d3 from 'd3-color';
                         min = gen.next(min);
                     }
                     const max = gen.cast(domain[1]);
-                    const k = ((scale(max) - scale(min)) / (max - min));
+                    const k = ((scale(max) - scale(min)) / ((max as any) - (min as any)));
                     switch (row[marker]) {
                         case 'l': {
-                            const overflow = Math.min(0, domain[0] - min);
+                            const overflow = Math.min(0, domain[0] - (min as any));
                             return (scale(min) + k * overflow);
                         }
                         case 'r': {
-                            const overflow = Math.max(0, domain[1] - max);
+                            const overflow = Math.max(0, domain[1] - (max as any));
                             return (scale(max) + k * overflow);
                         }
                     }
@@ -81,21 +157,28 @@ import * as d3 from 'd3-color';
         };
     };
 
-    function annotations(xSettings) {
+    function annotations(xSettings: AnnotationSettings) {
 
-        var settings = utils.defaults(xSettings || {}, {items: []});
+        const settings = utils.defaults(xSettings || {}, {
+            items: [] as SomeAnnotation[],
+        });
         var textScaleName = 'annotation_text';
 
         return {
 
-            init: function (chart) {
+            init(chart: Plot) {
                 this._chart = chart;
 
                 var specRef = chart.getSpec();
                 specRef.scales[textScaleName] = {type: 'value', dim: 'text', source: '?'};
                 specRef.transformations = specRef.transformations || {};
+                const log = (msg) => specRef.settings.log(msg, 'LOG');
 
-                specRef.transformations.dataRange = function (data, metaInfo) {
+                // NOTE: We need to save rows references to let
+                // annotations properly animate during filtering.
+                this._dataRefs = {};
+
+                specRef.transformations.dataRange = (data, metaInfo: MetaInfo) => {
 
                     var from = metaInfo.from;
                     var to = metaInfo.to;
@@ -118,7 +201,7 @@ import * as d3 from 'd3-color';
                     );
 
                     if (isOutOfDomain) {
-                        console.log('Annotation is out of domain');
+                        log('Annotation is out of domain');
                         return [];
                     }
 
@@ -130,10 +213,10 @@ import * as d3 from 'd3-color';
                     var b = secondaryScaleInfo.dim;
                     var z = '__pos__';
 
-                    var leftBtm = {};
-                    var leftTop = {};
-                    var rghtTop = {};
-                    var rghtBtm = {};
+                    var leftBtm: Bound = {};
+                    var leftTop: Bound = {};
+                    var rghtTop: Bound = {};
+                    var rghtBtm: Bound = {};
 
                     leftBtm[z] = 'l';
                     leftBtm[a] = from;
@@ -153,10 +236,10 @@ import * as d3 from 'd3-color';
 
                     ((metaInfo.axis === 'y') ? rghtTop : rghtBtm).text = metaInfo.text;
 
-                    return [leftBtm, leftTop, rghtTop, rghtBtm];
+                    return this._useSavedDataRefs([leftBtm, leftTop, rghtTop, rghtBtm], String([a, from, to]));
                 };
 
-                specRef.transformations.dataLimit = function (data, metaInfo) {
+                specRef.transformations.dataLimit = (data, metaInfo: MetaInfo) => {
 
                     var primary = metaInfo.primaryScale;
                     var secondary = metaInfo.secondaryScale;
@@ -169,7 +252,7 @@ import * as d3 from 'd3-color';
                     var isOutOfDomain = (!primaryScaleInfo.isInDomain(from));
 
                     if (isOutOfDomain) {
-                        console.log('Annotation is out of domain');
+                        log('Annotation is out of domain');
                         return [];
                     }
 
@@ -177,8 +260,8 @@ import * as d3 from 'd3-color';
                     var secDomain = secondaryScaleInfo.domain();
                     var boundaries = [secDomain[0], secDomain[secDomain.length - 1]];
 
-                    var src = {};
-                    var dst = {};
+                    var src: Bound = {};
+                    var dst: Bound = {};
 
                     var a = primaryScaleInfo.dim;
                     var b = secondaryScaleInfo.dim;
@@ -194,10 +277,10 @@ import * as d3 from 'd3-color';
 
                     dst.text = metaInfo.text;
 
-                    return [src, dst];
+                    return this._useSavedDataRefs([src, dst], String(from));
                 };
 
-                specRef.transformations.lineNoteData = function (data, metaInfo) {
+                specRef.transformations.lineNoteData = (data, metaInfo: LineMetaInfo) => {
 
                     const xScaleId = metaInfo.xScale;
                     const yScaleId = metaInfo.yScale;
@@ -220,7 +303,7 @@ import * as d3 from 'd3-color';
                     });
 
                     if (points.some((d) => !xScale.isInDomain(d[0]) || !yScale.isInDomain(d[1]))) {
-                        console.log('Annotation is out of domain');
+                        log('Annotation is out of domain');
                         return [];
                     }
 
@@ -235,11 +318,13 @@ import * as d3 from 'd3-color';
                         };
                     });
 
-                    return linePoints;
+                    return this._useSavedDataRefs(linePoints, JSON.stringify([xDim, yDim, metaInfo.points]));
                 };
             },
 
-            addAreaNote: function (specRef, coordsUnit, noteItem) {
+            addAreaNote: function (specRef: GPLSpec, coordsUnit: Unit, noteItem: AreaAnnotation) {
+
+                const log = (msg) => specRef.settings.log(msg, 'LOG');
 
                 var xScale = specRef.scales[coordsUnit.x];
                 var yScale = specRef.scales[coordsUnit.y];
@@ -251,7 +336,7 @@ import * as d3 from 'd3-color';
                         (null)));
 
                 if (axes === null) {
-                    console.log('Annotation doesn\'t match any data field');
+                    log('Annotation doesn\'t match any data field');
                     return;
                 }
 
@@ -286,6 +371,7 @@ import * as d3 from 'd3-color';
                         }
                     ],
                     guide: {
+                        animationSpeed: coordsUnit.guide.animationSpeed,
                         showAnchors: 'never',
                         cssClass: 'tau-chart__annotation-area',
                         label: {
@@ -293,27 +379,30 @@ import * as d3 from 'd3-color';
                             position: ['r', 'b', 'keep-in-box']
                         }
                     }
-                };
+                } as Unit;
 
                 addToUnits(coordsUnit.units, annotatedArea, noteItem.position);
             },
 
-            addLineNote: function (specRef, coordsUnit, noteItem) {
+            addLineNote: function (specRef: GPLSpec, coordsUnit: Unit, noteItem: AxisAnnotation | LineAnnotation) {
+
+                const log = (msg) => specRef.settings.log(msg, 'LOG');
 
                 var xScale = specRef.scales[coordsUnit.x];
                 var yScale = specRef.scales[coordsUnit.y];
 
-                let axes = null;
+                let axes: ('x' | 'y')[] = null;
                 let isAxisNote = true;
+                let dims: string[];
 
                 if (Array.isArray(noteItem.dim)) {
                     isAxisNote = false;
-                    const dims = noteItem.dim;
+                    dims = noteItem.dim;
                     if (
                         (dims[0] === xScale.dim && dims[1] === yScale.dim) ||
                         (dims[0] === yScale.dim && dims[1] === xScale.dim)
                     ) {
-                        axes = ['x', 'y']
+                        axes = ['x', 'y'];
                     }
                 } else {
                     if (noteItem.dim === xScale.dim) {
@@ -324,7 +413,7 @@ import * as d3 from 'd3-color';
                 }
 
                 if (axes === null) {
-                    console.log('Annotation doesn\'t match any field');
+                    log('Annotation doesn\'t match any field');
                     return;
                 }
 
@@ -344,14 +433,19 @@ import * as d3 from 'd3-color';
                         source: '/'
                     },
                     guide: {
-                        showAnchors: 'never',
+                        animationSpeed: coordsUnit.guide.animationSpeed,
+                        showAnchors: 'never' as 'never',
                         widthCssClass: 'tau-chart__line-width-2',
                         cssClass: 'tau-chart__annotation-line',
                         label: {
                             fontColor: noteItem.color,
                             position: (isAxisNote ?
                                 ['r', 'b', 'keep-in-box'] :
-                                ['auto:avoid-label-edges-overlap', 'auto:adjust-on-label-overflow', 'auto:hide-on-label-edges-overlap']
+                                [
+                                    'auto:avoid-label-edges-overlap',
+                                    'auto:adjust-on-label-overflow',
+                                    'auto:hide-on-label-edges-overlap'
+                                ]
                             )
                         },
                         x: {
@@ -365,7 +459,7 @@ import * as d3 from 'd3-color';
 
                 let extension = (isAxisNote ?
                     {
-                        transformModel: [stretchByOrdinalAxis(noteItem)],
+                        transformModel: [stretchByOrdinalAxis(noteItem as AxisAnnotation)],
                         transformation: [
                             {
                                 type: 'dataLimit',
@@ -403,16 +497,43 @@ import * as d3 from 'd3-color';
                 addToUnits(coordsUnit.units, annotatedLine, noteItem.position);
             },
 
-            onSpecReady: function (chart, specRef) {
+            onUnitsStructureExpanded() {
+                const chart: Plot = this._chart;
+
+                const specRef = chart.getSpec();
+                const data = chart.getDataSources()['/'].data;
+                const annotatedValues = this._getAnnotatedDimValues(settings.items);
+                const annotatedDims = Object.keys(annotatedValues);
+                annotatedDims.forEach((dim) => {
+                    const xScaleId = `x_${dim}`;
+                    const yScaleId = `y_${dim}`;
+                    [xScaleId, yScaleId].forEach((scaleId) => {
+                        if (scaleId in specRef.scales) {
+                            const config = specRef.scales[scaleId];
+                            const originalValues = data.map((row) => row[dim]);
+                            config.series = utils.unique(originalValues.concat(annotatedValues[dim]));
+                        }
+                    });
+                });
+
+                this._startWatchingDataRefs();
+            },
+
+            onRender() {
+                this._clearUnusedDataRefs();
+            },
+
+            onSpecReady: function (chart: Plot, specRef: GPLSpec) {
 
                 var self = this;
-                var units = [];
+                var units: Unit[] = [];
                 chart.traverseSpec(specRef, function (unit) {
                     if (unit && (unit.type === 'COORDS.RECT') && (unit.units)) {
                         units.push(unit);
                     }
                 });
 
+                const log = (msg) => specRef.settings.log(msg, 'LOG');
                 var specApi = pluginsSDK.spec(specRef);
 
                 units.forEach(function (coordsUnit) {
@@ -452,7 +573,7 @@ import * as d3 from 'd3-color';
                                 } else {
                                     // Todo: point annotation.
                                     // self.addPointNote(specRef, coordsUnit, item);
-                                    console.log('Point annotation is not impleented yet');
+                                    log('Point annotation is not implemented yet');
                                 }
                             } else if (Array.isArray(item.val)) {
                                 self.addAreaNote(specRef, coordsUnit, item);
@@ -461,10 +582,81 @@ import * as d3 from 'd3-color';
                             }
                         });
                 });
-            }
+            },
+
+            _useSavedDataRefs(rows: any[], key: string) {
+                const refs = this._dataRefs;
+                const usedKeys = this._usedDataRefsKeys;
+
+                usedKeys.add(key);
+
+                if (key in refs) {
+                    refs[key].forEach((ref, i) => Object.assign(ref, rows[i]));
+                    return refs[key];
+                }
+
+                refs[key] = rows;
+                return rows;
+            },
+
+            _startWatchingDataRefs() {
+                const refs = this._dataRefs;
+                this._initialDataRefsKeys = new Set(Object.keys(refs));
+                this._usedDataRefsKeys = new Set();
+            },
+
+            _clearUnusedDataRefs() {
+                const refs = this._dataRefs;
+                const initialKeys: Set<string> = this._initialDataRefsKeys;
+                const usedKeys: Set<string> = this._usedDataRefsKeys;
+                Array.from(initialKeys)
+                    .filter((key) => !usedKeys.has(key))
+                    .forEach((key) => delete refs[key]);
+                this._initialDataRefsKeys = null;
+                this._usedDataRefsKeys = null;
+            },
+
+            _getDataRowsFromItems(items: SomeAnnotation[]) {
+                const createRow = (dims: string[], vals: any[]) => {
+                    return dims.reduce((row, dim, i) => {
+                        row[dim] = vals[i];
+                        return row;
+                    }, {});
+                };
+                return items.reduce((rows, item) => {
+                    if (Array.isArray(item.dim)) {
+                        if (Array.isArray(item.val) && item.val.every(Array.isArray)) {
+                            item.val.forEach((v) => {
+                                rows.push(createRow(item.dim as string[], v));
+                            });
+                        } else {
+                            // Todo: point annotation.
+                        }
+                    } else if (Array.isArray(item.val)) {
+                        item.val.forEach((v) => {
+                            rows.push(createRow([item.dim as string], [v]));
+                        });
+                    } else {
+                        rows.push(createRow([item.dim as string], [item.val]));
+                    }
+                    return rows;
+                }, []);
+            },
+
+            _getAnnotatedDimValues(items: SomeAnnotation[]) {
+                const rows = this._getDataRowsFromItems(items);
+                const values: {[dim: string]: any[]} = {};
+                rows.forEach((row) => {
+                    Object.keys(row).forEach((dim) => {
+                        values[dim] = values[dim] || [];
+                        values[dim].push(row[dim]);
+                    });
+                });
+                return values;
+            },
         };
     }
 
-    Taucharts.api.plugins.add('annotations', annotations);
+Taucharts.api.plugins.add('annotations', annotations);
 
 export default annotations;

@@ -241,11 +241,10 @@ export interface Unit {
     stack?: boolean;
     transformation?: {
         type: string;
-        args: {
-            type: string;
-        } & {
-            [dim: string]: ScaleConfig;
-        }
+        args: (
+            ({type: string;} & {[dim: string]: ScaleConfig;}) |
+            any
+        );
     }[];
     type?: string;
     uid?: string;
