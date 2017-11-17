@@ -159,7 +159,9 @@ interface LineMetaInfo {
 
     function annotations(xSettings: AnnotationSettings) {
 
-        const settings = utils.defaults(xSettings || {}, {items: [] as SomeAnnotation[]});
+        const settings = utils.defaults(xSettings || {}, {
+            items: [] as SomeAnnotation[],
+        });
         var textScaleName = 'annotation_text';
 
         return {

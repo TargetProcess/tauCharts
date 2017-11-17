@@ -81,6 +81,7 @@ dev.spec({
         {date: new Date('2015-07-02'), effort: 10, team: 'Losers'},
         {date: new Date('2015-07-03'), effort: 10, team: 'Losers'},
         {date: new Date('2015-07-04'), effort: 10, team: 'Losers'},
-        {date: new Date('2015-07-05'), effort: 40, team: 'Losers'}
+        {date: new Date('2015-07-05'), effort: 40, team: 'Losers'},
+        {date: new Date('2015-07-06'), effort: 40, team: 'Losers'}
     ]
 });
