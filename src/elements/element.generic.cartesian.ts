@@ -72,7 +72,7 @@ export abstract class GenericCartesian extends Element {
         const order = scaleColor.domain();
         const delimiter = '(@taucharts@)';
 
-        return {
+        const model = {
             data: (() => this.data()),
             flip: false,
             scaleX,
@@ -96,6 +96,13 @@ export abstract class GenericCartesian extends Element {
             yi: ((d) => scaleY.value(d[scaleY.dim])),
             y0: (() => y0)
         };
+
+        // NOTE: Request rows IDs for the first time to prevent
+        // cases when plugins request these IDs in different
+        // order after updating chart config dynamically.
+        model.data().forEach((row) => model.id(row));
+
+        return model;
     }
 
     getGrammarRules() {
