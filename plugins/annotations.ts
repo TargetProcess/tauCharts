@@ -1,6 +1,7 @@
 import Taucharts from 'taucharts';
 import * as d3 from 'd3-color';
 import {Plot, GPLSpec, Unit, GrammarModel, DataSources} from '../src/definitions';
+import {Formatter} from '../src/plugins-sdk';
 
 interface Annotation {
     dim: any;
@@ -47,6 +48,10 @@ type SomeAnnotation = (AxisAnnotation | AreaAnnotation | LineAnnotation | PointA
 
 interface AnnotationSettings {
     items: SomeAnnotation[];
+    showValue?: boolean;
+    formatters?: {
+        [dim: string]: Formatter;
+    };
 }
 
 interface Bound {
@@ -161,6 +166,8 @@ interface LineMetaInfo {
 
         const settings = utils.defaults(xSettings || {}, {
             items: [] as SomeAnnotation[],
+            showValue: false,
+            formatters: {},
         });
         var textScaleName = 'annotation_text';
 
@@ -271,6 +278,11 @@ interface LineMetaInfo {
                     src[b] = boundaries[0];
                     src[z] = 'l';
 
+                    if (settings.showValue) {
+                        const format = this._getFormat(a);
+                        src.text = format(from);
+                    }
+
                     dst[a] = from;
                     dst[b] = boundaries[1];
                     dst[z] = 'r';
@@ -310,11 +322,13 @@ interface LineMetaInfo {
                     const xDim = xScale.dim;
                     const yDim = yScale.dim;
 
-                    const linePoints = points.map((d) => {
+                    const linePoints = points.map((d, i) => {
                         return {
                             [xDim]: d[0],
                             [yDim]: d[1],
-                            text: metaInfo.text
+                            text: ((settings.showValue && i === 0)
+                                ? this._getFormat(yDim)(d[1])
+                                : metaInfo.text)
                         };
                     });
 
@@ -523,7 +537,7 @@ interface LineMetaInfo {
                 this._clearUnusedDataRefs();
             },
 
-            onSpecReady: function (chart: Plot, specRef: GPLSpec) {
+            onSpecReady(chart: Plot, specRef: GPLSpec) {
 
                 var self = this;
                 var units: Unit[] = [];
@@ -533,6 +547,7 @@ interface LineMetaInfo {
                     }
                 });
 
+                this._formatters = pluginsSDK.getFieldFormatters(specRef, settings.formatters);
                 const log = (msg) => specRef.settings.log(msg, 'LOG');
                 var specApi = pluginsSDK.spec(specRef);
 
@@ -582,6 +597,12 @@ interface LineMetaInfo {
                             }
                         });
                 });
+            },
+
+            _getFormat(dim) {
+                return (this._formatters[dim] ?
+                    this._formatters[dim].format :
+                    (x) => String(x));
             },
 
             _useSavedDataRefs(rows: any[], key: string) {
