@@ -322,77 +322,6 @@ interface LineMetaInfo {
                 };
             },
 
-            _useSavedDataRefs(rows: any[], key: string) {
-                const refs = this._dataRefs;
-                const usedKeys = this._usedDataRefsKeys;
-
-                usedKeys.add(key);
-
-                if (key in refs) {
-                    refs[key].forEach((ref, i) => Object.assign(ref, rows[i]));
-                    return refs[key];
-                }
-
-                refs[key] = rows;
-                return rows;
-            },
-
-            _startWatchingDataRefs() {
-                const refs = this._dataRefs;
-                this._initialDataRefsKeys = new Set(Object.keys(refs));
-                this._usedDataRefsKeys = new Set();
-            },
-
-            _clearUnusedDataRefs() {
-                const refs = this._dataRefs;
-                const initialKeys: Set<string> = this._initialDataRefsKeys;
-                const usedKeys: Set<string> = this._usedDataRefsKeys;
-                Array.from(initialKeys)
-                    .filter((key) => !usedKeys.has(key))
-                    .forEach((key) => delete refs[key]);
-                this._initialDataRefsKeys = null;
-                this._usedDataRefsKeys = null;
-            },
-
-            _getDataRowsFromItems(items: SomeAnnotation[]) {
-                const createRow = (dims: string[], vals: any[]) => {
-                    return dims.reduce((row, dim, i) => {
-                        row[dim] = vals[i];
-                        return row;
-                    }, {});
-                };
-                return items.reduce((rows, item) => {
-                    if (Array.isArray(item.dim)) {
-                        if (Array.isArray(item.val) && item.val.every(Array.isArray)) {
-                            item.val.forEach((v) => {
-                                rows.push(createRow(item.dim as string[], v));
-                            });
-                        } else {
-                            // Todo: point annotation.
-                        }
-                    } else if (Array.isArray(item.val)) {
-                        item.val.forEach((v) => {
-                            rows.push(createRow([item.dim as string], [v]));
-                        });
-                    } else {
-                        rows.push(createRow([item.dim as string], [item.val]));
-                    }
-                    return rows;
-                }, []);
-            },
-
-            _getAnnotatedDimValues(items: SomeAnnotation[]) {
-                const rows = this._getDataRowsFromItems(items);
-                const values: {[dim: string]: any[]} = {};
-                rows.forEach((row) => {
-                    Object.keys(row).forEach((dim) => {
-                        values[dim] = values[dim] || [];
-                        values[dim].push(row[dim]);
-                    });
-                });
-                return values;
-            },
-
             addAreaNote: function (specRef: GPLSpec, coordsUnit: Unit, noteItem: AreaAnnotation) {
 
                 const log = (msg) => specRef.settings.log(msg, 'LOG');
@@ -653,7 +582,78 @@ interface LineMetaInfo {
                             }
                         });
                 });
-            }
+            },
+
+            _useSavedDataRefs(rows: any[], key: string) {
+                const refs = this._dataRefs;
+                const usedKeys = this._usedDataRefsKeys;
+
+                usedKeys.add(key);
+
+                if (key in refs) {
+                    refs[key].forEach((ref, i) => Object.assign(ref, rows[i]));
+                    return refs[key];
+                }
+
+                refs[key] = rows;
+                return rows;
+            },
+
+            _startWatchingDataRefs() {
+                const refs = this._dataRefs;
+                this._initialDataRefsKeys = new Set(Object.keys(refs));
+                this._usedDataRefsKeys = new Set();
+            },
+
+            _clearUnusedDataRefs() {
+                const refs = this._dataRefs;
+                const initialKeys: Set<string> = this._initialDataRefsKeys;
+                const usedKeys: Set<string> = this._usedDataRefsKeys;
+                Array.from(initialKeys)
+                    .filter((key) => !usedKeys.has(key))
+                    .forEach((key) => delete refs[key]);
+                this._initialDataRefsKeys = null;
+                this._usedDataRefsKeys = null;
+            },
+
+            _getDataRowsFromItems(items: SomeAnnotation[]) {
+                const createRow = (dims: string[], vals: any[]) => {
+                    return dims.reduce((row, dim, i) => {
+                        row[dim] = vals[i];
+                        return row;
+                    }, {});
+                };
+                return items.reduce((rows, item) => {
+                    if (Array.isArray(item.dim)) {
+                        if (Array.isArray(item.val) && item.val.every(Array.isArray)) {
+                            item.val.forEach((v) => {
+                                rows.push(createRow(item.dim as string[], v));
+                            });
+                        } else {
+                            // Todo: point annotation.
+                        }
+                    } else if (Array.isArray(item.val)) {
+                        item.val.forEach((v) => {
+                            rows.push(createRow([item.dim as string], [v]));
+                        });
+                    } else {
+                        rows.push(createRow([item.dim as string], [item.val]));
+                    }
+                    return rows;
+                }, []);
+            },
+
+            _getAnnotatedDimValues(items: SomeAnnotation[]) {
+                const rows = this._getDataRowsFromItems(items);
+                const values: {[dim: string]: any[]} = {};
+                rows.forEach((row) => {
+                    Object.keys(row).forEach((dim) => {
+                        values[dim] = values[dim] || [];
+                        values[dim].push(row[dim]);
+                    });
+                });
+                return values;
+            },
         };
     }
 
