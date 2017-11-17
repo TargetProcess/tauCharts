@@ -501,6 +501,7 @@ export class Plot extends Emitter {
     renderTo(target: HTMLElement | string, xSize?: Size) {
 
         this._resetProgressLayout();
+        this.disablePointerEvents();
 
         var liveSpec = this._createLiveSpec(target, xSize);
         if (!liveSpec) {
@@ -519,7 +520,6 @@ export class Plot extends Emitter {
     }
 
     _createLiveSpec(target: HTMLElement | string, xSize?: Size) {
-        this.disablePointerEvents();
         this._target = target;
         this._defaultSize = Object.assign({}, xSize);
 

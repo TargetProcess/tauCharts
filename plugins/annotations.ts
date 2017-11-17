@@ -1,6 +1,6 @@
 import Taucharts from 'taucharts';
 import * as d3 from 'd3-color';
-import {Plot, GPLSpec, Unit, GrammarModel} from '../src/definitions';
+import {Plot, GPLSpec, Unit, GrammarModel, DataSources} from '../src/definitions';
 
 interface Annotation {
     dim: any;
@@ -164,7 +164,7 @@ interface LineMetaInfo {
 
         return {
 
-            init: function (chart: Plot) {
+            init(chart: Plot) {
                 this._chart = chart;
 
                 var specRef = chart.getSpec();
@@ -313,6 +313,45 @@ interface LineMetaInfo {
 
                     return linePoints;
                 };
+            },
+
+            _getDataRowsFromItems(items: SomeAnnotation[]) {
+                const createRow = (dims: string[], vals: any[]) => {
+                    return dims.reduce((row, dim, i) => {
+                        row[dim] = vals[i];
+                        return row;
+                    }, {});
+                };
+                return items.reduce((rows, item) => {
+                    if (Array.isArray(item.dim)) {
+                        if (Array.isArray(item.val) && item.val.every(Array.isArray)) {
+                            item.val.forEach((v) => {
+                                rows.push(createRow(item.dim as string[], v));
+                            });
+                        } else {
+                            // Todo: point annotation.
+                        }
+                    } else if (Array.isArray(item.val)) {
+                        item.val.forEach((v) => {
+                            rows.push(createRow([item.dim as string], [v]));
+                        });
+                    } else {
+                        rows.push(createRow([item.dim as string], [item.val]));
+                    }
+                    return rows;
+                }, []);
+            },
+
+            _getAnnotatedDimValues(items: SomeAnnotation[]) {
+                const rows = this._getDataRowsFromItems(items);
+                const values: {[dim: string]: any[]} = {};
+                rows.forEach((row) => {
+                    Object.keys(row).forEach((dim) => {
+                        values[dim] = values[dim] || [];
+                        values[dim].push(row[dim]);
+                    });
+                });
+                return values;
             },
 
             addAreaNote: function (specRef: GPLSpec, coordsUnit: Unit, noteItem: AreaAnnotation) {
@@ -478,6 +517,26 @@ interface LineMetaInfo {
                 Object.assign(annotatedLine, extension);
 
                 addToUnits(coordsUnit.units, annotatedLine, noteItem.position);
+            },
+
+            onUnitsStructureExpanded() {
+                const chart: Plot = this._chart;
+
+                const specRef = chart.getSpec();
+                const data = chart.getDataSources()['/'].data;
+                const annotatedValues = this._getAnnotatedDimValues(settings.items);
+                const annotatedDims = Object.keys(annotatedValues);
+                annotatedDims.forEach((dim) => {
+                    const xScaleId = `x_${dim}`;
+                    const yScaleId = `y_${dim}`;
+                    [xScaleId, yScaleId].forEach((scaleId) => {
+                        if (scaleId in specRef.scales) {
+                            const config = specRef.scales[scaleId];
+                            const originalValues = data.map((row) => row[dim]);
+                            config.series = utils.unique(originalValues.concat(annotatedValues[dim]));
+                        }
+                    });
+                });
             },
 
             onSpecReady: function (chart: Plot, specRef: GPLSpec) {
