@@ -170,6 +170,7 @@ interface LineMetaInfo {
                 var specRef = chart.getSpec();
                 specRef.scales[textScaleName] = {type: 'value', dim: 'text', source: '?'};
                 specRef.transformations = specRef.transformations || {};
+                const log = (msg) => specRef.settings.log(msg, 'LOG');
 
                 // NOTE: We need to save rows references to let
                 // annotations properly animate during filtering.
@@ -198,7 +199,7 @@ interface LineMetaInfo {
                     );
 
                     if (isOutOfDomain) {
-                        console.log('Annotation is out of domain');
+                        log('Annotation is out of domain');
                         return [];
                     }
 
@@ -249,7 +250,7 @@ interface LineMetaInfo {
                     var isOutOfDomain = (!primaryScaleInfo.isInDomain(from));
 
                     if (isOutOfDomain) {
-                        console.log('Annotation is out of domain');
+                        log('Annotation is out of domain');
                         return [];
                     }
 
@@ -300,7 +301,7 @@ interface LineMetaInfo {
                     });
 
                     if (points.some((d) => !xScale.isInDomain(d[0]) || !yScale.isInDomain(d[1]))) {
-                        console.log('Annotation is out of domain');
+                        log('Annotation is out of domain');
                         return [];
                     }
 
@@ -392,6 +393,8 @@ interface LineMetaInfo {
 
             addAreaNote: function (specRef: GPLSpec, coordsUnit: Unit, noteItem: AreaAnnotation) {
 
+                const log = (msg) => specRef.settings.log(msg, 'LOG');
+
                 var xScale = specRef.scales[coordsUnit.x];
                 var yScale = specRef.scales[coordsUnit.y];
 
@@ -402,7 +405,7 @@ interface LineMetaInfo {
                         (null)));
 
                 if (axes === null) {
-                    console.log('Annotation doesn\'t match any data field');
+                    log('Annotation doesn\'t match any data field');
                     return;
                 }
 
@@ -452,6 +455,8 @@ interface LineMetaInfo {
 
             addLineNote: function (specRef: GPLSpec, coordsUnit: Unit, noteItem: AxisAnnotation | LineAnnotation) {
 
+                const log = (msg) => specRef.settings.log(msg, 'LOG');
+
                 var xScale = specRef.scales[coordsUnit.x];
                 var yScale = specRef.scales[coordsUnit.y];
 
@@ -466,7 +471,7 @@ interface LineMetaInfo {
                         (dims[0] === xScale.dim && dims[1] === yScale.dim) ||
                         (dims[0] === yScale.dim && dims[1] === xScale.dim)
                     ) {
-                        axes = ['x', 'y']
+                        axes = ['x', 'y'];
                     }
                 } else {
                     if (noteItem.dim === xScale.dim) {
@@ -477,7 +482,7 @@ interface LineMetaInfo {
                 }
 
                 if (axes === null) {
-                    console.log('Annotation doesn\'t match any field');
+                    log('Annotation doesn\'t match any field');
                     return;
                 }
 
@@ -505,7 +510,11 @@ interface LineMetaInfo {
                             fontColor: noteItem.color,
                             position: (isAxisNote ?
                                 ['r', 'b', 'keep-in-box'] :
-                                ['auto:avoid-label-edges-overlap', 'auto:adjust-on-label-overflow', 'auto:hide-on-label-edges-overlap']
+                                [
+                                    'auto:avoid-label-edges-overlap',
+                                    'auto:adjust-on-label-overflow',
+                                    'auto:hide-on-label-edges-overlap'
+                                ]
                             )
                         },
                         x: {
@@ -593,6 +602,7 @@ interface LineMetaInfo {
                     }
                 });
 
+                const log = (msg) => specRef.settings.log(msg, 'LOG');
                 var specApi = pluginsSDK.spec(specRef);
 
                 units.forEach(function (coordsUnit) {
@@ -632,7 +642,7 @@ interface LineMetaInfo {
                                 } else {
                                     // Todo: point annotation.
                                     // self.addPointNote(specRef, coordsUnit, item);
-                                    console.log('Point annotation is not implemented yet');
+                                    log('Point annotation is not implemented yet');
                                 }
                             } else if (Array.isArray(item.val)) {
                                 self.addAreaNote(specRef, coordsUnit, item);
