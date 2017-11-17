@@ -444,7 +444,7 @@ interface LineMetaInfo {
                                 [
                                     'auto:avoid-label-edges-overlap',
                                     'auto:adjust-on-label-overflow',
-                                    'auto:hide-on-label-edges-overlap'
+                                    'keep-in-box'
                                 ]
                             )
                         },
