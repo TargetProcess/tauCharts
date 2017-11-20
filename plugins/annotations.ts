@@ -525,7 +525,11 @@ interface LineMetaInfo {
                         if (scaleId in specRef.scales) {
                             const config = specRef.scales[scaleId];
                             const originalValues = data.map((row) => row[dim]);
-                            config.series = utils.unique(originalValues.concat(annotatedValues[dim]));
+                            const isTimeScale = (['period', 'time'].indexOf(config.type) >= 0);
+                            const convertedAnnotations = (isTimeScale
+                                ? annotatedValues[dim].map((x) => new Date(x))
+                                : annotatedValues[dim]);
+                            config.series = utils.unique(originalValues.concat(convertedAnnotations));
                         }
                     });
                 });
