@@ -37,6 +37,7 @@ import './grammar-rules.test.js';
 import './layer-titles-rules.test.js';
 import './layers-plugin.test.js';
 import './legend-plugin.test.js';
+import './palette.test.js';
 // import './parallel-brushing-plugin.test.js'; // fails
 import './plot.test.js';
 import './pluginsdk.test.js';
