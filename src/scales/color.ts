@@ -90,7 +90,7 @@ export class ColorScale extends BaseScale {
             var domain = Object.keys(brewer);
             var range = domain.map(x => brewer[x]);
             var calculateClass = d3.scaleOrdinal<any, string>().range(range).domain(domain);
-            return (d) => brewer.hasOwnProperty(d) ? calculateClass(d) : defaultGetClass(d);
+            return (d) => brewer.hasOwnProperty(d) ? calculateClass(String(d)) : defaultGetClass(d);
         };
 
         var wrapString = (f: d3.ScaleOrdinal<any, string>) => ((d) => f(String(d).toString()));
