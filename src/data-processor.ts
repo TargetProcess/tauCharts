@@ -177,6 +177,10 @@ var DataProcessor = {
                 {});
             var defaultN = dimInfo.order.length;
             var k = `(___${dimName}___)`;
+            const initialIndices = data.reduce(((map, row, i) => {
+                map.set(row, i);
+                return map;
+            }), new Map());
             rows = data
                 .map((row) => {
                     var orderN = hashOrder[row[dimName]];
@@ -184,7 +188,10 @@ var DataProcessor = {
                     row[k] = orderN;
                     return row;
                 })
-                .sort((a, b) => (a[k] - b[k]))
+                .sort(utils.createMultiSorter(
+                    (a, b) => (a[k] - b[k]),
+                    (a, b) => (initialIndices.get(a) - initialIndices.get(b))
+                ))
                 .map((row) => {
                     delete row[k];
                     return row;
