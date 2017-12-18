@@ -191,15 +191,17 @@ import testUtils from './utils/utils';
         };
 
         coords = [coords.reduce((m, c) => m.concat(c), [])];
-        coords.forEach((c) => c.sort((a, b) => {
-            var result = 0;
-            sortFields.every((f) => {
-                var prop = f.replace('-', '');
-                result = ((a[prop] - b[prop]) * [1, -1][Number(f[0] === '-')]);
-                return (result === 0);
-            })
-            return result;
-        }));
+        if (sortFields.length > 0) {
+            coords.forEach((c) => c.sort((a, b) => {
+                var result = 0;
+                sortFields.every((f) => {
+                    var prop = f.replace('-', '');
+                    result = ((a[prop] - b[prop]) * [1, -1][Number(f[0] === '-')]);
+                    return (result === 0);
+                })
+                return result;
+            }));
+        }
 
         bars.forEach(function (bar, index) {
             Array.from(bar.childNodes).forEach(function (el, ind) {
@@ -361,37 +363,37 @@ import testUtils from './utils/utils';
                 expectCoordsElement(expect, [
                     [
                         {
-                            "x": 100,  // a100
-                            "y": 100,
-                            width: 1,
-                            height: 20
-                        },
-                        {
-                            "x": 75,  // b50
-                            "y": 60,
+                            x: -1,  // c-100
+                            y: 40,
                             width: 1,
                             height: 60
                         },
                         {
-                            "x": 25,  // c-50
-                            "y": 20,
+                            x: 25,  // c-50
+                            y: 40,
                             width: 1,
-                            height: 100
+                            height: 60
                         },
                         {
-                            "x": -1,  // c-100
-                            "y": 20,
+                            x: 50,  // c0
+                            y: 40,
                             width: 1,
-                            height: 100
+                            height: 60
                         },
                         {
-                            "x": 50,  // c0
-                            "y": 20,
+                            x: 75,  // b50
+                            y: 40,
                             width: 1,
-                            height: 100
+                            height: 20
+                        },
+                        {
+                            x: 100,  // a100
+                            y: 20,
+                            width: 1,
+                            height: 20
                         }
                     ]
-                ], '-height', 'x');
+                ]);
             });
         },
         {
@@ -434,40 +436,14 @@ import testUtils from './utils/utils';
         ],
         function () {
             it('should contain correct interval elements', function () {
-
-                var colorsCount = 3;
-                var stepSize = 120 / colorsCount;
-                var barWidth = stepSize / 2;
-                var xi = (i) => (stepSize * i + (stepSize - barWidth) / 2);
-
                 expectCoordsElement(expect, [
                     [
-                        {
-                            "x": xi(0),
-                            "y": 100,
-                            width: barWidth,
-                            height: 20
-                        },
-                        {
-                            "x": xi(1),
-                            "y": 60,
-                            width: barWidth,
-                            height: 60
-                        },
-                        {
-                            "x": xi(2),
-                            "y": 20,
-                            width: barWidth,
-                            height: 100
-                        },
-                        {
-                            "x": xi(2),
-                            "y": 60,
-                            width: barWidth,
-                            height: 60
-                        }
+                        {x: 90, y: 40, width: 20, height: 60},
+                        {x: 10, y: 20, width: 20, height: 20},
+                        {x: 50, y: 40, width: 20, height: 20},
+                        {x: 90, y: 40, width: 20, height: 20}
                     ]
-                ], '-height', 'x');
+                ]);
             });
         },
         {
@@ -520,7 +496,15 @@ import testUtils from './utils/utils';
                     [
                         {
                             "x": 50,    // 100
-                            "y": 96,
+                            "y": 16,
+                            height: barWidth,
+                            width: 50
+                        }
+                    ],
+                    [
+                        {
+                            "x": 0,     // -100
+                            "y": 100,
                             height: barWidth,
                             width: 50
                         }
@@ -534,20 +518,12 @@ import testUtils from './utils/utils';
                         },
                         {
                             "x": 50,    // 0
-                            "y": 13,
+                            "y": 93,
                             height: barWidth,
                             width: 0
                         }
                     ],
-                    [
-                        {
-                            "x": 0,     // -100
-                            "y": 20,
-                            height: barWidth,
-                            width: 50
-                        }
-                    ]
-                ], '-width', 'y');
+                ]);
             });
         },
         {
@@ -661,7 +637,7 @@ import testUtils from './utils/utils';
                     [
                         {
                             "x": 0,
-                            "y": xi(2),
+                            "y": xi(0),
                             height: barWidth,
                             width: 20
                         },
@@ -679,7 +655,7 @@ import testUtils from './utils/utils';
                         },
                         {
                             "x": 0,
-                            "y": xi(0),
+                            "y": xi(2),
                             height: barWidth,
                             width: 100
                         }
@@ -1211,19 +1187,19 @@ import testUtils from './utils/utils';
                 data: [
                     {
                         "createDate": new Date(iso("2014-09-01T00:00:00")),
-                        "count": 100
+                        "count": 0
                     },
                     {
                         "createDate": new Date(iso("2014-09-02T00:00:00")),
-                        "count": 50
-                    },
-                    {
-                        "createDate": new Date(iso("2014-09-03T00:00:00")),
                         "count": 1
                     },
                     {
+                        "createDate": new Date(iso("2014-09-03T00:00:00")),
+                        "count": 50
+                    },
+                    {
                         "createDate": new Date(iso("2014-09-04T00:00:00")),
-                        "count": 0
+                        "count": 100
                     }
                 ],
                 type: 'horizontal-bar',

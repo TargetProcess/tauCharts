@@ -117,7 +117,11 @@ export class Cartesian extends Element {
         const w = this.W;
         const h = this.H;
         this.xScale = fnCreateScale('pos', this.config.x, [0, w]);
-        this.yScale = fnCreateScale('pos', this.config.y, [h, 0]);
+        this.yScale = fnCreateScale(
+            'pos',
+            this.config.y,
+            (scaleConfig) => ['ordinal', 'period'].indexOf(scaleConfig.type) >= 0 ? [0, h] : [h, 0]
+        );
         this.regScale('x', this.xScale)
             .regScale('y', this.yScale);
         return {
