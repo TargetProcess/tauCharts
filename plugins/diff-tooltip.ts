@@ -65,9 +65,7 @@ class DiffTooltip extends Tooltip {
                 map[c] = i;
                 return map;
             }, {} as {[c: string]: number});
-            return (screenModel.flip ?
-                ((a, b) => ci[b[scaleColor.dim]] - ci[a[scaleColor.dim]]) :
-                ((a, b) => ci[a[scaleColor.dim]] - ci[b[scaleColor.dim]]));
+            return ((a, b) => ci[a[scaleColor.dim]] - ci[b[scaleColor.dim]]);
         })();
         const sortByY = (unit.config.flip ?
             ((a, b) => scaleY(b[scaleY.dim]) - scaleY(a[scaleY.dim])) :
