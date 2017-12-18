@@ -349,7 +349,7 @@ describe('ELEMENT.INTERVAL.STACKED', function () {
                     {
                         "x": 249.5,
                         "width": 1,
-                        "y": 400,
+                        "y": 0,
                         "height": 600,
                         "class": "color20-1"
                     }
@@ -358,7 +358,7 @@ describe('ELEMENT.INTERVAL.STACKED', function () {
                     {
                         "x": 249.6464,
                         "width": 0.7071,
-                        "y": 0,
+                        "y": 600,
                         "height": 400,
                         "class": "color20-2"
                     }
@@ -409,7 +409,7 @@ describe('ELEMENT.INTERVAL.STACKED', function () {
                     {
                         "x": 230,
                         "width": 40,
-                        "y": 400,
+                        "y": 0,
                         "height": 600,
                         "class": "color20-1"
                     }
@@ -418,7 +418,7 @@ describe('ELEMENT.INTERVAL.STACKED', function () {
                     {
                         "x": 235.4185,
                         "width": 29.1630,
-                        "y": 0,
+                        "y": 600,
                         "height": 400,
                         "class": "color20-2"
                     }
@@ -575,7 +575,7 @@ describe('ELEMENT.INTERVAL.STACKED', function () {
                     {
                         "x": column(0) + (xstep - barWidth(1)) / 2,
                         "width": barWidth(1),
-                        "y": 500,
+                        "y": 700,
                         "height": 300,
                         "class": "color20-1"
                     }
@@ -584,7 +584,7 @@ describe('ELEMENT.INTERVAL.STACKED', function () {
                     {
                         "x": column(0) + (xstep - barWidth(0.5)) / 2,
                         "width": barWidth(0.5),
-                        "y": 800,
+                        "y": 500,
                         "height": 200,
                         "class": "color20-2"
                     }
@@ -720,7 +720,7 @@ describe('ELEMENT.INTERVAL.STACKED', function () {
             var y = d3Rect.attr('y');
             tempOrder.push({c: d.c, y: y});
         });
-        var actualOrder = tempOrder.sort((a, b) => b.y - a.y).map((x) => x.c);
+        var actualOrder = tempOrder.sort((a, b) => a.y - b.y).map((x) => x.c);
         expect(actualOrder).to.deep.equal(['C1', 'C2', 'C3'], 'by default order from data');
     });
 
@@ -753,7 +753,7 @@ describe('ELEMENT.INTERVAL.STACKED', function () {
             var y = d3Rect.attr('y');
             tempOrder.push({c: d.c, y: y});
         });
-        var actualOrder = tempOrder.sort((a, b) => b.y - a.y).map((x) => x.c);
+        var actualOrder = tempOrder.sort((a, b) => a.y - b.y).map((x) => x.c);
         expect(actualOrder).to.deep.equal(['C3', 'C1', 'C2'], 'specified order');
     });
 

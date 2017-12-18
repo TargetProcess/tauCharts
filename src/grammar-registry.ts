@@ -187,7 +187,10 @@ GrammarRegistry
         const groups = utils.groupBy(dataSource, nextGroup);
         const nextData = (Object
             .keys(groups)
-            .sort((a, b) => model.order(a) - model.order(b))
+            .sort((model.flip ?
+                (a, b) => model.order(a) - model.order(b) :
+                (a, b) => model.order(b) - model.order(a)
+            ))
             .reduce((memo, k) => memo.concat(groups[k]), []));
 
         nextData.forEach((row) => {

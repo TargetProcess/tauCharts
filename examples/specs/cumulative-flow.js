@@ -23,7 +23,7 @@ dev.spec({
         'entityState': {
             type: 'category',
             scale: 'ordinal',
-            order: getOrderedStates().reverse()
+            order: getOrderedStates()
         }
     },
     data: getCFDData(),
@@ -90,7 +90,7 @@ dev.spec({
         'entityState': {
             type: 'category',
             scale: 'ordinal',
-            order: getOrderedStates().reverse()
+            order: getOrderedStates()
         }
     },
     data: getCFDData(),
