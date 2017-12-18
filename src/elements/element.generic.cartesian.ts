@@ -50,6 +50,13 @@ export abstract class GenericCartesian extends Element {
         const config = this.config;
         this.regScale('x', fnCreateScale('pos', config.x, [0, config.options.width]))
             .regScale('y', fnCreateScale('pos', config.y, [config.options.height, 0]))
+            .regScale('y', fnCreateScale(
+                'pos',
+                config.y,
+                (scaleConfig) => ['ordinal', 'period'].indexOf(scaleConfig.type) >= 0 ?
+                    [0, config.options.height] :
+                    [config.options.height, 0]
+            ))
             .regScale('size', fnCreateScale('size', config.size, {}))
             .regScale('color', fnCreateScale('color', config.color, {}))
             .regScale('split', fnCreateScale('split', config.split, {}))

@@ -36,7 +36,6 @@ dev.spec({
             count: -7
         }
     ]
-        .reverse()
         .map(function (row) {
             row['ABS(count)'] = Math.abs(row.count);
             return row;

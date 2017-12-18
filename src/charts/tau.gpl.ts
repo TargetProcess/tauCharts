@@ -309,7 +309,7 @@ export class GPL extends Emitter {
             return self
                 .scalesHub
                 .createScaleInfo(self.scales[key], passFrame)
-                .create(dynamicProps);
+                .create(typeof dynamicProps === 'function' ? dynamicProps(self.scales[key]) : dynamicProps);
         });
     }
 

@@ -34,8 +34,7 @@ dev.spec({
             row['ABS(count)'] = Math.abs(row.count);
             row['z'] = Math.random() * 10;
             return row;
-        })
-        .reverse(),
+        }),
     plugins: [
         Taucharts.api.plugins.get('tooltip')(),
         Taucharts.api.plugins.get('annotations')({

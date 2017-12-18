@@ -274,12 +274,12 @@ const MIN_ANCHOR_RADIUS = 4;
             // up triangle
             expect(d3.select(svgPolygons[0]).attr('points'))
                 .to
-                .equal('0,750 1000,250 1000,1000 0,1000', 'up triangle');
+                .equal('0,250 1000,750 1000,500 0,500', 'up triangle');
 
             // down triangle
             expect(d3.select(svgPolygons[1]).attr('points'))
                 .to
-                .equal('1000,750 0,250 0,1000 1000,1000', 'down triangle');
+                .equal('1000,250 0,750 0,500 1000,500', 'down triangle');
 
             var areas = getArea();
             expect(areas.length).to.equal(2, 'should render two area elements');

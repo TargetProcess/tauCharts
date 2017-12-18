@@ -282,31 +282,31 @@ describe('ELEMENT.INTERVAL.STACKED', function () {
                 [
                     {
                         "x": 0,
-                        "y": 750,
+                        "y": 250,
                         "width": 600,
                         "height": 1
                     },
                     {
                         "x": 600,
-                        "y": 750,
+                        "y": 250,
                         "width": 300,
                         "height": 1
                     },
                     {
                         "x": 900,
-                        "y": 750,
+                        "y": 250,
                         "width": 100,
                         "height": 1
                     },
                     {
                         "x": 0,
-                        "y": 250,
+                        "y": 750,
                         "width": 900,
                         "height": 1
                     },
                     {
                         "x": 900,
-                        "y": 250,
+                        "y": 750,
                         "width": 100,
                         "height": 1
                     }
@@ -469,7 +469,7 @@ describe('ELEMENT.INTERVAL.STACKED', function () {
                     {
                         "x": 0,
                         "width": 600,
-                        "y": 730,
+                        "y": 230,
                         "height": 40,
                         "class": "color20-1"
                     }
@@ -478,7 +478,7 @@ describe('ELEMENT.INTERVAL.STACKED', function () {
                     {
                         "x": 600,
                         "width": 400,
-                        "y": 735.4185,
+                        "y": 235,
                         "height": 29.1630,
                         "class": "color20-2"
                     }
@@ -487,7 +487,7 @@ describe('ELEMENT.INTERVAL.STACKED', function () {
                     {
                         "x": 0,
                         "width": 1000,
-                        "y": 248.5,
+                        "y": 749,
                         "height": 3,
                         "class": "color20-3"
                     }
@@ -633,7 +633,7 @@ describe('ELEMENT.INTERVAL.STACKED', function () {
                     {
                         "x": 500,
                         "width": 300,
-                        "y": 730,
+                        "y": 230,
                         "height": 40,
                         "class": "color20-1"
                     }
@@ -642,7 +642,7 @@ describe('ELEMENT.INTERVAL.STACKED', function () {
                     {
                         "x": 800,
                         "width": 200,
-                        "y": 735.4185,
+                        "y": 235,
                         "height": 29.1630,
                         "class": "color20-2"
                     }
@@ -651,7 +651,7 @@ describe('ELEMENT.INTERVAL.STACKED', function () {
                     {
                         "x": 0,
                         "width": 500,
-                        "y": 248.5,
+                        "y": 749,
                         "height": 3,
                         "class": "color20-3"
                     }
