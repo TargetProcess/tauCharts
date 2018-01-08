@@ -97,4 +97,53 @@ import {DataProcessor} from '../src/data-processor';
             expect(r.error.keyY).to.equal('y');
             expect(r.error.errY).to.deep.equal(['{"id":14,"name":"text14"}', '{"id":44,"name":"text44"}']);
         });
+
+        it('should sort ordered category data preserving initial order', function () {
+            var data = [
+                {x: 'a', y: 0},
+                {x: 'a', y: 1},
+                {x: 'b', y: 3},
+                {x: 'b', y: 4},
+                {x: 'a', y: 2},
+                {x: 'b', y: 5},
+            ];
+            const dimInfo = {
+                type: 'order',
+                scale: 'ordinal',
+                order: ['b', 'a']
+            };
+            expect(DataProcessor.sortByDim(data, 'x', dimInfo).map(({y}) => y).toString()).to.equal('3,4,5,0,1,2');
+        });
+
+        it('should sort measure data preserving initial order', function () {
+            var data = [
+                {x: 1, y: 0},
+                {x: 1, y: 1},
+                {x: 2, y: 3},
+                {x: 2, y: 4},
+                {x: 1, y: 2},
+                {x: 2, y: 5},
+            ];
+            const dimInfo = {
+                type: 'measure',
+                scale: 'linear',
+            };
+            expect(DataProcessor.sortByDim(data, 'x', dimInfo).map(({y}) => y).toString()).to.equal('0,1,2,3,4,5');
+        });
+
+        it('should sort time data preserving initial order', function () {
+            var data = [
+                {x: '2015-01-01', y: 0},
+                {x: '2015-01-01', y: 1},
+                {x: '2015-12-31', y: 3},
+                {x: '2015-12-31', y: 4},
+                {x: '2015-01-01', y: 2},
+                {x: '2015-12-31', y: 5},
+            ];
+            const dimInfo = {
+                type: 'measure',
+                scale: 'time',
+            };
+            expect(DataProcessor.sortByDim(data, 'x', dimInfo).map(({y}) => y).toString()).to.equal('0,1,2,3,4,5');
+        });
     });
