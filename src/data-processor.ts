@@ -164,10 +164,18 @@ var DataProcessor = {
             (x => new Date(x)) :
             (x => x);
 
+        const initialIndices = data.reduce(((map, row, i) => {
+            map.set(row, i);
+            return map;
+        }), new Map());
+
         if ((dimInfo.type === 'measure') || (dimInfo.scale === 'period')) {
-            rows = data.map(r => r).sort((a, b) => {
-                return interceptor(a[dimName]) - interceptor(b[dimName]);
-            });
+            rows = data
+                .slice()
+                .sort(utils.createMultiSorter(
+                    (a, b) => (interceptor(a[dimName]) - interceptor(b[dimName])),
+                    (a, b) => (initialIndices.get(a) - initialIndices.get(b))
+                ));
         } else if (dimInfo.order) {
             var hashOrder = dimInfo.order.reduce(
                 (memo, x, i) => {
@@ -177,10 +185,6 @@ var DataProcessor = {
                 {});
             var defaultN = dimInfo.order.length;
             var k = `(___${dimName}___)`;
-            const initialIndices = data.reduce(((map, row, i) => {
-                map.set(row, i);
-                return map;
-            }), new Map());
             rows = data
                 .map((row) => {
                     var orderN = hashOrder[row[dimName]];
