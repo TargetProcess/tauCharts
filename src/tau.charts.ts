@@ -68,7 +68,7 @@ var api = {
     tickPeriod: UnitDomainPeriodGenerator,
     colorBrewers: {
         add: function (name, brewer) {
-            if (!(name in colorBrewers)) {
+            if (!colorBrewers.hasOwnProperty(name)) {
                 colorBrewers[name] = brewer;
             }
         },
@@ -80,7 +80,7 @@ var api = {
     pluginsSDK: PluginsSDK,
     plugins: {
         add: function (name, plugin) {
-            if (!(name in plugins)) {
+            if (!plugins.hasOwnProperty(name)) {
                 plugins[name] = plugin;
             } else {
                 throw new Error('Plugin is already registered.');

@@ -70,7 +70,7 @@ var getFacetCount = (specRef: GPLSpec) => {
                     var keys = Object.keys(f.key);
                     keys.forEach((key) => {
                         if (xFacetKeys.indexOf(key) >= 0) {
-                            if (!(key in xFacetGroups)) {
+                            if (!xFacetGroups.hasOwnProperty(key)) {
                                 xFacetGroups[key] = [];
                             }
                             if (xFacetGroups[key].indexOf(f.key[key]) < 0) {
@@ -78,7 +78,7 @@ var getFacetCount = (specRef: GPLSpec) => {
                             }
                         }
                         if (yFacetKeys.indexOf(key) >= 0) {
-                            if (!(key in yFacetGroups)) {
+                            if (!yFacetGroups.hasOwnProperty(key)) {
                                 yFacetGroups[key] = [];
                             }
                             if (yFacetGroups[key].indexOf(f.key[key]) < 0) {

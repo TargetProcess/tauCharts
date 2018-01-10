@@ -62,7 +62,7 @@ GrammarRegistry
                     .reduce((map, row) => {
                         const x = row[model.scaleX.dim];
                         const color = row[model.scaleColor.dim];
-                        if (!(x in map)) {
+                        if (!map.hasOwnProperty(x)) {
                             map[x] = [];
                         }
                         if (map[x].indexOf(color) < 0) {

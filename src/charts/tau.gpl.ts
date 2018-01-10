@@ -222,7 +222,7 @@ export class GPL extends Emitter {
                             .filter((key) => typeof unit[key] === 'string')
                             .reduce((memo, key) => (memo[key] = unit[key], memo), {})) +
                         `-${JSON.stringify(currFrame.pipe)}`);
-                    if (uid in uids) {
+                    if (uids.hasOwnProperty(uid)) {
                         uid += `-${++uids[uid]}`;
                     } else {
                         uids[uid] = 0;
