@@ -68,7 +68,7 @@ var DataProcessor = {
             return fields;
         }, []);
         return (row) => {
-            var result = !fields.some((f) => (!(f in row) || (row[f] === null)));
+            var result = !fields.some((f) => (!row.hasOwnProperty(f) || (row[f] === null)));
             if (!result) {
                 onExclude(row);
             }
