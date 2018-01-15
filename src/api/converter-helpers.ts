@@ -8,6 +8,7 @@ import {
 
 interface XChartConfig extends ChartConfig {
     colorGuide?: Object;
+    obsoleteVetricalStackOrder?: boolean;
     sizeGuide?: Object;
 }
 
@@ -39,6 +40,7 @@ var createElement = (type: string, config: XChartConfig) => {
         label: config.label,
         guide: {
             color: config.colorGuide,
+            obsoleteVetricalStackOrder: config.obsoleteVetricalStackOrder,
             size: config.sizeGuide
         },
         flip: config.flip,
@@ -200,6 +202,7 @@ function transformConfig(type: string, config: ChartConfig) {
                 flip: config.flip,
                 stack: config.stack,
                 colorGuide: currentGuide.color,
+                obsoleteVetricalStackOrder: currentGuide.obsoleteVetricalStackOrder,
                 sizeGuide: currentGuide.size
             }));
             spec.guide = utils.defaults(

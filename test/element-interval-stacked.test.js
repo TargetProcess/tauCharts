@@ -757,6 +757,42 @@ describe('ELEMENT.INTERVAL.STACKED', function () {
         expect(actualOrder).to.deep.equal(['C3', 'C1', 'C2'], 'specified order');
     });
 
+    it('should take obsolete order if specified', function () {
+
+        var chart0 = new Taucharts.Chart({
+            dimensions: {
+                c: {'type': 'category', 'scale': 'ordinal', order: ['C3', 'C1', 'C2']},
+                x: {'type': 'category', 'scale': 'ordinal'},
+                y: {'type': 'measure', 'scale': 'linear'}
+            },
+            guide: {
+                obsoleteVetricalStackOrder: true,
+            },
+            type: 'stacked-bar',
+            data: [
+                {x: 'A', y: 1, c: 'C1'},
+                {x: 'A', y: 2, c: 'C2'},
+                {x: 'A', y: 3, c: 'C3'}
+            ],
+            x: 'x',
+            y: 'y',
+            color: 'c'
+        });
+        chart0.renderTo(div, size);
+
+        var svg0 = chart0.getSVG();
+        expect(svg0.querySelectorAll('.bar').length).to.equals(3);
+        var tempOrder = [];
+        d3.select(svg0).selectAll('.bar').nodes().forEach(function (rect) {
+            var d3Rect = d3.select(rect);
+            var d = d3Rect.data()[0];
+            var y = d3Rect.attr('y');
+            tempOrder.push({c: d.c, y: y});
+        });
+        var actualOrder = tempOrder.sort((a, b) => b.y - a.y).map((x) => x.c);
+        expect(actualOrder).to.deep.equal(['C3', 'C1', 'C2'], 'specified order');
+    });
+
     it('should have valid size in facet', function () {
 
         var chart0 = new Taucharts.Chart({

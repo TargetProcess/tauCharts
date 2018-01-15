@@ -38,6 +38,7 @@ dev.spec({
     ],
     guide: {
         showGridLines: 'y',
+        obsoleteVetricalStackOrder: true,
         'x': {
             timeInterval: 'week',
             nice: false

@@ -60,16 +60,19 @@ class DiffTooltip extends Tooltip {
 
         // Note: Sort stacked elements by color, other by Y
         const shouldSortByColor = unit.config.stack;
+        const shouldSortAsc = !(!unit.config.flip && unit.config.guide.obsoleteVetricalStackOrder);
         const sortByColor = (() => {
             const ci = scaleColor.domain().slice().reduce((map, c, i) => {
                 map[c] = i;
                 return map;
             }, {} as {[c: string]: number});
-            return ((a, b) => ci[a[scaleColor.dim]] - ci[b[scaleColor.dim]]);
+            return (shouldSortAsc ?
+                ((a, b) => ci[a[scaleColor.dim]] - ci[b[scaleColor.dim]]) :
+                ((a, b) => ci[b[scaleColor.dim]] - ci[a[scaleColor.dim]]));
         })();
-        const sortByY = (unit.config.flip ?
-            ((a, b) => scaleY(b[scaleY.dim]) - scaleY(a[scaleY.dim])) :
-            ((a, b) => scaleY(a[scaleY.dim]) - scaleY(b[scaleY.dim])));
+        const sortByY = (shouldSortAsc ?
+            ((a, b) => scaleY(a[scaleY.dim]) - scaleY(b[scaleY.dim])) :
+            ((a, b) => scaleY(b[scaleY.dim]) - scaleY(a[scaleY.dim])));
 
         const getNeighbors = (x) => {
             return Object.keys(groupedData[x])
