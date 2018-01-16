@@ -766,7 +766,7 @@ describe('ELEMENT.INTERVAL.STACKED', function () {
                 y: {'type': 'measure', 'scale': 'linear'}
             },
             guide: {
-                obsoleteVetricalStackOrder: true,
+                obsoleteVerticalStackOrder: true,
             },
             type: 'stacked-bar',
             data: [
