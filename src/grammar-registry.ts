@@ -53,9 +53,9 @@ GrammarRegistry
             y0: (() => y0)
         };
     })
-    .reg('obsoleteVetricalStackOrder', () => {
+    .reg('obsoleteVerticalStackOrder', () => {
         return {
-            obsoleteVetricalStackOrder: true,
+            obsoleteVerticalStackOrder: true,
         };
     })
     .reg('positioningByColor', (model) => {
@@ -192,7 +192,7 @@ GrammarRegistry
         const groups = utils.groupBy(dataSource, nextGroup);
         const nextData = (Object
             .keys(groups)
-            .sort((model.flip || (!model.flip && model.obsoleteVetricalStackOrder) ?
+            .sort((model.flip || (!model.flip && model.obsoleteVerticalStackOrder) ?
                 (a, b) => model.order(a) - model.order(b) :
                 (a, b) => model.order(b) - model.order(a)
             ))

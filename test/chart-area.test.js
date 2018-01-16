@@ -206,7 +206,7 @@ import * as d3 from 'd3-selection';
                 stack: true,
                 color: 'color',
                 guide: {
-                    obsoleteVetricalStackOrder: true,
+                    obsoleteVerticalStackOrder: true,
                     x: {nice: false},
                     y: {nice: false},
                     color: {
