@@ -198,6 +198,81 @@ import * as d3 from 'd3-selection';
                 ].join('\n'));
         });
 
+        it('should leave obsolete order for [stack] transformation', function () {
+            var area = new tauChart.Chart({
+                type: 'area',
+                x: 'x',
+                y: 'y',
+                stack: true,
+                color: 'color',
+                guide: {
+                    obsoleteVetricalStackOrder: true,
+                    x: {nice: false},
+                    y: {nice: false},
+                    color: {
+                        brewer: {
+                            A: 'A',
+                            B: 'B'
+                        }
+                    }
+                },
+                settings: {
+                    specEngine: 'none',
+                    layoutEngine: 'none'
+                },
+                data: [
+                    {x: 0, y: 0, color: 'A'},
+                    {x: 1, y: 1, color: 'A'},
+                    {x: 2, y: 2, color: 'A'},
+
+                    {x: 0, y: 2, color: 'B'},
+                    {x: 1, y: 2, color: 'B'},
+                    {x: 0, y: -2, color: 'B'},
+                    {x: 1, y: -2, color: 'B'},
+                ]
+            });
+
+            area.renderTo(element, {width: 1000, height: 1000});
+
+            var svgPolygons = d3.selectAll('polygon').nodes();
+
+            expect(svgPolygons.length).to.equal(3);
+
+            expect(testUtils.hasClass(svgPolygons[0].parentNode, 'A')).to.equal(true);
+            expect(round(d3.select(svgPolygons[0]).attr('points')))
+                .to
+                .equal('0,600 500,400 1000,200 1000,600 500,600 0,600', 'A');
+
+            expect(testUtils.hasClass(svgPolygons[1].parentNode, 'B')).to.equal(true);
+            expect(round(d3.select(svgPolygons[1]).attr('points')))
+                .to
+                .equal('0,200 500,0 1000,200 1000,200 500,400 0,600', 'B positive');
+
+            expect(testUtils.hasClass(svgPolygons[2].parentNode, 'B')).to.equal(true);
+            expect(round(d3.select(svgPolygons[2]).attr('points')))
+                .to
+                .equal('0,1000 500,1000 1000,600 1000,600 500,600 0,600', 'B negative');
+
+            var points = d3.selectAll('.i-data-anchor').nodes().map((node) => {
+                var p = d3.select(node);
+                return p.attr('d');
+            });
+
+            expect(round(points.join('\n')))
+                .to
+                .equal([
+                    'M0,600 A0,0 0 0 1 0,600 A0,0 0 0 1 0,600 Z',
+                    'M500,400 L500,600 A0,0 0 0 1 500,600 L500,400 A0,0 0 0 1 500,400 Z',
+                    'M1000,200 L1000,600 A0,0 0 0 1 1000,600 L1000,200 A0,0 0 0 1 1000,200 Z',
+
+                    'M0,200 L0,600 A0,0 0 0 1 0,600 L0,200 A0,0 0 0 1 0,200 Z',
+                    'M500,0 L500,400 A0,0 0 0 1 500,400 L500,0 A0,0 0 0 1 500,0 Z',
+
+                    'M0,1000 L0,600 A0,0 0 0 1 0,600 L0,1000 A0,0 0 0 1 0,1000 Z',
+                    'M500,1000 L500,600 A0,0 0 0 1 500,600 L500,1000 A0,0 0 0 1 500,1000 Z',
+                ].join('\n'));
+        });
+
         it('should support [flip+stack] transformation', function () {
             var area = new tauChart.Chart({
                 type: 'area',

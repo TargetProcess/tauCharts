@@ -78,6 +78,7 @@ const Interval = {
 
         config.transformRules = [
             config.flip && GrammarRegistry.get('flip'),
+            config.guide.obsoleteVetricalStackOrder && GrammarRegistry.get('obsoleteVetricalStackOrder'),
             config.stack && GrammarRegistry.get('stack'),
             enableColorPositioning && GrammarRegistry.get('positioningByColor')
         ]

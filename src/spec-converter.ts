@@ -92,6 +92,12 @@ export class SpecConverter {
                 childUnit.expression.inherit = root.expression.inherit;
             }
 
+            if (root && !(childUnit.guide && childUnit.guide.hasOwnProperty('obsoleteVetricalStackOrder'))) {
+                childUnit.guide = Object.assign(childUnit.guide || {}, {
+                    obsoleteVetricalStackOrder: (root.guide || {}).obsoleteVetricalStackOrder
+                });
+            }
+
             return childUnit;
         };
 

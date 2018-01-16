@@ -16,6 +16,7 @@ export interface GrammarModel {
     group?(row): string;
     id?(row): any;
     label?(row): string;
+    obsoleteVetricalStackOrder?: boolean;
     order?(row): number;
     scaleColor?: ScaleFunction;
     scaleIdentity?: ScaleFunction;
@@ -139,6 +140,7 @@ export interface UnitGuide {
     avoidScalesOverflow?: boolean;
     enableColorToBarPosition?: boolean;
     maxHighlightDistance?: number;
+    obsoleteVetricalStackOrder?: boolean;
     x?: ScaleGuide;
     y?: ScaleGuide;
     size?: ScaleGuide;
