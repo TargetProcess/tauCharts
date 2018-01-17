@@ -546,6 +546,7 @@ GrammarRegistry
 
         return {
             data: () => nextData,
+            size: (row) => ((row[synthetic]) ? model.scaleSize(0) : model.size(row)),
             id: (row) => ((row[synthetic]) ? row[`${synthetic}id`] : model.id(row))
         };
     });

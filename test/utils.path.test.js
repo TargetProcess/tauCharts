@@ -628,7 +628,7 @@ import testUtils from './utils/utils';
             ]));
             expect(testUtils.roundNumbersInString(path)).to.be.equal([
                 'M-14,55',
-                'C-0,17 15,-8 30,-7',
+                'C0,17 15,-8 30,-7',
                 'A8,8 0 1 1 32,7',
                 'C26,7 20,24 15,62',
                 'A15,15 0 0 1 -14,55',
