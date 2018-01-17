@@ -227,8 +227,9 @@ Taucharts.api.globalSettings.experimentalShouldAnimate = () => true;
     }
 
     function roundNumbersInString(str, fractionDigits) {
-        return str.replace(/-?\d+\.?\d*/g, function (match) {
-            return parseFloat(match).toFixed(fractionDigits);
+        return str.replace(/[-+]?(?:\d+\.?\d*|\.?\d+)(?:[e][-+]?\d+)?/igm, function (match) {
+            const float = parseFloat(match).toFixed(fractionDigits);
+            return float === '-0' ? '0' : float;
         });
     }
 

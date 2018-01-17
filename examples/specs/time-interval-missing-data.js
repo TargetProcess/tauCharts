@@ -6,6 +6,7 @@ dev.spec({
     x: 'date',
     y: 'points',
     color: 'team',
+    size: 'points',
     guide: {
         x: {
             min: new Date('2015-01-01'),

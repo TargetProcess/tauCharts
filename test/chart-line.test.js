@@ -364,7 +364,7 @@ const round = testUtils.roundNumbersInString;
                 .equal([1, 2, 0, 3]);
         });
 
-        it('should add data points for missing periods', function () {
+        it('should add data points for missing periods (fillGaps)', function () {
 
             const element = document.createElement('div');
             document.body.appendChild(element);
@@ -408,6 +408,59 @@ const round = testUtils.roundNumbersInString;
 
             expect(paths.a).to.equal('M0,500 L200,0 L400,0');
             expect(paths.b).to.equal('M0,500 L200,1000 L400,500 L600,500 L800,0');
+
+            document.body.removeChild(element);
+        });
+
+        it('should use empty size for missing periods (fillGaps)', function () {
+
+            const element = document.createElement('div');
+            document.body.appendChild(element);
+
+            const line = new tauChart.Chart({
+                type: 'line',
+                x: 'date',
+                y: 'value',
+                color: 'group',
+                size: 'effort',
+                guide: {
+                    x: {
+                        nice: false,
+                        timeInterval: 'day',
+                        min: new Date('2015-01-01T00:00Z'),
+                        max: new Date('2015-01-06T00:00Z')
+                    },
+                    y: {nice: false},
+                    size: {
+                        minSize: 10,
+                        maxSize: 50
+                    }
+                },
+                settings: {
+                    utcTime: true,
+                    specEngine: 'none',
+                    layoutEngine: 'none'
+                },
+                data: [
+                    {date: new Date('2015-01-02T00:00Z'), value: 10, group: 'a', effort: 20},
+                    {date: new Date('2015-01-03T00:00Z'), value: 10, group: 'a', effort: 20},
+                    {date: new Date('2015-01-02T00:00Z'), value: -10, group: 'b', effort: 0},
+                    {date: new Date('2015-01-05T00:00Z'), value: 10, group: 'b', effort: 20},
+                ]
+            });
+            line.renderTo(element, {width: 1000, height: 1000});
+
+            const paths = Array.from(element.querySelectorAll('.i-role-path path'))
+                .reduce((map, el) => {
+                    const s = d3.select(el);
+                    const path = round(s.attr('d'));
+                    const g = s.data()[0][0].group;
+                    map[g] = path;
+                    return map;
+                }, {});
+
+            expect(paths.a).to.equal('M0,508 L181,16 A24,24 0 1 1 226,34 L9,512 A5,5 0 0 1 0,508 Z M204,0 L403,0 A24,24 0 0 1 403,49 L204,49 A24,24 0 0 1 204,0 Z');
+            expect(paths.b).to.equal('M9,508 L208,993 A5,5 0 0 1 199,997 L0,512 A5,5 0 0 1 9,508 Z M199,993 L398,508 A5,5 0 0 1 407,512 L208,997 A5,5 0 0 1 199,993 Z M403,505 L602,505 A5,5 0 0 1 602,515 L403,515 A5,5 0 0 1 403,505 Z M597,508 L778,16 A24,24 0 1 1 823,34 L606,512 A5,5 0 0 1 597,508 Z');
 
             document.body.removeChild(element);
         });
