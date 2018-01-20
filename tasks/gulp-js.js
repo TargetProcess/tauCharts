@@ -99,6 +99,10 @@ const plugins = [
                 'stackblur': 'bower_components/canvg/StackBlur.js',
                 'canvg': 'bower_components/canvg/canvg.js',
                 'file-saver': 'bower_components/file-saver/FileSaver.js',
+            }),
+            require('./rollup-plugin-replace-bundle')({
+                // fix canvg with 'use strict'
+                'for (i=0; i<=1; i++) {': 'for (var i=0; i<=1; i++) {'
             })
         ].concat(pluginsCommonConfig.plugins)
     }],

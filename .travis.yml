@@ -2,7 +2,7 @@ sudo: required
 dist: trusty
 language: node_js
 node_js:
-  - "6.9.1"
+  - "lts/*"
 
 notifications:
   slack: targetprocess:6steG2RMCfKWx3uZ2Lm9Sfvd
