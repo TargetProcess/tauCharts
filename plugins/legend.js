@@ -169,7 +169,7 @@ import * as d3 from 'd3-format';
         var settings = utils.defaults(
             xSettings || {},
             {
-                // add default settings here
+                formatters: {},
             });
 
         var doEven = function (n) {
@@ -318,6 +318,16 @@ import * as d3 from 'd3-format';
                     this._clearPanel();
                     this._container.parentElement.removeChild(this._container);
                 }
+            },
+
+            onSpecReady: function (chart, specRef) {
+                this._formatters = pluginsSDK.getFieldFormatters(specRef, settings.formatters);
+            },
+
+            _getFormat(dim) {
+                return (this._formatters[dim] ?
+                    this._formatters[dim].format :
+                    (x) => String(x));
             },
 
             onRender: function () {
@@ -778,6 +788,8 @@ import * as d3 from 'd3-format';
                         var title = ((guide.color || {}).label || {}).text || colorScale.dim;
                         var noVal = ((guide.color || {}).tickFormatNullAlias || ('No ' + title));
 
+                        const format = self._getFormat(colorScale.dim);
+
                         var legendColorItems = domain.map(function (d) {
                             var val = JSON.stringify(isEmpty(d) ? null : d);
                             var key = colorScale.dim + val;
@@ -787,7 +799,7 @@ import * as d3 from 'd3-format';
                                 dim: colorScale.dim,
                                 color: colorScale(d),
                                 disabled: self._currentFilters.hasOwnProperty(key),
-                                label: d,
+                                label: format(d),
                                 value: val
                             };
                         });

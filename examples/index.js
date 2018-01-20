@@ -22,6 +22,7 @@
             'bar-size',
             'category-labels-overflow',
             'continuous-bar_facet',
+            'date-legend',
             'facets_no-layout-engine',
             'legend-flip',
             'linear-bars',
