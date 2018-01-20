@@ -171,7 +171,7 @@ class PluginsSDK {
                 var nonVal = memo[k].nullAlias;
                 var fnForm = format ?
                     (FormatterRegistry.get(format, nonVal)) :
-                    ((raw) => (raw === null) ? nonVal : String(raw));
+                    ((raw) => (raw == null) ? nonVal : String(raw));
 
                 memo[k].format = fnForm;
 
