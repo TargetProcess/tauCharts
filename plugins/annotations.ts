@@ -6,7 +6,7 @@ import {Formatter} from '../src/plugins-sdk';
 interface Annotation {
     dim: any;
     val: any;
-    text?: string;
+    text?: string | {start: string; end: string};
     color?: string;
     position?: 'front' | 'back';
     colorScaleName?: string;
@@ -15,40 +15,27 @@ interface Annotation {
 interface AxisAnnotation extends Annotation {
     dim: string;
     val: any;
-    text?: string;
-    color?: string;
-    position?: 'front' | 'back';
 }
 
 interface AreaAnnotation extends Annotation {
     dim: string;
     val: any[];
-    text?: string;
-    color?: string;
-    position?: 'front' | 'back';
 }
 
 interface LineAnnotation extends Annotation {
     dim: string[];
     val: any[][];
-    text?: string;
-    color?: string;
-    position?: 'front' | 'back';
 }
 
 interface PointAnnotation extends Annotation {
     dim: string[];
     val: any[];
-    text?: string;
-    color?: string;
-    position?: 'front' | 'back';
 }
 
 type SomeAnnotation = (AxisAnnotation | AreaAnnotation | LineAnnotation | PointAnnotation);
 
 interface AnnotationSettings {
     items: SomeAnnotation[];
-    showValue?: boolean;
     formatters?: {
         [dim: string]: Formatter;
     };
@@ -65,14 +52,20 @@ interface MetaInfo {
     primaryScale: string;
     secondaryScale: string;
     axis: 'x' | 'y';
-    text: string;
+    startText: string;
+    endText: string;
 }
 
 interface LineMetaInfo {
     xScale: string;
     yScale: string;
     points: any[][];
-    text: string;
+    startText: string;
+    endText: string;
+}
+
+function template(str: string, obj: {[prop: string]: string}) {
+    return str.replace(/\{\{\s*(.+?)\s*\}\}/g, (m, p) => obj.hasOwnProperty(p) ? obj[p] : '')
 }
 
     var utils = Taucharts.api.utils;
@@ -166,7 +159,6 @@ interface LineMetaInfo {
 
         const settings = utils.defaults(xSettings || {}, {
             items: [] as SomeAnnotation[],
-            showValue: false,
             formatters: {},
         });
         var textScaleName = 'annotation_text';
@@ -241,7 +233,15 @@ interface LineMetaInfo {
                     rghtBtm[a] = from;
                     rghtBtm[b] = boundaries[1];
 
-                    ((metaInfo.axis === 'y') ? rghtTop : rghtBtm).text = metaInfo.text;
+                    const startBound = ((metaInfo.axis === 'y') ? rghtTop : rghtBtm);
+                    const endBound = ((metaInfo.axis === 'y') ? rghtBtm : rghtTop);
+                    const format = this._getFormat(a);
+                    if (metaInfo.startText) {
+                        startBound.text = template(metaInfo.startText, {value: format(startBound[a])});
+                    }
+                    if (metaInfo.endText) {
+                        endBound.text = template(metaInfo.endText, {value: format(endBound[a])});
+                    }
 
                     return this._useSavedDataRefs([leftBtm, leftTop, rghtTop, rghtBtm], String([a, from, to]));
                 };
@@ -274,20 +274,21 @@ interface LineMetaInfo {
                     var b = secondaryScaleInfo.dim;
                     var z = '__pos__';
 
+                    const format = this._getFormat(a);
+
                     src[a] = from;
                     src[b] = boundaries[0];
                     src[z] = 'l';
-
-                    if (settings.showValue) {
-                        const format = this._getFormat(a);
-                        src.text = format(from);
+                    if (metaInfo.startText) {
+                        src.text = template(metaInfo.startText, {value: format(from)});
                     }
 
                     dst[a] = from;
                     dst[b] = boundaries[1];
                     dst[z] = 'r';
-
-                    dst.text = metaInfo.text;
+                    if (metaInfo.endText) {
+                        dst.text = template(metaInfo.endText, {value: format(from)});
+                    }
 
                     return this._useSavedDataRefs([src, dst], String(from));
                 };
@@ -321,14 +322,15 @@ interface LineMetaInfo {
 
                     const xDim = xScale.dim;
                     const yDim = yScale.dim;
+                    const formats = [xDim, yDim].map((dim) => this._getFormat(dim));
 
                     const linePoints = points.map((d, i) => {
+                        const position = i === 0 ? 'start' : i === points.length - 1 ? 'end' : null;
+                        const text = i === 0 ? metaInfo.startText : i === points.length - 1 ? metaInfo.endText : '';
                         return {
                             [xDim]: d[0],
                             [yDim]: d[1],
-                            text: ((settings.showValue && i === 0)
-                                ? this._getFormat(yDim)(d[1])
-                                : metaInfo.text)
+                            text: text ? template(text, {x: formats[0](d[0]), y: formats[1](d[1])}) : null
                         };
                     });
 
@@ -356,6 +358,7 @@ interface LineMetaInfo {
 
                 var from = noteItem.val[0];
                 var to = noteItem.val[1];
+                const text = noteItem.text;
 
                 var annotatedArea = {
                     type: 'ELEMENT.PATH',
@@ -374,9 +377,10 @@ interface LineMetaInfo {
                     transformation: [
                         {
                             type: 'dataRange',
-                            args: {
+                            args: <MetaInfo>{
                                 axis: axes[0],
-                                text: noteItem.text,
+                                startText: typeof text === 'string' ? text : text.start,
+                                endText: typeof text === 'string' ? '' : text.end,
                                 from: from,
                                 to: to,
                                 primaryScale: coordsUnit[axes[0]],
@@ -477,9 +481,10 @@ interface LineMetaInfo {
                         transformation: [
                             {
                                 type: 'dataLimit',
-                                args: {
+                                args: <MetaInfo>{
                                     from: noteItem.val,
-                                    text,
+                                    startText: typeof text === 'string' ? '' : text.start,
+                                    endText: typeof text === 'string' ? text : text.end,
                                     primaryScale: coordsUnit[axes[0]],
                                     secondaryScale: coordsUnit[axes[1]]
                                 }
@@ -494,9 +499,10 @@ interface LineMetaInfo {
                             transformation: [
                                 {
                                     type: 'lineNoteData',
-                                    args: {
+                                    args: <LineMetaInfo>{
                                         points,
-                                        text,
+                                        startText: typeof text === 'string' ? '' : text.start,
+                                        endText: typeof text === 'string' ? text : text.end,
                                         xScale: coordsUnit.x,
                                         yScale: coordsUnit.y
                                     }
