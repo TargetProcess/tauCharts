@@ -28,7 +28,10 @@ dev.spec({
                 {
                     dim: 'effort',
                     val: 100,
-                    text: 'Overflow',
+                    text: {
+                        start: '{{value}}',
+                        end: 'Overflow'
+                    },
                     color: 'red',
                     position: 'front'
                 },
@@ -41,7 +44,7 @@ dev.spec({
                 {
                     dim: 'date',
                     val: [new Date('2015-07-03'), new Date('2015-07-04')],
-                    text: 'Weekends',
+                    text: 'Weekends ({{value}})',
                     color: 'blue'
                 },
                 {
@@ -57,7 +60,10 @@ dev.spec({
                         [new Date('2015-07-01'), 50],
                         [new Date('2015-07-05'), 0],
                     ],
-                    text: 'Ideal Line',
+                    text: {
+                        start: '{{x}} / {{y}}',
+                        end: 'Ideal Line ({{x}})'
+                    },
                     color: 'black',
                     position: 'front'
                 },
