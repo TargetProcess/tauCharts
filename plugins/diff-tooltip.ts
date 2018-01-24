@@ -60,7 +60,7 @@ class DiffTooltip extends Tooltip {
 
         // Note: Sort stacked elements by color, other by Y
         const shouldSortByColor = unit.config.stack;
-        const shouldSortAsc = !(!unit.config.flip && unit.config.guide.obsoleteVerticalStackOrder);
+        const shouldSortAsc = !(!unit.config.flip && unit.config.guide.obsoleteVerticalStackOrder && unit.config.stack);
         const sortByColor = (() => {
             const ci = scaleColor.domain().slice().reduce((map, c, i) => {
                 map[c] = i;
