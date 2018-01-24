@@ -65,7 +65,7 @@ interface LineMetaInfo {
 }
 
 function template(str: string, obj: {[prop: string]: string}) {
-    return str.replace(/\{\{\s*(.+?)\s*\}\}/g, (m, p) => obj.hasOwnProperty(p) ? obj[p] : '')
+    return str.replace(/\{\{\s*(.+?)\s*\}\}/g, (m, p) => obj.hasOwnProperty(p) ? obj[p] : '');
 }
 
     var utils = Taucharts.api.utils;

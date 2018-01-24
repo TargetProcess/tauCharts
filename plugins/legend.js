@@ -337,7 +337,7 @@ import * as d3 from 'd3-format';
                 this._drawSizeLegend();
             },
 
-            // jscs:disable maximumLineLength
+            // tslint:disable max-line-length
             _containerTemplate: '<div class="tau-chart__legend"></div>',
             _template: utils.template([
                 '<div class="tau-chart__legend__wrap">',
@@ -360,10 +360,10 @@ import * as d3 from 'd3-format';
             ].join('')),
             _resetTemplate: utils.template([
                 '<div class="tau-chart__legend__reset <%=classDisabled%>">',
-                    '<div role="button" class="tau-chart__button">Reset</div>',
+                '    <div role="button" class="tau-chart__button">Reset</div>',
                 '</div>'
             ].join('')),
-            // jscs:enable maximumLineLength
+            // tslint:enable max-line-length
 
             _clearPanel: function () {
                 if (this._container) {
@@ -502,7 +502,7 @@ import * as d3 from 'd3-format';
                                         [width / 2] :
                                         labels.map(function (_, i) {
                                             var t = (i / (labels.length - 1));
-                                            return (padL * (1 - t) + (width - padR) * t);;
+                                            return (padL * (1 - t) + (width - padR) * t);
                                         })),
                                     textY: utils.range(labelsCount).map(function () {
                                         return (barSize + indent + FONT_SIZE);

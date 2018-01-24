@@ -33,7 +33,7 @@ import * as d3 from 'd3-array';
         var createFunc = function (args) {
             return function (unit) {
                 return Object.assign(unit, args);
-            }
+            };
         };
 
         var ELEMENT_TYPE = {
@@ -535,7 +535,10 @@ import * as d3 from 'd3-array';
                         key: {x: 1, y: 1},
                         units: [(cursor = (pluginsSDK
                             .unit(prevUnit.clone())))
-                            .reduce(self.createSecondaryUnitReducer(fullSpec, layer, lPad, rPad, gap, il, ir, i), cursor)
+                            .reduce(
+                                self.createSecondaryUnitReducer(fullSpec, layer, lPad, rPad, gap, il, ir, i),
+                                cursor
+                            )
                             .value()
                         ]
                     });
@@ -569,7 +572,7 @@ import * as d3 from 'd3-array';
                         {});
 
                     var minMax = d3.extent(utils.flatten(Object.keys(hashBounds)
-                        .map(function(key) {
+                        .map(function (key) {
                             return hashBounds[key];
                         })));
                     scaleNames.forEach(function (y) {
@@ -581,7 +584,7 @@ import * as d3 from 'd3-array';
                 }
             },
 
-            // jscs:disable maximumLineLength
+            // tslint:disable max-line-length
             containerTemplate: '<div class="tau-chart__trendlinepanel"></div>',
             template: utils.template([
                 '<label class="tau-chart__trendlinepanel__title tau-chart__checkbox">',
@@ -600,7 +603,7 @@ import * as d3 from 'd3-array';
                 '</select>',
                 '</div>'
             ].join('')),
-            // jscs:enable maximumLineLength
+            // tslint:enable max-line-length
 
             onRender: function () {
 
