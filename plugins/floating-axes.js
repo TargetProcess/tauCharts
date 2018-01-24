@@ -146,7 +146,7 @@ const domUtils = Taucharts.api.domUtils;
                         minXAxesY: minXAxesY,
                         maxYAxesX: maxYAxesX
                     };
-                };
+                }
 
                 var pos = getPositions();
 
@@ -219,7 +219,7 @@ const domUtils = Taucharts.api.domUtils;
                             }
                         );
                     });
-                };
+                }
 
                 var xAxes = (function extractXAxes() {
                     var axisHeight = pos.svgHeight - pos.minXAxesY + 1 + pos.scrollbarHeight;
@@ -473,15 +473,15 @@ const domUtils = Taucharts.api.domUtils;
 
     function mmin(arr) {
         return Math.min.apply(null, arr);
-    };
+    }
 
     function mmax(arr) {
         return Math.max.apply(null, arr);
-    };
+    }
 
     function translate(x, y) {
         return ('translate(' + x + ',' + y + ')');
-    };
+    }
 
     function parseTransform(transform) {
         var result = {x: 0, y: 0, r: 0};
@@ -505,7 +505,7 @@ const domUtils = Taucharts.api.domUtils;
             result.r = parseFloat(rotateStr.trim());
         }
         return result;
-    };
+    }
 
     /**
      * Returns current transform value and transform value
@@ -522,7 +522,7 @@ const domUtils = Taucharts.api.domUtils;
             translate0: currentTransform,
             translate: nextTransform
         };
-    };
+    }
 
     /**
      * Returns sum of dynamic transform of an element
@@ -544,7 +544,7 @@ const domUtils = Taucharts.api.domUtils;
             parent = parent.parentNode;
         }
         return info;
-    };
+    }
 
     function ScrollManager(_scrollContainer) {
 
@@ -622,8 +622,8 @@ const domUtils = Taucharts.api.domUtils;
             arrayOfSelections.forEach(function (s) {
                 fn.call(context, s);
             });
-        };
-    };
+        }
+    }
 
     Taucharts.api.plugins.add('floating-axes', floatingAxes);
 

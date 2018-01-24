@@ -189,7 +189,7 @@ const d3 = {
                     };
                 }
 
-                var compOrder = ['’%y', '&thinsp;%b', '%d', '%H', ':%M', ':%S'];
+                var compOrder = ['’%y', '&thinsp;%b', '%d', '%H', ':%M', ':%S'];
                 if (isDate) {
                     var formatters = getFormatters(compOrder);
                     if (formatters.comm.length < 3) {

@@ -92,7 +92,7 @@ import Taucharts from 'taucharts';
                 this._drawFillLegend();
             },
 
-            // jscs:disable maximumLineLength
+            // tslint:disable max-line-length
             _containerTemplate: '<div class="tau-chart__legend"></div>',
             _template: utils.template('<div class="tau-chart__legend"><div class="tau-chart__legend__title"><%=name%></div><%=items%></div>'),
             _itemTemplate: utils.template([
@@ -111,7 +111,7 @@ import Taucharts from 'taucharts';
                 '</div>',
                 '</div>'
             ].join('')),
-            // jscs:enable maximumLineLength
+            // tslint:enable max-line-length
 
             _clearPanel: function () {
                 if (this._container) {

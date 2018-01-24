@@ -51,12 +51,12 @@ import Taucharts from 'taucharts';
             template: utils.template(
                 [
                     '<div class="tau-chart__chartsettingspanel">',
-                        '<div>',
-                            '<span>View Mode:&nbsp;</span>',
-                            '<select class="i-role-fit-model tau-chart__select">',
-                            '<%= modes %> />',
-                            '</select>',
-                        '</div>',
+                    '    <div>',
+                    '        <span>View Mode:&nbsp;</span>',
+                    '        <select class="i-role-fit-model tau-chart__select">',
+                    '        <%= modes %> />',
+                    '        </select>',
+                    '    </div>',
                     '</div>'
                 ].join(''))
         };

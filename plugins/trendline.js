@@ -11,8 +11,9 @@ import * as d3 from 'd3-selection';
             for (i = 0; i < n; i++) {
                 maxrow = i;
                 for (j = i + 1; j < n; j++) {
-                    if (Math.abs(a[i][j]) > Math.abs(a[i][maxrow]))
+                    if (Math.abs(a[i][j]) > Math.abs(a[i][maxrow])) {
                         maxrow = j;
+                    }
                 }
                 for (k = i; k < n + 1; k++) {
                     tmp = a[k][i];
@@ -27,8 +28,9 @@ import * as d3 from 'd3-selection';
             }
             for (j = n - 1; j >= 0; j--) {
                 tmp = 0;
-                for (k = j + 1; k < n; k++)
+                for (k = j + 1; k < n; k++) {
                     tmp += a[k][j] * x[k];
+                }
                 x[j] = (a[n][j] - tmp) / a[j][j];
             }
             return (x);
@@ -55,7 +57,6 @@ import * as d3 from 'd3-selection';
                 gradient = isNaN(gradient) ? 0 : gradient;
 
                 var intercept = (sum[1] / n) - (gradient * sum[0]) / n;
-                //  var correlation = (n * sum[3] - sum[0] * sum[1]) / Math.sqrt((n * sum[2] - sum[0] * sum[0]) * (n * sum[4] - sum[1] * sum[1]));
 
                 for (var i = 0, len = data.length; i < len; i++) {
                     var coordinate = [data[i][0], data[i][0] * gradient + intercept];
@@ -160,7 +161,7 @@ import * as d3 from 'd3-selection';
                     lhs.push(a), a = 0;
                     var c = [];
                     for (var j = 0; j < k; j++) {
-                        for (var l = 0, len = data.length; l < len; l++) {
+                        for (l = 0, len = data.length; l < len; l++) {
                             if (data[l][1]) {
                                 b += Math.pow(data[l][0], i + j);
                             }
@@ -173,7 +174,7 @@ import * as d3 from 'd3-selection';
 
                 var equation = gaussianElimination(rhs, k);
 
-                for (var i = 0, len = data.length; i < len; i++) {
+                for (i = 0, len = data.length; i < len; i++) {
                     var answer = 0;
                     for (var w = 0; w < equation.length; w++) {
                         answer += equation[w] * Math.pow(data[i][0], w);
@@ -183,7 +184,7 @@ import * as d3 from 'd3-selection';
 
                 var string = 'y = ';
 
-                for (var i = equation.length - 1; i >= 0; i--) {
+                for (i = equation.length - 1; i >= 0; i--) {
                     if (i > 1) string += Math.round(equation[i] * 100) / 100 + 'x^' + i + ' + ';
                     else if (i == 1) string += Math.round(equation[i] * 100) / 100 + 'x' + ' + ';
                     else string += Math.round(equation[i] * 100) / 100;
@@ -199,23 +200,22 @@ import * as d3 from 'd3-selection';
                     if (data[i][1]) {
                         lastvalue = data[i][1];
                         results.push([data[i][0], data[i][1]]);
-                    }
-                    else {
+                    } else {
                         results.push([data[i][0], lastvalue]);
                     }
                 }
 
-                return {equation: [lastvalue], points: results, string: "" + lastvalue};
+                return {equation: [lastvalue], points: results, string: '' + lastvalue};
             },
 
             loess: function (data) {
-                //adapted from the LoessInterpolator in org.apache.commons.math
+                // adapted from the LoessInterpolator in org.apache.commons.math
                 function loess_pairs(pairs, bandwidth) {
                     var xval = pairs.map(function (pair) {
-                        return pair[0]
+                        return pair[0];
                     });
                     var yval = pairs.map(function (pair) {
-                        return pair[1]
+                        return pair[1];
                     });
                     var res = loess(xval, yval, bandwidth);
                     return xval.map(function (x, i) {
@@ -247,10 +247,11 @@ import * as d3 from 'd3-selection';
                         }
 
                         var edge;
-                        if (xval[i] - xval[left] > xval[right] - xval[i])
+                        if (xval[i] - xval[left] > xval[right] - xval[i]) {
                             edge = left;
-                        else
+                        } else {
                             edge = right;
+                        }
 
                         var denom = Math.abs(1.0 / (xval[edge] - x));
 
@@ -283,10 +284,11 @@ import * as d3 from 'd3-selection';
                         var meanXSquared = sumXSquared / sumWeights;
 
                         var beta;
-                        if (meanXSquared == meanX * meanX)
+                        if (meanXSquared == meanX * meanX) {
                             beta = 0;
-                        else
+                        } else {
                             beta = (meanXY - meanX * meanY) / (meanXSquared - meanX * meanX);
+                        }
 
                         var alpha = meanY - beta * meanX;
 
@@ -462,7 +464,7 @@ import * as d3 from 'd3-selection';
                         return [ix, iy, ig];
                     });
 
-                    var groups = utils.groupBy(src, function(x) {
+                    var groups = utils.groupBy(src, function (x) {
                         return x['2'];
                     });
                     return Object.keys(groups).reduce(

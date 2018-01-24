@@ -47,11 +47,11 @@
   },
   "scripts": {
     "start": "gulp watch",
-    "build": "gulp build",
-    "test": "npm run lint && gulp build && karma start",
-    "lint": "tslint src/**/*.ts src/**/*.js plugins/**/*.ts gulpfile.js tasks/**/*.js --exclude src/addons/**/*.*",
+    "build": "npm run lint && gulp build",
+    "test": "npm run build && karma start",
+    "lint": "tslint src/**/*.ts src/**/*.js plugins/**/*.ts plugins/**/*.js gulpfile.js tasks/**/*.js --exclude src/addons/**/*.*",
     "devtest": "gulp debug-css && karma start --taucharts-debug",
-    "prepublish": "bower install && gulp build"
+    "prepublish": "bower install && npm run build"
   },
   "devDependencies": {
     "@alexlur/rollup-plugin-typescript": "^1.0.4",

@@ -777,7 +777,10 @@ const MSG_TITLE = 'Taucharts Export Plug-in:';
                     this._select(type, chart);
                 }.bind(this));
                 const deprecatedExportHandler = chart.on('exportTo', function (chart, type) {
-                    Taucharts.api.globalSettings.log([MSG_TITLE, '`exportTo` event is deprecated, use `export-to` instead.'], 'warn');
+                    Taucharts.api.globalSettings.log(
+                        [MSG_TITLE, '`exportTo` event is deprecated, use `export-to` instead.'],
+                        'warn'
+                    );
                     this._select(type, chart);
                 }.bind(this));
                 this._onDestroy(function () {
