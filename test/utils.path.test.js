@@ -41,14 +41,14 @@ import testUtils from './utils/utils';
             var curve = getLineInterpolator('smooth')(data);
             expect(round(curve)).to.deep.equal([
                 {x: 0, y: 270, size: 30, id: 1},
-                {x: 20, y: 105},
-                {x: 40, y: 15},
+                {x: 20, y: 117},
+                {x: 40, y: 19},
                 {x: 60, y: 0, size: 60, id: 2},
-                {x: 70, y: -7},
-                {x: 80, y: 4},
+                {x: 70, y: -9},
+                {x: 80, y: 2},
                 {x: 90, y: 30, size: 30, id: 3},
-                {x: 110, y: 82},
-                {x: 130, y: 192},
+                {x: 110, y: 86},
+                {x: 130, y: 202},
                 {x: 150, y: 360, size: 60, id: 4}
             ]);
 
@@ -59,10 +59,10 @@ import testUtils from './utils/utils';
                 {x: 40, y: 0},
                 {x: 60, y: 0, size: 60, id: 2},
                 {x: 70, y: 0},
-                {x: 80, y: 7},
+                {x: 80, y: 8},
                 {x: 90, y: 30, size: 30, id: 3},
                 {x: 110, y: 76},
-                {x: 130, y: 186},
+                {x: 130, y: 197},
                 {x: 150, y: 360, size: 60, id: 4}
             ]);
 

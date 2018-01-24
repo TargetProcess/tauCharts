@@ -39,6 +39,7 @@ function getCubicSpline(points: Point[], limited: boolean): Point[] {
 
     var curve: Point[] = new Array((points.length - 1) * 3 + 1);
     var c0, p1, c3, c1x, c1y, c2x, c2y, qx, qy, qt, tan, dx1, dx2, kl;
+    const last = curve.length - 1;
     for (var i = 0; i < points.length; i++) {
         curve[i * 3] = points[i];
         if (i > 0) {
@@ -48,6 +49,30 @@ function getCubicSpline(points: Point[], limited: boolean): Point[] {
     }
     var result = curve.slice(0);
     for (var j = 0; j < 3; j++) {
+        curve[1] = {
+            x: interpolate(curve[0].x, curve[3].x, 1 / 3),
+            y: interpolate(curve[0].y, interpolate(
+                curve[3].y,
+                curve[2].y,
+                3 / 2
+            ), 2 / 3)
+        };
+        curve[last - 1] = {
+            x: interpolate(curve[last].x, curve[last - 3].x, 1 / 3),
+            y: interpolate(curve[last].y, interpolate(
+                curve[last - 3].y,
+                curve[last - 2].y,
+                3 / 2
+            ), 2 / 3)
+        };
+        if (limited) {
+            if ((curve[1].y - curve[0].y) * (curve[3].y - curve[2].y) < 0) {
+                curve[1] = {x: curve[1].x, y: curve[0].y};
+            }
+            if ((curve[last - 1].y - curve[last].y) * (curve[last - 3].y - curve[last - 2].y) < 0) {
+                curve[last - 1] = {x: curve[last - 1].x, y: curve[last].y};
+            }
+        }
         for (i = 6; i < result.length; i += 3) {
             c0 = result[i - 5];
             p1 = result[i - 3];
@@ -93,23 +118,6 @@ function getCubicSpline(points: Point[], limited: boolean): Point[] {
             curve[i - 4] = {x: c1x, y: c1y};
             curve[i - 2] = {x: c2x, y: c2y};
         }
-        curve[1] = {
-            x: interpolate(curve[0].x, curve[3].x, 1 / 3),
-            y: interpolate(curve[0].y, interpolate(
-                curve[3].y,
-                curve[2].y,
-                3 / 2
-            ), 2 / 3)
-        };
-        var last = curve.length - 1;
-        curve[last - 1] = {
-            x: interpolate(curve[last].x, curve[last - 3].x, 1 / 3),
-            y: interpolate(curve[last].y, interpolate(
-                curve[last - 3].y,
-                curve[last - 2].y,
-                3 / 2
-            ), 2 / 3)
-        };
         result = curve.slice(0);
     }
 
