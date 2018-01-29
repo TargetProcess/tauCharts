@@ -12,7 +12,7 @@ import {unitsRegistry} from '../units-registry';
 import {scalesRegistry} from '../scales-registry';
 import {ScalesFactory} from '../scales-factory';
 import {DataProcessor} from '../data-processor';
-import {getLayout, ChartLayout} from '../utils/layuot-template';
+import {getLayout, ChartLayout} from '../utils/layout-template';
 import {SpecConverter} from '../spec-converter';
 import {SpecTransformAutoLayout} from '../spec-transform-auto-layout';
 
@@ -503,7 +503,8 @@ export class Plot extends Emitter {
         this._resetProgressLayout();
         this.disablePointerEvents();
 
-        var liveSpec = this._createLiveSpec(target, xSize);
+        this._insertLayout(target, xSize);
+        const liveSpec = this._createLiveSpec();
         if (!liveSpec) {
             this._svg = null;
             this._layout.content.innerHTML = this._emptyContainer;
@@ -519,7 +520,7 @@ export class Plot extends Emitter {
         taskRunner.run();
     }
 
-    _createLiveSpec(target: HTMLElement | string, xSize?: Size) {
+    _insertLayout(target: HTMLElement | string, xSize?: Size) {
         this._target = target;
         this._defaultSize = Object.assign({}, xSize);
 
@@ -554,7 +555,9 @@ export class Plot extends Emitter {
         }
 
         this.configGPL.settings.size = size;
+    }
 
+    _createLiveSpec() {
         this._liveSpec = utils.clone(utils.omit(this.configGPL, 'plugins'));
         this._liveSpec.sources = this.getDataSources();
         this._liveSpec.settings = this.configGPL.settings;
