@@ -4,6 +4,7 @@ Taucharts [![Build Status](https://travis-ci.org/TargetProcess/tauCharts.png?bra
 
 ![NPM downloads](https://nodei.co/npm-dl/taucharts.png?months=6)
 
+## This branch refers to Taucharts **version 1**
 
 Taucharts is a [data-focused JavaScript charting library](http://blog.taucharts.com/taucharts-data-focused-charting-library/) based on D3 and designed with passion.
 
