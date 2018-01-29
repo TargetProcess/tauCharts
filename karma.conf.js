@@ -29,13 +29,17 @@ module.exports = function (config) {
         preprocessors: {'test/tests-main.js': ['webpack', 'sourcemap']},
         reporters: (DEBUG ?
             ['spec'] :
-            ['coverage', 'spec', 'coveralls', 'remap-coverage']),
+            ['coverage', 'spec', 'remap-coverage', 'coveralls']),
         coverageReporter: (DEBUG ? null : {
             type: 'in-memory'
         }),
-        remapCoverageReporter: (DEBUG ? null : {
-            html: './coverage/'
-        }),
+        remapCoverageReporter: (
+            DEBUG
+                ? null
+                : process.env.TRAVIS
+                    ? {lcovonly: './coverage/lcov.info'}
+                    : {html: './coverage/'}
+        ),
 
         webpack: getTestWebpackConfig(DEBUG),
         webpackMiddleware: {
