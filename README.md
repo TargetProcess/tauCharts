@@ -256,6 +256,8 @@ npm run build
 ```
 This command creates development and production assemblies in a *[./dist]* folder.
 
+See the [Developer Guide](DEVELOPER-GUIDE.md) for more info.
+
 ## Taucharts examples / usage reviews
 
 [R Wrapper](http://www.buildingwidgets.com/blog/2015/8/5/week-31-taucharts)
