@@ -1,11 +1,14 @@
 import {CSS_PREFIX} from '../const';
 import {GrammarRegistry} from '../grammar-registry';
 import {LayerLabels} from './decorators/layer-labels';
-import {d3_animationInterceptor} from '../utils/d3-decorators';
-import {utils} from '../utils/utils';
-import {utilsDom} from '../utils/utils-dom';
-import {utilsDraw} from '../utils/utils-draw';
-import d3 from 'd3';
+import {
+    d3_animationInterceptor,
+    d3_setClasses as classes
+} from '../utils/d3-decorators';
+import * as utils from '../utils/utils';
+import * as utilsDom from '../utils/utils-dom';
+import * as utilsDraw from '../utils/utils-draw';
+import * as d3 from 'd3-selection';
 
 const d3Data = ((node) => d3.select(node).data()[0]);
 
@@ -75,6 +78,7 @@ const Interval = {
 
         config.transformRules = [
             config.flip && GrammarRegistry.get('flip'),
+            config.guide.obsoleteVerticalStackOrder && GrammarRegistry.get('obsoleteVerticalStackOrder'),
             config.stack && GrammarRegistry.get('stack'),
             enableColorPositioning && GrammarRegistry.get('positioningByColor')
         ]
@@ -181,15 +185,16 @@ const Interval = {
             config.guide.animationSpeed,
             null,
             updateAttrs
-        )).attr('class', barClass)
-            .attr('data-zero', screenModel[`${barY}0`]);
-        bars.enter()
+        ));
+        const merged = bars.enter()
             .append('rect')
             .call(createUpdateFunc(
                 config.guide.animationSpeed,
                 {[barY]: screenModel[`${barY}0`], [barH]: 0},
                 updateAttrs
-            )).attr('class', barClass)
+            ))
+            .merge(bars)
+            .attr('class', barClass)
             .attr('data-zero', screenModel[`${barY}0`]);
 
         node.subscribe(new LayerLabels(screenModel.model, screenModel.model.flip, config.guide.label, options)
@@ -252,9 +257,9 @@ const Interval = {
 
         this._sortElements(this._typeSorter, this._barsSorter);
 
-        node.subscribe(bars);
+        node.subscribe(merged);
 
-        this._boundsInfo = this._getBoundsInfo(bars[0]);
+        this._boundsInfo = this._getBoundsInfo(merged.nodes());
     },
 
     buildModel(screenModel, {prettify, minBarH, minBarW, baseCssClass}) {
@@ -470,8 +475,8 @@ const Interval = {
 
     highlight(filter) {
 
-        const x = 'graphical-report__highlighted';
-        const _ = 'graphical-report__dimmed';
+        const x = 'tau-chart__highlighted';
+        const _ = 'tau-chart__dimmed';
 
         const container = this.node().config.options.container;
         const classed = {
@@ -481,11 +486,11 @@ const Interval = {
 
         container
             .selectAll('.bar')
-            .classed(classed);
+            .call(classes(classed));
 
         container
             .selectAll('.i-role-label')
-            .classed(classed);
+            .call(classes(classed));
 
         this._sortElements(
             (a, b) => (filter(d3Data(a)) - filter(d3Data(b))),

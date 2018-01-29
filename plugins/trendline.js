@@ -1,15 +1,6 @@
-(function (factory) {
-    if (typeof define === 'function' && define.amd) {
-        define(['taucharts'], function (tauPlugins) {
-            return factory(tauPlugins);
-        });
-    } else if (typeof module === 'object' && module.exports) {
-        var tauPlugins = require('taucharts');
-        module.exports = factory(tauPlugins);
-    } else {
-        factory(this.tauCharts);
-    }
-})(function (tauCharts) {
+import Taucharts from 'taucharts';
+import * as d3 from 'd3-selection';
+
     // jscs:disable
     var regressionsHub = (function () {
 
@@ -20,8 +11,9 @@
             for (i = 0; i < n; i++) {
                 maxrow = i;
                 for (j = i + 1; j < n; j++) {
-                    if (Math.abs(a[i][j]) > Math.abs(a[i][maxrow]))
+                    if (Math.abs(a[i][j]) > Math.abs(a[i][maxrow])) {
                         maxrow = j;
+                    }
                 }
                 for (k = i; k < n + 1; k++) {
                     tmp = a[k][i];
@@ -36,8 +28,9 @@
             }
             for (j = n - 1; j >= 0; j--) {
                 tmp = 0;
-                for (k = j + 1; k < n; k++)
+                for (k = j + 1; k < n; k++) {
                     tmp += a[k][j] * x[k];
+                }
                 x[j] = (a[n][j] - tmp) / a[j][j];
             }
             return (x);
@@ -64,7 +57,6 @@
                 gradient = isNaN(gradient) ? 0 : gradient;
 
                 var intercept = (sum[1] / n) - (gradient * sum[0]) / n;
-                //  var correlation = (n * sum[3] - sum[0] * sum[1]) / Math.sqrt((n * sum[2] - sum[0] * sum[0]) * (n * sum[4] - sum[1] * sum[1]));
 
                 for (var i = 0, len = data.length; i < len; i++) {
                     var coordinate = [data[i][0], data[i][0] * gradient + intercept];
@@ -169,7 +161,7 @@
                     lhs.push(a), a = 0;
                     var c = [];
                     for (var j = 0; j < k; j++) {
-                        for (var l = 0, len = data.length; l < len; l++) {
+                        for (l = 0, len = data.length; l < len; l++) {
                             if (data[l][1]) {
                                 b += Math.pow(data[l][0], i + j);
                             }
@@ -182,7 +174,7 @@
 
                 var equation = gaussianElimination(rhs, k);
 
-                for (var i = 0, len = data.length; i < len; i++) {
+                for (i = 0, len = data.length; i < len; i++) {
                     var answer = 0;
                     for (var w = 0; w < equation.length; w++) {
                         answer += equation[w] * Math.pow(data[i][0], w);
@@ -192,7 +184,7 @@
 
                 var string = 'y = ';
 
-                for (var i = equation.length - 1; i >= 0; i--) {
+                for (i = equation.length - 1; i >= 0; i--) {
                     if (i > 1) string += Math.round(equation[i] * 100) / 100 + 'x^' + i + ' + ';
                     else if (i == 1) string += Math.round(equation[i] * 100) / 100 + 'x' + ' + ';
                     else string += Math.round(equation[i] * 100) / 100;
@@ -208,23 +200,22 @@
                     if (data[i][1]) {
                         lastvalue = data[i][1];
                         results.push([data[i][0], data[i][1]]);
-                    }
-                    else {
+                    } else {
                         results.push([data[i][0], lastvalue]);
                     }
                 }
 
-                return {equation: [lastvalue], points: results, string: "" + lastvalue};
+                return {equation: [lastvalue], points: results, string: '' + lastvalue};
             },
 
             loess: function (data) {
-                //adapted from the LoessInterpolator in org.apache.commons.math
+                // adapted from the LoessInterpolator in org.apache.commons.math
                 function loess_pairs(pairs, bandwidth) {
                     var xval = pairs.map(function (pair) {
-                        return pair[0]
+                        return pair[0];
                     });
                     var yval = pairs.map(function (pair) {
-                        return pair[1]
+                        return pair[1];
                     });
                     var res = loess(xval, yval, bandwidth);
                     return xval.map(function (x, i) {
@@ -256,10 +247,11 @@
                         }
 
                         var edge;
-                        if (xval[i] - xval[left] > xval[right] - xval[i])
+                        if (xval[i] - xval[left] > xval[right] - xval[i]) {
                             edge = left;
-                        else
+                        } else {
                             edge = right;
+                        }
 
                         var denom = Math.abs(1.0 / (xval[edge] - x));
 
@@ -292,10 +284,11 @@
                         var meanXSquared = sumXSquared / sumWeights;
 
                         var beta;
-                        if (meanXSquared == meanX * meanX)
+                        if (meanXSquared == meanX * meanX) {
                             beta = 0;
-                        else
+                        } else {
                             beta = (meanXY - meanX * meanY) / (meanXSquared - meanX * meanX);
+                        }
 
                         var alpha = meanY - beta * meanX;
 
@@ -320,8 +313,7 @@
         });
     }());
     // jscs:enable
-    var utils = tauCharts.api.utils;
-    var d3 = tauCharts.api.d3;
+    var utils = Taucharts.api.utils;
 
     function trendline(xSettings) {
 
@@ -435,7 +427,7 @@
                     return;
                 }
 
-                var periodGenerator = tauCharts.api.tickPeriod;
+                var periodGenerator = Taucharts.api.tickPeriod;
                 var createPeriodCaster = function (period) {
                     var gen = periodGenerator.get(period, {utc: specRef.settings.utcTime});
                     return function (x) {
@@ -450,8 +442,8 @@
                     var y = props.y.dim;
                     var g = props.g.dim;
 
-                    var isXPeriod = (props.x.type === 'period' && props.x.period);
-                    var isYPeriod = (props.y.type === 'period' && props.y.period);
+                    const isXPeriod = Boolean(props.x.period);
+                    const isYPeriod = Boolean(props.y.period);
 
                     var xMapper = isXPeriod ?
                         (createPeriodCaster(props.x.period)) :
@@ -472,7 +464,7 @@
                         return [ix, iy, ig];
                     });
 
-                    var groups = utils.groupBy(src, function(x) {
+                    var groups = utils.groupBy(src, function (x) {
                         return x['2'];
                     });
                     return Object.keys(groups).reduce(
@@ -539,8 +531,10 @@
                         trend.guide = utils.defaults(basicGuide, trend.guide || {});
                         trend.guide.interpolate = 'linear';
                         trend.guide.showAnchors = 'never';
-                        trend.guide.cssClass      = 'graphical-report__trendline';
-                        trend.guide.widthCssClass = 'graphical-report__line-width-1';
+                        trend.guide.cssClass      = 'tau-chart__trendline';
+                        trend.guide.widthCssClass = 'tau-chart__line-width-1';
+                        trend.guide.x = trend.guide.x || {};
+                        trend.guide.x.fillGaps = false;
                         delete trend.guide.label;
                         delete trend.label;
 
@@ -549,23 +543,23 @@
             },
 
             // jscs:disable maximumLineLength
-            containerTemplate: '<div class="graphical-report__trendlinepanel"></div>',
+            containerTemplate: '<div class="tau-chart__trendlinepanel"></div>',
             template: utils.template([
-                '<label class="graphical-report__trendlinepanel__title graphical-report__checkbox">',
-                '<input type="checkbox" class="graphical-report__checkbox__input i-role-show-trend" <%= showTrend %> />',
-                '<span class="graphical-report__checkbox__icon"></span>',
-                '<span class="graphical-report__checkbox__text">',
+                '<label class="tau-chart__trendlinepanel__title tau-chart__checkbox">',
+                '<input type="checkbox" class="tau-chart__checkbox__input i-role-show-trend" <%= showTrend %> />',
+                '<span class="tau-chart__checkbox__icon"></span>',
+                '<span class="tau-chart__checkbox__text">',
                 '<%= title %>',
                 '</span>',
                 '</label>',
 
                 '<div>',
-                '<select class="i-role-change-model graphical-report__select graphical-report__trendlinepanel__control">',
+                '<select class="i-role-change-model tau-chart__select tau-chart__trendlinepanel__control">',
                 '<%= models %>',
                 '</select>',
                 '</div>',
 
-                '<div class="graphical-report__trendlinepanel__error-message"><%= error %></div>'
+                '<div class="tau-chart__trendlinepanel__error-message"><%= error %></div>'
             ].join('')),
             // jscs:enable maximumLineLength
 
@@ -588,14 +582,14 @@
                                 .select(this)
                                 .classed({
                                     active: isActive,
-                                    'graphical-report__line-width-1': !isActive,
-                                    'graphical-report__line-width-3': isActive
+                                    'tau-chart__line-width-1': !isActive,
+                                    'tau-chart__line-width-3': isActive
                                 });
                         };
                     };
 
                     var canv = d3.select(chart.getSVG());
-                    canv.selectAll('.graphical-report__trendline')
+                    canv.selectAll('.tau-chart__trendline')
                         .on('mouseenter', handleMouse(true))
                         .on('mouseleave', handleMouse(false));
                 }
@@ -603,7 +597,6 @@
         };
     }
 
-    tauCharts.api.plugins.add('trendline', trendline);
+    Taucharts.api.plugins.add('trendline', trendline);
 
-    return trendline;
-});
+export default trendline;

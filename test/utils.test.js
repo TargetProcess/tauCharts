@@ -1,11 +1,17 @@
-define(function (require) {
-    var expect = require('chai').expect;
-    var assert = require('chai').assert;
-    var utils = require('src/utils/utils').utils;
-    var drawUtils = require('src/utils/utils-draw').utilsDraw;
-    var domUtils = require('src/utils/utils-dom').utilsDom;
-    var d3 = require('d3');
-    var d3_decorator_avoidLabelsCollisions = require('src/utils/d3-decorators').d3_decorator_avoidLabelsCollisions;
+import {assert, expect} from 'chai';
+import * as d3Axis from 'd3-axis';
+import * as d3Scale from 'd3-scale';
+import * as d3Selection from 'd3-selection';
+const d3 = {
+    ...d3Axis,
+    ...d3Scale,
+    ...d3Selection,
+};
+import * as utils from '../src/utils/utils';
+import * as drawUtils from '../src/utils/utils-draw';
+import * as domUtils from '../src/utils/utils-dom';
+import * as d3 from 'd3-selection';
+import {avoidTickTextCollision} from '../src/utils/d3-decorators';
 
     var check = function (samples) {
         samples.forEach(function (s) {
@@ -248,7 +254,7 @@ define(function (require) {
             div.parentNode.removeChild(div);
         });
 
-        it('should support d3_decorator_avoidLabelsCollisions method', function() {
+        it('should support `avoidTickTextCollision` method', function() {
 
             var domain = [
                 'Too long name for the ordinal axis 0',
@@ -257,12 +263,10 @@ define(function (require) {
                 'Too long name for the ordinal axis 4'
             ];
 
-            var scale = d3.scale.ordinal().domain(domain).rangePoints([0, 100], 1);
+            var scale = d3.scalePoint().domain(domain).range([0, 100]).padding(0.5);
 
-            var axis = d3.svg
-                .axis()
-                .scale(scale)
-                .orient('bottom');
+            var axis = d3.axisBottom()
+                .scale(scale);
 
             var d3Axis = svgNode.append('g').call(axis);
 
@@ -273,10 +277,10 @@ define(function (require) {
                 var d3Tick = d3.select(this);
                 actBefore.push(d3Tick.selectAll('text').attr('y'));
             });
-            expect(ticks[0].length).to.equal(domain.length, 'Ticks created');
+            expect(ticks.size()).to.equal(domain.length, 'Ticks created');
             expect(actBefore).to.deep.equal(['9', '9', '9', '9'], 'text y before decorator');
 
-            d3_decorator_avoidLabelsCollisions(d3Axis, true, scale.domain());
+            avoidTickTextCollision(ticks, true);
 
             var actAfter = [];
             var lineAfter = [];
@@ -289,7 +293,7 @@ define(function (require) {
                     lineRef.attr('y2')
                 ]);
             });
-            expect(ticks[0].length).to.equal(domain.length, 'Ticks created');
+            expect(ticks.size()).to.equal(domain.length, 'Ticks created');
             expect(actAfter).to.deep.equal([
                 'translate(0,-11) rotate(270)',
                 'translate(0,0) rotate(0)',
@@ -355,4 +359,3 @@ define(function (require) {
             expect(classes).to.equal('x y a b');
         });
     });
-});

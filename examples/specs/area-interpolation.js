@@ -1,4 +1,7 @@
 dev.spec({
+
+    description: 'Smooth stacked area',
+
     type: 'stacked-area',
     x: 'date',
     y: 'effort',
@@ -6,6 +9,9 @@ dev.spec({
     guide: {
         interpolate: 'smooth'
     },
+    plugins: [
+        Taucharts.api.plugins.get('tooltip')()
+    ],
     data: [
         {team: 'Alpha', date: '2015-07-15', effort: 400, phase: 'dev'},
         {team: 'Alpha', date: '2015-07-16', effort: 200, phase: 'dev'},

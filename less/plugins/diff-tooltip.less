@@ -1,0 +1,205 @@
+@import "../variable";
+@diff-tooltip_positive: #4ca383;
+@diff-tooltip_negative: #df6772;
+@diff-tooltip_row-bg: rgba(241, 233, 255, 0.5);
+@diff-tooltip_row-border: #877aa1;
+@interval-highlight_fill: #c4b3e6;
+@interval-highlight_stroke: #b8aecb;
+
+@diff-tooltip_overflow: 15px; // Allows showing updown out of content
+
+.diff-tooltip {
+
+    &__table {
+        border-top: 1px solid fade(@font-color, 20%);
+        margin-top: 5px;
+        padding-top: 5px;
+        width: ~"calc(100% + @{diff-tooltip_overflow})";
+    }
+
+    &__header {
+        align-items: stretch;
+        display: flex;
+        font-weight: 600;
+        justify-content: space-between;
+        padding: 2px 0px;
+        // padding-right: is set dynamically;
+        position: relative;
+
+        &__text {
+            align-items: center;
+            display: inline-flex;
+            flex: 1 1 auto;
+            justify-content: flex-start;
+            max-width: 120px;
+        }
+
+        &__value {
+            align-items: center;
+            display: inline-flex;
+            flex: 1 1 auto;
+            justify-content: flex-end;
+            margin-right: @diff-tooltip_overflow;
+            max-width: 120px;
+            padding-left: 10px;
+            text-align: right;
+        }
+
+        &__updown {
+            align-items: center;
+            display: inline-flex;
+            flex: 1 1 auto;
+            font-size: 75%;
+            height: 100%;
+            justify-content: flex-start;
+            padding-left: 2px;
+            position: absolute;
+            right: 0;
+            visibility: hidden; // Hide up/down header
+        }
+    }
+
+    &__body {
+        max-height: 250px;
+        overflow: hidden;
+        padding: 1px; // Fix to make highlighted border visible
+        // padding-right: is set dynamically;
+        position: relative;
+
+        &__content {
+            padding-bottom: 1px; // Fix to make last highlighted border visible
+        }
+
+        &_overflow-top::before,
+        &_overflow-bottom::after {
+            align-items: center;
+            color: fade(@font-color, 70%);
+            content: "...";
+            display: flex;
+            flex-direction: column;
+            height: 26px;
+            left: 0;
+            position: absolute;
+            width: 100%;
+            z-index: 2;
+        }
+
+        &_overflow-top::before {
+            background: linear-gradient(to bottom, @bg-color, fade(@bg-color, 0%));
+            justify-content: flex-start;
+            top: 0;
+        }
+
+        &_overflow-bottom::after {
+            background: linear-gradient(to top, @bg-color, fade(@bg-color, 0%));
+            justify-content: flex-end;
+            bottom: 0;
+        }
+    }
+
+    &__item {
+        display: flex;
+        justify-content: space-between;
+        margin-right: @diff-tooltip_overflow;
+        min-width: 100px;
+        position: relative;
+
+        &_highlighted {
+            background-color: @diff-tooltip_row-bg;
+            box-shadow: 0 0 0 1px @diff-tooltip_row-border;
+            z-index: 1;
+        }
+
+        &__bg {
+            align-items: center;
+            display: inline-flex;
+            height: 100%;
+            justify-content: center;
+            min-width: 3px;
+            opacity: 0.6;
+            position: absolute;
+            z-index: 0;
+        }
+
+        &__text {
+            flex: 1 1 auto;
+            overflow: hidden;
+            padding: 2px 4px;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            width: 100%;
+            z-index: 1;
+        }
+
+        &__value {
+            flex: none;
+            padding: 2px 4px 2px 30px;
+            z-index: 1;
+        }
+
+        &__updown {
+            align-items: center;
+            display: inline-flex;
+            flex: 4;
+            justify-content: flex-start;
+            left: 100%;
+            height: 100%;
+            padding: 0 4px 0 4px;
+            position: absolute;
+
+            &_positive {
+                color: @diff-tooltip_positive;
+            }
+
+            &_negative {
+                color: @diff-tooltip_negative;
+            }
+        }
+    }
+
+    &__field {
+        &__updown {
+            &_positive {
+                color: @diff-tooltip_positive;
+            }
+
+            &_negative {
+                color: @diff-tooltip_negative;
+            }
+        }
+    }
+}
+
+.interval-highlight {
+    &__range {
+        shape-rendering: crispEdges;
+    }
+    &__range-start {
+        shape-rendering: crispEdges;
+        stroke: @interval-highlight_stroke;
+        stroke-dasharray: 2 1;
+    }
+    &__range-end {
+        shape-rendering: crispEdges;
+        stroke: @interval-highlight_stroke;
+    }
+    &__gradient-start {
+        stop-color: @interval-highlight_fill;
+        stop-opacity: 0.02;
+    }
+    &__gradient-end {
+        stop-color: @interval-highlight_fill;
+        stop-opacity: 0.2;
+    }
+}
+
+.generate-diff-tooltip-colors(@n; @i: 1) when (@i =< @n) {
+
+    .diff-tooltip__item__bg.color@{n}-@{i} {
+        background-color: extract(@category-colors, @i);
+    }
+
+    .generate-diff-tooltip-colors(@n; (@i + 1));
+}
+
+.generate-diff-tooltip-colors(@list_category-colors);

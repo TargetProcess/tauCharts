@@ -1,8 +1,8 @@
-define(function (require) {
-    var expect = require('chai').expect;
-    var schemes = require('schemes');
-    var tauChart = require('src/tau.charts');
-    var testUtils = require('testUtils');
+import {expect} from 'chai';
+import schemes from './utils/schemes';
+import tauChart from '../src/tau.charts';
+import testUtils from './utils/utils';
+import * as d3 from 'd3-selection';
 
     describe('Parallel chart', function () {
 
@@ -63,8 +63,7 @@ define(function (require) {
             var svg = d3.select(chart.getSVG());
 
             var elems = svg.selectAll('.foreground');
-            expect(elems.length).to.equal(1);
-            expect(elems[0].length).to.equal(3);
+            expect(elems.size()).to.equal(3);
         });
 
         it('should support highlight event', function () {
@@ -95,9 +94,8 @@ define(function (require) {
             var svg = d3.select(chart.getSVG());
 
             var elems = svg.selectAll('.foreground');
-            expect(elems.length).to.equal(1);
-            expect(elems[0].length).to.equal(3);
-            expect(elems[0]
+            expect(elems.size()).to.equal(3);
+            expect(elems.nodes()
                 .filter(function(n) {
                     return d3.select(n).style('visibility') === 'hidden';
                 }).length).to.equal(2);
@@ -197,32 +195,25 @@ define(function (require) {
             var svgBefore = d3.select(chart.getSVG());
 
             var axes = svgBefore.selectAll('.column .axis');
-            expect(axes.length).to.equal(1);
-            expect(axes[0].length).to.equal(3);
+            expect(axes.size()).to.equal(3);
 
             var brushes = svgBefore.selectAll('.column .brush');
-            expect(brushes.length).to.equal(1);
-            expect(brushes[0].length).to.equal(3);
+            expect(brushes.size()).to.equal(3);
 
             var elems = svgBefore.selectAll('.foreground');
-            expect(elems.length).to.equal(1);
-            expect(elems[0].length).to.equal(3);
+            expect(elems.size()).to.equal(3);
 
             chart.refresh();
 
             var svgAfter = d3.select(chart.getSVG());
 
             var axesAfter = svgAfter.selectAll('.column .axis');
-            expect(axesAfter.length).to.equal(1);
-            expect(axesAfter[0].length).to.equal(3);
+            expect(axesAfter.size()).to.equal(3);
 
             var brushesAfter = svgAfter.selectAll('.column .brush');
-            expect(brushesAfter.length).to.equal(1);
-            expect(brushesAfter[0].length).to.equal(3);
+            expect(brushesAfter.size()).to.equal(3);
 
             var elemsAfter = svgAfter.selectAll('.foreground');
-            expect(elemsAfter.length).to.equal(1);
-            expect(elemsAfter[0].length).to.equal(3);
+            expect(elemsAfter.size()).to.equal(3);
         });
     });
-});

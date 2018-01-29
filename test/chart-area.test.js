@@ -1,8 +1,9 @@
-define(function (require) {
-    var expect = require('chai').expect;
-    var schemes = require('schemes');
-    var tauChart = require('src/tau.charts');
-    var testUtils = require('testUtils');
+import {expect} from 'chai';
+import schemes from './utils/schemes';
+import tauChart from '../src/tau.charts';
+import testUtils from './utils/utils';
+import * as d3 from 'd3-selection';
+
     var round = testUtils.roundNumbersInString;
 
     describe('Area plot chart', function () {
@@ -18,28 +19,6 @@ define(function (require) {
             element.parentNode.removeChild(element);
             testUtils.destroyCharts();
         });
-
-        //it('should convert to PATH by default', function () {
-        //    var area = new tauChart.Chart({
-        //        type: 'area',
-        //        x: 'x',
-        //        y: 'y',
-        //        color: 'color',
-        //        data: [
-        //            {x: 0, y: 2, color: 'B'},
-        //            {x: 2, y: 2, color: 'B'},
-        //            {x: 1, y: 3, color: 'B'},
-        //            {x: 1, y: 1, color: 'B'}
-        //        ].map((r, i) => {
-        //                r.i = i;
-        //                return r;
-        //            })
-        //    });
-        //
-        //    var spec = area.getSpec();
-        //    expect(spec.sources['/'].data.map((r) => r.i)).to.deep.equal([0, 1, 2, 3]);
-        //    expect(spec.unit.units[0].type).to.equal('ELEMENT.PATH');
-        //});
 
         it('should sort data by X if there is a func relation', function () {
             var area = new tauChart.Chart({
@@ -167,6 +146,81 @@ define(function (require) {
                     layoutEngine: 'none'
                 },
                 data: [
+                    {x: 0, y: 2, color: 'B'},
+                    {x: 1, y: 2, color: 'B'},
+                    {x: 0, y: -2, color: 'B'},
+                    {x: 1, y: -2, color: 'B'},
+
+                    {x: 0, y: 0, color: 'A'},
+                    {x: 1, y: 1, color: 'A'},
+                    {x: 2, y: 2, color: 'A'},
+                ]
+            });
+
+            area.renderTo(element, {width: 1000, height: 1000});
+
+            var svgPolygons = d3.selectAll('polygon').nodes();
+
+            expect(svgPolygons.length).to.equal(3);
+
+            expect(testUtils.hasClass(svgPolygons[2].parentNode, 'A')).to.equal(true);
+            expect(round(d3.select(svgPolygons[2]).attr('points')))
+                .to
+                .equal('0,600 500,400 1000,200 1000,600 500,600 0,600', 'A');
+
+            expect(testUtils.hasClass(svgPolygons[0].parentNode, 'B')).to.equal(true);
+            expect(round(d3.select(svgPolygons[0]).attr('points')))
+                .to
+                .equal('0,200 500,0 1000,200 1000,200 500,400 0,600', 'B positive');
+
+            expect(testUtils.hasClass(svgPolygons[1].parentNode, 'B')).to.equal(true);
+            expect(round(d3.select(svgPolygons[1]).attr('points')))
+                .to
+                .equal('0,1000 500,1000 1000,600 1000,600 500,600 0,600', 'B negative');
+
+            var points = d3.selectAll('.i-data-anchor').nodes().map((node) => {
+                var p = d3.select(node);
+                return p.attr('d');
+            });
+
+            expect(round(points.join('\n')))
+                .to
+                .equal([
+                    'M0,200 L0,600 A0,0 0 0 1 0,600 L0,200 A0,0 0 0 1 0,200 Z',
+                    'M500,0 L500,400 A0,0 0 0 1 500,400 L500,0 A0,0 0 0 1 500,0 Z',
+
+                    'M0,1000 L0,600 A0,0 0 0 1 0,600 L0,1000 A0,0 0 0 1 0,1000 Z',
+                    'M500,1000 L500,600 A0,0 0 0 1 500,600 L500,1000 A0,0 0 0 1 500,1000 Z',
+
+                    'M0,600 A0,0 0 0 1 0,600 A0,0 0 0 1 0,600 Z',
+                    'M500,400 L500,600 A0,0 0 0 1 500,600 L500,400 A0,0 0 0 1 500,400 Z',
+                    'M1000,200 L1000,600 A0,0 0 0 1 1000,600 L1000,200 A0,0 0 0 1 1000,200 Z',
+                ].join('\n'));
+        });
+
+        it('should leave obsolete order for [stack] transformation', function () {
+            var area = new tauChart.Chart({
+                type: 'area',
+                x: 'x',
+                y: 'y',
+                stack: true,
+                color: 'color',
+                guide: {
+                    obsoleteVerticalStackOrder: true,
+                    x: {nice: false},
+                    y: {nice: false},
+                    color: {
+                        brewer: {
+                            A: 'A',
+                            B: 'B'
+                        }
+                    }
+                },
+                settings: {
+                    specEngine: 'none',
+                    layoutEngine: 'none'
+                },
+                data: [
                     {x: 0, y: 0, color: 'A'},
                     {x: 1, y: 1, color: 'A'},
                     {x: 2, y: 2, color: 'A'},
@@ -174,13 +228,13 @@ define(function (require) {
                     {x: 0, y: 2, color: 'B'},
                     {x: 1, y: 2, color: 'B'},
                     {x: 0, y: -2, color: 'B'},
-                    {x: 1, y: -2, color: 'B'}
+                    {x: 1, y: -2, color: 'B'},
                 ]
             });
 
             area.renderTo(element, {width: 1000, height: 1000});
 
-            var svgPolygons = d3.selectAll('polygon')[0];
+            var svgPolygons = d3.selectAll('polygon').nodes();
 
             expect(svgPolygons.length).to.equal(3);
 
@@ -199,17 +253,24 @@ define(function (require) {
                 .to
                 .equal('0,1000 500,1000 1000,600 1000,600 500,600 0,600', 'B negative');
 
-            var points = d3.selectAll('circle')[0].map((node) => {
+            var points = d3.selectAll('.i-data-anchor').nodes().map((node) => {
                 var p = d3.select(node);
-                var x = p.attr('cx');
-                var y = p.attr('cy');
-                return [x, y];
+                return p.attr('d');
             });
 
-            expect(round(JSON.stringify(points)))
+            expect(round(points.join('\n')))
                 .to
-                .deep
-                .equal('[["0","600"],["500","400"],["1000","200"],["0","200"],["500","0"],["0","1000"],["500","1000"]]');
+                .equal([
+                    'M0,600 A0,0 0 0 1 0,600 A0,0 0 0 1 0,600 Z',
+                    'M500,400 L500,600 A0,0 0 0 1 500,600 L500,400 A0,0 0 0 1 500,400 Z',
+                    'M1000,200 L1000,600 A0,0 0 0 1 1000,600 L1000,200 A0,0 0 0 1 1000,200 Z',
+
+                    'M0,200 L0,600 A0,0 0 0 1 0,600 L0,200 A0,0 0 0 1 0,200 Z',
+                    'M500,0 L500,400 A0,0 0 0 1 500,400 L500,0 A0,0 0 0 1 500,0 Z',
+
+                    'M0,1000 L0,600 A0,0 0 0 1 0,600 L0,1000 A0,0 0 0 1 0,1000 Z',
+                    'M500,1000 L500,600 A0,0 0 0 1 500,600 L500,1000 A0,0 0 0 1 500,1000 Z',
+                ].join('\n'));
         });
 
         it('should support [flip+stack] transformation', function () {
@@ -248,40 +309,40 @@ define(function (require) {
 
             area.renderTo(element, {width: 1000, height: 1000});
 
-            var svgPolygons = d3.selectAll('polygon')[0];
+            var svgPolygons = d3.selectAll('polygon').nodes();
 
             expect(svgPolygons.length).to.equal(3);
 
             expect(testUtils.hasClass(svgPolygons[0].parentNode, 'A')).to.equal(true, 'A');
             expect(round(d3.select(svgPolygons[0]).attr('points')))
                 .to
-                // .equal('800,0 600,500 400,1000 400,1000 400,500 400,0', 'A');
                 .equal('400,1000 600,500 800,0 400,0 400,500 400,1000', 'A');
 
             expect(testUtils.hasClass(svgPolygons[1].parentNode, 'B')).to.equal(true, 'B negative');
             expect(round(d3.select(svgPolygons[1]).attr('points')))
                 .to
-                // .equal('800,0 1000,500 800,1000 400,1000 600,500 800,0', 'B negative');
                 .equal('800,1000 1000,500 800,0 800,0 600,500 400,1000', 'B negative');
 
             expect(testUtils.hasClass(svgPolygons[2].parentNode, 'B')).to.equal(true, 'B pos');
             expect(round(d3.select(svgPolygons[2]).attr('points')))
                 .to
-                //.equal('400,0 0,500 0,1000 400,1000 400,500 400,0', 'B positive');
                 .equal('0,1000 0,500 400,0 400,0 400,500 400,1000', 'B positive');
 
-            var points = d3.selectAll('circle')[0].map((node) => {
+            var points = d3.selectAll('.i-data-anchor').nodes().map((node) => {
                 var p = d3.select(node);
-                var x = p.attr('cx');
-                var y = p.attr('cy');
-                return [x, y];
+                return p.attr('d');
             });
 
-            expect(JSON.stringify(points))
+            expect(points.join('\n'))
                 .to
-                .deep
-                // .equal('[["800","0"],["600","500"],["400","1000"],["1000","500"],["800","1000"],["0","500"],["0","1000"]]');
-                .equal('[["400","1000"],["600","500"],["800","0"],["800","1000"],["1000","500"],["0","1000"],["0","500"]]');
+                .equal([
+                    'M400,1000 A0,0 0 0 1 400,1000 A0,0 0 0 1 400,1000 Z',
+                    'M600,500 L400,500 A0,0 0 0 1 400,500 L600,500 A0,0 0 0 1 600,500 Z',
+                    'M800,0 L400,0 A0,0 0 0 1 400,0 L800,0 A0,0 0 0 1 800,0 Z',
+                    'M800,1000 L400,1000 A0,0 0 0 1 400,1000 L800,1000 A0,0 0 0 1 800,1000 Z',
+                    'M1000,500 L600,500 A0,0 0 0 1 600,500 L1000,500 A0,0 0 0 1 1000,500 Z',
+                    'M0,1000 L400,1000 A0,0 0 0 1 400,1000 L0,1000 A0,0 0 0 1 0,1000 Z',
+                    'M0,500 L400,500 A0,0 0 0 1 400,500 L0,500 A0,0 0 0 1 0,500 Z'
+                ].join('\n'));
         });
     });
-});

@@ -1,7 +1,14 @@
-import {default as d3} from 'd3';
+import * as d3Axis from 'd3-axis';
+import * as d3Brush from 'd3-brush';
+import * as d3Selection from 'd3-selection';
+const d3 = {
+    ...d3Axis,
+    ...d3Brush,
+    ...d3Selection,
+};
 import {Element} from './element';
-import {utilsDraw} from '../utils/utils-draw';
-import {utils} from '../utils/utils';
+import * as utilsDraw from '../utils/utils-draw';
+import * as utils from '../utils/utils';
 import {CSS_PREFIX} from '../const';
 import {FormatterRegistry} from '../formatter-registry';
 
@@ -21,6 +28,7 @@ export class Parallel extends Element {
             });
 
         this.columnsBrushes = {};
+        this.columnsSelections = {};
 
         this.on('force-brush', (sender, e) => this._forceBrushing(e));
 
@@ -41,7 +49,7 @@ export class Parallel extends Element {
 
         this.columnsScalesMap = cfg.columns.reduce(
             (memo, xi) => {
-                memo[xi] = fnCreateScale('pos', xi, [innerHeight, 0]);
+                memo[xi] = fnCreateScale('pos', xi, [0, innerHeight]);
                 return memo;
             },
             {});
@@ -111,10 +119,10 @@ export class Parallel extends Element {
             .data(frames, (f) => f.hash());
         frms.exit()
             .remove();
-        frms.each(cellFrameIterator);
         frms.enter()
             .append('g')
             .attr('class', (d) => (`${CSS_PREFIX}cell cell parent-frame-${options.frameId} frame-${d.hash()}`))
+            .merge(frms)
             .each(cellFrameIterator);
 
         var cols = this._fnDrawColumns(grid, cfg);
@@ -131,31 +139,32 @@ export class Parallel extends Element {
             .data([uniqueHash], (x) => x);
         grid.exit()
             .remove();
-        grid.enter()
+        const merged = grid.enter()
             .append('g')
             .attr('class', `grid grid_${frameId}`)
-            .attr('transform', utilsDraw.translate(this.L, this.T));
+            .attr('transform', utilsDraw.translate(this.L, this.T))
+            .merge(grid);
 
-        return grid;
+        return merged;
     }
 
     _fnDrawColumns(grid, config) {
         var colsGuide = config.guide.columns || {};
         var xBase = this.xBase;
         var columnsScalesMap = this.columnsScalesMap;
-        var d3Axis = d3.svg.axis().orient('left');
+        var d3Axis = d3.axisLeft();
 
         var cols = grid
             .selectAll('.column')
             .data(config.columns, (x) => x);
         cols.exit()
             .remove();
-        cols.enter()
+        const merged = cols.enter()
             .append('g')
             .attr('class', 'column')
             .attr('transform', (d) => utilsDraw.translate(xBase(d), 0))
-            .call(function () {
-                this.append('g')
+            .call(function (selection) {
+                selection.append('g')
                     .attr('class', 'y axis')
                     .each(function (d) {
                         var propName = columnsScalesMap[d].dim;
@@ -173,28 +182,42 @@ export class Parallel extends Element {
                     .attr('text-anchor', 'middle')
                     .attr('y', -9)
                     .text((d) => ((colsGuide[d] || {}).label || {}).text || columnsScalesMap[d].dim);
-            });
+            })
+            .merge(cols);
 
-        return cols;
+        return merged;
     }
 
     _enableBrushing(cols) {
 
         const brushWidth = 16;
 
+        var columnsSelections = this.columnsSelections;
         var columnsScalesMap = this.columnsScalesMap;
         var columnsBrushes = this.columnsBrushes;
+
+        var fireBrushEvents = true;
 
         var onBrushStartEventHandler = (e) => e;
         var onBrushEndEventHandler = (e) => e;
         var onBrushEventHandler = () => {
+
+            var targetKey = Object.keys(columnsBrushes)
+                .find((k) => columnsBrushes[k] === d3Selection.event.target);
+
+            columnsSelections[targetKey] = d3Selection.event.selection;
+
+            if (!fireBrushEvents) {
+                return;
+            }
+
             var eventBrush = Object
                 .keys(columnsBrushes)
-                .filter((k) => !columnsBrushes[k].empty())
+                .filter((k) => columnsSelections[k])
                 .map((k) => {
-                    var ext = columnsBrushes[k].extent();
                     var rng = [];
                     if (columnsScalesMap[k].discrete) {
+                        let ext = columnsSelections[k];
                         rng = columnsScalesMap[k]
                             .domain()
                             .filter((val) => {
@@ -202,6 +225,7 @@ export class Parallel extends Element {
                                 return (ext[0] <= pos) && (ext[1] >= pos);
                             });
                     } else {
+                        let ext = columnsSelections[k].map(columnsScalesMap[k].invert);
                         rng = [ext[0], ext[1]];
                     }
 
@@ -220,19 +244,24 @@ export class Parallel extends Element {
         cols.append('g')
             .attr('class', 'brush')
             .each(function (d) {
-                columnsBrushes[d] = d3.svg
-                    .brush()
-                    .y(columnsScalesMap[d])
-                    .on('brushstart', onBrushStartEventHandler)
+                var range = columnsScalesMap[d].range();
+                columnsBrushes[d] = d3
+                    .brushY()
+                    .extent([[0, range[0]], [brushWidth, range[1]]])
+                    .on('start', onBrushStartEventHandler)
                     .on('brush', onBrushEventHandler)
-                    .on('brushend', onBrushEndEventHandler);
+                    .on('end', onBrushEndEventHandler);
 
                 d3.select(this)
                     .classed(`brush-${utils.generateHash(d)}`, true)
                     .call(columnsBrushes[d]);
+
+                fireBrushEvents = false;
+                columnsBrushes[d].move(d3.select(this), range);
+                fireBrushEvents = true;
             })
             .selectAll('rect')
-            .attr('x', (brushWidth / 2) * -1)
+            .attr('transform', `translate(${(brushWidth / 2) * -1},0)`)
             .attr('width', brushWidth);
 
         return cols;
@@ -242,6 +271,7 @@ export class Parallel extends Element {
 
         var columnsBrushes = this.columnsBrushes;
         var columnsScalesMap = this.columnsScalesMap;
+        var columnsSelections = this.columnsSelections;
 
         Object
             .keys(colsBrushSettings)
@@ -257,9 +287,8 @@ export class Parallel extends Element {
                     ext = [brushExt[0], brushExt[1]];
                 }
                 var hashK = utils.generateHash(k);
-                columnsBrushes[k].extent(ext);
                 columnsBrushes[k](d3.select(`.brush-${hashK}`));
-                columnsBrushes[k].event(d3.select(`.brush-${hashK}`));
+                columnsBrushes[k].move(d3.select(`.brush-${hashK}`), ext.map(columnsScalesMap[k]));
             });
     }
 }

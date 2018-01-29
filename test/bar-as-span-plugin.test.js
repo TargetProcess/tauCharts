@@ -1,10 +1,10 @@
-define(function (require) {
+import {assert} from 'chai';
+import Taucharts from '../src/tau.charts';
+import BarAsSpanPlugin from '../plugins/bar-as-span';
+import * as d3 from 'd3-selection';
 
-    var assert = require('chai').assert;
-    var tauCharts = require('src/tau.charts');
-    var BarAsSpanPlugin = require('plugins/bar-as-span');
-
-    var noScrollStyle = require('testUtils').noScrollStyle;
+import testUtils from './utils/utils';
+const {noScrollStyle} = testUtils;
 
     describe('Bar as Span plugin', function () {
 
@@ -24,7 +24,7 @@ define(function (require) {
 
         it('should place spans correct', function () {
 
-            var chart = new tauCharts.Chart({
+            var chart = new Taucharts.Chart({
                 type: 'horizontal-bar',
                 x: 'end',
                 y: ['team', 'type'],
@@ -134,7 +134,7 @@ define(function (require) {
         it('should place spans correct (vertical)', function () {
 
             // Todo: Horizontall timeline is useless, write normal test when Waterfall chart will be finished.
-            var chart = new tauCharts.Chart({
+            var chart = new Taucharts.Chart({
                 type: 'bar',
                 y: 'end',
                 x: ['team', 'type'],
@@ -199,7 +199,7 @@ define(function (require) {
 
         it('should place spans correct (no collapse)', function () {
 
-            var chart = new tauCharts.Chart({
+            var chart = new Taucharts.Chart({
                 type: 'horizontal-bar',
                 x: 'end',
                 y: ['team', 'type'],
@@ -274,4 +274,3 @@ define(function (require) {
 
         });
     });
-});

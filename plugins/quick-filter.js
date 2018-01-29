@@ -1,17 +1,18 @@
-(function (factory) {
-    if (typeof define === 'function' && define.amd) {
-        define(['taucharts'], function (tauPlugins) {
-            return factory(tauPlugins);
-        });
-    } else if (typeof module === 'object' && module.exports) {
-        var tauPlugins = require('taucharts');
-        module.exports = factory(tauPlugins);
-    } else {
-        factory(this.tauCharts);
-    }
-})(function (tauCharts) {
+import Taucharts from 'taucharts';
+import * as d3Array from 'd3-array';
+import * as d3Brush from 'd3-brush';
+import * as d3Scale from 'd3-scale';
+import * as d3Selection from 'd3-selection';
+import * as d3TimeFormat from 'd3-time-format';
+const d3 = {
+    ...d3Array,
+    ...d3Brush,
+    ...d3Scale,
+    ...d3Selection,
+    ...d3TimeFormat,
+};
 
-    var utils = tauCharts.api.utils;
+    var utils = Taucharts.api.utils;
     var REFRESH_DELAY = 0;
 
     function QuickFilter(xSettings) {
@@ -83,10 +84,10 @@
                 this._filtersContainer.style.maxHeight = 'none';
             },
 
-            _filtersContainer: '<div class="graphical-report__filter"></div>',
+            _filtersContainer: '<div class="tau-chart__filter"></div>',
             _filterWrapper: utils.template(
-                '<div class="graphical-report__filter__wrap">' +
-                    '<div class="graphical-report__legend__title"><%=name%></div>' +
+                '<div class="tau-chart__filter__wrap">' +
+                    '<div class="tau-chart__legend__title"><%=name%></div>' +
                 '</div>'
             ),
 
@@ -104,19 +105,19 @@
                 var padding = 4;
                 var width = 180 - margin.left - margin.right;
                 var height = 41 - margin.top - margin.bottom - 2 * padding;
+                var brushHeight = 20;
 
-                var x = d3.scale.linear()
+                var x = d3.scaleLinear()
                     .domain(bounds)
                     .range([0, width]);
 
-                var brush = d3.svg.brush()
-                    .x(x)
-                    .extent(filter)
-                    .on('brushstart', function () {
+                var brush = d3.brushX()
+                    .extent([[0, 0], [width, brushHeight]])
+                    .on('start', function () {
                         self._layout.style['overflow-y'] = 'hidden';
                     })
                     .on('brush', (this._applyImmediately ? applyBrush : updateBrush))
-                    .on('brushend', function () {
+                    .on('end', function () {
                         self._layout.style['overflow-y'] = '';
                         applyBrush();
                     });
@@ -130,13 +131,24 @@
                 var rect = svg.append('g').selectAll('rect')
                     .data(data)
                     .enter().append('rect')
-                    .attr('transform', function (d) {return 'translate(' + x(d) + ',' + (margin.top + padding) + ')'; })
+                    .attr('transform', function (d) {return 'translate(' + x(d) + ',' + (margin.top + padding) + ')';})
                     .attr('height', height)
                     .attr('width', 1);
 
                 var brushg = svg.append('g')
                     .attr('class', 'brush')
                     .call(brush);
+
+                brushg
+                    .append('g')
+                    .attr('class', 'resize e')
+                    .attr('cursor', 'ew-resize')
+                    .attr('pointer-events', 'none');
+                brushg
+                    .append('g')
+                    .attr('class', 'resize w')
+                    .attr('cursor', 'ew-resize')
+                    .attr('pointer-events', 'none');
 
                 brushg.selectAll('.resize').append('line')
                     .attr('transform', 'translate(0, 0)')
@@ -165,7 +177,7 @@
 
                     var index = formatters
                         .findIndex(function (token) {
-                            var f = d3.time.format(token);
+                            var f = d3.timeFormat(token);
                             return (f(new Date(bounds[0])) !== f(new Date(bounds[1])));
                         });
 
@@ -177,7 +189,7 @@
                     };
                 }
 
-                var compOrder = ['’%y', '&thinsp;%b', '%d', '%H', ':%M', ':%S'];
+                var compOrder = ['’%y', '&thinsp;%b', '%d', '%H', ':%M', ':%S'];
                 if (isDate) {
                     var formatters = getFormatters(compOrder);
                     if (formatters.comm.length < 3) {
@@ -198,21 +210,34 @@
                 }
 
                 applyBrush();
+                brush.move(brushg, filter.map(x));
 
                 function updateBrush() {
-                    var filter = self._filter[dim] = brush.extent();
+                    const d3Event = d3Selection.event;
+                    if (d3Event && Array.isArray(d3Event.selection)) {
+                        const selection = d3Event.selection.map(x.invert);
+                        filter = selection;
+                        self._filter[dim] = selection;
+                    } else {
+                        filter = self._filter[dim];
+                    }
                     var filterMin = isDate ? (new Date(filter[0])).getTime() : filter[0];
                     var filterMax = isDate ? (new Date(filter[1])).getTime() : filter[1];
 
                     var s = (Math.round(parseFloat(filterMin) * base) / base);
                     var e = (Math.round(parseFloat(filterMax) * base) / base);
 
+                    var handleW = brushg.select('.handle--w');
+                    var handleE = brushg.select('.handle--e');
+                    brushg.select('.resize.w').attr('transform', `translate(${x(filter[0])},0)`);
+                    brushg.select('.resize.e').attr('transform', `translate(${x(filter[1])},0)`);
+
                     var sTxt = brushg.selectAll('.w text');
                     var eTxt = brushg.selectAll('.e text');
 
                     if (isDate) {
-                        var comm = d3.time.format(formatters.comm.join(''));
-                        var diff = d3.time.format(formatters.diff.join(''));
+                        var comm = d3.timeFormat(formatters.comm.join(''));
+                        var diff = d3.timeFormat(formatters.diff.join(''));
 
                         dateText.html(diff(new Date(s)) + '&thinsp;..&thinsp;' + diff(new Date(e)) +
                             ' <tspan class="common">' + comm(new Date(e)) + '</tspan>');
@@ -226,6 +251,16 @@
                     updateBrush();
                     self._applyFilter(dim);
                 }
+            },
+
+            destroy() {
+                const filters = this._currentFilters;
+                const chart = this._chart;
+                Object.keys(filters)
+                    .forEach((id) => chart.removeFilter(filters[id]));
+
+                const remove = (node) => node && node.parentElement && node.parentElement.removeChild(node);
+                remove(this._filtersContainer);
             },
 
             _applyFilter: function (dim) {
@@ -261,7 +296,6 @@
         };
     }
 
-    tauCharts.api.plugins.add('quick-filter', QuickFilter);
+    Taucharts.api.plugins.add('quick-filter', QuickFilter);
 
-    return QuickFilter;
-});
+export default QuickFilter;

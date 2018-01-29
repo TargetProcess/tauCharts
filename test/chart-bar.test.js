@@ -1,8 +1,8 @@
-define(function(require){
-    var assert = require('chai').assert;
-    var schemes = require('schemes');
-    var tauChart = require('src/tau.charts');
-    var noScrollStyle = require('test/utils/utils').noScrollStyle;
+import {assert} from 'chai';
+import schemes from './utils/schemes';
+import tauChart from '../src/tau.charts';
+import testUtils from './utils/utils';
+const {noScrollStyle} = testUtils;
 
     var createTestDiv = function (id) {
         noScrollStyle.create();
@@ -173,7 +173,8 @@ define(function(require){
         var testData = tauChart.api.utils.range(100).map(function (i) {
             return {
                 x: 20,
-                y: i
+                y: i,
+                c: ['a', 'b', 'c'][i % 3]
             };
         });
 
@@ -208,10 +209,25 @@ define(function(require){
             });
             bar.renderTo(testDiv);
             assert.equal(Number(bar.getSVG().getAttribute('width')), 800, 'chart width');
-            assert.equal(Number(bar.getSVG().getAttribute('height')), 1075, 'chart height');
+            assert.equal(Number(bar.getSVG().getAttribute('height')), 2075, 'chart height');
+            bar.destroy();
+            removeTestDiv();
+        });
+
+        it('should reserve space when stacked bar label is set', function () {
+            var testDiv = createTestDiv('should reserve space when stacked bar label is set');
+            var bar = new tauChart.Chart({
+                type: 'horizontal-stacked-bar',
+                data: testData.map((d, i) => Object.assign({}, d, {dy: String(i % 40)})),
+                x: 'x',
+                y: 'dy',
+                color: 'c',
+                label: 'y'
+            });
+            bar.renderTo(testDiv);
+            assert.equal(Number(bar.getSVG().getAttribute('width')), 800, 'chart width');
+            assert.equal(Number(bar.getSVG().getAttribute('height')), 875, 'chart height');
             bar.destroy();
             removeTestDiv();
         });
     });
-
-});

@@ -1,12 +1,12 @@
-define(function (require) {
-    var expect = require('chai').expect;
-    var schemes = require('schemes');
-    var testUtils = require('testUtils');
-    var assert = require('chai').assert;
-    var getArea = testUtils.getArea;
-    var attrib = testUtils.attrib;
-    var tauChart = require('src/tau.charts');
-    var MIN_ANCHOR_RADIUS = 4;
+import {expect} from 'chai';
+import schemes from './utils/schemes';
+import testUtils from './utils/utils';
+import {assert} from 'chai';
+import * as d3 from 'd3-selection';
+const getArea = testUtils.getArea;
+const attrib = testUtils.attrib;
+import tauChart from '../src/tau.charts';
+const MIN_ANCHOR_RADIUS = 4;
 
     var createSpec = function (testData, flip = false) {
         return {
@@ -66,37 +66,36 @@ define(function (require) {
             var areas = getArea();
             expect(areas.length).to.equal(2, 'should render two area elements');
 
-            expect(testUtils.hasClass(areas[0], 'graphical-report__highlighted')).to.equal(false);
-            expect(testUtils.hasClass(areas[0], 'graphical-report__dimmed')).to.equal(false);
-            expect(testUtils.hasClass(areas[1], 'graphical-report__highlighted')).to.equal(false);
-            expect(testUtils.hasClass(areas[1], 'graphical-report__dimmed')).to.equal(false);
+            expect(testUtils.hasClass(areas[0], 'tau-chart__highlighted')).to.equal(false);
+            expect(testUtils.hasClass(areas[0], 'tau-chart__dimmed')).to.equal(false);
+            expect(testUtils.hasClass(areas[1], 'tau-chart__highlighted')).to.equal(false);
+            expect(testUtils.hasClass(areas[1], 'tau-chart__dimmed')).to.equal(false);
 
             var areaNode = chart.select((n) => n.config.type === 'ELEMENT.AREA')[0];
 
             areaNode.fire('highlight', ((row) => (row.color === 'up')));
 
-            expect(testUtils.hasClass(areas[0], 'graphical-report__highlighted')).to.equal(true);
-            expect(testUtils.hasClass(areas[0], 'graphical-report__dimmed')).to.equal(false);
+            expect(testUtils.hasClass(areas[0], 'tau-chart__highlighted')).to.equal(true);
+            expect(testUtils.hasClass(areas[0], 'tau-chart__dimmed')).to.equal(false);
 
-            expect(testUtils.hasClass(areas[1], 'graphical-report__highlighted')).to.equal(false);
-            expect(testUtils.hasClass(areas[1], 'graphical-report__dimmed')).to.equal(true);
+            expect(testUtils.hasClass(areas[1], 'tau-chart__highlighted')).to.equal(false);
+            expect(testUtils.hasClass(areas[1], 'tau-chart__dimmed')).to.equal(true);
 
             areaNode.fire('highlight', ((row) => null));
 
-            expect(testUtils.hasClass(areas[0], 'graphical-report__highlighted')).to.equal(false);
-            expect(testUtils.hasClass(areas[0], 'graphical-report__dimmed')).to.equal(false);
+            expect(testUtils.hasClass(areas[0], 'tau-chart__highlighted')).to.equal(false);
+            expect(testUtils.hasClass(areas[0], 'tau-chart__dimmed')).to.equal(false);
 
-            expect(testUtils.hasClass(areas[1], 'graphical-report__highlighted')).to.equal(false);
-            expect(testUtils.hasClass(areas[1], 'graphical-report__dimmed')).to.equal(false);
+            expect(testUtils.hasClass(areas[1], 'tau-chart__highlighted')).to.equal(false);
+            expect(testUtils.hasClass(areas[1], 'tau-chart__dimmed')).to.equal(false);
 
             areaNode.fire('highlight-data-points', ((row) => (row.x === 0)));
 
             var highlightedDots0 = d3.selectAll('.i-data-anchor').filter(function () {
-                var r = parseFloat(d3.select(this).attr('r'));
-                return r === MIN_ANCHOR_RADIUS;
+                return this.getBBox().width === MIN_ANCHOR_RADIUS;
             });
 
-            expect(highlightedDots0[0].length).to.equal(2, 'should highlight 2 data points');
+            expect(highlightedDots0.size()).to.equal(2, 'should highlight 2 data points');
 
             areaNode.fire('highlight-data-points', ((row) => false));
 
@@ -105,12 +104,12 @@ define(function (require) {
                 return r === MIN_ANCHOR_RADIUS;
             });
 
-            expect(highlightedDots1[0].length).to.equal(0, 'should remove highlight from all points');
+            expect(highlightedDots1.size()).to.equal(0, 'should remove highlight from all points');
         });
 
         it('should render two area elements', function () {
 
-            var svgPolygons = d3.selectAll('polygon')[0];
+            var svgPolygons = d3.selectAll('polygon').nodes();
 
             // up triangle
             expect(d3.select(svgPolygons[0]).attr('points'))
@@ -155,7 +154,7 @@ define(function (require) {
 
         it('should render two area elements', function () {
 
-            var svgPolygons = d3.selectAll('polygon')[0];
+            var svgPolygons = d3.selectAll('polygon').nodes();
 
             // down triangle
             expect(d3.select(svgPolygons[0]).attr('points'))
@@ -192,7 +191,7 @@ define(function (require) {
 
         it('should render two area elements', function () {
 
-            var svgPolygons = d3.selectAll('polygon')[0];
+            var svgPolygons = d3.selectAll('polygon').nodes();
 
             expect(d3.select(svgPolygons[0]).attr('points'))
                 .to
@@ -225,7 +224,7 @@ define(function (require) {
 
         it('should render two area elements', function () {
 
-            var svgPolygons = d3.selectAll('polygon')[0];
+            var svgPolygons = d3.selectAll('polygon').nodes();
 
             // up triangle (flipped)
             expect(d3.select(svgPolygons[0]).attr('points'))
@@ -270,17 +269,17 @@ define(function (require) {
 
         it('should render two area elements', function () {
 
-            var svgPolygons = d3.selectAll('polygon')[0];
+            var svgPolygons = d3.selectAll('polygon').nodes();
 
             // up triangle
             expect(d3.select(svgPolygons[0]).attr('points'))
                 .to
-                .equal('0,750 1000,250 1000,1000 0,1000', 'up triangle');
+                .equal('0,250 1000,750 1000,500 0,500', 'up triangle');
 
             // down triangle
             expect(d3.select(svgPolygons[1]).attr('points'))
                 .to
-                .equal('1000,750 0,250 0,1000 1000,1000', 'down triangle');
+                .equal('1000,250 0,750 0,500 1000,500', 'down triangle');
 
             var areas = getArea();
             expect(areas.length).to.equal(2, 'should render two area elements');
@@ -332,7 +331,7 @@ define(function (require) {
 
         it('should render area elements by split and color', function () {
 
-            var svgPolygons = d3.selectAll('polygon')[0];
+            var svgPolygons = d3.selectAll('polygon').nodes();
 
             expect(d3.select(svgPolygons[2]).attr('points'))
                 .to
@@ -354,4 +353,3 @@ define(function (require) {
             expect(testUtils.hasClass(areas[0], 'color20-2')).to.equal(true);
         });
     });
-});

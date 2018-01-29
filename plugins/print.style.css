@@ -8,7 +8,7 @@ body * {
     visibility: hidden !important;
 }
 
-.graphical-report__print-block {
+.tau-chart__print-block {
     position: absolute;
     top: 0;
     left: 0;

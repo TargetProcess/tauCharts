@@ -1,13 +1,16 @@
-define(function (require) {
-    var expect = require('chai').expect;
-    var schemes = require('schemes');
 
-    var testUtils = require('testUtils');
-    var assert = require('chai').assert;
-    var getLine = testUtils.getLine;
-    var attrib = testUtils.attrib;
-    var tauChart = require('src/tau.charts');
-    var cssClassMap = require('src/utils/css-class-map');
+import {assert, expect} from 'chai';
+import * as d3Color from 'd3-color';
+import * as d3Selection from 'd3-selection';
+const d3 = {
+    ...d3Color,
+    ...d3Selection,
+};
+import schemes from './utils/schemes';
+import testUtils from './utils/utils';
+const {getLine, attrib} = testUtils;
+import tauChart from '../src/tau.charts';
+import * as cssClassMap from '../src/utils/css-class-map';
     describe("ELEMENT.LINE", function () {
 
         var testData = [
@@ -54,8 +57,8 @@ define(function (require) {
             assert.ok(schemes.lineGPL(chart.getSpec()), 'spec is right');
             expect(lines.length).to.equal(2);
             assert.notEqual(attrib(lines[0], 'class'), attrib(lines[1], 'class'), 'should different class');
-            assert.ok(testUtils.hasClass(lines[0],'graphical-report__line-width-5'), 'should different class');
-            assert.ok(testUtils.hasClass(lines[0],'graphical-report__line-opacity-2'), 'should different class');
+            assert.ok(testUtils.hasClass(lines[0],'tau-chart__line-width-5'), 'should different class');
+            assert.ok(testUtils.hasClass(lines[0],'tau-chart__line-opacity-2'), 'should different class');
         });
     });
     describe("ELEMENT.LINE WITH ONE POINT", function () {
@@ -98,16 +101,16 @@ define(function (require) {
 
         it("should render poin element", function () {
             var dotLines = d3.selectAll('.dot-line');
-            assert.equal(dotLines.length, 1, 'should draw point');
+            assert.equal(dotLines.size(), 1, 'should draw point');
         });
     });
 
     describe("ELEMENT.LINE generates class in depend on size and count line", function(){
         var assertClassByCount = function(value,index){
-            expect(value).to.equal('graphical-report__line-opacity-' + index);
+            expect(value).to.equal('tau-chart__line-opacity-' + index);
         };
         var assertClassByWidth = function(value,index){
-            expect(value).to.equal('graphical-report__line-width-' + index);
+            expect(value).to.equal('tau-chart__line-width-' + index);
         };
         assertClassByCount(cssClassMap.getLineClassesByCount(1),1);
         assertClassByCount(cssClassMap.getLineClassesByCount(2),2);
@@ -188,14 +191,14 @@ define(function (require) {
             chart.renderTo(element, {width: 800, height: 800});
 
             var lines = d3.selectAll('.line');
-            expect(lines[0].length).to.be.equal(1);
+            expect(lines.size()).to.be.equal(1);
             var path = lines.select('path');
             expect(str(d3.rgb(path.attr('stroke'))))
                 .to
                 .be
                 .equal(str(d3.rgb('rgb(171, 205, 239)')), 'stroke');
             var labels = d3.selectAll('.i-role-label');
-            expect(labels[0].length).to.be.equal(5);
+            expect(labels.size()).to.be.equal(5);
             expect(str(d3.rgb(labels.style('fill'))))
                 .to
                 .be
@@ -232,7 +235,7 @@ define(function (require) {
                 return this.getComputedTextLength() > 0;
             });
             expect(visible.size()).to.be.equal(2);
-            var texts = visible[0].map(t => t.textContent);
+            var texts = visible.nodes().map(t => t.textContent);
             expect(texts.indexOf('Manchester') >= 0).to.be.true;
             expect(texts.indexOf('Chelsea') >= 0).to.be.true;
 
@@ -389,22 +392,22 @@ define(function (require) {
             it("should support highlight event", function () {
                 var svg0 = context.chart.getSVG();
                 expect(svg0.querySelectorAll('.i-role-label').length).to.equals(4);
-                expect(svg0.querySelectorAll('.graphical-report__highlighted').length).to.equals(0);
-                expect(svg0.querySelectorAll('.graphical-report__dimmed').length).to.equals(0);
+                expect(svg0.querySelectorAll('.tau-chart__highlighted').length).to.equals(0);
+                expect(svg0.querySelectorAll('.tau-chart__dimmed').length).to.equals(0);
 
                 var pointNode = context.chart.select((n) => n.config.type === 'ELEMENT.LINE')[0];
                 pointNode.fire('highlight', ((row) => (row.color === 'green')));
 
                 var svg1 = context.chart.getSVG();
-                expect(svg1.querySelectorAll('.i-role-label.graphical-report__highlighted').length).to.equals(1);
-                expect(svg1.querySelectorAll('.i-role-label.graphical-report__dimmed').length).to.equals(3);
+                expect(svg1.querySelectorAll('.i-role-label.tau-chart__highlighted').length).to.equals(1);
+                expect(svg1.querySelectorAll('.i-role-label.tau-chart__dimmed').length).to.equals(3);
 
                 pointNode.fire('highlight', ((row) => null));
 
                 var svg2 = context.chart.getSVG();
                 expect(svg2.querySelectorAll('.i-role-label').length).to.equals(4);
-                expect(svg2.querySelectorAll('.i-role-label.graphical-report__highlighted').length).to.equals(0);
-                expect(svg2.querySelectorAll('.i-role-label.graphical-report__dimmed').length).to.equals(0);
+                expect(svg2.querySelectorAll('.i-role-label.tau-chart__highlighted').length).to.equals(0);
+                expect(svg2.querySelectorAll('.i-role-label.tau-chart__dimmed').length).to.equals(0);
             });
         }
     );
@@ -480,10 +483,9 @@ define(function (require) {
                 var points = svg.querySelectorAll('.i-data-anchor');
 
                 testUtils.simulateEvent('mousemove', svg, cx, cy - 10);
-                expect(d3.select('.graphical-report__highlighted').data()[0]).to.deep.equal({x: 2, y: 2, t: 'A'});
+                expect(d3.select('.tau-chart__highlighted').data()[0]).to.deep.equal({x: 2, y: 2, t: 'A'});
                 testUtils.simulateEvent('mousemove', svg, cx, cy + 10);
-                expect(d3.select('.graphical-report__highlighted').data()[0]).to.deep.equal({x: 2, y: 2, t: 'B'});
+                expect(d3.select('.tau-chart__highlighted').data()[0]).to.deep.equal({x: 2, y: 2, t: 'B'});
             });
         }
     );
-});

@@ -1,10 +1,17 @@
-import {default as d3} from 'd3';
-import {utils} from '../utils/utils';
-import {default as topojson} from 'topojson';
+import * as d3Array from 'd3-array';
+import * as d3Geo from 'd3-geo';
+import * as d3Json from 'd3-request';
+import * as d3Selection from 'd3-selection';
+const d3 = {
+    ...d3Array,
+    ...d3Geo,
+    ...d3Json,
+    ...d3Selection,
+};
+import * as utils from '../utils/utils';
+import * as topojson from 'topojson-client';
 import {d3Labeler} from '../utils/d3-labeler';
 import {Element} from './element';
-
-d3.labeler = d3Labeler;
 
 const avgCharSize = 5.5;
 const iterationsCount = 10;
@@ -154,7 +161,7 @@ export class GeoMap extends Element {
 
             var anchors = labels.map(d => ({x: d.sx, y: d.sy, r: d.r}));
 
-            d3.labeler()
+            d3Labeler()
                 .label(labels)
                 .anchor(anchors)
                 .width(innerW)
@@ -219,8 +226,8 @@ export class GeoMap extends Element {
         } else if (codeScale.georole) {
 
             if (contours.indexOf(codeScale.georole) === -1) {
-                console.log(`There is no contour for georole "${codeScale.georole}"`); // eslint-disable-line
-                console.log(`Available contours are: ${contours.join(' | ')}`); // eslint-disable-line
+                console.log(`There is no contour for georole "${codeScale.georole}"`); // tslint:disable-line
+                console.log(`Available contours are: ${contours.join(' | ')}`); // tslint:disable-line
 
                 throw new Error(`Invalid [georole]`);
             }
@@ -228,7 +235,7 @@ export class GeoMap extends Element {
             contourToFill = codeScale.georole;
 
         } else {
-            console.log('Specify [georole] for code scale'); // eslint-disable-line
+            console.log('Specify [georole] for code scale'); // tslint:disable-line
             throw new Error('[georole] is missing');
         }
 
@@ -247,18 +254,18 @@ export class GeoMap extends Element {
 
         var d3Projection = this._createProjection(topoJSONData, contours[0], center);
 
-        var path = d3.geo.path().projection(d3Projection);
+        var path = d3.geoPath().projection(d3Projection);
 
         var xmap = node
             .selectAll('.map-container')
             .data([`${innerW}${innerH}${center}${contours.join('-')}`], (x) => x);
         xmap.exit()
             .remove();
-        xmap.enter()
+        const merged = xmap.enter()
             .append('g')
-            .call(function () {
+            .call(function (selection) {
 
-                var node = this;
+                var node = selection;
 
                 node.attr('class', 'map-container');
 
@@ -277,9 +284,9 @@ export class GeoMap extends Element {
                         .data(topojson.feature(topoJSONData, topoJSONData.objects[c]).features || [])
                         .enter()
                         .append('g')
-                        .call(function () {
+                        .call(function (selection) {
 
-                            var cont = this;
+                            var cont = selection;
 
                             cont.attr('class', `map-contour-${c} map-contour-level map-contour-level-${i}`)
                                 .attr('fill', 'none');
@@ -352,7 +359,7 @@ export class GeoMap extends Element {
                             };
                         });
 
-                    d3.labeler()
+                    d3Labeler()
                         .label(labels)
                         .anchor(anchors)
                         .width(innerW)
@@ -375,7 +382,8 @@ export class GeoMap extends Element {
                         .attr('transform', (d) => `translate(${d.x},${d.y})`)
                         .text((d) => d.name);
                 }
-            });
+            })
+            .merge(xmap);
 
         this.groupByCode = frames.reduce(
             (groups, f) => {
@@ -391,10 +399,10 @@ export class GeoMap extends Element {
 
         var toData = this._resolveFeature.bind(this);
 
-        xmap.selectAll(`.map-contour-${contourToFill}`)
+        merged.selectAll(`.map-contour-${contourToFill}`)
             .data(topojson.feature(topoJSONData, topoJSONData.objects[contourToFill]).features)
-            .call(function () {
-                this.classed('map-contour', true)
+            .call(function (selection) {
+                selection.classed('map-contour', true)
                     .attr('fill', (d) => {
                         var row = toData(d);
                         return (row === null) ?
@@ -402,32 +410,30 @@ export class GeoMap extends Element {
                             fillScale(row[fillScale.dim]);
                     });
             })
-            .on('mouseover', (d) => this.fire('area-mouseover', {data: toData(d), event: d3.event}))
-            .on('mouseout',  (d) => this.fire('area-mouseout', {data: toData(d), event: d3.event}))
-            .on('click',     (d) => this.fire('area-click', {data: toData(d), event: d3.event}));
+            .on('mouseover', (d) => this.fire('area-mouseover', {data: toData(d), event: d3Selection.event}))
+            .on('mouseout',  (d) => this.fire('area-mouseout', {data: toData(d), event: d3Selection.event}))
+            .on('click',     (d) => this.fire('area-click', {data: toData(d), event: d3Selection.event}));
 
         if (!latScale.dim || !lonScale.dim) {
             return [];
         }
 
-        var update = function () {
-            return this
-                .attr({
-                    r: ({data: d}) => sizeScale(d[sizeScale.dim]),
-                    transform: ({data: d}) => `translate(${d3Projection([d[lonScale.dim], d[latScale.dim]])})`,
-                    class: ({data: d}) => colorScale(d[colorScale.dim]),
-                    opacity: pointOpacity
-                })
-                .on('mouseover', ({data:d}) => self.fire('point-mouseover', {data: d, event: d3.event}))
-                .on('mouseout',  ({data:d}) => self.fire('point-mouseout', {data: d, event: d3.event}))
-                .on('click',     ({data:d}) => self.fire('point-click', {data: d, event: d3.event}));
+        var update = function (selection) {
+            return selection
+                .attr('r', (d) => sizeScale(d[sizeScale.dim]))
+                .attr('transform', ({data: d}) => `translate(${d3Projection([d[lonScale.dim], d[latScale.dim]])})`)
+                .attr('class', ({data: d}) => colorScale(d[colorScale.dim]))
+                .attr('opacity', pointOpacity)
+                .on('mouseover', ({data:d}) => self.fire('point-mouseover', {data: d, event: d3Selection.event}))
+                .on('mouseout',  ({data:d}) => self.fire('point-mouseout', {data: d, event: d3Selection.event}))
+                .on('click',     ({data:d}) => self.fire('point-click', {data: d, event: d3Selection.event}));
         };
 
-        var updateGroups = function () {
+        var updateGroups = function (selection) {
 
-            this.attr('class', (f) => `frame frame-${f.hash}`)
-                .call(function () {
-                    var points = this
+            selection.attr('class', (f) => `frame frame-${f.hash}`)
+                .call(function (selection) {
+                    var points = selection
                         .selectAll('circle')
                         .data(frame => frame.data.map(item => ({data: item, uid: options.uid})));
                     points
@@ -444,17 +450,16 @@ export class GeoMap extends Element {
 
         var mapper = (f) => ({tags: f.key || {}, hash: f.hash(), data: f.part()});
 
-        var frameGroups = xmap
+        var frameGroups = merged
             .selectAll('.frame')
             .data(frames.map(mapper), (f) => f.hash);
         frameGroups
             .exit()
             .remove();
         frameGroups
-            .call(updateGroups);
-        frameGroups
             .enter()
             .append('g')
+            .merge(frameGroups)
             .call(updateGroups);
 
         return [];
@@ -514,7 +519,7 @@ export class GeoMap extends Element {
 
         var d3Projection = this._createD3Projection(mapProjection, mapCenter, scale, offset);
 
-        var path = d3.geo.path().projection(d3Projection);
+        var path = d3.geoPath().projection(d3Projection);
 
         // using the path determine the bounds of the current map and use
         // these to determine better values for the scale and translation
@@ -535,13 +540,15 @@ export class GeoMap extends Element {
 
     _createD3Projection(projection, center, scale, translate) {
 
-        var d3ProjectionMethod = d3.geo[projection];
+        // TODO: Proper projection mapping.
+        var proj = ('geo' + projection.substring(0, 1).toUpperCase() + projection.substring(1));
+        var d3ProjectionMethod = d3[proj];
 
         if (!d3ProjectionMethod) {
-            /*eslint-disable */
+            /*tslint:disable */
             console.log(`Unknown projection "${projection}"`);
             console.log(`See available projection types here: https://github.com/mbostock/d3/wiki/Geo-Projections`);
-            /*eslint-enable */
+            /*tslint:enable */
             throw new Error(`Invalid map: unknown projection "${projection}"`);
         }
 

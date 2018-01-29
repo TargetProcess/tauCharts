@@ -1,6 +1,5 @@
-define(function (require) {
-    var expect = require('chai').expect;
-    var Converter = require('src/spec-transform-extract-axes').SpecTransformExtractAxes;
+import {expect} from 'chai';
+import {SpecTransformExtractAxes as Converter} from '../src/spec-transform-extract-axes';
 
     describe('spec-transform-extract-axes', function () {
 
@@ -169,4 +168,3 @@ define(function (require) {
             expect(part0.guide.y.padding).to.deep.equal(5);
         });
     });
-});

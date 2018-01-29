@@ -1,0 +1,26 @@
+{
+    "compilerOptions": {
+        "module": "es2015",
+        "lib": [
+            "es2015",
+            "dom"
+        ],
+        "allowJs": true,
+        "target": "es5",
+        "baseUrl": ".",
+        "paths": {
+            "taucharts": [
+                "src/tau.charts"
+            ]
+        }
+    },
+    "include": [
+        "plugins/**/*",
+        "src/**/*",
+        "test/**/*"
+    ],
+    "exclude": [
+        "bower_components",
+        "node_modules"
+    ]
+}

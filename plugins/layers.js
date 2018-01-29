@@ -1,19 +1,9 @@
 // jscs:disable *
-(function (factory) {
-    if (typeof define === 'function' && define.amd) {
-        define(['taucharts'], function (tauPlugins) {
-            return factory(tauPlugins);
-        });
-    } else if (typeof module === 'object' && module.exports) {
-        var tauPlugins = require('taucharts');
-        module.exports = factory(tauPlugins);
-    } else {
-        factory(this.tauCharts);
-    }
-})(function (tauCharts) {
+import Taucharts from 'taucharts';
+import * as d3 from 'd3-array';
 
-    var utils = tauCharts.api.utils;
-    var pluginsSDK = tauCharts.api.pluginsSDK;
+    var utils = Taucharts.api.utils;
+    var pluginsSDK = Taucharts.api.pluginsSDK;
     var tokens = pluginsSDK.tokens();
 
     function Layers(xSettings) {
@@ -43,7 +33,7 @@
         var createFunc = function (args) {
             return function (unit) {
                 return Object.assign(unit, args);
-            }
+            };
         };
 
         var ELEMENT_TYPE = {
@@ -545,7 +535,10 @@
                         key: {x: 1, y: 1},
                         units: [(cursor = (pluginsSDK
                             .unit(prevUnit.clone())))
-                            .reduce(self.createSecondaryUnitReducer(fullSpec, layer, lPad, rPad, gap, il, ir, i), cursor)
+                            .reduce(
+                                self.createSecondaryUnitReducer(fullSpec, layer, lPad, rPad, gap, il, ir, i),
+                                cursor
+                            )
                             .value()
                         ]
                     });
@@ -579,7 +572,7 @@
                         {});
 
                     var minMax = d3.extent(utils.flatten(Object.keys(hashBounds)
-                        .map(function(key) {
+                        .map(function (key) {
                             return hashBounds[key];
                         })));
                     scaleNames.forEach(function (y) {
@@ -591,26 +584,26 @@
                 }
             },
 
-            // jscs:disable maximumLineLength
-            containerTemplate: '<div class="graphical-report__trendlinepanel"></div>',
+            // tslint:disable max-line-length
+            containerTemplate: '<div class="tau-chart__trendlinepanel"></div>',
             template: utils.template([
-                '<label class="graphical-report__trendlinepanel__title graphical-report__checkbox">',
+                '<label class="tau-chart__trendlinepanel__title tau-chart__checkbox">',
                 '   <input type="checkbox"',
-                '          class="graphical-report__checkbox__input i-role-show-layers"',
+                '          class="tau-chart__checkbox__input i-role-show-layers"',
                 '          <%= (showLayers ? "checked" : "") %>',
                 '   />',
-                '   <span class="graphical-report__checkbox__icon"></span>',
-                '   <span class="graphical-report__checkbox__text"><%= title %></span>',
+                '   <span class="tau-chart__checkbox__icon"></span>',
+                '   <span class="tau-chart__checkbox__text"><%= title %></span>',
                 '</label>',
 
                 '<div>',
-                '<select class="i-role-change-mode graphical-report__select graphical-report__trendlinepanel__control">',
+                '<select class="i-role-change-mode tau-chart__select tau-chart__trendlinepanel__control">',
                 '   <option <%= ((mode === "dock")  ? "selected" : "") %> value="dock">' + tokens.get('Dock') + '</option>',
                 '   <option <%= ((mode === "merge") ? "selected" : "") %> value="merge">' + tokens.get('Merge') + '</option>',
                 '</select>',
                 '</div>'
             ].join('')),
-            // jscs:enable maximumLineLength
+            // tslint:enable max-line-length
 
             onRender: function () {
 
@@ -625,8 +618,7 @@
         };
     }
 
-    tauCharts.api.plugins.add('layers', Layers);
-
-    return Layers;
-});
+    Taucharts.api.plugins.add('layers', Layers);
 // jscs:enable *
+
+export default Layers;

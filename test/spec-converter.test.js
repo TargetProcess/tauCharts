@@ -1,8 +1,7 @@
-define(function (require) {
-    var tauCharts = require('src/tau.charts');
-    var expect = require('chai').expect;
-    var testUtils = require('testUtils');
-    var Converter = require('src/spec-converter').SpecConverter;
+import Taucharts from '../src/tau.charts';
+import {expect} from 'chai';
+import testUtils from './utils/utils';
+import {SpecConverter as Converter} from '../src/spec-converter';
 
     describe('spec-converter', function () {
 
@@ -366,7 +365,7 @@ define(function (require) {
 
         it('should change scale type from time to period when tickPeriod is specified', function () {
 
-            var c1 = new tauCharts.Chart({
+            var c1 = new Taucharts.Chart({
                 type: 'bar',
                 x: 'x1',
                 y: 'y1',
@@ -385,7 +384,7 @@ define(function (require) {
 
             expect(x1TimeScale.type).to.equals('time');
 
-            var c2 = new tauCharts.Chart({
+            var c2 = new Taucharts.Chart({
                 type: 'bar',
                 x: 'x1',
                 y: 'y1',
@@ -411,7 +410,7 @@ define(function (require) {
 
         it('should not fail when unknown tickPeriod is specified', function () {
 
-            var c2 = new tauCharts.Chart({
+            var c2 = new Taucharts.Chart({
                 type: 'bar',
                 x: 'x1',
                 y: 'y1',
@@ -435,4 +434,3 @@ define(function (require) {
             expect(x1PeriodScale.period).to.equals(null);
         });
     });
-});

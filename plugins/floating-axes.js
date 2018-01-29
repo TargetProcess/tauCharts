@@ -1,18 +1,10 @@
-(function (factory) {
-    if (typeof define === 'function' && define.amd) {
-        define(['taucharts'], function (tauPlugins) {
-            return factory(tauPlugins);
-        });
-    } else if (typeof module === 'object' && module.exports) {
-        var tauPlugins = require('taucharts');
-        module.exports = factory(tauPlugins);
-    } else {
-        factory(this.tauCharts);
-    }
-})(function (tauCharts) {
+import Taucharts from 'taucharts';
+import * as d3Selection from 'd3-selection';
+const d3 = {...d3Selection};
 
-    var utils = tauCharts.api.utils;
-    var d3 = tauCharts.api.d3;
+const domUtils = Taucharts.api.domUtils;
+
+    var utils = Taucharts.api.utils;
 
     var SHADOW_SIZE = 16;
     var SHADOW_COLOR_0 = '#E5E7EB';
@@ -112,12 +104,8 @@
                         ].join(', ');
                     };
                     return {
-                        x: Array.prototype.slice.call(
-                            svg.querySelectorAll(getAxesSelector('x')), 0
-                        ),
-                        y: Array.prototype.slice.call(
-                            svg.querySelectorAll(getAxesSelector('y')), 0
-                        )
+                        x: Array.from(svg.querySelectorAll(getAxesSelector('x'))),
+                        y: Array.from(svg.querySelectorAll(getAxesSelector('y')))
                     };
                 })();
 
@@ -143,7 +131,7 @@
                 var minXAxesY = mmin(axesInfo.x.map(function (i) {
                     return (i.axisTransform.translate.y + i.parentTransform.translate.y);
                 })) - 1;
-                var scrollbars = tauCharts.api.globalSettings.getScrollbarSize(root);
+                var scrollbars = Taucharts.api.globalSettings.getScrollbarSize(root);
 
                 function getPositions() {
                     return {
@@ -158,7 +146,7 @@
                         minXAxesY: minXAxesY,
                         maxYAxesX: maxYAxesX
                     };
-                };
+                }
 
                 var pos = getPositions();
 
@@ -231,7 +219,7 @@
                             }
                         );
                     });
-                };
+                }
 
                 var xAxes = (function extractXAxes() {
                     var axisHeight = pos.svgHeight - pos.minXAxesY + 1 + pos.scrollbarHeight;
@@ -423,16 +411,13 @@
                 // Fix invoking unexpected chart pointer events
                 d3Svg.selectAll('.floating-axes')
                     .on('mouseenter', function () {
-                        var evt = document.createEvent('MouseEvents');
-                        evt.initMouseEvent('mouseleave',
-                            true, true, window, 0, 0, 0, 0, 0, false, false, false, false, 0, null);
-                        svg.dispatchEvent(evt);
+                        domUtils.dispatchMouseEvent(svg, 'mouseleave');
                     })
                     .on('mousemove', function () {
-                        d3.event.stopPropagation();
+                        d3Selection.event.stopPropagation();
                     })
                     .on('click', function () {
-                        d3.event.stopPropagation();
+                        d3Selection.event.stopPropagation();
                     });
             },
 
@@ -488,15 +473,15 @@
 
     function mmin(arr) {
         return Math.min.apply(null, arr);
-    };
+    }
 
     function mmax(arr) {
         return Math.max.apply(null, arr);
-    };
+    }
 
     function translate(x, y) {
         return ('translate(' + x + ',' + y + ')');
-    };
+    }
 
     function parseTransform(transform) {
         var result = {x: 0, y: 0, r: 0};
@@ -520,7 +505,7 @@
             result.r = parseFloat(rotateStr.trim());
         }
         return result;
-    };
+    }
 
     /**
      * Returns current transform value and transform value
@@ -537,7 +522,7 @@
             translate0: currentTransform,
             translate: nextTransform
         };
-    };
+    }
 
     /**
      * Returns sum of dynamic transform of an element
@@ -559,7 +544,7 @@
             parent = parent.parentNode;
         }
         return info;
-    };
+    }
 
     function ScrollManager(_scrollContainer) {
 
@@ -637,10 +622,9 @@
             arrayOfSelections.forEach(function (s) {
                 fn.call(context, s);
             });
-        };
-    };
+        }
+    }
 
-    tauCharts.api.plugins.add('floating-axes', floatingAxes);
+    Taucharts.api.plugins.add('floating-axes', floatingAxes);
 
-    return floatingAxes;
-});
+export default floatingAxes;

@@ -1,17 +1,6 @@
-(function (factory) {
-    if (typeof define === 'function' && define.amd) {
-        define(['taucharts'], function (tauPlugins) {
-            return factory(tauPlugins);
-        });
-    } else if (typeof module === 'object' && module.exports) {
-        var tauPlugins = require('taucharts');
-        module.exports = factory(tauPlugins);
-    } else {
-        factory(this.tauCharts);
-    }
-})(function (tauCharts) {
+import Taucharts from 'taucharts';
 
-    var utils = tauCharts.api.utils;
+    var utils = Taucharts.api.utils;
 
     function ChartGeoMapLegend(xSettings) {
 
@@ -67,7 +56,7 @@
                         _delegateEvent(
                             this._container,
                             'click',
-                            'graphical-report__legend__item-color',
+                            'tau-chart__legend__item-color',
                             function (e, currentTarget) {
                                 this._toggleLegendItem(currentTarget);
                             }.bind(this));
@@ -75,7 +64,7 @@
                         _delegateEvent(
                             this._container,
                             'mouseover',
-                            'graphical-report__legend__item-color',
+                            'tau-chart__legend__item-color',
                             function (e, currentTarget) {
                                 this._highlightToggle(currentTarget, true);
                             }.bind(this)
@@ -84,7 +73,7 @@
                         _delegateEvent(
                             this._container,
                             'mouseout',
-                            'graphical-report__legend__item-color',
+                            'tau-chart__legend__item-color',
                             function (e, currentTarget) {
                                 this._highlightToggle(currentTarget, false);
                             }.bind(this)
@@ -103,26 +92,26 @@
                 this._drawFillLegend();
             },
 
-            // jscs:disable maximumLineLength
-            _containerTemplate: '<div class="graphical-report__legend"></div>',
-            _template: utils.template('<div class="graphical-report__legend"><div class="graphical-report__legend__title"><%=name%></div><%=items%></div>'),
+            // tslint:disable max-line-length
+            _containerTemplate: '<div class="tau-chart__legend"></div>',
+            _template: utils.template('<div class="tau-chart__legend"><div class="tau-chart__legend__title"><%=name%></div><%=items%></div>'),
             _itemTemplate: utils.template([
-                '<div data-scale-id=\'<%= scaleId %>\' data-dim=\'<%= dim %>\' data-value=\'<%= value %>\' class="graphical-report__legend__item graphical-report__legend__item-color <%=classDisabled%>">',
-                '<div class="graphical-report__legend__guide__wrap">',
-                '<div class="graphical-report__legend__guide <%=color%>"></div>',
+                '<div data-scale-id=\'<%= scaleId %>\' data-dim=\'<%= dim %>\' data-value=\'<%= value %>\' class="tau-chart__legend__item tau-chart__legend__item-color <%=classDisabled%>">',
+                '<div class="tau-chart__legend__guide__wrap">',
+                '<div class="tau-chart__legend__guide <%=color%>"></div>',
                 '</div>',
                 '<%=label%>',
                 '</div>'
             ].join('')),
             _itemFillTemplate: utils.template([
-                '<div data-value=\'<%=value%>\' class="graphical-report__legend__item graphical-report__legend__item-color" style="padding: 6px 0px 10px 40px;margin-left:10px;">',
-                '<div class="graphical-report__legend__guide__wrap" style="top:0;left:0;">',
-                '   <span class="graphical-report__legend__guide" style="background-color:<%=color%>;border-radius:0"></span>',
+                '<div data-value=\'<%=value%>\' class="tau-chart__legend__item tau-chart__legend__item-color" style="padding: 6px 0px 10px 40px;margin-left:10px;">',
+                '<div class="tau-chart__legend__guide__wrap" style="top:0;left:0;">',
+                '   <span class="tau-chart__legend__guide" style="background-color:<%=color%>;border-radius:0"></span>',
                 '   <span style="padding-left: 20px"><%=label%></span>',
                 '</div>',
                 '</div>'
             ].join('')),
-            // jscs:enable maximumLineLength
+            // tslint:enable max-line-length
 
             _clearPanel: function () {
                 if (this._container) {
@@ -324,7 +313,6 @@
         return plugin;
     }
 
-    tauCharts.api.plugins.add('geomap-legend', ChartGeoMapLegend);
+    Taucharts.api.plugins.add('geomap-legend', ChartGeoMapLegend);
 
-    return ChartGeoMapLegend;
-});
+export default ChartGeoMapLegend;

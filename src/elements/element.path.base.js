@@ -1,65 +1,23 @@
 import {LayerLabels} from './decorators/layer-labels';
 import {CSS_PREFIX} from '../const';
-import {d3_animationInterceptor, d3_transition as transition} from '../utils/d3-decorators';
-import {utils} from '../utils/utils';
-import {utilsDom} from '../utils/utils-dom';
-import {utilsDraw} from '../utils/utils-draw';
-import d3 from 'd3';
+import {
+    d3_animationInterceptor,
+    d3_setAttrs as attrs,
+    d3_setClasses as classes,
+    d3_transition as transition
+} from '../utils/d3-decorators';
+import * as utils from '../utils/utils';
+import * as utilsDom from '../utils/utils-dom';
+import * as utilsDraw from '../utils/utils-draw';
+import {isNonSyntheticRecord} from '../utils/utils-grammar';
+import * as d3 from 'd3-selection';
+import {drawAnchors, highlightAnchors} from './decorators/anchors';
+import {getClosestPointInfo} from '../utils/utils-position';
 
-const synthetic = 'taucharts_synthetic_record';
-const isNonSyntheticRecord = ((row) => row[synthetic] !== true);
+const datumClass = `i-role-datum`;
+const pointPref = `${CSS_PREFIX}dot-line dot-line i-role-dot ${datumClass} ${CSS_PREFIX}dot`;
 
 const BasePath = {
-
-    grammarRuleFillGaps: (model) => {
-        const data = model.data();
-        const groups = utils.groupBy(data, model.group);
-        const fibers = (Object
-            .keys(groups)
-            .sort((a, b) => model.order(a) - model.order(b)))
-            .reduce((memo, k) => memo.concat([groups[k]]), []);
-
-        const dx = model.scaleX.dim;
-        const dy = model.scaleY.dim;
-        const dc = model.scaleColor.dim;
-        const ds = model.scaleSplit.dim;
-        const calcSign = ((row) => ((row[dy] >= 0) ? 1 : -1));
-
-        const gen = (x, sampleRow, sign) => {
-            const genId = [x, model.id(sampleRow), sign].join(' ');
-            return {
-                [dx]: x,
-                [dy]: sign * (1e-10),
-                [ds]: sampleRow[ds],
-                [dc]: sampleRow[dc],
-                [synthetic]: true,
-                [synthetic + 'id']: genId
-            };
-        };
-
-        const merge = (templateSorted, fiberSorted, sign) => {
-            const groups = utils.groupBy(fiberSorted, (row) => row[dx]);
-            const sample = fiberSorted[0];
-            return templateSorted.reduce((memo, k) => memo.concat((groups[k] || (gen(k, sample, sign)))), []);
-        };
-
-        const asc = (a, b) => a - b;
-        const xs = utils
-            .unique(fibers.reduce((memo, fib) => memo.concat(fib.map((row) => row[dx])), []))
-            .sort(asc);
-
-        const nextData = fibers
-            .map((fib) => fib.sort((a, b) => model.xi(a) - model.xi(b)))
-            .reduce((memo, fib) => {
-                const bySign = utils.groupBy(fib, calcSign);
-                return Object.keys(bySign).reduce((memo, s) => memo.concat(merge(xs, bySign[s], s)), memo);
-            }, []);
-
-        return {
-            data: () => nextData,
-            id: (row) => ((row[synthetic]) ? row[synthetic + 'id'] : model.id(row))
-        };
-    },
 
     init(xConfig) {
 
@@ -106,8 +64,6 @@ const BasePath = {
 
     baseModel(screenModel) {
 
-        const datumClass = `i-role-datum`;
-        const pointPref = `${CSS_PREFIX}dot-line dot-line i-role-dot ${datumClass} ${CSS_PREFIX}dot `;
         const kRound = 10000;
         var baseModel = {
             gog: screenModel.model,
@@ -162,15 +118,18 @@ const BasePath = {
 
         const screenModel = node.screenModel;
         const model = this.buildModel(screenModel);
+        this.domElementModel = model;
 
         const createUpdateFunc = d3_animationInterceptor;
 
-        const updateGroupContainer = function () {
+        const classToSelector = (cls) => cls.split(/\s+/g).map((c) => `.${c}`).join('');
 
-            this.attr(model.groupAttributes);
+        const updateGroupContainer = function (selection) {
 
-            const points = this
-                .selectAll('circle')
+            selection.call(attrs(model.groupAttributes));
+
+            const points = selection
+                .selectAll(classToSelector(pointPref))
                 .data((fiber) => (fiber.length <= 1) ? fiber : [], screenModel.id);
             points
                 .exit()
@@ -181,15 +140,16 @@ const BasePath = {
                     (node) => d3.select(node).remove()));
             points
                 .call(createUpdateFunc(guide.animationSpeed, null, model.dotAttributes));
-            points
+            const merged = points
                 .enter()
                 .append('circle')
-                .call(createUpdateFunc(guide.animationSpeed, model.dotAttributesDefault, model.dotAttributes));
+                .call(createUpdateFunc(guide.animationSpeed, model.dotAttributesDefault, model.dotAttributes))
+                .merge(points);
 
-            node.subscribe(points);
+            node.subscribe(merged);
 
             const updatePath = (selection) => {
-                if (config.guide.animationSpeed > 0) {
+                if (config.guide.animationSpeed > 0 && !document.hidden) {
                     // HACK: This call fixes stacked area tween (some paths are intersected on
                     // synthetic points). Maybe caused by async call of `toPoint`.
                     selection.attr(model.pathTween.attr, function (d) {
@@ -205,8 +165,8 @@ const BasePath = {
                 }
             };
 
-            const series = this
-                .selectAll(model.pathElement)
+            const series = selection
+                .selectAll(`${model.pathElement}:not(.i-data-anchor)`)
                 .data((fiber) => (fiber.length > 1) ? [fiber] : [], getDataSetId);
             series
                 .exit()
@@ -217,9 +177,8 @@ const BasePath = {
                     model.pathAttributesUpdateInit,
                     model.pathAttributesUpdateDone,
                     model.afterPathUpdate
-                ))
-                .call(updatePath);
-            series
+                ));
+            const allSeries = series
                 .enter()
                 .append(model.pathElement)
                 .call(createUpdateFunc(
@@ -228,34 +187,14 @@ const BasePath = {
                     model.pathAttributesEnterDone,
                     model.afterPathUpdate
                 ))
+                .merge(series)
                 .call(updatePath);
 
-            node.subscribe(series);
+            node.subscribe(merged);
 
             if (guide.showAnchors !== 'never') {
-                const anchorClass = 'i-data-anchor';
-                const attr = {
-                    r: (guide.showAnchors === 'hover' ? 0 :
-                        ((d) => screenModel.size(d) / 2)
-                    ),
-                    cx: (d) => model.x(d),
-                    cy: (d) => model.y(d),
-                    opacity: (guide.showAnchors === 'hover' ? 0 : 1),
-                    fill: (d) => screenModel.color(d),
-                    class: anchorClass
-                };
-
-                const dots = this
-                    .selectAll(`.${anchorClass}`)
-                    .data((fiber) => fiber.filter(isNonSyntheticRecord), screenModel.id);
-                dots.exit()
-                    .remove();
-                dots.call(createUpdateFunc(guide.animationSpeed, null, attr));
-                dots.enter()
-                    .append('circle')
-                    .call(createUpdateFunc(guide.animationSpeed, {r: 0}, attr));
-
-                node.subscribe(dots);
+                const allDots = drawAnchors(node, model, selection);
+                node.subscribe(allDots);
             }
         };
 
@@ -317,8 +256,7 @@ const BasePath = {
 
         frameBinding.order();
 
-        // TODO: Exclude removed elements from calculation.
-        this._boundsInfo = this._getBoundsInfo(options.container.selectAll('.i-data-anchor')[0]);
+        this._boundsInfo = this._getBoundsInfo(options.container.selectAll('.i-data-anchor').nodes());
 
         node.subscribe(new LayerLabels(
             screenModel.model,
@@ -370,7 +308,7 @@ const BasePath = {
         });
         const split = (values) => {
             if (values.length === 1) {
-                return groups[values];
+                return groups[values[0]];
             }
             const midIndex = Math.ceil(values.length / 2);
             const middle = (values[midIndex - 1] + values[midIndex]) / 2;
@@ -415,33 +353,17 @@ const BasePath = {
                 const distance = Math.abs(flip ? (cursorY - y) : (cursorX - x));
                 const secondaryDistance = Math.abs(flip ? (cursorX - x) : (cursorY - y));
                 return {node: el.node, data: el.data, distance, secondaryDistance, x, y};
-            })
-            .sort((a, b) => (a.distance === b.distance ?
-                (a.secondaryDistance - b.secondaryDistance) :
-                (a.distance - b.distance)
-            ));
+            });
 
-        const largerDistIndex = items.findIndex((d) => (
-            (d.distance !== items[0].distance) ||
-            (d.secondaryDistance !== items[0].secondaryDistance)
-        ));
-        const sameDistItems = (largerDistIndex < 0 ? items : items.slice(0, largerDistIndex));
-        if (sameDistItems.length === 1) {
-            return sameDistItems[0];
-        }
-        const mx = (sameDistItems.reduce((sum, item) => sum + item.x, 0) / sameDistItems.length);
-        const my = (sameDistItems.reduce((sum, item) => sum + item.y, 0) / sameDistItems.length);
-        const angle = (Math.atan2(my - cursorY, mx - cursorX) + Math.PI);
-        const closest = sameDistItems[Math.round((sameDistItems.length - 1) * angle / 2 / Math.PI)];
-        return closest;
+        return getClosestPointInfo(cursorX, cursorY, items);
     },
 
     highlight(filter) {
 
         const container = this.node().config.options.container;
 
-        const x = 'graphical-report__highlighted';
-        const _ = 'graphical-report__dimmed';
+        const x = 'tau-chart__highlighted';
+        const _ = 'tau-chart__dimmed';
 
         const paths = container.selectAll('.i-role-path');
         const targetFibers = paths.data()
@@ -453,10 +375,10 @@ const BasePath = {
         const hasTarget = (targetFibers.length > 0);
 
         paths
-            .classed({
+            .call(classes({
                 [x]: ((fiber) => hasTarget && targetFibers.indexOf(fiber) >= 0),
                 [_]: ((fiber) => hasTarget && targetFibers.indexOf(fiber) < 0)
-            });
+            }));
 
         const classed = {
             [x]: ((d) => filter(d) === true),
@@ -465,45 +387,23 @@ const BasePath = {
 
         container
             .selectAll('.i-role-dot')
-            .classed(classed);
+            .call(classes(classed));
 
         container
             .selectAll('.i-role-label')
-            .classed(classed);
+            .call(classes(classed));
 
         this._sortElements(filter);
     },
 
     highlightDataPoints(filter) {
-        const cssClass = 'i-data-anchor';
-        const screenModel = this.node().screenModel;
-        const showOnHover = this.node().config.guide.showAnchors === 'hover';
-        const rmin = 4; // Min highlight radius
-        const rx = 1.25; // Highlight multiplier
-        const unit = this.node();
-        const container = unit.config.options.container;
-        const dots = container
-            .selectAll(`.${cssClass}`)
-            .attr({
-                r: (showOnHover ?
-                    ((d) => filter(d) ? Math.max(rmin, (screenModel.size(d) / 2)) : 0) :
-                    ((d) => {
-                        // NOTE: Highlight point with larger radius.
-                        var r = screenModel.size(d) / 2;
-                        if (filter(d)) {
-                            r = Math.max(rmin, Math.ceil(r * rx));
-                        }
-                        return r;
-                    })
-                ),
-                opacity: (showOnHover ? ((d) => filter(d) ? 1 : 0) : 1),
-                fill: (d) => screenModel.color(d),
-                class: (d) => utilsDom.classes(cssClass, screenModel.class(d))
-            })
-            .classed(`${CSS_PREFIX}highlighted`, filter);
+        const node = this.node();
+        const elModel = this.domElementModel;
+        const dots = highlightAnchors(node, elModel, filter);
+        const container = node.config.options.container;
 
         // Display cursor line
-        const flip = unit.config.flip;
+        const flip = node.config.flip;
         const highlighted = dots.filter(filter);
         var cursorLine = container.select('.cursor-line');
         if (highlighted.empty()) {
@@ -512,7 +412,7 @@ const BasePath = {
             if (cursorLine.empty()) {
                 cursorLine = container.append('line');
             }
-            const model = unit.screenModel.model;
+            const model = node.screenModel.model;
             const x1 = model.xi(highlighted.data()[0]);
             const x2 = model.xi(highlighted.data()[0]);
             const domain = model.scaleY.domain();

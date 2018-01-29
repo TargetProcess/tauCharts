@@ -1,26 +1,16 @@
-(function (factory) {
-    if (typeof define === 'function' && define.amd) {
-        define(['taucharts'], function (tauPlugins) {
-            return factory(tauPlugins);
-        });
-    } else if (typeof module === 'object' && module.exports) {
-        var tauPlugins = require('taucharts');
-        module.exports = factory(tauPlugins);
-    } else {
-        factory(this.tauCharts);
-    }
-})(function (tauCharts) {
+import Taucharts from 'taucharts';
+import * as d3 from 'd3-selection';
 
-    var d3 = tauCharts.api.d3;
-    var utils = tauCharts.api.utils;
-    var svgUtils = tauCharts.api.svgUtils;
-    var pluginsSDK = tauCharts.api.pluginsSDK;
+const svgNS = 'http://www.w3.org/2000/svg';
+    var utils = Taucharts.api.utils;
+    var svgUtils = Taucharts.api.svgUtils;
+    var pluginsSDK = Taucharts.api.pluginsSDK;
 
     function labelBox(options) {
 
         options = (options || {});
 
-        var node = document.createElementNS(d3.ns.prefix.svg, 'g');
+        var node = document.createElementNS(svgNS, 'g');
 
         var g = d3.select(node).attr('class', 'tau-crosshair__label');
         g.append('rect').attr('class', 'tau-crosshair__label__box');
@@ -163,7 +153,7 @@
             _createNode: function () {
 
                 var root = d3.select(
-                    document.createElementNS(d3.ns.prefix.svg, 'g'))
+                    document.createElementNS(svgNS, 'g'))
                     .attr('class', 'tau-crosshair');
                 this._labels = {x: null, y: null};
                 var createAxisNode = function (dir) {
@@ -309,8 +299,12 @@
 
                 var box = e.node.getBBox();
                 var pad = (function getCrossPadding() {
-                    if (unit.config.type === 'ELEMENT.INTERVAL' ||
-                        unit.config.type === 'ELEMENT.INTERVAL.STACKED') {
+                    const paddingElements = [
+                        'ELEMENT.AREA',
+                        'ELEMENT.INTERVAL',
+                        'ELEMENT.INTERVAL.STACKED',
+                    ];
+                    if (paddingElements.indexOf(unit.config.type) >= 0) {
                         return {
                             x: (box.width * (unit.config.flip ? xValue > 0 ? 1 : 0 : 0.5)),
                             y: (box.height * (unit.config.flip ? 0.5 : yValue > 0 ? 1 : 0))
@@ -377,7 +371,7 @@
                                 this._hideCrosshair();
                                 return;
                             }
-                            if (unit.data().indexOf(e.data) >= 0) {
+                            if (unit === e.unit) {
                                 var parentUnit = pluginsSDK.getParentUnit(this._chart.getSpec(), unit.config);
                                 this._showCrosshair(e, unit, parentUnit);
                             }
@@ -386,70 +380,23 @@
             },
 
             _getFormat: function (k) {
-                var info = this._formatters[k] || {
-                    format: function (x) {
-                        return String(x);
-                    }
-                };
-                return info.format;
+                return (this._formatters[k] ?
+                    this._formatters[k].format :
+                    (x) => String(x));
             },
 
             onRender: function () {
 
-                this._formatters = this._getFormatters();
+                this._formatters = pluginsSDK.getFieldFormatters(
+                    this._chart.getSpec(),
+                    settings.formatters);
                 this._subscribeToHover();
-            },
-
-            _getFormatters: function () {
-
-                var info = pluginsSDK.extractFieldsFormatInfo(this._chart.getSpec());
-                Object.keys(info).forEach(function (k) {
-                    if (info[k].parentField) {
-                        delete info[k];
-                    }
-                });
-
-                var toLabelValuePair = function (x) {
-
-                    var res = {};
-
-                    if (typeof x === 'function' || typeof x === 'string') {
-                        res = {format: x};
-                    } else if (utils.isObject(x)) {
-                        res = utils.pick(x, 'label', 'format', 'nullAlias');
-                    }
-
-                    return res;
-                };
-
-                Object.keys(settings.formatters).forEach(function (k) {
-
-                    var fmt = toLabelValuePair(settings.formatters[k]);
-
-                    info[k] = Object.assign(
-                        ({label: k, nullAlias: ('No ' + k)}),
-                        (info[k] || {}),
-                        (utils.pick(fmt, 'label', 'nullAlias')));
-
-                    if (fmt.hasOwnProperty('format')) {
-                        info[k].format = (typeof fmt.format === 'function') ?
-                            (fmt.format) :
-                            (tauCharts.api.tickFormat.get(fmt.format, info[k].nullAlias));
-                    } else {
-                        info[k].format = (info[k].hasOwnProperty('format')) ?
-                            (info[k].format) :
-                            (tauCharts.api.tickFormat.get(null, info[k].nullAlias));
-                    }
-                });
-
-                return info;
             }
         };
 
         return plugin;
     }
 
-    tauCharts.api.plugins.add('crosshair', Crosshair);
+    Taucharts.api.plugins.add('crosshair', Crosshair);
 
-    return Crosshair;
-});
+export default Crosshair;

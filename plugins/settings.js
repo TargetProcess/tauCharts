@@ -1,17 +1,6 @@
-(function (factory) {
-    if (typeof define === 'function' && define.amd) {
-        define(['taucharts'], function (tauPlugins) {
-            return factory(tauPlugins);
-        });
-    } else if (typeof module === 'object' && module.exports) {
-        var tauPlugins = require('taucharts');
-        module.exports = factory(tauPlugins);
-    } else {
-        factory(this.tauCharts);
-    }
-})(function (tauCharts) {
+import Taucharts from 'taucharts';
 
-    var utils = tauCharts.api.utils;
+    var utils = Taucharts.api.utils;
 
     function ChartSettings(xSettings) {
 
@@ -61,19 +50,18 @@
 
             template: utils.template(
                 [
-                    '<div class="graphical-report__chartsettingspanel">',
-                        '<div>',
-                            '<span>View Mode:&nbsp;</span>',
-                            '<select class="i-role-fit-model graphical-report__select">',
-                            '<%= modes %> />',
-                            '</select>',
-                        '</div>',
+                    '<div class="tau-chart__chartsettingspanel">',
+                    '    <div>',
+                    '        <span>View Mode:&nbsp;</span>',
+                    '        <select class="i-role-fit-model tau-chart__select">',
+                    '        <%= modes %> />',
+                    '        </select>',
+                    '    </div>',
                     '</div>'
                 ].join(''))
         };
     }
 
-    tauCharts.api.plugins.add('settings', ChartSettings);
+    Taucharts.api.plugins.add('settings', ChartSettings);
 
-    return ChartSettings;
-});
+export default ChartSettings;

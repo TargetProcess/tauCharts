@@ -1,14 +1,13 @@
-define(function(require) {
-    var expect = require('chai').expect;
-    var schemes = require('schemes');
-    var testUtils = require('testUtils');
-    var tauCharts = require('src/tau.charts');
-    var tauBrewer = require('brewer');
+import {assert, expect} from 'chai';
+import * as d3 from 'd3-selection';
+import schemes from './utils/schemes';
+import testUtils from './utils/utils';
+import Taucharts from '../src/tau.charts';
+import tauBrewer from '../src/addons/color-brewer';
     var getDots = testUtils.getDots;
     var hasClass = testUtils.hasClass;
     var attrib = testUtils.attrib;
     var position = testUtils.position;
-    var assert = require('chai').assert;
     var testData = [
         {x: 1, y: 1, color: 'red', size: 6},
         {x: 0.5, y: 0.5, color: 'green', size: 6},
@@ -207,7 +206,7 @@ define(function(require) {
                         y: 'y',
                         color: 'color',
                         guide: {
-                            color: {brewer: tauCharts.api.colorBrewers.get('tauBrewer')('YlGn', 3)}
+                            color: {brewer: Taucharts.api.colorBrewers.get('tauBrewer')('YlGn', 3)}
                         }
                     }
                 ]
@@ -399,53 +398,53 @@ define(function(require) {
                 var svg0 = context.chart.getSVG();
                 expect(svg0.querySelectorAll('.dot').length).to.equals(4);
                 expect(svg0.querySelectorAll('.i-role-label').length).to.equals(4);
-                expect(svg0.querySelectorAll('.graphical-report__highlighted').length).to.equals(0);
-                expect(svg0.querySelectorAll('.graphical-report__dimmed').length).to.equals(0);
+                expect(svg0.querySelectorAll('.tau-chart__highlighted').length).to.equals(0);
+                expect(svg0.querySelectorAll('.tau-chart__dimmed').length).to.equals(0);
 
                 var pointNode = context.chart.select((n) => n.config.type === 'ELEMENT.POINT')[0];
                 pointNode.fire('highlight', ((row) => (row.color === 'green')));
 
                 var svg1 = context.chart.getSVG();
                 expect(svg1.querySelectorAll('.dot').length).to.equals(4);
-                expect(svg1.querySelectorAll('.dot.graphical-report__highlighted').length).to.equals(1);
-                expect(svg1.querySelectorAll('.dot.graphical-report__dimmed').length).to.equals(3);
+                expect(svg1.querySelectorAll('.dot.tau-chart__highlighted').length).to.equals(1);
+                expect(svg1.querySelectorAll('.dot.tau-chart__dimmed').length).to.equals(3);
 
-                expect(svg1.querySelectorAll('.i-role-label.graphical-report__highlighted').length).to.equals(1);
-                expect(svg1.querySelectorAll('.i-role-label.graphical-report__dimmed').length).to.equals(3);
+                expect(svg1.querySelectorAll('.i-role-label.tau-chart__highlighted').length).to.equals(1);
+                expect(svg1.querySelectorAll('.i-role-label.tau-chart__dimmed').length).to.equals(3);
 
                 pointNode.fire('highlight', ((row) => null));
 
                 var svg2 = context.chart.getSVG();
                 expect(svg2.querySelectorAll('.dot').length).to.equals(4);
-                expect(svg2.querySelectorAll('.dot.graphical-report__highlighted').length).to.equals(0);
-                expect(svg2.querySelectorAll('.dot.graphical-report__dimmed').length).to.equals(0);
+                expect(svg2.querySelectorAll('.dot.tau-chart__highlighted').length).to.equals(0);
+                expect(svg2.querySelectorAll('.dot.tau-chart__dimmed').length).to.equals(0);
 
                 expect(svg2.querySelectorAll('.i-role-label').length).to.equals(4);
-                expect(svg2.querySelectorAll('.i-role-label.graphical-report__highlighted').length).to.equals(0);
-                expect(svg2.querySelectorAll('.i-role-label.graphical-report__dimmed').length).to.equals(0);
+                expect(svg2.querySelectorAll('.i-role-label.tau-chart__highlighted').length).to.equals(0);
+                expect(svg2.querySelectorAll('.i-role-label.tau-chart__dimmed').length).to.equals(0);
             });
 
             it("should react on mouseover / mouseout events", function () {
                 var svg0 = context.chart.getSVG();
                 expect(svg0.querySelectorAll('.dot').length).to.equals(4);
                 expect(svg0.querySelectorAll('.i-role-label').length).to.equals(4);
-                expect(svg0.querySelectorAll('.graphical-report__highlighted').length).to.equals(0);
-                expect(svg0.querySelectorAll('.graphical-report__dimmed').length).to.equals(0);
+                expect(svg0.querySelectorAll('.tau-chart__highlighted').length).to.equals(0);
+                expect(svg0.querySelectorAll('.tau-chart__dimmed').length).to.equals(0);
 
                 var pointNode = context.chart.select((n) => n.config.type === 'ELEMENT.POINT')[0];
                 pointNode.fire('data-hover', {data:context.chart.getData()[0]});
 
                 var svg1 = context.chart.getSVG();
                 expect(svg1.querySelectorAll('.dot').length).to.equals(4);
-                expect(svg1.querySelectorAll('.dot.graphical-report__highlighted').length).to.equals(1);
-                expect(svg1.querySelectorAll('.dot.graphical-report__dimmed').length).to.equals(0);
+                expect(svg1.querySelectorAll('.dot.tau-chart__highlighted').length).to.equals(1);
+                expect(svg1.querySelectorAll('.dot.tau-chart__dimmed').length).to.equals(0);
 
                 pointNode.fire('data-hover', {});
 
                 var svg2 = context.chart.getSVG();
                 expect(svg2.querySelectorAll('.dot').length).to.equals(4);
-                expect(svg2.querySelectorAll('.dot.graphical-report__highlighted').length).to.equals(0);
-                expect(svg2.querySelectorAll('.dot.graphical-report__dimmed').length).to.equals(0);
+                expect(svg2.querySelectorAll('.dot.tau-chart__highlighted').length).to.equals(0);
+                expect(svg2.querySelectorAll('.dot.tau-chart__dimmed').length).to.equals(0);
             });
         },
         {
@@ -491,15 +490,14 @@ define(function(require) {
                 var points = svg.querySelectorAll('.dot');
 
                 testUtils.simulateEvent('mousemove', svg, cx, cy - 10);
-                var highlighted1 = d3.select('.graphical-report__highlighted');
+                var highlighted1 = d3.select('.tau-chart__highlighted');
                 expect(highlighted1.data()[0].color).to.equal('green');
                 expect(document.elementFromPoint(cx, cy)).to.equal(highlighted1.node());
 
                 testUtils.simulateEvent('mousemove', svg, cx, cy + 10);
-                var highlighted2 = d3.select('.graphical-report__highlighted');
+                var highlighted2 = d3.select('.tau-chart__highlighted');
                 expect(highlighted2.data()[0].color).to.equal('yellow');
                 expect(document.elementFromPoint(cx, cy)).to.equal(highlighted2.node());
             });
         }
     );
-});

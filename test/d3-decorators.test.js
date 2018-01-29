@@ -1,7 +1,7 @@
-var expect = require('chai').expect;
-var schemes = require('schemes');
-var modernizer = require('bower_components/modernizer/modernizr');
-var d3Decorator = require('src/utils/d3-decorators');
+import {expect} from 'chai';
+import schemes from './utils/schemes';
+import * as d3Decorator from '../src/utils/d3-decorators';
+import * as d3 from 'd3-selection';
 
 describe('d3-decorators', function () {
     var div;
@@ -154,10 +154,8 @@ describe('d3-decorators', function () {
                 expect(+node.getAttribute('dy')).to.be.above(0);
                 expect(+node.getAttribute('dy')).to.be.below(10);
                 transition(d3.select(div).selectAll('text'), 200)
-                    .attr({
-                        'x': function (d) { return d.n; },
-                        'dy': 0
-                    })
+                    .attr('x', (d) => d.n)
+                    .attr('dy', 0)
                     .onTransitionEnd(final(function () {
                         expect(+node.getAttribute('dy')).to.equal(0);
                         expect(+node.getAttribute('x')).to.equal(4);

@@ -2,11 +2,12 @@ import {CSS_PREFIX} from '../const';
 import {BasePath} from './element.path.base';
 import {GrammarRegistry} from '../grammar-registry';
 import {getLineClassesByWidth, getLineClassesByCount} from '../utils/css-class-map';
-import {utils} from '../utils/utils';
+import * as utils from '../utils/utils';
 import {d3_createPathTween} from '../utils/d3-decorators';
 import {getInterpolatorSplineType} from '../utils/path/interpolators/interpolators-registry';
 import {getBrushLine, getBrushCurve} from '../utils/path/svg/brush-line';
 import {getPolyline, getCurve} from '../utils/path/svg/line';
+import {useFillGapsRule} from '../utils/utils-grammar';
 
 const Line = {
 
@@ -33,7 +34,7 @@ const Line = {
         config.transformRules = [
             config.flip && GrammarRegistry.get('flip'),
             !enableStack && GrammarRegistry.get('groupOrderByAvg'),
-            enableStack && BasePath.grammarRuleFillGaps,
+            useFillGapsRule(config),
             enableStack && GrammarRegistry.get('stack')
         ];
 
@@ -119,6 +120,7 @@ const Line = {
         };
 
         baseModel.pathElement = 'path';
+        baseModel.anchorShape = 'circle';
         baseModel.pathAttributesEnterInit = pathAttributes;
         baseModel.pathAttributesUpdateDone = pathAttributes;
         baseModel.pathTween = {

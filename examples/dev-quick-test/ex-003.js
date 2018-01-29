@@ -10,8 +10,8 @@ dev.spec({
         "effort": {"type": "measure"}
     },
     plugins: [
-        tauCharts.api.plugins.get('trendline')(),
-        tauCharts.api.plugins.get('tooltip')({fields: ['team', 'count', 'month']})
+        Taucharts.api.plugins.get('trendline')(),
+        Taucharts.api.plugins.get('tooltip')({fields: ['team', 'count', 'month']})
     ],
     data: [
         {

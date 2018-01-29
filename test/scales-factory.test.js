@@ -1,17 +1,17 @@
-define(function (require) {
-    var expect = require('chai').expect;
-    var ScalesRegistry = require('src/scales-registry').scalesRegistry;
-    var ScalesFactory = require('src/scales-factory').ScalesFactory;
-    var ValueScale = require('src/scales/value').ValueScale;
-    var TimeScale = require('src/scales/time').TimeScale;
-    var LinearScale = require('src/scales/linear').LinearScale;
-    var LogarithmicScale = require('src/scales/logarithmic').LogarithmicScale;
-    var PeriodScale = require('src/scales/period').PeriodScale;
-    var ColorScale = require('src/scales/color').ColorScale;
-    var SizeScale = require('src/scales/size').SizeScale;
-    var OrdinalScale = require('src/scales/ordinal').OrdinalScale;
-    var FillScale = require('src/scales/fill').FillScale;
-    var utils = require('src/utils/utils').utils;
+import {expect} from 'chai';
+import * as d3 from 'd3-scale';
+import {scalesRegistry as ScalesRegistry} from '../src/scales-registry';
+import {ScalesFactory} from '../src/scales-factory';
+import {ValueScale} from '../src/scales/value';
+import {TimeScale} from '../src/scales/time';
+import {LinearScale} from '../src/scales/linear';
+import {LogarithmicScale} from '../src/scales/logarithmic';
+import {PeriodScale} from '../src/scales/period';
+import {ColorScale} from '../src/scales/color';
+import {SizeScale} from '../src/scales/size';
+import {OrdinalScale} from '../src/scales/ordinal';
+import {FillScale} from '../src/scales/fill';
+import * as utils from '../src/utils/utils';
 
     describe('scales-registry', function () {
 
@@ -280,13 +280,111 @@ define(function (require) {
                 (myDate.getTime() - oneDay),
                 (myDate.getTime() + oneDay)
             ];
-            var expectedRange = d3.time.scale().domain(interval).nice().domain();
+            var expectedRange = d3.scaleTime().domain(interval).nice().domain();
 
             expect(scaleSingleValue.domain().map(x => x.getTime()))
                 .to
                 .deep
                 .equal(expectedRange.map(x => x.getTime()));
         });
+
+    it('should set intervals for time scale', function () {
+        var data = [
+            {t: new Date('2017-01-01T10:00Z')},
+            {t: new Date('2017-01-02T05:00Z')},
+            {t: new Date('2017-01-04T02:00Z')}
+        ];
+
+        var dayScale = new TimeScale(
+            {
+                part: () => data.slice(),
+                full: () => data.slice()
+            },
+            {
+                dim: 't',
+                nice: true,
+                period: 'day',
+                utcTime: true
+            }).create([0, 100]);
+    
+        var monthScale = new TimeScale(
+            {
+                part: () => data.slice(),
+                full: () => data.slice()
+            },
+            {
+                dim: 't',
+                period: 'month',
+                utcTime: true
+            }).create([0, 100]);
+
+        expect(dayScale.domain().map(x => x.getTime()))
+            .to
+            .deep
+            .equal([new Date('2017-01-01T00:00Z'), new Date('2017-01-04T00:00Z')].map((d) => d.getTime()), 'domain rounded to day');
+
+        expect(monthScale.domain().map(x => x.getTime()))
+            .to
+            .deep
+            .equal([new Date('2016-12-01T00:00Z'), new Date('2017-02-01T00:00Z')].map((d) => d.getTime()), 'domain with single month extended with 1 interval');
+    });
+
+    it('should extend time scale with intervals when single value', function () {
+        var data = [
+            {t: new Date('2017-01-01T10:00Z')},
+            {t: new Date('2017-01-02T05:00Z')},
+            {t: new Date('2017-01-04T02:00Z')}
+        ];
+        var dayScale = new TimeScale(
+            {
+                part: () => data.slice(),
+                full: () => data.slice()
+            },
+            {
+                dim: 't',
+                nice: true,
+                period: 'day',
+                utcTime: true
+            }).create([0, 100]);
+
+        expect(dayScale.domain().map(x => x.getTime()))
+            .to
+            .deep
+            .equal([new Date('2017-01-01T00:00Z'), new Date('2017-01-04T00:00Z')].map((d) => d.getTime()));
+
+        expect(dayScale.ticks(10))
+            .to
+            .deep
+            .equal([new Date('2017-01-01T00:00Z'), new Date('2017-01-02T00:00Z'), new Date('2017-01-03T00:00Z'), new Date('2017-01-04T00:00Z')]);
+    });
+
+    it('should generate periodic time ticks with fallback for large ticks count', function () {
+        var data = [
+            {t: new Date('2017-01-01T10:00Z')},
+            {t: new Date('2017-04-01T02:00Z')}
+        ];
+        var dayScale = new TimeScale(
+            {
+                part: () => data.slice(),
+                full: () => data.slice()
+            },
+            {
+                dim: 't',
+                nice: true,
+                period: 'day',
+                utcTime: true
+            }).create([0, 100]);
+
+        expect(dayScale.ticks(5))
+            .to
+            .deep
+            .equal([
+                new Date('2017-01-01T00:00Z'),
+                new Date('2017-02-01T00:00Z'),
+                new Date('2017-03-01T00:00Z'),
+                new Date('2017-04-01T00:00Z')
+            ]);
+    });
 
         it('should support [period] scale', function () {
 
@@ -490,12 +588,12 @@ define(function (require) {
                     return this.data;
                 }
             };
-            xLog10Src = new DataSource([
+            var xLog10Src = new DataSource([
                 {i: high, s: -3, x: 'high', t: new Date('2015-04-17').getTime()},
                 {i: low, s: 3, x: 'low', t: new Date('2015-04-16').getTime()},
                 {i: medium, s: 1, x: 'medium', t: new Date('2015-04-19').getTime()}
             ]);
-            xLog10NegativeSrc = new DataSource(xLog10Src.data.map((d) => {
+            var xLog10NegativeSrc = new DataSource(xLog10Src.data.map((d) => {
                 return {i: -d.i, s: d.s, x: d.x, t: d.t};
             }));
 
@@ -897,9 +995,9 @@ define(function (require) {
                 }).create();
 
             expect(negPosRgbScale.domain()).to.deep.equal([-9, 101]);
-            expect(negPosRgbScale(-9)).to.equal('#ffffff');
-            expect(negPosRgbScale(0)).to.equal('#eaeaea');
-            expect(negPosRgbScale(101)).to.equal('#000000');
+            expect(negPosRgbScale(-9)).to.equal('rgb(255, 255, 255)');
+            expect(negPosRgbScale(0)).to.equal('rgb(234, 234, 234)');
+            expect(negPosRgbScale(101)).to.equal('rgb(0, 0, 0)');
 
             var posPosRgbScale = new ColorScale(
                 {
@@ -918,8 +1016,8 @@ define(function (require) {
                 }).create();
 
             expect(posPosRgbScale.domain()).to.deep.equal([9, 101]);
-            expect(posPosRgbScale(9)).to.equal('#ffffff');
-            expect(posPosRgbScale(101)).to.equal('#000000');
+            expect(posPosRgbScale(9)).to.equal('rgb(255, 255, 255)');
+            expect(posPosRgbScale(101)).to.equal('rgb(0, 0, 0)');
 
             var negNegRgbScale = new ColorScale(
                 {
@@ -938,8 +1036,8 @@ define(function (require) {
                 }).create();
 
             expect(negNegRgbScale.domain()).to.deep.equal([-101, -9]);
-            expect(negNegRgbScale(-101)).to.equal('#ffffff');
-            expect(negNegRgbScale(-9)).to.equal('#000000');
+            expect(negNegRgbScale(-101)).to.equal('rgb(255, 255, 255)');
+            expect(negNegRgbScale(-9)).to.equal('rgb(0, 0, 0)');
         });
 
         it('should support rgb-based [color] scale nice = true', function () {
@@ -961,9 +1059,9 @@ define(function (require) {
                 }).create();
 
             expect(negPosRgbScale.domain()).to.deep.equal([-101, 101]);
-            expect(negPosRgbScale(-101)).to.equal('#ffffff');
-            expect(negPosRgbScale(0)).to.equal('#808080');
-            expect(negPosRgbScale(101)).to.equal('#000000');
+            expect(negPosRgbScale(-101)).to.equal('rgb(255, 255, 255)');
+            expect(negPosRgbScale(0)).to.equal('rgb(128, 128, 128)');
+            expect(negPosRgbScale(101)).to.equal('rgb(0, 0, 0)');
 
             var posPosRgbScale = new ColorScale(
                 {
@@ -982,8 +1080,8 @@ define(function (require) {
                 }).create();
 
             expect(posPosRgbScale.domain()).to.deep.equal([9, 101]);
-            expect(posPosRgbScale(9)).to.equal('#ffffff');
-            expect(posPosRgbScale(101)).to.equal('#000000');
+            expect(posPosRgbScale(9)).to.equal('rgb(255, 255, 255)');
+            expect(posPosRgbScale(101)).to.equal('rgb(0, 0, 0)');
 
             var negNegRgbScale = new ColorScale(
                 {
@@ -1002,8 +1100,8 @@ define(function (require) {
                 }).create();
 
             expect(negNegRgbScale.domain()).to.deep.equal([-101, -9]);
-            expect(negNegRgbScale(-101)).to.equal('#ffffff');
-            expect(negNegRgbScale(-9)).to.equal('#000000');
+            expect(negNegRgbScale(-101)).to.equal('rgb(255, 255, 255)');
+            expect(negNegRgbScale(-9)).to.equal('rgb(0, 0, 0)');
         });
 
         it('should support rgb-based [color] scale with min / max specified', function () {
@@ -1028,8 +1126,8 @@ define(function (require) {
 
             expect(scale0.domain()).to.deep.equal([-100, 110]);
             expect(scale0.originalSeries()).to.deep.equal([0, 10, 100]);
-            expect(scale0(-100)).to.equal('#ff0000');
-            expect(scale0(110)).to.equal('#0000ff');
+            expect(scale0(-100)).to.equal('rgb(255, 0, 0)');
+            expect(scale0(110)).to.equal('rgb(0, 0, 255)');
 
             var scale1 = new ColorScale(
                 {
@@ -1050,9 +1148,9 @@ define(function (require) {
                 }).create();
 
             expect(scale1.domain()).to.deep.equal([-110, 110]);
-            expect(scale1(-110)).to.equal('#ff0000');
-            expect(scale1(0)).to.equal('#eeeeee');
-            expect(scale1(110)).to.equal('#0000ff');
+            expect(scale1(-110)).to.equal('rgb(255, 0, 0)');
+            expect(scale1(0)).to.equal('rgb(238, 238, 238)');
+            expect(scale1(110)).to.equal('rgb(0, 0, 255)');
         });
 
         it('should support fixed series property in linear scale config', function () {
@@ -1105,4 +1203,3 @@ define(function (require) {
             expect(scale1('D')).to.equal(87.5);
         });
     });
-});

@@ -1,18 +1,18 @@
 // jscs:disable disallowQuotedKeysInObjects
 // jscs:disable validateQuoteMarks
-define(function (require) {
-    var expect = require('chai').expect;
-    var schemes = require('schemes');
-    var assert = require('chai').assert;
-    var tauCharts = require('src/tau.charts');
-    var Cartesian = require('src/elements/coords.cartesian').Cartesian;
-    var Interval = require('src/elements/element.interval').Interval;
-    var ScalesFactory = require('src/scales-factory').ScalesFactory;
-    var utils = require('src/utils/utils').utils;
-    var testUtils = require('testUtils');
+import {expect} from 'chai';
+import schemes from './utils/schemes';
+import {assert} from 'chai';
+import * as d3 from 'd3-selection';
+import Taucharts from '../src/tau.charts';
+import {Cartesian as Cartesian} from '../src/elements/coords.cartesian';
+import {Interval as Interval} from '../src/elements/element.interval';
+import {ScalesFactory as ScalesFactory} from '../src/scales-factory';
+import * as utils from '../src/utils/utils';
+import testUtils from './utils/utils';
 
     var iref = 0;
-    var scalesRegistry = tauCharts.api.scalesRegistry.instance({
+    var scalesRegistry = Taucharts.api.scalesRegistry.instance({
         references: new WeakMap(),
         refCounter: (() => (++iref))
     });
@@ -154,7 +154,7 @@ define(function (require) {
                     context.element = document.createElement('div');
                     document.body.appendChild(context.element);
 
-                    // tauCharts.Plot.globalSettings = testChartSettings;
+                    // Taucharts.Plot.globalSettings = testChartSettings;
 
                     var sss = convertSpec(spec, data);
                     if (size.print) {
@@ -164,7 +164,7 @@ define(function (require) {
                     sss.settings = sss.settings || {};
                     sss.settings.specEngine = 'NONE';
                     sss.settings.layoutEngine = 'NONE';
-                    context.chart = new tauCharts.Plot(sss);
+                    context.chart = new Taucharts.Plot(sss);
                     context.chart.renderTo(
                         context.element,
                         {
@@ -191,15 +191,17 @@ define(function (require) {
         };
 
         coords = [coords.reduce((m, c) => m.concat(c), [])];
-        coords.forEach((c) => c.sort((a, b) => {
-            var result = 0;
-            sortFields.every((f) => {
-                var prop = f.replace('-', '');
-                result = ((a[prop] - b[prop]) * [1, -1][Number(f[0] === '-')]);
-                return (result === 0);
-            })
-            return result;
-        }));
+        if (sortFields.length > 0) {
+            coords.forEach((c) => c.sort((a, b) => {
+                var result = 0;
+                sortFields.every((f) => {
+                    var prop = f.replace('-', '');
+                    result = ((a[prop] - b[prop]) * [1, -1][Number(f[0] === '-')]);
+                    return (result === 0);
+                })
+                return result;
+            }));
+        }
 
         bars.forEach(function (bar, index) {
             Array.from(bar.childNodes).forEach(function (el, ind) {
@@ -361,37 +363,37 @@ define(function (require) {
                 expectCoordsElement(expect, [
                     [
                         {
-                            "x": 100,  // a100
-                            "y": 100,
-                            width: 1,
-                            height: 20
-                        },
-                        {
-                            "x": 75,  // b50
-                            "y": 60,
+                            x: -1,  // c-100
+                            y: 40,
                             width: 1,
                             height: 60
                         },
                         {
-                            "x": 25,  // c-50
-                            "y": 20,
+                            x: 25,  // c-50
+                            y: 40,
                             width: 1,
-                            height: 100
+                            height: 60
                         },
                         {
-                            "x": -1,  // c-100
-                            "y": 20,
+                            x: 50,  // c0
+                            y: 40,
                             width: 1,
-                            height: 100
+                            height: 60
                         },
                         {
-                            "x": 50,  // c0
-                            "y": 20,
+                            x: 75,  // b50
+                            y: 40,
                             width: 1,
-                            height: 100
+                            height: 20
+                        },
+                        {
+                            x: 100,  // a100
+                            y: 20,
+                            width: 1,
+                            height: 20
                         }
                     ]
-                ], '-height', 'x');
+                ]);
             });
         },
         {
@@ -434,40 +436,14 @@ define(function (require) {
         ],
         function () {
             it('should contain correct interval elements', function () {
-
-                var colorsCount = 3;
-                var stepSize = 120 / colorsCount;
-                var barWidth = stepSize / 2;
-                var xi = (i) => (stepSize * i + (stepSize - barWidth) / 2);
-
                 expectCoordsElement(expect, [
                     [
-                        {
-                            "x": xi(0),
-                            "y": 100,
-                            width: barWidth,
-                            height: 20
-                        },
-                        {
-                            "x": xi(1),
-                            "y": 60,
-                            width: barWidth,
-                            height: 60
-                        },
-                        {
-                            "x": xi(2),
-                            "y": 20,
-                            width: barWidth,
-                            height: 100
-                        },
-                        {
-                            "x": xi(2),
-                            "y": 60,
-                            width: barWidth,
-                            height: 60
-                        }
+                        {x: 90, y: 40, width: 20, height: 60},
+                        {x: 10, y: 20, width: 20, height: 20},
+                        {x: 50, y: 40, width: 20, height: 20},
+                        {x: 90, y: 40, width: 20, height: 20}
                     ]
-                ], '-height', 'x');
+                ]);
             });
         },
         {
@@ -520,7 +496,15 @@ define(function (require) {
                     [
                         {
                             "x": 50,    // 100
-                            "y": 96,
+                            "y": 16,
+                            height: barWidth,
+                            width: 50
+                        }
+                    ],
+                    [
+                        {
+                            "x": 0,     // -100
+                            "y": 100,
                             height: barWidth,
                             width: 50
                         }
@@ -534,20 +518,12 @@ define(function (require) {
                         },
                         {
                             "x": 50,    // 0
-                            "y": 13,
+                            "y": 93,
                             height: barWidth,
                             width: 0
                         }
                     ],
-                    [
-                        {
-                            "x": 0,     // -100
-                            "y": 20,
-                            height: barWidth,
-                            width: 50
-                        }
-                    ]
-                ], '-width', 'y');
+                ]);
             });
         },
         {
@@ -661,7 +637,7 @@ define(function (require) {
                     [
                         {
                             "x": 0,
-                            "y": xi(2),
+                            "y": xi(0),
                             height: barWidth,
                             width: 20
                         },
@@ -679,7 +655,7 @@ define(function (require) {
                         },
                         {
                             "x": 0,
-                            "y": xi(0),
+                            "y": xi(2),
                             height: barWidth,
                             width: 100
                         }
@@ -972,52 +948,52 @@ define(function (require) {
                 var svg0 = context.chart.getSVG();
                 expect(svg0.querySelectorAll('.bar').length).to.equals(4);
                 expect(svg0.querySelectorAll('.i-role-label').length).to.equals(4);
-                expect(svg0.querySelectorAll('.graphical-report__highlighted').length).to.equals(0);
-                expect(svg0.querySelectorAll('.graphical-report__dimmed').length).to.equals(0);
+                expect(svg0.querySelectorAll('.tau-chart__highlighted').length).to.equals(0);
+                expect(svg0.querySelectorAll('.tau-chart__dimmed').length).to.equals(0);
 
                 var intervalNode = context.chart.select((n) => n.config.type === 'ELEMENT.INTERVAL')[0];
                 intervalNode.fire('highlight', ((row) => (row.color === 'green')));
 
                 var svg1 = context.chart.getSVG();
                 expect(svg1.querySelectorAll('.bar').length).to.equals(4);
-                expect(svg1.querySelectorAll('.bar.graphical-report__highlighted').length).to.equals(1);
-                expect(svg1.querySelectorAll('.bar.graphical-report__dimmed').length).to.equals(3);
+                expect(svg1.querySelectorAll('.bar.tau-chart__highlighted').length).to.equals(1);
+                expect(svg1.querySelectorAll('.bar.tau-chart__dimmed').length).to.equals(3);
 
-                expect(svg1.querySelectorAll('.i-role-label.graphical-report__highlighted').length).to.equals(1);
-                expect(svg1.querySelectorAll('.i-role-label.graphical-report__dimmed').length).to.equals(3);
+                expect(svg1.querySelectorAll('.i-role-label.tau-chart__highlighted').length).to.equals(1);
+                expect(svg1.querySelectorAll('.i-role-label.tau-chart__dimmed').length).to.equals(3);
 
                 intervalNode.fire('highlight', ((row) => null));
 
                 var svg2 = context.chart.getSVG();
                 expect(svg2.querySelectorAll('.bar').length).to.equals(4);
-                expect(svg2.querySelectorAll('.bar.graphical-report__highlighted').length).to.equals(0);
-                expect(svg2.querySelectorAll('.bar.graphical-report__dimmed').length).to.equals(0);
+                expect(svg2.querySelectorAll('.bar.tau-chart__highlighted').length).to.equals(0);
+                expect(svg2.querySelectorAll('.bar.tau-chart__dimmed').length).to.equals(0);
 
-                expect(svg1.querySelectorAll('.i-role-label.graphical-report__highlighted').length).to.equals(0);
-                expect(svg1.querySelectorAll('.i-role-label.graphical-report__dimmed').length).to.equals(0);
+                expect(svg1.querySelectorAll('.i-role-label.tau-chart__highlighted').length).to.equals(0);
+                expect(svg1.querySelectorAll('.i-role-label.tau-chart__dimmed').length).to.equals(0);
             });
 
             it("should react on mouseover / mouseout events", function () {
                 var svg0 = context.chart.getSVG();
                 expect(svg0.querySelectorAll('.bar').length).to.equals(4);
                 expect(svg0.querySelectorAll('.i-role-label').length).to.equals(4);
-                expect(svg0.querySelectorAll('.graphical-report__highlighted').length).to.equals(0);
-                expect(svg0.querySelectorAll('.graphical-report__dimmed').length).to.equals(0);
+                expect(svg0.querySelectorAll('.tau-chart__highlighted').length).to.equals(0);
+                expect(svg0.querySelectorAll('.tau-chart__dimmed').length).to.equals(0);
 
                 var intervalNode = context.chart.select((n) => n.config.type === 'ELEMENT.INTERVAL')[0];
                 intervalNode.fire('data-hover', {data:context.chart.getData()[0]});
 
                 var svg1 = context.chart.getSVG();
                 expect(svg1.querySelectorAll('.bar').length).to.equals(4);
-                expect(svg1.querySelectorAll('.bar.graphical-report__highlighted').length).to.equals(1);
-                expect(svg1.querySelectorAll('.bar.graphical-report__dimmed').length).to.equals(0);
+                expect(svg1.querySelectorAll('.bar.tau-chart__highlighted').length).to.equals(1);
+                expect(svg1.querySelectorAll('.bar.tau-chart__dimmed').length).to.equals(0);
 
                 intervalNode.fire('data-hover', {});
 
                 var svg2 = context.chart.getSVG();
                 expect(svg2.querySelectorAll('.bar').length).to.equals(4);
-                expect(svg2.querySelectorAll('.bar.graphical-report__highlighted').length).to.equals(0);
-                expect(svg2.querySelectorAll('.bar.graphical-report__dimmed').length).to.equals(0);
+                expect(svg2.querySelectorAll('.bar.tau-chart__highlighted').length).to.equals(0);
+                expect(svg2.querySelectorAll('.bar.tau-chart__dimmed').length).to.equals(0);
             });
         },
         {
@@ -1054,7 +1030,7 @@ define(function (require) {
                 var testCursorAt = (part, value) => {
                     var y = ((1 - part) * top + part * bottom);
                     testUtils.simulateEvent('mousemove', svg, cx, y);
-                    var highlighted = d3.select('.graphical-report__highlighted');
+                    var highlighted = d3.select('.tau-chart__highlighted');
                     expect(highlighted.data()[0].effort).to.equal(value);
                     expect(testUtils.elementFromPoint(cx, y)).to.equal(highlighted.node());
                 };
@@ -1207,23 +1183,23 @@ define(function (require) {
 
         it('should draw horizontal bar on 2 order axis', function () {
 
-            var plot = new tauCharts.Chart({
+            var plot = new Taucharts.Chart({
                 data: [
                     {
                         "createDate": new Date(iso("2014-09-01T00:00:00")),
-                        "count": 100
+                        "count": 0
                     },
                     {
                         "createDate": new Date(iso("2014-09-02T00:00:00")),
-                        "count": 50
-                    },
-                    {
-                        "createDate": new Date(iso("2014-09-03T00:00:00")),
                         "count": 1
                     },
                     {
+                        "createDate": new Date(iso("2014-09-03T00:00:00")),
+                        "count": 50
+                    },
+                    {
                         "createDate": new Date(iso("2014-09-04T00:00:00")),
-                        "count": 0
+                        "count": 100
                     }
                 ],
                 type: 'horizontal-bar',
@@ -1280,7 +1256,7 @@ define(function (require) {
 
         it('should draw vertical bar on 2 order axis', function () {
 
-            var plot = new tauCharts.Chart({
+            var plot = new Taucharts.Chart({
                 data: [
                     {
                         "createDate": new Date(iso("2014-09-01T00:00:00")),
@@ -1418,4 +1394,3 @@ define(function (require) {
             autoWidth: false
         }
     );
-});

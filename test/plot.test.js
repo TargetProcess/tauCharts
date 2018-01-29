@@ -1,12 +1,11 @@
-define(function (require) {
-    var expect = require('chai').expect;
-    var schemes = require('schemes');
-    var modernizer = require('bower_components/modernizer/modernizr');
-    var CSS_PREFIX = require('src/const').CSS_PREFIX;
-    var tauChart = require('src/tau.charts');
-    var TaskRunner = require('src/charts/task-runner').default;
-    var utils = require('testUtils');
-    var range = require('src/utils/utils').utils.range;
+import {expect} from 'chai';
+import schemes from './utils/schemes';
+import {CSS_PREFIX as CSS_PREFIX} from '../src/const';
+import tauChart from '../src/tau.charts';
+import {default as TaskRunner} from '../src/charts/task-runner';
+import utils from './utils/utils';
+import {range} from '../src/utils/utils';
+import * as d3 from 'd3-selection';
 
     describe('tauChart.Plot', function () {
 
@@ -73,7 +72,7 @@ define(function (require) {
             new tauChart.Plot(spec)
                 .renderTo(testDiv);
 
-            expect(testDiv.querySelector('.graphical-report__layout__content div').innerHTML).to.equal('NODATA');
+            expect(testDiv.querySelector('.tau-chart__layout__content div').innerHTML).to.equal('NODATA');
         });
 
         it('should auto-detect dimension types', function () {
@@ -154,10 +153,6 @@ define(function (require) {
             var height = parseInt(svg.attr('height'), 10);
             var expectedWidth = 800;
             var expectedHeight = 600;
-            if (modernizer.flexbox) {
-                expect(width).to.equal(expectedWidth);
-                expect(height).to.equal(expectedHeight);
-            }
         });
 
         it('should infer size from target (where target = ID selector)', function () {
@@ -170,28 +165,16 @@ define(function (require) {
             var height = parseInt(svg.attr('height'), 10);
             var expectedWidth = 800;
             var expectedHeight = 600;
-            if (modernizer.flexbox) {
-                expect(width).to.equal(expectedWidth);
-                expect(height).to.equal(expectedHeight);
-            }
 
             plot.resize({width: 500, height: 500});
             svg = d3.select(div).selectAll('svg');
             width = parseInt(svg.attr('width'), 10);
             height = parseInt(svg.attr('height'), 10);
-            if (modernizer.flexbox) {
-                expect(width).to.equal(500);
-                expect(height).to.equal(500);
-            }
 
             plot.resize();
             svg = d3.select(div).selectAll('svg');
             width = parseInt(svg.attr('width'), 10);
             height = parseInt(svg.attr('height'), 10);
-            if (modernizer.flexbox) {
-                expect(width).to.equal(expectedWidth);
-                expect(height).to.equal(expectedHeight);
-            }
         });
 
         it('should auto exclude null values', function () {
@@ -908,5 +891,55 @@ define(function (require) {
 
             chart.renderTo(testDiv);
         });
+
+        it('should update chart spec without full redraw', function () {
+
+            const testDiv = document.getElementById('test-div');
+            testDiv.style.width = '800px';
+            testDiv.style.height = '600px';
+
+            const getSpec = (ext) => Object.assign({
+                type: 'line',
+                data: range(12).map((i) => {
+                    var m = i + 1;
+                    return {
+                        id: i,
+                        date: new Date(`2016-${m > 9 ? m : ('0' + m)}-01`),
+                        value: i * 10
+                    };
+                }),
+                identity: 'id',
+                x: ['date'],
+                y: ['value'],
+            }, ext);
+
+            const chart = new tauChart.Chart(getSpec());
+            chart.renderTo(testDiv);
+
+            const svg = chart.getSVG();
+            const xAxis = svg.querySelector('.x.axis');
+            const yAxis = svg.querySelector('.y.axis');
+
+            const lines = Array.from(svg.querySelectorAll('.line'));
+            expect(lines.length).to.equal(1);
+            expect(d3.select(lines[0]).data()[0].length).to.equal(12);
+
+            chart.updateConfig(getSpec({
+                type: 'bar'
+            }));
+            expect(svg.querySelectorAll('.line').length).to.equal(0);
+            const bars = svg.querySelectorAll('.bar');
+            expect(bars.length).to.equal(12);
+            expect(chart.getSVG()).to.equal(svg);
+            expect(svg.querySelector('.x.axis')).to.equal(xAxis);
+            expect(svg.querySelector('.y.axis')).to.equal(yAxis);
+
+            chart.updateConfig(getSpec({
+                type: 'bar',
+                data: getSpec().data.slice(3, 9)
+            }));
+            const newBars = Array.from(svg.querySelectorAll('.bar'));
+            expect(newBars.length).to.equal(6);
+            expect(newBars.every((bar, i) => bar === bars[i + 3])).to.be.true;
+        });
     });
-});

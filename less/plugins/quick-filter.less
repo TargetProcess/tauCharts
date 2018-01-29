@@ -1,7 +1,7 @@
 @import "../variable";
 
 
-.graphical-report {
+.tau-chart {
 
   &__filter__wrap {
     padding: 20px 0 10px 10px;
@@ -20,7 +20,12 @@
       fill: rgba(0, 0, 0, 0.2);
     }
 
-    & .brush .extent {
+    & .brush .overlay,
+    & .brush .handle {
+      opacity: 0;
+    }
+
+    & .brush .selection {
       shape-rendering: crispEdges;
       fill-opacity: 0.4;
       fill: #0074FF;

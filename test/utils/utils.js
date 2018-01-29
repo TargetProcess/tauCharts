@@ -1,8 +1,15 @@
-define(function (require) {
-    var tauCharts = require('src/tau.charts'),
-        $ = require('jquery'),
-        utils = require('src/utils/utils').utils,
-        d3 = require('d3');
+import Taucharts from '../../src/tau.charts';
+import $ from 'jquery';
+import * as utils from '../../src/utils/utils';
+import * as d3 from 'd3-selection';
+
+Taucharts.api.globalSettings.animationSpeed = 0;
+Taucharts.api.globalSettings.renderingTimeout = 0;
+Taucharts.api.globalSettings.asyncRendering = false;
+Taucharts.api.globalSettings.avoidScrollAtRatio = 1;
+Taucharts.api.globalSettings.syncPointerEvents = true;
+Taucharts.api.globalSettings.handleRenderingErrors = false;
+Taucharts.api.globalSettings.experimentalShouldAnimate = () => true;
 
     var testChartSettings = {
         getAxisTickLabelSize: function (text) {
@@ -71,15 +78,15 @@ define(function (require) {
     };
 
     function getDots() {
-        return d3.selectAll('.dot')[0];
+        return d3.selectAll('.dot').nodes();
     }
 
     function getLine() {
-        return d3.selectAll('.line')[0];
+        return d3.selectAll('.line').nodes();
     }
 
     function getArea() {
-        return d3.selectAll('.area')[0];
+        return d3.selectAll('.area').nodes();
     }
 
     function getGroupBar() {
@@ -118,9 +125,9 @@ define(function (require) {
                 context.element = document.createElement('div');
                 document.body.appendChild(context.element);
 
-                tauCharts.Plot.globalSettings = testChartSettings;
+                Taucharts.Plot.globalSettings = testChartSettings;
 
-                context.chart = new tauCharts.Plot({
+                context.chart = new Taucharts.Plot({
                     layoutEngine: 'DEFAULT',
                     specEngine: 'DEFAULT',
                     spec: spec,
@@ -151,14 +158,14 @@ define(function (require) {
             };
 
             beforeEach(function () {
-                tauCharts.Chart.winAware = [];
+                Taucharts.Chart.winAware = [];
                 context.element = document.createElement('div');
                 context.element.setAttribute('data-chart-id', name);
                 document.body.appendChild(context.element);
 
-                tauCharts.Plot.globalSettings = testChartSettings;
+                Taucharts.Plot.globalSettings = testChartSettings;
 
-                context.chart = new tauCharts.Chart(config);
+                context.chart = new Taucharts.Chart(config);
                 if (options.autoWidth) {
                     context.chart.renderTo(context.element);
                 } else {
@@ -195,7 +202,7 @@ define(function (require) {
                 style = document.createElement('style');
                 style.id = 'noScrollStyle';
                 style.textContent = [
-                    '.graphical-report__layout__content, .graphical-report__layout__sidebar-right {',
+                    '.tau-chart__layout__content, .tau-chart__layout__sidebar-right {',
                     '  overflow: visible !important;',
                     '  padding: 0 !important;',
                     '}'
@@ -212,7 +219,7 @@ define(function (require) {
     };
 
     function destroyCharts() {
-        tauCharts.Chart.winAware
+        Taucharts.Chart.winAware
             .slice(0)
             .forEach(function (chart) {
                 chart.destroy();
@@ -220,8 +227,9 @@ define(function (require) {
     }
 
     function roundNumbersInString(str, fractionDigits) {
-        return str.replace(/-?\d+\.?\d*/g, function (match) {
-            return parseFloat(match).toFixed(fractionDigits);
+        return str.replace(/[-+]?(?:\d+\.?\d*|\.?\d+)(?:[e][-+]?\d+)?/igm, function (match) {
+            const float = parseFloat(match).toFixed(fractionDigits);
+            return float === '-0' ? '0' : float;
         });
     }
 
@@ -234,7 +242,7 @@ define(function (require) {
         return el;
     }
 
-    return {
+export default {
         toLocalDate: toLocalDate,
         roundNumbersInString: roundNumbersInString,
         describePlot: describePlot,
@@ -259,4 +267,3 @@ define(function (require) {
         noScrollStyle,
         destroyCharts
     };
-});

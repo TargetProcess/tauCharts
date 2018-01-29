@@ -593,8 +593,8 @@ dev.spec({
 
 
     plugins: [
-        tauCharts.api.plugins.get('quick-filter')(),
-        tauCharts.api.plugins.get('tooltip')(),
-        tauCharts.api.plugins.get('legend')()
+        Taucharts.api.plugins.get('quick-filter')(),
+        Taucharts.api.plugins.get('tooltip')(),
+        Taucharts.api.plugins.get('legend')()
     ]
 });

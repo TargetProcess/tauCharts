@@ -1,17 +1,6 @@
-(function (factory) {
-    if (typeof define === 'function' && define.amd) {
-        define(['taucharts'], function (tauPlugins) {
-            return factory(tauPlugins);
-        });
-    } else if (typeof module === 'object' && module.exports) {
-        var tauPlugins = require('taucharts');
-        module.exports = factory(tauPlugins);
-    } else {
-        factory(this.tauCharts);
-    }
-})(function (tauCharts) {
+import Taucharts from 'taucharts';
 
-    var utils = tauCharts.api.utils;
+    var utils = Taucharts.api.utils;
 
     function ChartParallelBrushing(xSettings) {
 
@@ -126,13 +115,12 @@
                 });
             },
 
-            template: utils.template('<div class="graphical-report__chart_brushing_panel"></div>')
+            template: utils.template('<div class="tau-chart__chart_brushing_panel"></div>')
         };
 
         return plugin;
     }
 
-    tauCharts.api.plugins.add('parallel-brushing', ChartParallelBrushing);
+    Taucharts.api.plugins.add('parallel-brushing', ChartParallelBrushing);
 
-    return ChartParallelBrushing;
-});
+export default ChartParallelBrushing;

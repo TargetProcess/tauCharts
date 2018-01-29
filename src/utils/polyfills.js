@@ -17,6 +17,15 @@ if (!window.requestAnimationFrame) {
     })();
 }
 
+if (!window.requestIdleCallback) {
+    window.requestIdleCallback = function (callback, options) {
+        return setTimeout(callback, options && options.timeout ? options.timeout : 0);
+    };
+    window.cancelIdleCallback = function (id) {
+        clearTimeout(id);
+    };
+}
+
 if (!Number.isFinite) {
     Object.defineProperty(Number, 'isFinite', {
         value: function (value) {
@@ -59,6 +68,12 @@ if (!Number.MAX_SAFE_INTEGER) {
         enumerable: false,
         writable: false
     });
+}
+
+if (!Math.sign) {
+    Math.sign = function (x) {
+        return ((x > 0) - (x < 0)) || Number(x);
+    };
 }
 
 if (!Array.prototype.find) {
@@ -239,7 +254,7 @@ if (!Object.assign) {
 
 if (!Element.prototype.matches) {
     Object.defineProperty(Element.prototype, 'matches', {
-        value: Element.prototype.msMatchesSelector,
+        value: Element.prototype.msMatchesSelector || Element.prototype.webkitMatchesSelector,
         configurable: true,
         enumerable: true,
         writable: true

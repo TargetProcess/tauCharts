@@ -1,6 +1,7 @@
-define(function (require) {
-    var expect = require('chai').expect;
-    var tauChart = require('src/tau.charts');
+
+import {expect} from 'chai';
+import tauChart from '../src/tau.charts';
+
     describe("Unit domain period generator", function () {
 
         var iso = function (str) {
@@ -117,7 +118,7 @@ define(function (require) {
     describe("UTC unit domain period generator", function () {
 
         var utc = function (str) {
-            return (str + 'Z');
+            return str + 'Z';
         };
         var PeriodGenerator;
         beforeEach(function () {
@@ -232,4 +233,3 @@ define(function (require) {
             expect(PeriodGenerator.get('2h', {utc: true})).to.be.ok;
         });
     });
-});

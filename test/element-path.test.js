@@ -1,12 +1,15 @@
-define(function (require) {
-    var expect = require('chai').expect;
-    var schemes = require('schemes');
-    var testUtils = require('testUtils');
-    var assert = require('chai').assert;
-    var getArea = testUtils.getArea;
-    var attrib = testUtils.attrib;
-    var tauChart = require('src/tau.charts');
-    var MIN_ANCHOR_RADIUS = 4;
+import {assert, expect} from 'chai';
+import * as d3Color from 'd3-color';
+import * as d3Selection from 'd3-selection';
+const d3 = {
+    ...d3Color,
+    ...d3Selection,
+};
+import schemes from './utils/schemes';
+import testUtils from './utils/utils';
+const {attrib, getArea} = testUtils;
+import tauChart from '../src/tau.charts';
+const MIN_ANCHOR_RADIUS = 4;
 
     describe('ELEMENT.PATH', function () {
 
@@ -58,7 +61,7 @@ define(function (require) {
 
         it('should render two area elements', function () {
 
-            var svgPolygons = d3.selectAll('polygon')[0];
+            var svgPolygons = d3.selectAll('polygon').nodes();
             var x0 = 0;
             var y0 = 1000;
             var x1 = 1000;
@@ -81,28 +84,28 @@ define(function (require) {
             expect(testUtils.hasClass(paths[0], 'color20-1')).to.equal(true);
             expect(testUtils.hasClass(paths[1], 'color20-2')).to.equal(true);
 
-            expect(testUtils.hasClass(paths[0], 'graphical-report__highlighted')).to.equal(false);
-            expect(testUtils.hasClass(paths[0], 'graphical-report__dimmed')).to.equal(false);
-            expect(testUtils.hasClass(paths[1], 'graphical-report__highlighted')).to.equal(false);
-            expect(testUtils.hasClass(paths[1], 'graphical-report__dimmed')).to.equal(false);
+            expect(testUtils.hasClass(paths[0], 'tau-chart__highlighted')).to.equal(false);
+            expect(testUtils.hasClass(paths[0], 'tau-chart__dimmed')).to.equal(false);
+            expect(testUtils.hasClass(paths[1], 'tau-chart__highlighted')).to.equal(false);
+            expect(testUtils.hasClass(paths[1], 'tau-chart__dimmed')).to.equal(false);
 
             var pathNode = chart.select((n) => n.config.type === 'ELEMENT.PATH')[0];
 
             pathNode.fire('highlight', ((row) => (row.color === 'up')));
 
-            expect(testUtils.hasClass(paths[0], 'graphical-report__highlighted')).to.equal(true);
-            expect(testUtils.hasClass(paths[0], 'graphical-report__dimmed')).to.equal(false);
+            expect(testUtils.hasClass(paths[0], 'tau-chart__highlighted')).to.equal(true);
+            expect(testUtils.hasClass(paths[0], 'tau-chart__dimmed')).to.equal(false);
 
-            expect(testUtils.hasClass(paths[1], 'graphical-report__highlighted')).to.equal(false);
-            expect(testUtils.hasClass(paths[1], 'graphical-report__dimmed')).to.equal(true);
+            expect(testUtils.hasClass(paths[1], 'tau-chart__highlighted')).to.equal(false);
+            expect(testUtils.hasClass(paths[1], 'tau-chart__dimmed')).to.equal(true);
 
             pathNode.fire('highlight', ((row) => null));
 
-            expect(testUtils.hasClass(paths[0], 'graphical-report__highlighted')).to.equal(false);
-            expect(testUtils.hasClass(paths[0], 'graphical-report__dimmed')).to.equal(false);
+            expect(testUtils.hasClass(paths[0], 'tau-chart__highlighted')).to.equal(false);
+            expect(testUtils.hasClass(paths[0], 'tau-chart__dimmed')).to.equal(false);
 
-            expect(testUtils.hasClass(paths[1], 'graphical-report__highlighted')).to.equal(false);
-            expect(testUtils.hasClass(paths[1], 'graphical-report__dimmed')).to.equal(false);
+            expect(testUtils.hasClass(paths[1], 'tau-chart__highlighted')).to.equal(false);
+            expect(testUtils.hasClass(paths[1], 'tau-chart__dimmed')).to.equal(false);
 
             pathNode.fire('highlight-data-points', ((row) => (row.x === 0)));
 
@@ -111,7 +114,7 @@ define(function (require) {
                 return r === 4;
             });
 
-            expect(highlightedDots0[0].length).to.equal(2, 'should highlight 2 data points');
+            expect(highlightedDots0.size()).to.equal(2, 'should highlight 2 data points');
 
             pathNode.fire('highlight-data-points', ((row) => false));
 
@@ -120,7 +123,7 @@ define(function (require) {
                 return r === 4;
             });
 
-            expect(highlightedDots1[0].length).to.equal(0, 'should remove highlight from all points');
+            expect(highlightedDots1.size()).to.equal(0, 'should remove highlight from all points');
         });
     });
 
@@ -180,18 +183,17 @@ define(function (require) {
 
         it("should render polygon with text on each angle", function () {
             var area = d3.selectAll('.area');
-            expect(area[0].length).to.be.equal(1);
+            expect(area.size()).to.be.equal(1);
             var polygon = area.select('polygon');
             expect(str(d3.rgb(polygon.attr('fill'))))
                 .to
                 .be
                 .equal(str(d3.rgb('rgb(171, 205, 239)')));
             var labels = d3.selectAll('.i-role-label');
-            expect(labels[0].length).to.be.equal(4);
+            expect(labels.size()).to.be.equal(4);
             expect(str(d3.rgb(labels.style('fill'))))
                 .to
                 .be
                 .equal(str(d3.rgb('#fedcba')));
         });
     });
-});

@@ -1,0 +1,109 @@
+@import "../variable";
+
+@category-label__toggle-color: #8694a3;
+
+.tau-chart {
+
+    &__category-filter {
+        box-sizing: border-box;
+        margin-right: 30px;
+        padding: 20px 0 10px 10px;
+        width: 160px;
+
+        &__category {
+            &__label {
+                font-weight: 600;
+                font-size: @font-size-m;
+                margin: 0 0 10px 10px;
+                text-transform: capitalize;
+            }
+
+            &__values {
+                margin-bottom: 10px;
+            }
+        }
+
+        &__value {
+            align-items: center;
+            color: @font-gray;
+            cursor: pointer;
+            display: flex;
+            flex-direction: row;
+            font-size: @font-size-m;
+            width: 100%;
+
+            &:hover {
+                background-color: fade(@legend-items-bg-hover, 20%);
+            }
+
+            &_checked {
+                color: @font-color;
+            }
+
+            &__toggle {
+                flex: none;
+                padding: 10px 10px 8px 10px;
+
+                &__icon {
+                    background-color: transparent;
+                    border: 1px solid @category-label__toggle-color;
+                    box-sizing: border-box;
+                    border-radius: 50%;
+                    display: inline-block;
+                    height: 16px;
+                    pointer-events: none;
+                    position: relative;
+                    width: 16px;
+
+                    &::before,
+                    &::after {
+                        background-color: @font-color;
+                        content: "";
+                        display: block;
+                        opacity: 0;
+                        position: absolute;
+                    }
+
+                    &::before {
+                        height: 2px;
+                        left: 3px;
+                        top: 6px;
+                        width: 8px;
+                    }
+                
+                    &::after {
+                        height: 8px;
+                        left: 6px;
+                        top: 3px;
+                        width: 2px;
+                    }
+                }
+                
+                &:hover &__icon {
+                    &::before,
+                    &::after {
+                        opacity: 1;
+                    }
+                }
+            }
+
+            &_checked &__toggle {
+
+                &__icon {
+                    background-color: @category-label__toggle-color;
+                    border-color: transparent;
+
+                    &::before,
+                    &::after {
+                        background-color: @bg-color;
+                        transform: rotate(45deg);
+                    }
+                }
+            }
+
+            &__label {
+                padding-left: 4px;
+            }
+        }
+    }
+}

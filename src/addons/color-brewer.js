@@ -1,15 +1,5 @@
-(function (definition) {
-    if (typeof define === "function" && define.amd) {
-        define(['taucharts'], function (tauCharts) {
-            return definition(tauCharts);
-        });
-    } else if (typeof module === "object" && module.exports) {
-        var tauCharts = require('taucharts');
-        module.exports = definition(tauCharts);
-    } else {
-        definition(this.tauCharts);
-    }
-})(function (tauCharts) {
+import Taucharts from 'taucharts';
+
     // This product includes color specifications and designs developed by Cynthia Brewer (http://colorbrewer.org/).
     var colorbrewer = {
         YlGn: {
@@ -319,6 +309,6 @@
             return hueSet + ' ' + 'q' + index + '-' + colorNumber;
         });
     };
-    tauCharts.api.colorBrewers.add('tauBrewer', tauBrewer);
-    return tauBrewer;
-});
+    Taucharts.api.colorBrewers.add('tauBrewer', tauBrewer);
+
+export default tauBrewer;

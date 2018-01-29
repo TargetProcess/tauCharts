@@ -1,6 +1,7 @@
-define(['js-schema'], function (schema) {
-    var schemes = {};
-    (function (schemes) {
+// BUG: Webpack fails to import a function,
+// points to `default` property.
+// import schema from 'js-schema';
+var schema = require('js-schema');
 
         var point = schema({
             color: [null, String],
@@ -120,18 +121,16 @@ define(['js-schema'], function (schema) {
             spec: Object
         });
 
-        schemes.scales = scales;
-        schemes.dimensions = dimensions;
-        schemes.point = point;
-        schemes.interval = interval;
-        schemes.bar = bar;
-        schemes.barGPL = barGPL;
-        schemes.line = lineSpec;
-        schemes.lineGPL = lineGPL;
-        schemes.scatterplot = scatterplot;
-        schemes.scatterplotGPL = scatterplotGPL;
-        schemes.config = config;
-    }(schemes));
-
-    return schemes;
-});
+export default {
+    scales,
+    dimensions,
+    point,
+    interval,
+    bar,
+    barGPL,
+    lineSpec,
+    lineGPL,
+    scatterplot,
+    scatterplotGPL,
+    config,
+};

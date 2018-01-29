@@ -1,6 +1,5 @@
-define(function (require) {
-    var expect = require('chai').expect;
-    var registry = require('src/units-registry').unitsRegistry;
+import {expect} from 'chai';
+import {unitsRegistry as registry} from '../src/units-registry';
 
     describe('units-registry', function () {
 
@@ -84,4 +83,3 @@ define(function (require) {
             expect(() => registry.get('c')).to.throw('Unknown unit type: c');
         });
     });
-});

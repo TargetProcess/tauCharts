@@ -32,9 +32,9 @@ dev.spec({
         }),
 
     plugins: [
-        tauCharts.api.plugins.get('legend')(),
-        tauCharts.api.plugins.get('tooltip')(),
-        tauCharts.api.plugins.get('box-whiskers')({
+        Taucharts.api.plugins.get('legend')(),
+        Taucharts.api.plugins.get('tooltip')(),
+        Taucharts.api.plugins.get('box-whiskers')({
             flip: true,
             //mode: 'show-scatter',
             //mode: 'hide-scatter',

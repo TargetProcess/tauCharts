@@ -1,14 +1,12 @@
-define(function (require) {
-    var expect = require('chai').expect;
-    var tauCharts = require('src/tau.charts');
-    var createInterpolator = require('src/utils/path/interpolators/path-points').default;
-    var getBrushLine = require('src/utils/path/svg/brush-line').getBrushLine;
-    var getBrushCurve = require('src/utils/path/svg/brush-line').getBrushCurve;
-    var {getAreaPolygon, getSmoothAreaPath} = require('src/utils/path/svg/area-path');
-    var toCurve = require('src/utils/path/interpolators/smooth').getCurveKeepingExtremums;
-    var getLineInterpolator = require('src/utils/path/interpolators/interpolators-registry').getLineInterpolator;
-    var lines = require('src/utils/path/svg/line');
-    var testUtils = require('testUtils');
+import {expect} from 'chai';
+import Taucharts from '../src/tau.charts';
+import createInterpolator from '../src/utils/path/interpolators/path-points';
+import {getBrushLine, getBrushCurve} from '../src/utils/path/svg/brush-line';
+import {getAreaPolygon, getSmoothAreaPath}from '../src/utils/path/svg/area-path';
+import {getCurveKeepingExtremums as toCurve} from '../src/utils/path/interpolators/smooth';
+import {getLineInterpolator} from '../src/utils/path/interpolators/interpolators-registry';
+import * as lines from '../src/utils/path/svg/line';
+import testUtils from './utils/utils';
 
     describe('path utilities', function() {
 
@@ -43,14 +41,14 @@ define(function (require) {
             var curve = getLineInterpolator('smooth')(data);
             expect(round(curve)).to.deep.equal([
                 {x: 0, y: 270, size: 30, id: 1},
-                {x: 20, y: 105},
-                {x: 40, y: 15},
+                {x: 20, y: 117},
+                {x: 40, y: 19},
                 {x: 60, y: 0, size: 60, id: 2},
-                {x: 70, y: -7},
-                {x: 80, y: 4},
+                {x: 70, y: -9},
+                {x: 80, y: 2},
                 {x: 90, y: 30, size: 30, id: 3},
-                {x: 110, y: 82},
-                {x: 130, y: 192},
+                {x: 110, y: 86},
+                {x: 130, y: 202},
                 {x: 150, y: 360, size: 60, id: 4}
             ]);
 
@@ -61,10 +59,10 @@ define(function (require) {
                 {x: 40, y: 0},
                 {x: 60, y: 0, size: 60, id: 2},
                 {x: 70, y: 0},
-                {x: 80, y: 7},
+                {x: 80, y: 8},
                 {x: 90, y: 30, size: 30, id: 3},
                 {x: 110, y: 76},
-                {x: 130, y: 186},
+                {x: 130, y: 197},
                 {x: 150, y: 360, size: 60, id: 4}
             ]);
 
@@ -431,7 +429,7 @@ define(function (require) {
                     });
             }
 
-            var chart = new tauCharts.Chart({
+            var chart = new Taucharts.Chart({
                 type: 'area',
                 data: [
                     {x: 10, y: 4},
@@ -487,7 +485,7 @@ define(function (require) {
             testDiv.style.height = '600px';
             document.body.appendChild(testDiv);
 
-            var chart = new tauCharts.Chart({
+            var chart = new Taucharts.Chart({
                 type: 'line',
                 data: [
                     {x: 10, y: 4},
@@ -516,7 +514,7 @@ define(function (require) {
             testDiv.style.height = '600px';
             document.body.appendChild(testDiv);
 
-            var chart = new tauCharts.Chart({
+            var chart = new Taucharts.Chart({
                 type: 'area',
                 data: [
                     {x: 10, y: 4},
@@ -556,8 +554,8 @@ define(function (require) {
                 {'x': 255, 'y': 583}
             ];
             coords.forEach((p, i) => {
-                expect(p.x).to.be.closeTo(expected[i].x, 5);
-                expect(p.y).to.be.closeTo(expected[i].y, 5);
+                expect(p.x).to.be.closeTo(expected[i].x, 10);
+                expect(p.y).to.be.closeTo(expected[i].y, 10);
             });
         });
     });
@@ -630,7 +628,7 @@ define(function (require) {
             ]));
             expect(testUtils.roundNumbersInString(path)).to.be.equal([
                 'M-14,55',
-                'C-0,17 15,-8 30,-7',
+                'C0,17 15,-8 30,-7',
                 'A8,8 0 1 1 32,7',
                 'C26,7 20,24 15,62',
                 'A15,15 0 0 1 -14,55',
@@ -666,4 +664,3 @@ define(function (require) {
             expect(empty).to.be.equal('');
         });
     });
-});

@@ -1,5 +1,7 @@
  /*
- !build/**
- !license.txt
+ !dist/**
+ !examples/**
+ !types/**
+ !LICENSE
  !package.json
  !README.md

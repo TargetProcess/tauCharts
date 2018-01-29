@@ -1,7 +1,6 @@
-define(function (require) {
-    var expect = require('chai').expect;
-    var schemes = require('schemes');
-    var tauChart = require('src/tau.charts');
+import {expect} from 'chai';
+import schemes from './utils/schemes';
+import tauChart from '../src/tau.charts';
 
     describe('Plugins SDK', function () {
 
@@ -320,4 +319,3 @@ define(function (require) {
             expect(frames[0].key.__layerid__).to.not.equal(frames[1].key.__layerid__);
         });
     });
-});

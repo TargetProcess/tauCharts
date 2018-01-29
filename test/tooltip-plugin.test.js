@@ -1,13 +1,11 @@
 // jscs:disable disallowQuotedKeysInObjects
 // jscs:disable validateQuoteMarks
-
-var $ = require('jquery');
-var expect = require('chai').expect;
-var testUtils = require('testUtils');
-var stubTimeout = testUtils.stubTimeout;
-var tauCharts = require('taucharts');
-var tooltip = require('plugins/tooltip');
-var describeChart = testUtils.describeChart;
+import $ from 'jquery';
+import {expect} from 'chai';
+import testUtils from './utils/utils';
+const {stubTimeout, describeChart} = testUtils;
+import Taucharts from '../src/tau.charts';
+import tooltip from '../plugins/tooltip';
 
 var iso = function (str) {
     var offsetHrs = new Date(str).getTimezoneOffset() / 60;
@@ -38,13 +36,13 @@ var showTooltip = function (expect, chart, index, selectorClass, data) {
     }
     var {x, y} = getElementPosition(element);
     testUtils.simulateEvent('mousemove', element, x, y);
-    return d.resolve(document.querySelectorAll('.graphical-report__tooltip'));
+    return d.resolve(document.querySelectorAll('.tau-chart__tooltip'));
 };
 
 var hideTooltip = function (expect, chart) {
     var d = testUtils.Deferred();
     testUtils.simulateEvent('mousemove', chart.getSVG(), 0, 0);
-    return d.resolve(document.querySelectorAll('.graphical-report__tooltip__content'));
+    return d.resolve(document.querySelectorAll('.tau-chart__tooltip__content'));
 };
 
 var getSelectorByChartType = function (type) {
@@ -102,7 +100,7 @@ chartType.forEach(function (item) {
                 this.timeout(5000);
                 showTooltip(expect, context.chart, 0, getSelectorByChartType(item), data)
                     .then(function (content) {
-                        var items = content[0].querySelectorAll('.graphical-report__tooltip__list__item');
+                        var items = content[0].querySelectorAll('.tau-chart__tooltip__list__item');
                         expect(items[0].textContent).to.be.equal('x2');
                         expect(items[1].textContent).to.be.equal('y2');
                         expect(items[2].textContent).to.be.equal('coloryellow');
@@ -111,17 +109,17 @@ chartType.forEach(function (item) {
                         return hideTooltip(expect, context.chart, 0, getSelectorByChartType(item), data);
                     })
                     .then(function () {
-                        var content = document.querySelectorAll('.graphical-report__tooltip__content');
+                        var content = document.querySelectorAll('.tau-chart__tooltip__content');
                         expect(content.length).to.equal(0);
                         return showTooltip(expect, context.chart, 0, getSelectorByChartType(item), data);
                     })
                     .then(function () {
-                        var content = document.querySelectorAll('.graphical-report__tooltip__content');
+                        var content = document.querySelectorAll('.tau-chart__tooltip__content');
                         expect(content.length).to.be.above(0);
                         var excluder = document.querySelectorAll('.i-role-exclude')[0];
                         testUtils.simulateEvent('click', excluder);
                         var d = testUtils.Deferred();
-                        content = document.querySelectorAll('.graphical-report__tooltip__content');
+                        content = document.querySelectorAll('.tau-chart__tooltip__content');
                         expect(content.length).to.equal(0);
                         var data = context.chart.getChartModelData();
                         var expected = data.sort((a1, a2) => a1.x - a2.x);
@@ -154,10 +152,10 @@ chartType.forEach(function (item) {
                         return showTooltip(expect, context.chart, 0, getSelectorByChartType(item), data);
                     })
                     .then(function () {
-                        var content = document.querySelectorAll('.graphical-report__tooltip__content');
+                        var content = document.querySelectorAll('.tau-chart__tooltip__content');
                         expect(content.length).to.be.above(0);
                         context.chart.destroy();
-                        content = document.querySelectorAll('.graphical-report__tooltip__content');
+                        content = document.querySelectorAll('.tau-chart__tooltip__content');
                         expect(content.length).to.equal(0);
                         window.setTimeout = originTimeout;
                         return hideTooltip(expect, context.chart, 0, getSelectorByChartType(item), data);
@@ -243,7 +241,7 @@ chartType.forEach(function (item) {
                 showTooltip(expect, context.chart, 0, elementSelector)
                     .then(function (content) {
                         expect(content.length).to.be.above(0);
-                        var tooltipElements = content[0].querySelectorAll('.graphical-report__tooltip__list__elem');
+                        var tooltipElements = content[0].querySelectorAll('.tau-chart__tooltip__list__elem');
                         var texts = Array.from(tooltipElements).map((x) => x.textContent);
                         expect(texts).to.be.eql(['x', '2', 'color', 'yellow']);
 
@@ -260,9 +258,64 @@ chartType.forEach(function (item) {
                     })
                     .then(function (content) {
                         expect(content.length).to.be.above(0);
-                        var tooltipElements = content[0].querySelectorAll('.graphical-report__tooltip__list__elem');
+                        var tooltipElements = content[0].querySelectorAll('.tau-chart__tooltip__list__elem');
                         var texts = Array.from(tooltipElements).map((x) => x.textContent);
                         expect(texts).to.be.eql(['y', '3']);
+                        return hideTooltip(expect, context.chart, 0, elementSelector);
+                    })
+                    .always(function () {
+                        window.setTimeout = originTimeout;
+                        done();
+                    });
+            });
+
+            it('should change Tooltip config', function (done) {
+                const originTimeout = stubTimeout();
+
+                context.chart.updateConfig({
+                    type: item,
+                    x: 'x',
+                    y: 'y',
+                    color: 'color',
+                    plugins: [tooltip({
+                        getFields: function (chart) {
+                            expect(chart).to.be.ok;
+                            if (chart.getChartModelData()[0].x === 2) {
+                                return ['x'];
+                            }
+                            return ['y', 'color'];
+                        }
+                    })],
+                    data: [{
+                        x: 2,
+                        y: 2,
+                        color: 'yellow'
+                    }]
+                });
+
+                showTooltip(expect, context.chart, 0, elementSelector)
+                    .then(function (content) {
+                        expect(content.length).to.be.above(0);
+                        const tooltipElements = content[0].querySelectorAll('.tau-chart__tooltip__list__elem');
+                        const texts = Array.from(tooltipElements).map((x) => x.textContent);
+                        expect(texts).to.be.eql(['x', '2']);
+
+                        return hideTooltip(expect, context.chart, 0, elementSelector);
+                    })
+                    .then(function () {
+                        context.chart.setData([{
+                            x: 3,
+                            y: 3,
+                            color: 'red'
+                        }]);
+
+                        return showTooltip(expect, context.chart, 0, elementSelector);
+                    })
+                    .then(function (content) {
+                        expect(content.length).to.be.above(0);
+                        var tooltipElements = content[0].querySelectorAll('.tau-chart__tooltip__list__elem');
+                        var texts = Array.from(tooltipElements).map((x) => x.textContent);
+                        expect(texts).to.be.eql(['y', '3', 'color', 'red']);
                         return hideTooltip(expect, context.chart, 0, elementSelector);
                     })
                     .always(function () {
@@ -382,7 +435,7 @@ describeChart("tooltip formatting",
 
             var validateLabel = function ($content, label, value) {
                 var $label = $content
-                    .find('.graphical-report__tooltip__list__elem:contains("' + label + '"):first').parent();
+                    .find('.tau-chart__tooltip__list__elem:contains("' + label + '"):first').parent();
 
                 expect($label.length).to.be.eql(1, 'Label ' + label + ' present');
                 expect($label.children()[1].innerText).to.be.eql(value, 'Label value is correct');
@@ -445,9 +498,9 @@ describeChart(
             var {x, y} = getElementPosition(datum)
             testUtils.simulateEvent('mousemove', datum, x, y);
 
-            var content = document.querySelectorAll('.graphical-report__tooltip');
+            var content = document.querySelectorAll('.tau-chart__tooltip');
 
-            var tooltipElements = content[0].querySelectorAll('.graphical-report__tooltip__list__elem');
+            var tooltipElements = content[0].querySelectorAll('.tau-chart__tooltip__list__elem');
             var texts = Array.from(tooltipElements).map((x) => x.textContent);
             expect(texts).to.be.eql(['x', '2', 'y', '2']);
 
@@ -458,61 +511,3 @@ describeChart(
         });
     }
 );
-
-describe('tooltip', function () {
-
-    var div1;
-
-    var createDiv = function () {
-        var div = document.createElement('div');
-        div.style.width = 600 + 'px';
-        div.style.height = 800 + 'px';
-        document.body.appendChild(div);
-        return div;
-    };
-
-    beforeEach(function () {
-        tauCharts.Chart.winAware = [];
-        div1 = createDiv();
-    });
-
-    afterEach(function () {
-        div1.parentNode.removeChild(div1);
-    });
-
-    it('should support reveal feature', function (done) {
-
-        var chart1 = new tauCharts.Chart({
-            type: 'bar',
-            x: 'x',
-            y: 'count',
-            guide: {
-                sortByBarHeight: false,
-            },
-            data: [
-                {x: 2, count: 2},
-                {x: 4, count: 5}
-            ],
-            plugins: [
-                tooltip({
-                    showTimeout: 0,
-                    aggregationGroupFields: ['x'],
-                    onRevealAggregation: function (filterDescriptor, data) {
-                        expect(filterDescriptor).to.deep.equal({x: 2});
-                        done();
-                    }
-                })
-            ]
-        });
-
-        chart1.renderTo(div1);
-
-        showTooltip(expect, chart1)
-            .then(function (content) {
-                var reveal = content[0].querySelectorAll('.i-role-reveal');
-                expect(reveal.length).to.be.equal(1);
-                var revealBtn = reveal[0];
-                testUtils.simulateEvent('click', revealBtn);
-            });
-    });
-});

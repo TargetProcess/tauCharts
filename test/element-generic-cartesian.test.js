@@ -1,11 +1,10 @@
 // jscs:disable disallowQuotedKeysInObjects
 // jscs:disable validateQuoteMarks
-define(function (require) {
-    var expect = require('chai').expect;
-    var schemes = require('schemes');
-    var tauCharts = require('src/tau.charts');
-    var utils = require('src/utils/utils').utils;
-    var testUtils = require('testUtils');
+import {expect} from 'chai';
+import schemes from './utils/schemes';
+import Taucharts from '../src/tau.charts';
+import * as utils from '../src/utils/utils';
+import testUtils from './utils/utils';
 
     var convertSpec = function (spec, data) {
         var unit = spec.unit;
@@ -100,7 +99,7 @@ define(function (require) {
 
         it('should draw', function () {
 
-            var plot = new tauCharts.Plot({
+            var plot = new Taucharts.Plot({
                 sources: {
                     '?': {
                         dims: {},
@@ -188,4 +187,3 @@ define(function (require) {
             expect(elements[0].screenModel.y({x: 100, y: 100})).to.equal(0);
         });
     });
-});

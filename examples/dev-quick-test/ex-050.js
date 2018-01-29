@@ -20,6 +20,6 @@ dev.spec({
         };
     }),
     plugins: [
-        tauCharts.api.plugins.get('legend')()
+        Taucharts.api.plugins.get('legend')()
     ]
 });

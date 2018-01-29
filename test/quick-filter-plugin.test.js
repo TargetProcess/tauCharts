@@ -1,8 +1,7 @@
-define(function (require) {
+import {expect} from 'chai';
+import testUtils from './utils/utils';
+import quickFilter from '../plugins/quick-filter';
 
-    var expect = require('chai').expect;
-    var testUtils = require('testUtils');
-    var quickFilter = require('plugins/quick-filter');
     var describeChart = testUtils.describeChart;
 
     describeChart(
@@ -25,10 +24,10 @@ define(function (require) {
                 var filters = chart
                     ._layout
                     .rightSidebar
-                    .querySelectorAll('.graphical-report__filter__wrap');
+                    .querySelectorAll('.tau-chart__filter__wrap');
 
                 expect(filters.length).to.equal(1);
-                expect(filters[0].querySelectorAll('.graphical-report__legend__title')[0].innerText)
+                expect(filters[0].querySelectorAll('.tau-chart__legend__title')[0].innerText)
                     .to.equal('y');
             });
         },
@@ -59,13 +58,13 @@ define(function (require) {
                 var filters = chart
                     ._layout
                     .rightSidebar
-                    .querySelectorAll('.graphical-report__filter__wrap');
+                    .querySelectorAll('.tau-chart__filter__wrap');
 
                 expect(filters.length).to.equal(2);
-                expect(filters[0].querySelectorAll('.graphical-report__legend__title')[0].innerText)
+                expect(filters[0].querySelectorAll('.tau-chart__legend__title')[0].innerText)
                     .to.equal('x'); // Month
 
-                expect(filters[1].querySelectorAll('.graphical-report__legend__title')[0].innerText)
+                expect(filters[1].querySelectorAll('.tau-chart__legend__title')[0].innerText)
                     .to.equal('y'); // Value
             });
         },
@@ -73,4 +72,3 @@ define(function (require) {
             autoWidth: false
         }
     );
-});

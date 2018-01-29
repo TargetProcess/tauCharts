@@ -1,8 +1,9 @@
-define(function (require) {
-    var assert = require('chai').assert;
-    var schemes = require('schemes');
-    var tauChart = require('src/tau.charts');
-    var testUtils = require('testUtils');
+import {assert} from 'chai';
+import schemes from './utils/schemes';
+import tauChart from '../src/tau.charts';
+import testUtils from './utils/utils';
+import * as d3 from 'd3-selection';
+
     describe('scatter plot chart', function () {
         var testData = [
             {x: 1, y: 1, color: 'red', size: 6},
@@ -57,7 +58,7 @@ define(function (require) {
 
             var dots = d3.select(element).selectAll('.dot');
             assert.equal(dots.size(), 10);
-            var radiusArr = dots[0].map((node) => d3.select(node).attr('r'));
+            var radiusArr = dots.nodes().map((node) => d3.select(node).attr('r'));
             assert.equal(radiusArr.every(x => x === radiusArr[0]), true, 'all radius are equal');
         });
 
@@ -92,9 +93,8 @@ define(function (require) {
 
             var dots = d3.select(element).selectAll('.dot');
             assert.equal(dots.size(), 10);
-            var radiusArr = dots[0].map((node) => d3.select(node).attr('r'));
+            var radiusArr = dots.nodes().map((node) => d3.select(node).attr('r'));
             var r = radiusArr[0];
             assert.equal(radiusArr.every(x => x == r), true, 'all radius are equal');
         })
     });
-});

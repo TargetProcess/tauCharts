@@ -1,7 +1,7 @@
-define(function (require) {
-    var expect = require('chai').expect;
-    var schemes = require('schemes');
-    var tauChart = require('src/tau.charts');
+import {expect} from 'chai';
+import schemes from './utils/schemes';
+import tauChart from '../src/tau.charts';
+
     describe("Formatter registry", function () {
 
         var iso = function (str) {
@@ -51,12 +51,12 @@ define(function (require) {
         });
 
         it("should support default formats", function () {
-            var jan01 = new Date(iso('2013-01-01T00:00:00'));
-            var oct30 = new Date(iso('2014-10-30T23:59:59'));
-            var nov02 = new Date(iso('2014-11-02T23:59:59'));
-            var jan01utc = new Date(utc('2013-01-01T00:00:00'));
-            var oct30utc = new Date(utc('2014-10-30T23:59:59'));
-            var nov02utc = new Date(utc('2014-11-02T23:59:59'));
+            var jan01 = new Date('2013-01-01T00:00:00');
+            var oct30 = new Date('2014-10-30T23:59:59');
+            var nov02 = new Date('2014-11-02T23:59:59');
+            var jan01utc = new Date('2013-01-01T00:00:00Z');
+            var oct30utc = new Date('2014-10-30T23:59:59Z');
+            var nov02utc = new Date('2014-11-02T23:59:59Z');
 
             expect(registry.get('day')(oct30)).to.equal('30-Oct-2014');
             expect(registry.get('week')(nov02)).to.equal('02-Nov-2014');
@@ -112,10 +112,10 @@ define(function (require) {
         });
 
         it("should support d3 formats", function () {
-            expect(registry.get('s')(22000)).to.equal('22k');
-            expect(registry.get('s')(22000000)).to.equal('22M');
-            expect(registry.get('s')(0.02)).to.equal('20m');
-            expect(registry.get('s')(0.0002)).to.equal('200µ');
+            expect(registry.get('.2s')(22000)).to.equal('22k');
+            expect(registry.get('.2s')(22000000)).to.equal('22M');
+            expect(registry.get('.0s')(0.02)).to.equal('20m');
+            expect(registry.get('.0s')(0.0002)).to.equal('200µ');
         });
 
         it("should allow to add custom formats", function () {
@@ -126,4 +126,3 @@ define(function (require) {
             expect(registry.get('custom')(42)).to.equal('42?!');
         });
     });
-});

@@ -1,17 +1,6 @@
-(function (factory) {
-    if (typeof define === 'function' && define.amd) {
-        define(['taucharts'], function (tauPlugins) {
-            return factory(tauPlugins);
-        });
-    } else if (typeof module === 'object' && module.exports) {
-        var tauPlugins = require('taucharts');
-        module.exports = factory(tauPlugins);
-    } else {
-        factory(this.tauCharts);
-    }
-})(function (tauCharts) {
+import Taucharts from 'taucharts';
 
-    var utils = tauCharts.api.utils;
+    var utils = Taucharts.api.utils;
 
     function ChartParallelTooltip(xSettings) {
 
@@ -132,19 +121,21 @@
             },
 
             template: [
-                '<div class="i-role-content graphical-report__tooltip__content"></div>',
-                '<div class="i-role-exclude graphical-report__tooltip__exclude">',
-                '<div class="graphical-report__tooltip__exclude__wrap">',
+                '<div class="tau-chart__tooltip__buttons tau-chart__tooltip__clickable">',
+                '<div class="tau-chart__tooltip__button i-role-exclude">',
+                '<div class="tau-chart__tooltip__button__wrap">',
                 '<span class="tau-icon-close-gray"></span>',
                 'Exclude',
                 '</div>',
-                '</div>'
+                '</div>',
+                '</div>',
+                '<div class="i-role-content tau-chart__tooltip__content"></div>'
             ].join(''),
 
             itemTemplate: utils.template([
-                '<div class="graphical-report__tooltip__list__item">',
-                '<div class="graphical-report__tooltip__list__elem"><%=label%></div>',
-                '<div class="graphical-report__tooltip__list__elem"><%=value%></div>',
+                '<div class="tau-chart__tooltip__list__item">',
+                '<div class="tau-chart__tooltip__list__elem"><%=label%></div>',
+                '<div class="tau-chart__tooltip__list__elem"><%=value%></div>',
                 '</div>'
             ].join(''))
         };
@@ -152,7 +143,6 @@
         return plugin;
     }
 
-    tauCharts.api.plugins.add('parallel-tooltip', ChartParallelTooltip);
+    Taucharts.api.plugins.add('parallel-tooltip', ChartParallelTooltip);
 
-    return ChartParallelTooltip;
-});
+export default ChartParallelTooltip;
