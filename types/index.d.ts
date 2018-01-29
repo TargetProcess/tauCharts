@@ -155,6 +155,7 @@ declare class Plot implements Emitter {
     addFilter(filter: any): number;
     removeFilter(id: number): this;
     refresh(): void;
+    updateConfig(config: ChartSpec): void;
     resize(size?: PlotSize): void;
     getLayout(): PlotLayout;
 }
@@ -203,11 +204,13 @@ declare var api: {
 
         get(name: 'annotations'): (settings: {
             items: {
-                dim: string;
-                val: any | [any, any];
+                dim: string | [string, string];
+                val: any | [any, any] | [any, any][];
                 text: string;
                 color?: string;
+                position?: 'front' | 'back';
             }[];
+            formatters?: any;
         }) => PluginObject;
 
         get(name: 'bar-as-span'): (settings: {
@@ -218,6 +221,12 @@ declare var api: {
 
         get(name: 'box-whiskers'): (settings?: {
             mode: 'show-scatter' | 'hide-scatter' | 'outliers-only';
+        }) => PluginObject;
+
+        get(name: 'category-filter'): (settings?: {
+            fields?: string[];
+            formatters?: any
+            skipColorDim?: boolean;
         }) => PluginObject;
 
         get(name: 'crosshair'): (settings?: {
@@ -271,9 +280,10 @@ declare var api: {
 
         get(name: 'tooltip'): (settings?: {
             fields?: string[];
+            escapeHtml?: boolean;
             formatters?: {
                 [field: string]: (((x: any) => string) | { label: string; format: (x: any) => string; })
-            }
+            };
         }) => PluginObject;
 
         get(name: 'trendline'): (settings?: {
