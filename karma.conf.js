@@ -37,7 +37,7 @@ module.exports = function (config) {
             DEBUG
                 ? null
                 : process.env.TRAVIS
-                    ? {lcovonly: true}
+                    ? {lcovonly: './coverage/lcov.info'}
                     : {html: './coverage/'}
         ),
 
