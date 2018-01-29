@@ -33,9 +33,13 @@ module.exports = function (config) {
         coverageReporter: (DEBUG ? null : {
             type: 'in-memory'
         }),
-        remapCoverageReporter: (DEBUG ? null : {
-            html: './coverage/'
-        }),
+        remapCoverageReporter: (
+            DEBUG
+                ? null
+                : process.env.TRAVIS
+                    ? {lcovonly: true}
+                    : {html: './coverage/'}
+        ),
 
         webpack: getTestWebpackConfig(DEBUG),
         webpackMiddleware: {
