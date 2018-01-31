@@ -135,9 +135,16 @@ function createAxis(config: AxisConfig) {
             const domainLineData = scaleGuide.hideTicks || scaleGuide.hide ? [] : [null];
             take(selection.selectAll('.domain').data(domainLineData))
                 .next((path) => {
+                    if (transition) {
+                        path.exit()
+                            .transition(transition)
+                            .attr('opacity', 0)
+                            .remove();
+                    }
                     return path.merge(
                         path.enter().insert('path', '.tick')
                             .attr('class', 'domain')
+                            .attr('opacity', 1)
                             .attr('stroke', '#000'));
                 })
                 .next((path) => {
