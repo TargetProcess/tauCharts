@@ -894,3 +894,7 @@ const chartElements = [
 export function isChartElement(element) {
     return chartElements.some((E) => element instanceof E);
 }
+
+export function isFacetUnit(unit: Unit) {
+    return (unit.units || []).some((c) => c.hasOwnProperty('units'));
+}

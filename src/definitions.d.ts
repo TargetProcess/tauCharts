@@ -330,11 +330,12 @@ export interface ScaleGuide {
     tickFontHeight?: number;
     avoidCollisions?: boolean;
     fillGaps?: boolean;
+    facetAxis?: boolean;
 }
 
 export interface AxisLabelGuide {
     text: string;
-    padding: number;
+    padding?: number;
     hide?: boolean;
     paddingNoTicks?: number;
     cssClass?: string;

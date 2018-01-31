@@ -254,7 +254,8 @@ export class Cartesian extends Element {
             scale: scale.scaleObj,
             scaleGuide: scale.guide,
             ticksCount: (formatter ? calcTicks(size / scale.guide.density) : null),
-            tickFormat: (formatter || null)
+            tickFormat: (formatter || null),
+            position,
         });
 
         var animationSpeed = this.config.guide.animationSpeed;

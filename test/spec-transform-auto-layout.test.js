@@ -319,10 +319,10 @@ import {ScalesFactory} from '../src/scales-factory';
             // 10 "25" string length
             // 20 padding to X axis label
             // 15 width of label
-            expect(full.unit.guide.padding.b).to.equal(58);
+            expect(full.unit.guide.padding.b).to.equal(19);
 
             // y is null axis
-            expect(full.unit.guide.padding.l).to.equal(24);
+            expect(full.unit.guide.padding.l).to.equal(0);
             expect(full.unit.guide.padding.r).to.equal(0);
             expect(full.unit.guide.padding.t).to.equal(0);
 
@@ -482,7 +482,7 @@ import {ScalesFactory} from '../src/scales-factory';
             expect(y.label.cssClass).to.equal('label');
             expect(y.label.dock).to.equal(null);
             expect(y.tickFontHeight).to.equal(10);
-            expect(y.density).to.equal(y.tickFontHeight + measurer.yDensityPadding * 2); // empty axis
+            expect(y.density).to.equal(28);
 
             expect(full.unit.guide.padding.b).to.equal(38);
 

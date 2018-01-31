@@ -107,17 +107,20 @@ var fitModelStrategies: FitModelStrategies = {
 
         var g = specRef.unit.guide;
         var {xFacetCount, yFacetCount} = getFacetCount(specRef);
+        if (yFacetCount > 0) {
+            SpecTransformOptimize.facetsLabelsAtTop(specRef.unit, specRef.settings);
+        }
         var ticksLPad = (g.paddingNoTicks ? (g.padding.l - g.paddingNoTicks.l) : 0);
         var ticksBPad = (g.paddingNoTicks ? (g.padding.b - g.paddingNoTicks.b) : 0);
         var shouldHideXAxis = (
             (g.paddingNoTicks &&
-            (srcSize.height - ticksBPad < specRef.settings.minChartHeight)) ||
+                (srcSize.height - ticksBPad < specRef.settings.minChartHeight)) ||
             (yFacetCount * specRef.settings.minFacetHeight + ticksBPad > srcSize.height) ||
             (xFacetCount * specRef.settings.minFacetWidth + ticksLPad > srcSize.width)
         );
         var shouldHideYAxis = (
             (g.paddingNoTicks &&
-            (srcSize.width - ticksLPad < specRef.settings.minChartWidth)) ||
+                (srcSize.width - ticksLPad < specRef.settings.minChartWidth)) ||
             (yFacetCount * specRef.settings.minFacetHeight + ticksBPad > srcSize.height) ||
             (xFacetCount * specRef.settings.minFacetWidth + ticksLPad > srcSize.width)
         );
@@ -162,6 +165,11 @@ var fitModelStrategies: FitModelStrategies = {
     },
 
     normal(srcSize, calcSize, specRef, tryOptimizeSpec) {
+
+        const {yFacetCount} = getFacetCount(specRef);
+        if (yFacetCount > 0) {
+            SpecTransformOptimize.facetsLabelsAtTop(specRef.unit, specRef.settings);
+        }
 
         var g = specRef.unit.guide;
         if (g.paddingNoTicks) {
