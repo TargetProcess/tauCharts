@@ -114,13 +114,13 @@ var fitModelStrategies: FitModelStrategies = {
         var ticksBPad = (g.paddingNoTicks ? (g.padding.b - g.paddingNoTicks.b) : 0);
         var shouldHideXAxis = (
             (g.paddingNoTicks &&
-                (srcSize.height - ticksBPad < specRef.settings.minChartHeight)) ||
+            (srcSize.height - ticksBPad < specRef.settings.minChartHeight)) ||
             (yFacetCount * specRef.settings.minFacetHeight + ticksBPad > srcSize.height) ||
             (xFacetCount * specRef.settings.minFacetWidth + ticksLPad > srcSize.width)
         );
         var shouldHideYAxis = (
             (g.paddingNoTicks &&
-                (srcSize.width - ticksLPad < specRef.settings.minChartWidth)) ||
+            (srcSize.width - ticksLPad < specRef.settings.minChartWidth)) ||
             (yFacetCount * specRef.settings.minFacetHeight + ticksBPad > srcSize.height) ||
             (xFacetCount * specRef.settings.minFacetWidth + ticksLPad > srcSize.width)
         );

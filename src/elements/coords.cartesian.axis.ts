@@ -77,10 +77,10 @@ function createAxis(config: AxisConfig) {
         tickPadding,
         gridOnly
     } = defaults(config, {
-        tickSize: 6,
-        tickPadding: 3,
-        gridOnly: false
-    });
+            tickSize: 6,
+            tickPadding: 3,
+            gridOnly: false
+        });
 
     const isLinearScale = (scale.scaleType === 'linear');
     const isOrdinalScale = (scale.scaleType === 'ordinal' || scale.scaleType === 'period');

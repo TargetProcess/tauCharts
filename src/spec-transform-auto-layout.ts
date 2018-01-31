@@ -66,7 +66,7 @@ var extendLabel = function (guide: UnitGuide, dimension: string, extend?) {
     });
     guide[dimension].label = utils.isObject(guide[dimension].label) ?
         guide[dimension].label :
-        {text: guide[dimension].label};
+    {text: guide[dimension].label};
     guide[dimension].label = utils.defaults(
         guide[dimension].label,
         extend || {},
@@ -543,7 +543,7 @@ var SpecEngineTypeMap: SpecEngines = {
                     xLabels.push(x);
                     unit.guide.x.tickFormatNullAlias = unit.guide.x.hasOwnProperty('tickFormatNullAlias') ?
                         unit.guide.x.tickFormatNullAlias :
-                        'No ' + x;
+                    'No ' + x;
                     unit.guide.x.label.text = '';
                     unit.guide.x.label._original_text = x;
                 }
@@ -553,7 +553,7 @@ var SpecEngineTypeMap: SpecEngines = {
                     yLabels.push(y);
                     unit.guide.y.tickFormatNullAlias = unit.guide.y.hasOwnProperty('tickFormatNullAlias') ?
                         unit.guide.y.tickFormatNullAlias :
-                        'No ' + y;
+                    'No ' + y;
                     unit.guide.y.label.text = '';
                     unit.guide.y.label._original_text = y;
                 }
