@@ -312,17 +312,17 @@ import {ScalesFactory} from '../src/scales-factory';
             expect(typeof y.tickFormatNullAlias).to.equal('undefined');
             expect(y.label.text).to.equal('count');
             expect(y.tickFontHeight).to.equal(10);
-            expect(y.density).to.equal(y.tickFontHeight + measurer.yDensityPadding * 2); // empty axis
+            expect(y.density).to.equal(8);
 
             // 20 padding to X axis line
             // 9  tick mark size
             // 10 "25" string length
             // 20 padding to X axis label
             // 15 width of label
-            expect(full.unit.guide.padding.b).to.equal(19);
+            expect(full.unit.guide.padding.b).to.equal(58);
 
             // y is null axis
-            expect(full.unit.guide.padding.l).to.equal(0);
+            expect(full.unit.guide.padding.l).to.equal(24);
             expect(full.unit.guide.padding.r).to.equal(0);
             expect(full.unit.guide.padding.t).to.equal(0);
 
