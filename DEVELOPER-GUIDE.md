@@ -272,10 +272,15 @@ The best practice is to reuse existing DOM nodes and slightly animate their tran
               Jan   May   Sep
 ```
 
-### Publishing the library.
+### Publishing the library
 - Assign a version number using Semantic Versioning rules.
 If API or some features are not stable, use `-beta.0` prefix.
 - Run `npm test`, ensure that all tests have passed successfully.
 - Run `npm run build`.
 - Publish a beta version by executing `npm publish --tag beta`.
 - Publish a stable version by executing `npm publish`.
+
+### Misc
+- Use Squash Commits when merging a Pull Request
+to keep the repository history clean
+for being able to highlight the release notes.
