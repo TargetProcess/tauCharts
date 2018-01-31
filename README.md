@@ -1,5 +1,5 @@
 Taucharts [![Build Status](https://travis-ci.org/TargetProcess/tauCharts.png?branch=master)](https://travis-ci.org/TargetProcess/tauCharts) [![Coverage Status](https://img.shields.io/coveralls/TargetProcess/tauCharts.svg)](https://coveralls.io/r/TargetProcess/tauCharts) [![Code Climate](https://codeclimate.com/github/TargetProcess/tauCharts/badges/gpa.svg)](https://codeclimate.com/github/TargetProcess/tauCharts)
-[![Slack Status](http://slack.taucharts.com/badge.svg)](http://slack.taucharts.com/)
+[![Slack Status](https://slack.taucharts.com/badge.svg)](https://slack.taucharts.com/)
 ======
 
 ![NPM downloads](https://nodei.co/npm-dl/taucharts.png?months=6)
