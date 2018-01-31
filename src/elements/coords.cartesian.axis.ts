@@ -517,7 +517,8 @@ function createAxis(config: AxisConfig) {
 
                     label
                         .attr('x', lx)
-                        .attr('y', ly);
+                        .attr('y', ly)
+                        .attr('text-anchor', 'end');
                 });
 
             const delimiter = ' \u2192 ';
