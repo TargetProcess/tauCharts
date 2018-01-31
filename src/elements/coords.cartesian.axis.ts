@@ -513,13 +513,7 @@ function createAxis(config: AxisConfig) {
 
                     const ly = (kh * guide.padding);
                     const size = Math.abs(range1 - range0);
-                    var lx = (kh * size * 0.5);
-                    if (guide.dock === 'left' || guide.dock === 'right') {
-                        lx = (guide.dock === 'left' ?
-                            (isHorizontal ? 0 : -size) :
-                            (isHorizontal ? size : 0)
-                        );
-                    }
+                    const lx = isHorizontal ? size : 0;
 
                     label
                         .attr('x', lx)
