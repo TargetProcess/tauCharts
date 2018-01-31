@@ -196,7 +196,7 @@ const IntervalHighlight = <HighlightElement>{
         }
 
         utils.take(drawGroups())
-            .next((binding) => {
+            .then((binding) => {
                 defineGradient();
                 drawRange(binding);
                 drawStart(binding);
