@@ -56,7 +56,7 @@ const mainConfig = {
         require('rollup-plugin-alias')({
             'tau-tooltip': 'node_modules/tau-tooltip/src/tooltip.js'
         }),
-        require('rollup-plugin-replace')({
+        require('./rollup-plugin-replace-bundle')({
             '{{VERSION}}': `${require('../package.json').version}`
         }),
         require('@alexlur/rollup-plugin-typescript')(tsConfig),
