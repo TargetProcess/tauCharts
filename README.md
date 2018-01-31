@@ -218,11 +218,21 @@ See [composable chart sample online](http://jsfiddle.net/6LzefLo4/4/)
 
 ___
 
+## Migrating from Taucharts v1 to v2
+
+- D3 v4 is now dependency.
+- `Taucharts` global object name (was `tauCharts`).
+- `.tau-chart__` CSS class prefix (was`.graphical-report__`).
+- `export-to` plugin alias changed (was `exportTo`).
+- Distributive files paths changed. `dist/taucharts.min.js` and `dist/taucharts.min.css` contain the core and all the plugins minified together. `dist/taucharts.js` and `dist/taucharts.css` contain unfinified core, JS and CSS for plugins can be found in `dist/plugins/` folder (e.g. to import a plugin you should do something like `import tooltip from 'taucharts/dist/plugins/tooltip';`).
+
+___
+
 ## How to run the project locally
 
 Clone (forked) repository:
 ```
-git clone https://github.com/TargetProcess/tauCharts.git
+git clone https://github.com/TargetProcess/taucharts.git
 ```
 
 Initialize dependencies:
