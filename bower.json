@@ -1,7 +1,7 @@
 {
   "name": "taucharts",
-  "version": "2.0.0-beta.38",
-  "homepage": "https://github.com/TargetProcess/tauCharts",
+  "version": "2.0.0",
+  "homepage": "https://github.com/TargetProcess/taucharts",
   "description": "D3 based data-focused charting library",
   "keywords": [
     "d3",

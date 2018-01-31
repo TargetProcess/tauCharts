@@ -1,7 +1,7 @@
 {
   "name": "taucharts",
-  "version": "2.0.0-beta.38",
-  "homepage": "https://github.com/TargetProcess/tauCharts",
+  "version": "2.0.0",
+  "homepage": "https://github.com/TargetProcess/taucharts",
   "description": "Data-focused charting library based on D3",
   "author": {
     "name": "Targetprocess, Inc."
@@ -21,7 +21,7 @@
   "licenses": [
     {
       "type": "Apache License 2.0",
-      "url": "https://github.com/TargetProcess/tauCharts/blob/master/LICENSE"
+      "url": "https://github.com/TargetProcess/taucharts/blob/master/LICENSE"
     }
   ],
   "dependencies": {
@@ -43,7 +43,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/TargetProcess/tauCharts.git"
+    "url": "https://github.com/TargetProcess/taucharts.git"
   },
   "scripts": {
     "start": "gulp watch",
