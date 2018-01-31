@@ -339,6 +339,11 @@ function calcXYGuide(
         yLabel.paddingNoTicks = (kyLabelW * settings.distToYAxisLabel);
     }
 
+    if (isFacetUnit) {
+        yLabel.padding = 0;
+        yLabel.paddingNoTicks = 0;
+    }
+
     const bottomBorder = settings.xFontLabelDescenderLineHeight; // for font descender line
     guide.padding = Object.assign(
         (guide.padding),
@@ -354,7 +359,7 @@ function calcXYGuide(
                 (0) :
                 sum([
                     (guide.y.padding),
-                    (kyAxisW * (settings.yTickWidth + (isFacetUnit ? 20 : rotYBox.width))),
+                    (isFacetUnit ? 0 : (kyAxisW * (settings.yTickWidth + rotYBox.width))),
                     (kyLabelW * (settings.distToYAxisLabel + settings.yFontLabelHeight))
                 ])
         });
@@ -609,6 +614,7 @@ var SpecEngineTypeMap: SpecEngines = {
                         settings),
                     xMeta,
                     yMeta,
+                    null,
                     utils.isFacetUnit(unit));
 
                 unit.guide.x = Object.assign(
