@@ -134,18 +134,25 @@ function createAxis(config: AxisConfig) {
         function drawDomain() {
             const domainLineData = scaleGuide.hideTicks || scaleGuide.hide ? [] : [null];
             take(selection.selectAll('.domain').data(domainLineData))
-                .next((path) => {
+                .then((path) => {
+                    if (transition) {
+                        path.exit()
+                            .transition(transition)
+                            .attr('opacity', 0)
+                            .remove();
+                    }
                     return path.merge(
                         path.enter().insert('path', '.tick')
                             .attr('class', 'domain')
+                            .attr('opacity', 1)
                             .attr('stroke', '#000'));
                 })
-                .next((path) => {
+                .then((path) => {
                     return (transition ?
                         path.transition(transition) :
                         path);
                 })
-                .next((path) => {
+                .then((path) => {
                     path.attr('d', orient === Orient.left || orient == Orient.right ?
                         `M${ko * tickSize},${range0}H0.5V${range1}H${ko * tickSize}` :
                         `M${range0},${ko * tickSize}V0.5H${range1}V${ko * tickSize}`);
@@ -158,7 +165,7 @@ function createAxis(config: AxisConfig) {
                 .data(values, (x) => String(scale(x)))
                 .order())
 
-                .next((tick) => {
+                .then((tick) => {
                     const tickExit = tick.exit<any>();
                     const tickEnter = tick.enter().append('g').attr('class', 'tick');
 
@@ -168,7 +175,7 @@ function createAxis(config: AxisConfig) {
                         tick: tick.merge(tickEnter)
                     };
                 })
-                .next((result) => {
+                .then((result) => {
                     if (isLinearScale) {
                         const ticks = scale.ticks();
                         const domain = scale.domain();
@@ -196,7 +203,7 @@ function createAxis(config: AxisConfig) {
 
             take(ticks)
 
-                .next(({tickEnter, tickExit, tick}) => {
+                .then(({tickEnter, tickExit, tick}) => {
 
                     if (!transition) {
                         return {tick, tickExit};
@@ -224,7 +231,7 @@ function createAxis(config: AxisConfig) {
 
                 })
 
-                .next(({tick, tickExit}) => {
+                .then(({tick, tickExit}) => {
 
                     tickExit.remove();
 
@@ -240,7 +247,7 @@ function createAxis(config: AxisConfig) {
             const lx = (isOrdinalScale ? ((d) => (kh * scale.stepSize(d) / 2)) : null);
 
             take(ticks)
-                .next(({tick, tickEnter}) => {
+                .then(({tick, tickEnter}) => {
                     const line = tick.select('line');
                     const lineEnter = tickEnter.append('line')
                         .attr('stroke', '#000')
@@ -254,13 +261,13 @@ function createAxis(config: AxisConfig) {
 
                     return line.merge(lineEnter);
                 })
-                .next((line) => {
+                .then((line) => {
                     if (transition) {
                         return line.transition(transition);
                     }
                     return line;
                 })
-                .next((line) => {
+                .then((line) => {
                     line
                         .attr(`${y}2`, ly);
 
@@ -278,18 +285,18 @@ function createAxis(config: AxisConfig) {
             }
 
             take(selection.selectAll('.extra-tick-line').data([null]))
-                .next((extra) => {
+                .then((extra) => {
                     return extra.merge(
                         extra.enter().insert('line', '.tick')
                             .attr('class', 'extra-tick-line')
                             .attr('stroke', '#000'));
                 })
-                .next((extra) => {
+                .then((extra) => {
                     return (transition ?
                         extra.transition(transition) :
                         extra);
                 })
-                .next((extra) => {
+                .then((extra) => {
                     extra
                         .attr(`${x}1`, range0)
                         .attr(`${x}2`, range0)
@@ -304,7 +311,7 @@ function createAxis(config: AxisConfig) {
             const tdy = (orient === Orient.top ? '0em' : orient === Orient.bottom ? '0.71em' : '0.32em');
 
             take(ticks)
-                .next(({tick, tickEnter}) => {
+                .then(({tick, tickEnter}) => {
                     const text = tick.select('text');
                     const textEnter = tickEnter.append('text')
                         .attr('fill', '#000')
@@ -314,7 +321,7 @@ function createAxis(config: AxisConfig) {
 
                     return text.merge(textEnter);
                 })
-                .next((text) => {
+                .then((text) => {
                     text
                         .text(format)
                         .attr('text-anchor', textAnchor);
@@ -329,13 +336,13 @@ function createAxis(config: AxisConfig) {
 
                     return text;
                 })
-                .next((text) => {
+                .then((text) => {
                     if (transition) {
                         return text.transition(transition);
                     }
                     return text;
                 })
-                .next((text) => {
+                .then((text) => {
                     text
                         .attr(y, ty);
 
@@ -480,13 +487,13 @@ function createAxis(config: AxisConfig) {
                 .attr('text-anchor', guide.textAnchor);
 
             take(labelTextNode)
-                .next((label) => {
+                .then((label) => {
                     if (transition) {
                         return label.transition(transition);
                     }
                     return label;
                 })
-                .next((label) => {
+                .then((label) => {
 
                     const ly = (kh * guide.padding);
                     const size = Math.abs(range1 - range0);
