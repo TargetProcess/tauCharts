@@ -245,7 +245,7 @@ const domUtils = Taucharts.api.domUtils;
                             g.attr('transform', translate(x, y));
                             labels.each(function () {
                                 var t = parseTransform(this[transProp]);
-                                var dx = -pos.svgWidth / 2 + pos.visibleWidth / 2 + scrollLeft;
+                                var dx = -pos.svgWidth + pos.visibleWidth + scrollLeft - 10;
                                 this.setAttribute(
                                     'transform',
                                     'translate(' + (t.x + dx) + ',' + t.y + ') rotate(' + t.r + ')'
@@ -275,10 +275,7 @@ const domUtils = Taucharts.api.domUtils;
                             g.attr('transform', translate(x, y));
                             labels.each(function () {
                                 var t = parseTransform(this[transProp]);
-                                var dy = (this.matches('.inline') ?
-                                    (scrollTop) :
-                                    (scrollTop - pos.svgHeight / 2 + pos.visibleHeight / 2)
-                                );
+                                const dy = scrollTop + 10;
                                 this.setAttribute(
                                     'transform',
                                     'translate(' + t.x + ',' + (t.y + dy) + ') rotate(' + t.r + ')'
