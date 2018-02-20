@@ -290,7 +290,7 @@ function template(str: string, obj: {[prop: string]: string}) {
                         dst.text = template(metaInfo.endText, {value: format(from)});
                     }
 
-                    return this._useSavedDataRefs([src, dst], String(from));
+                    return this._useSavedDataRefs([src, dst], String([a, b, from]));
                 };
 
                 specRef.transformations.lineNoteData = (data, metaInfo: LineMetaInfo) => {
