@@ -409,7 +409,7 @@ import * as d3 from 'd3-selection';
                     return false;
                 }
 
-                if ((this._applicableElements.indexOf(unit.type) === -1) || (unit.stack)) {
+                if ((this._applicableElements.indexOf(unit.type) === -1) || unit.stack || unit.namespace !== 'chart') {
                     return false;
                 }
 
