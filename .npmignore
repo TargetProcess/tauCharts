@@ -5,3 +5,4 @@
  !LICENSE
  !package.json
  !README.md
+ dist/**/*.styles.js
