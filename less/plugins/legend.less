@@ -1,6 +1,6 @@
 @import "../variable";
 
-.generate-colors(@n; @i: 1) when (@i =< @n) {
+.generateColors(@n; @i: 1) when (@i =< @n) {
 
     .tau-chart__legend__item .color@{n}-@{i} {
         background: extract(@category-colors, @i);
@@ -11,7 +11,7 @@
         background-color: transparent;
     }
 
-    .generate-colors(@n; (@i + 1));
+    .generateColors(@n; (@i + 1));
 }
 
 .tau-chart {
@@ -204,4 +204,4 @@
     }
 }
 
-.generate-colors(@list_category-colors);
+.generateColors(@list_category-colors);

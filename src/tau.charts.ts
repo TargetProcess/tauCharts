@@ -312,11 +312,22 @@ api.chartTypesRegistry
         }
     ]));
 
-var version = '{{VERSION}}';
+declare var VERSION: string;
+
+const version = VERSION;
+
+export {
+    GPL,
+    Plot,
+    Chart,
+    api,
+    version,
+};
+
 export default {
     GPL,
     Plot,
     Chart,
     api,
-    version
+    version: VERSION
 };

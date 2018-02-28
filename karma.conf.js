@@ -9,8 +9,8 @@ module.exports = function (config) {
         frameworks: ['mocha'],
 
         files: [
-            `${DEBUG ? 'debug' : 'dist'}/taucharts.css`,
-            `${DEBUG ? 'debug' : 'dist'}/plugins/tooltip.css`,
+            `dist/taucharts.css`,
+            `dist/plugins/tooltip.css`,
             'test/utils/test.css',
             'test/utils/polyfills.js',
             'test/tests-main.js'
@@ -64,21 +64,21 @@ function getTestWebpackConfig(DEBUG) {
         resolve: {
             modules: [
                 path.resolve('.'),
-                'bower_components',
                 'node_modules'
             ],
             alias: {
-                'canvg': 'bower_components/canvg/canvg.js',
+                'canvg': 'node_modules/canvg/canvg.js',
                 'file-saver': 'test/utils/saveAs.js',
                 'print.style.css': 'plugins/print.style.css',
-                'rgbcolor': 'bower_components/rgb-color/dist/rgb-color.js',
-                'stackblur': 'bower_components/canvg/StackBlur.js',
+                'rgbcolor': 'node_modules/canvg/rgbcolor.js',
+                'stackblur': 'node_modules/canvg/StackBlur.js',
                 'taucharts': 'src/tau.charts.ts',
                 'tau-tooltip': 'node_modules/tau-tooltip/tooltip.js'
             },
             extensions: ['.js', '.json', '.ts']
         },
         devtool: 'inline-source-map',
+        mode: `development`,
         module: {
             rules: [
                 {
@@ -90,7 +90,7 @@ function getTestWebpackConfig(DEBUG) {
                     test: /\.(js|ts)$/,
                     exclude: [
                         'node_modules',
-                        'bower_components'
+                        'node_modules'
                     ],
                     options: {
                         compilerOptions: {
@@ -103,7 +103,7 @@ function getTestWebpackConfig(DEBUG) {
                     loader: 'istanbul-instrumenter-loader',
                     test: /\.(js|ts)$/,
                     enforce: 'post',
-                    exclude: /test|addons|plugins|node_modules|bower_components|polyfills\.js|d3-labeler\.js|coords\.geomap\.js|chart-map\.ts/,
+                    exclude: /test|addons|plugins|node_modules|polyfills\.js|d3-labeler\.js|coords\.geomap\.js|chart-map\.ts/,
                     options: {
                         esModules: true
                     }
@@ -116,7 +116,7 @@ function getTestWebpackConfig(DEBUG) {
         },
         plugins: [
             new webpack.DefinePlugin({
-                VERSION: require('./package.json').version
+                VERSION: JSON.stringify(require('./package.json').version),
             })
         ]
     };
