@@ -3,13 +3,7 @@ dist: trusty
 language: node_js
 node_js:
   - "lts/*"
-
-notifications:
-  slack: targetprocess:6steG2RMCfKWx3uZ2Lm9Sfvd
-
+addons:
+  chrome: stable
 before_install:
   - export CHROME_BIN=/usr/bin/google-chrome
-  - export DISPLAY=:99.0
-  - sh -e /etc/init.d/xvfb start
-  - wget https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb
-  - sudo dpkg -i google-chrome*.deb
