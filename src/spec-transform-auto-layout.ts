@@ -255,7 +255,14 @@ var wrapLine = (box, lineWidthLimit, linesCountLimit) => {
     };
 };
 
-var calcXYGuide = function (guide: UnitGuide, settings: ChartSettings, xMeta, yMeta, inlineLabels?: boolean) {
+function calcXYGuide(
+    guide: UnitGuide,
+    settings: ChartSettings,
+    xMeta,
+    yMeta,
+    inlineLabels?: boolean,
+    isFacetUnit?: boolean
+) {
 
     var xValues = xMeta.values;
     var yValues = yMeta.values;
@@ -287,6 +294,13 @@ var calcXYGuide = function (guide: UnitGuide, settings: ChartSettings, xMeta, yM
         guide.y.tickFormatWordWrap = true;
         guide.y.tickFormatWordWrapLines = settings.yTickWordWrapLinesLimit;
         multiLinesYBox = wrapLine(maxYTickBox, settings.yAxisTickLabelLimit, settings.yTickWordWrapLinesLimit);
+    }
+
+    if (isFacetUnit) {
+        guide.y.tickFormatWordWrap = false;
+        guide.y.tickFormatWordWrapLines = 1;
+        multiLinesYBox = wrapLine(maxYTickBox, settings.yAxisTickLabelLimit * 2, 1);
+        multiLinesYBox.width = 20;
     }
 
     var kxAxisW = xIsEmptyAxis ? 0 : 1;
@@ -325,6 +339,11 @@ var calcXYGuide = function (guide: UnitGuide, settings: ChartSettings, xMeta, yM
         yLabel.paddingNoTicks = (kyLabelW * settings.distToYAxisLabel);
     }
 
+    if (isFacetUnit) {
+        yLabel.padding = 0;
+        yLabel.paddingNoTicks = 0;
+    }
+
     const bottomBorder = settings.xFontLabelDescenderLineHeight; // for font descender line
     guide.padding = Object.assign(
         (guide.padding),
@@ -340,7 +359,7 @@ var calcXYGuide = function (guide: UnitGuide, settings: ChartSettings, xMeta, yM
                 (0) :
                 sum([
                     (guide.y.padding),
-                    (kyAxisW * (settings.yTickWidth + rotYBox.width)),
+                    (isFacetUnit ? 0 : (kyAxisW * (settings.yTickWidth + rotYBox.width))),
                     (kyLabelW * (settings.distToYAxisLabel + settings.yFontLabelHeight))
                 ])
         });
@@ -385,7 +404,7 @@ var calcXYGuide = function (guide: UnitGuide, settings: ChartSettings, xMeta, yM
         });
 
     return guide;
-};
+}
 
 interface CalcUnitArgs {
     unit: Unit;
@@ -427,7 +446,7 @@ var calcUnitGuide = function ({unit, meta, settings, allowXVertical, allowYVerti
     unit.guide.y.rotate = isYVertical ? -90 : 0;
     unit.guide.y.textAnchor = getTextAnchorByAngle(unit.guide.y.rotate, 'y');
 
-    unit.guide = calcXYGuide(unit.guide, settings, xMeta, yMeta, inlineLabels);
+    unit.guide = calcXYGuide(unit.guide, settings, xMeta, yMeta, inlineLabels, utils.isFacetUnit(unit));
 
     if (inlineLabels) {
 
@@ -485,7 +504,7 @@ var SpecEngineTypeMap: SpecEngines = {
             spec.unit,
             'units',
             createSelectorPredicates,
-            (selectors, unit) => {
+            (selectors, unit: Unit) => {
 
                 if (selectors.isLeaf) {
                     return unit;
@@ -501,15 +520,15 @@ var SpecEngineTypeMap: SpecEngines = {
 
                 unit.guide = unit.guide || {};
 
-                unit.guide.x = unit.guide.x || {label: ''};
-                unit.guide.y = unit.guide.y || {label: ''};
+                unit.guide.x = unit.guide.x || {label: {text: ''}};
+                unit.guide.y = unit.guide.y || {label: {text: ''}};
 
                 unit.guide.x.label = utils.isObject(unit.guide.x.label)
                     ? unit.guide.x.label
-                    : {text: unit.guide.x.label};
+                    : {text: unit.guide.x.label && unit.guide.x.label.text ? unit.guide.x.label.text : ''};
                 unit.guide.y.label = utils.isObject(unit.guide.y.label)
                     ? unit.guide.y.label
-                    : {text: unit.guide.y.label};
+                    : {text: unit.guide.y.label && unit.guide.y.label.text ? unit.guide.y.label.text : ''};
 
                 if (unit.x) {
                     unit.guide.x.label.text = unit.guide.x.label.text || meta.dimension(unit.x).dimName;
@@ -594,7 +613,9 @@ var SpecEngineTypeMap: SpecEngines = {
                         },
                         settings),
                     xMeta,
-                    yMeta);
+                    yMeta,
+                    null,
+                    utils.isFacetUnit(unit));
 
                 unit.guide.x = Object.assign(
                     (unit.guide.x),
@@ -630,7 +651,7 @@ var SpecEngineTypeMap: SpecEngines = {
         fnTraverseSpec(
             utils.clone(spec.unit),
             spec.unit,
-            (selectorPredicates, unit) => {
+            (selectorPredicates, unit: Unit) => {
 
                 if (selectorPredicates.isLeaf) {
                     return unit;

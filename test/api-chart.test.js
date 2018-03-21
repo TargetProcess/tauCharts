@@ -265,14 +265,14 @@ import layers from '../plugins/layers';
             var chart = new Taucharts.Chart(createConfig('entire-view'));
             chart.renderTo(div);
             expect(getTicks(chart, 'x').length).to.be.equal(0);
-            expect(getTicks(chart, 'y').length).to.be.equal(0);
+            expect(getTicks(chart, 'y').length).to.be.equal(3);
         });
 
         it('should support [fit-width] model', function () {
             var chart = new Taucharts.Chart(createConfig('fit-width'));
             chart.renderTo(div);
             expect(getTicks(chart, 'x').length).to.be.above(0);
-            expect(getTicks(chart, 'y').length).to.be.equal(0);
+            expect(getTicks(chart, 'y').length).to.be.equal(3);
         });
 
         it('should support [fit-height] model', function () {

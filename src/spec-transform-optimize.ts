@@ -1,3 +1,5 @@
+import * as utils from './utils/utils';
+
 import {
     ChartSettings,
     GPLSpec,
@@ -48,7 +50,10 @@ export class SpecTransformOptimize {
             const g = rootUnit.guide;
 
             if (!g[axis].hide && !g[axis].hideTicks) {
-                g[axis].hideTicks = true;
+                const isFacetContainer = utils.isFacetUnit(rootUnit);
+                if (!(isFacetContainer && axis === 'y')) {
+                    g[axis].hideTicks = true;
+                }
                 var hasLabel = (g[axis].label.text && !g[axis].label.hide);
                 g.padding[pad] = (g.paddingNoTicks ? g.paddingNoTicks[pad] : 0);
                 g[axis].padding = (g[axis].paddingNoTicks || 0);
@@ -60,6 +65,26 @@ export class SpecTransformOptimize {
                 .forEach((u) => enterSpec(u));
         };
 
+        enterSpec(root);
+    }
+
+    static facetsLabelsAtTop(root: Unit, settings: ChartSettings) {
+        const enterSpec = (unit: Unit) => {
+            const children = (unit.units || []);
+            const isFacetContainer = utils.isFacetUnit(unit);
+            if (isFacetContainer) {
+                const g = unit.guide;
+                g.y.facetAxis = true;
+                g.y.rotate = 0;
+                g.y.textAnchor = 'start';
+                children.forEach((c) => {
+                    c.guide.padding.t = 20;
+                });
+            }
+            children
+                .filter((u) => u.type === 'COORDS.RECT')
+                .forEach((u) => enterSpec(u));
+        };
         enterSpec(root);
     }
 }

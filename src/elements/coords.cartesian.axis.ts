@@ -19,6 +19,7 @@ interface AxisConfig {
     tickSize?: number;
     tickPadding?: number;
     gridOnly?: boolean;
+    position: [number, number];
 }
 
 interface GridConfig {
@@ -26,6 +27,7 @@ interface GridConfig {
     scaleGuide: ScaleGuide;
     ticksCount: number;
     tickSize: number;
+    position: [number, number];
 }
 
 type d3Selection = Selection<any, any, any, any>;
@@ -111,7 +113,11 @@ function createAxis(config: AxisConfig) {
         const range = scale.range();
         const range0 = (range[0] + 0.5);
         const range1 = (range[range.length - 1] + 0.5);
-        const position = (scale.bandwidth ? center : identity)(scale);
+        let position = (scale.bandwidth ? center : identity)(scale);
+        if (scaleGuide.facetAxis) {
+            let oldPos = position;
+            position = (d) => oldPos(d) - scale.stepSize(d) / 2;
+        }
         // Todo: Determine if scale copy is necessary. Fails on ordinal scales with ratio.
         // const position = (scale.bandwidth ? center : identity)(scale.copy());
 
@@ -310,6 +316,14 @@ function createAxis(config: AxisConfig) {
             const ty = (ko * spacing);
             const tdy = (orient === Orient.top ? '0em' : orient === Orient.bottom ? '0.71em' : '0.32em');
 
+            function fixTextPosForVerticalFacets(selection) {
+                if (scaleGuide.facetAxis) {
+                    return selection
+                        .attr('dx', -config.position[0] + 18)
+                        .attr('dy', 16);
+                }
+            }
+
             take(ticks)
                 .then(({tick, tickEnter}) => {
                     const text = tick.select('text');
@@ -318,6 +332,7 @@ function createAxis(config: AxisConfig) {
                         .attr(y, ty)
                         .attr('dy', tdy);
                     rotateText(textEnter);
+                    fixTextPosForVerticalFacets(textEnter);
 
                     return text.merge(textEnter);
                 })
@@ -347,6 +362,7 @@ function createAxis(config: AxisConfig) {
                         .attr(y, ty);
 
                     rotateText(text);
+                    fixTextPosForVerticalFacets(text);
 
                     if (isOrdinalScale && scaleGuide.avoidCollisions) {
                         if (transition) {
@@ -497,17 +513,12 @@ function createAxis(config: AxisConfig) {
 
                     const ly = (kh * guide.padding);
                     const size = Math.abs(range1 - range0);
-                    var lx = (kh * size * 0.5);
-                    if (guide.dock === 'left' || guide.dock === 'right') {
-                        lx = (guide.dock === 'left' ?
-                            (isHorizontal ? 0 : -size) :
-                            (isHorizontal ? size : 0)
-                        );
-                    }
+                    const lx = isHorizontal ? size : 0;
 
                     label
                         .attr('x', lx)
-                        .attr('y', ly);
+                        .attr('y', ly)
+                        .attr('text-anchor', 'end');
                 });
 
             const delimiter = ' \u2192 ';
@@ -533,7 +544,9 @@ function createAxis(config: AxisConfig) {
         }
         const ticks = createTicks();
         updateTicks(ticks);
-        drawLines(ticks);
+        if (!scaleGuide.facetAxis) {
+            drawLines(ticks);
+        }
         if (isOrdinalScale && gridOnly) { // Todo: Explicitly determine if grid 
             drawExtraOrdinalLine();
         }
@@ -557,6 +570,7 @@ export function cartesianGrid(config: GridConfig) {
         scaleGuide: config.scaleGuide,
         ticksCount: config.ticksCount,
         tickSize: config.tickSize,
-        gridOnly: true
+        gridOnly: true,
+        position: config.position,
     });
 }

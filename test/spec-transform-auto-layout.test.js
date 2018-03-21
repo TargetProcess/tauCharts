@@ -312,7 +312,7 @@ import {ScalesFactory} from '../src/scales-factory';
             expect(typeof y.tickFormatNullAlias).to.equal('undefined');
             expect(y.label.text).to.equal('count');
             expect(y.tickFontHeight).to.equal(10);
-            expect(y.density).to.equal(y.tickFontHeight + measurer.yDensityPadding * 2); // empty axis
+            expect(y.density).to.equal(8);
 
             // 20 padding to X axis line
             // 9  tick mark size
@@ -482,7 +482,7 @@ import {ScalesFactory} from '../src/scales-factory';
             expect(y.label.cssClass).to.equal('label');
             expect(y.label.dock).to.equal(null);
             expect(y.tickFontHeight).to.equal(10);
-            expect(y.density).to.equal(y.tickFontHeight + measurer.yDensityPadding * 2); // empty axis
+            expect(y.density).to.equal(28);
 
             expect(full.unit.guide.padding.b).to.equal(38);
 
