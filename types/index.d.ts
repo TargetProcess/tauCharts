@@ -127,7 +127,7 @@ interface Emitter {
 
 interface PlotSize {
     width?: number;
-    height?: number
+    height?: number;
 }
 
 interface PlotLayout {
@@ -192,7 +192,9 @@ declare var api: {
     };
     tickPeriod: {
         get(name: string, settings?: { utc?: boolean }): { cast: (d: Date) => Date; next: (d: Date) => Date; };
-        add(name: string, period: { cast: (d: Date) => Date; next: (d: Date) => Date; }, settings?: { utc?: boolean }): void;
+        add(name: string,
+            period: { cast: (d: Date) => Date; next: (d: Date) => Date; },
+            settings?: { utc?: boolean }): void;
     };
     globalSettings: ChartSettings;
 
