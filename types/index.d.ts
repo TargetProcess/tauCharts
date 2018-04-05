@@ -301,12 +301,14 @@ declare var api: {
 
 declare var version: string;
 
-export default {
-    Plot,
-    Chart,
-    api,
-    version,
+declare var _default: {
+    Plot: typeof Plot,
+    Chart: typeof Chart,
+    api: typeof api,
+    version: typeof version
 };
+
+export default _default;
 
 export {
     Plot,
