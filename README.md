@@ -2,9 +2,6 @@ Taucharts [![Build Status](https://travis-ci.org/TargetProcess/tauCharts.png?bra
 [![Slack Status](https://slack.taucharts.com/badge.svg)](https://slack.taucharts.com/)
 ======
 
-![NPM downloads](https://nodei.co/npm-dl/taucharts.png?months=6)
-
-
 Taucharts is a [data-focused JavaScript charting library](http://blog.taucharts.com/taucharts-data-focused-charting-library/) based on D3 and designed with passion.
 
 ##### Official website: [www.taucharts.com](http://www.taucharts.com)
@@ -30,14 +27,16 @@ Load JavaScript dependencies
 
 ```html
 <script src="//cdn.jsdelivr.net/d3js/latest/d3.min.js" charset="utf-8"></script>
-<script src="//cdn.jsdelivr.net/taucharts/latest/taucharts.min.js" type="text/javascript"></script>
+<script src="//cdn.jsdelivr.net/npm/taucharts@2/dist/taucharts.min.js" type="text/javascript"></script>
 ```
 
 Include a CSS file, as well
 
 ```html
-<link rel="stylesheet" type="text/css" href="//cdn.jsdelivr.net/taucharts/latest/taucharts.min.css">
+<link rel="stylesheet" type="text/css" href=//cdn.jsdelivr.net/npm/taucharts@2/dist/taucharts.min.css">
 ```
+
+NOTE: taucharts@2 is compatible with D3 v4 only. Use taucharts@1 if you work with obsolete D3 versions.
 
 #### Downloading Taucharts using Bower
 
