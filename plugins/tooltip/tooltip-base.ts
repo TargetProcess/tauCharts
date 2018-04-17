@@ -30,6 +30,7 @@ export default class Tooltip {
     constructor(settings: TooltipSettings) {
         this.settings = utils.defaults(settings || {}, {
             align: 'bottom-right',
+            clickable: true,
             clsClickable: `${TOOLTIP_CLS}__clickable`,
             clsStuck: 'stuck',
             clsTarget: `${TOOLTIP_CLS}-target`,
@@ -88,7 +89,7 @@ export default class Tooltip {
         };
         window.addEventListener('scroll', this._scrollHandler, true);
 
-        this._outerClickHandler = (e) => {
+        if (this.settings.clickable) this._outerClickHandler = (e) => {
             const clickableItems = Array.from(document
                 .querySelectorAll(`.${this.settings.clsClickable}`))
                 .concat(this.getDomNode());
@@ -161,7 +162,7 @@ export default class Tooltip {
 
         // Stick/unstick tooltip
         const tooltipNode = this.getDomNode();
-        if (state.isStuck !== prev.isStuck) {
+        if (this.settings.clickable && state.isStuck !== prev.isStuck) {
             if (state.isStuck) {
                 window.addEventListener('click', this._outerClickHandler, true);
                 tooltipNode.classList.add(settings.clsStuck);
@@ -262,7 +263,7 @@ export default class Tooltip {
                     });
                 });
 
-                node.on('data-click', (sender, e) => {
+                if (this.settings.clickable) node.on('data-click', (sender, e) => {
                     const bodyRect = document.body.getBoundingClientRect();
                     this.setState(e.data ? {
                         highlight: {
@@ -370,6 +371,7 @@ interface TooltipState {
 
 export interface TooltipSettings {
     align?: string;
+    clickable?: boolean;
     clsClickable?: string;
     clsStuck?: string;
     clsTarget?: string;
