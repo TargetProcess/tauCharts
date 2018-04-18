@@ -30,6 +30,7 @@ export default class Tooltip {
     constructor(settings: TooltipSettings) {
         this.settings = utils.defaults(settings || {}, {
             align: 'bottom-right',
+            clickable: true,
             clsClickable: `${TOOLTIP_CLS}__clickable`,
             clsStuck: 'stuck',
             clsTarget: `${TOOLTIP_CLS}-target`,
@@ -88,28 +89,30 @@ export default class Tooltip {
         };
         window.addEventListener('scroll', this._scrollHandler, true);
 
-        this._outerClickHandler = (e) => {
-            const clickableItems = Array.from(document
-                .querySelectorAll(`.${this.settings.clsClickable}`))
-                .concat(this.getDomNode());
+        if (this.settings.clickable) {
+            this._outerClickHandler = (e) => {
+                const clickableItems = Array.from(document
+                    .querySelectorAll(`.${this.settings.clsClickable}`))
+                    .concat(this.getDomNode());
 
-            const rects = clickableItems.map((el) => el.getBoundingClientRect());
-            const top = Math.min(...rects.map((r) => r.top));
-            const left = Math.min(...rects.map((r) => r.left));
-            const right = Math.max(...rects.map((r) => r.right));
-            const bottom = Math.max(...rects.map((r) => r.bottom));
+                const rects = clickableItems.map((el) => el.getBoundingClientRect());
+                const top = Math.min(...rects.map((r) => r.top));
+                const left = Math.min(...rects.map((r) => r.left));
+                const right = Math.max(...rects.map((r) => r.right));
+                const bottom = Math.max(...rects.map((r) => r.bottom));
 
-            if ((e.clientX < left) ||
-                (e.clientX > right) ||
-                (e.clientY < top) ||
-                (e.clientY > bottom)
-            ) {
-                this.setState({
-                    highlight: null,
-                    isStuck: false
-                });
-            }
-        };
+                if ((e.clientX < left) ||
+                    (e.clientX > right) ||
+                    (e.clientY < top) ||
+                    (e.clientY > bottom)
+                ) {
+                    this.setState({
+                        highlight: null,
+                        isStuck: false
+                    });
+                }
+            };
+        }
     }
 
     getDomNode() {
@@ -161,7 +164,7 @@ export default class Tooltip {
 
         // Stick/unstick tooltip
         const tooltipNode = this.getDomNode();
-        if (state.isStuck !== prev.isStuck) {
+        if (this.settings.clickable && state.isStuck !== prev.isStuck) {
             if (state.isStuck) {
                 window.addEventListener('click', this._outerClickHandler, true);
                 tooltipNode.classList.add(settings.clsStuck);
@@ -262,23 +265,25 @@ export default class Tooltip {
                     });
                 });
 
-                node.on('data-click', (sender, e) => {
-                    const bodyRect = document.body.getBoundingClientRect();
-                    this.setState(e.data ? {
-                        highlight: {
-                            data: e.data,
-                            cursor: {
-                                x: (e.event.clientX - bodyRect.left),
-                                y: (e.event.clientY - bodyRect.top)
+                if (this.settings.clickable) {
+                    node.on('data-click', (sender, e) => {
+                        const bodyRect = document.body.getBoundingClientRect();
+                        this.setState(e.data ? {
+                            highlight: {
+                                data: e.data,
+                                cursor: {
+                                    x: (e.event.clientX - bodyRect.left),
+                                    y: (e.event.clientY - bodyRect.top)
+                                },
+                                unit: e.unit
                             },
-                            unit: e.unit
-                        },
-                        isStuck: true
-                    } : {
-                            highlight: null,
-                            isStuck: null
-                        });
-                });
+                            isStuck: true
+                        } : {
+                                highlight: null,
+                                isStuck: null
+                            });
+                    });
+                }
             });
     }
 
@@ -370,6 +375,7 @@ interface TooltipState {
 
 export interface TooltipSettings {
     align?: string;
+    clickable?: boolean;
     clsClickable?: string;
     clsStuck?: string;
     clsTarget?: string;
