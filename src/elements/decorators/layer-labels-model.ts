@@ -50,15 +50,15 @@ export class LayerLabelsModel implements LayerLabelsModelObj {
     }
 
     static seed(model: GrammarModel, {
-        fontColor, flip, formatter, labelRectSize, paddingKoeff = 0.5, wordBreakAvailable, wordBreakSeparator
+        fontColor, flip, formatter, labelRectSize, paddingKoeff = 0.5, lineBreakAvailable, lineBreakSeparator
     }) {
         var x = flip ? model.yi : model.xi;
         var y = flip ? model.xi : model.yi;
 
         var label = (row) => formatter(model.label(row));
-        var labelLinesAndSeparator = (row) => wordBreakAvailable
-            ? ({lines: label(row).split(wordBreakSeparator), separator: wordBreakSeparator})
-            : ({lines: [label(row)], separator: wordBreakSeparator});
+        var labelLinesAndSeparator = (row) => lineBreakAvailable
+            ? ({lines: label(row).split(lineBreakSeparator), separator: lineBreakSeparator})
+            : ({lines: [label(row)], separator: lineBreakSeparator});
 
         return new LayerLabelsModel({
             model: model,

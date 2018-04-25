@@ -358,4 +358,20 @@ import {avoidTickTextCollision} from '../src/utils/d3-decorators';
             var classes = domUtils.classes('x', null, {y: true, z: false}, 'a  b ');
             expect(classes).to.equal('x y a b');
         });
+
+        it('should calculate label size for single line label', () => {
+            var lines = ['test label'];
+            var labelSize = domUtils.getLabelSize(lines, {fontSize: 10});
+
+            expect(labelSize.width).to.equal(35.890625);
+            expect(labelSize.height).to.equal(13.9);
+        });
+
+        it('should calculate label size for multiline label', () => {
+            var lines = ['test label', 'longest test label', 'label'];
+            var labelSize = domUtils.getLabelSize(lines, {fontSize: 10});
+
+            expect(labelSize.width).to.equal(67.3125);
+            expect(labelSize.height).to.equal(41.7);
+        });
     });

@@ -148,11 +148,12 @@ var scrollbarSizes: WeakMap<Node, {width: number; height: number;}> = new WeakMa
                 return w2 - w1;
             })[0];
         var linesCount = lines.length;
-        var spaceBetweenLines = (fontSize * 0.39) * linesCount;
+        var fontSizeNumeric = parseInt(xFontSize);
+        var spaceBetweenLines = (fontSizeNumeric * 0.39) * linesCount;
 
         return {
             width: maxWidthLine,
-            height: parseInt(xFontSize) * linesCount + spaceBetweenLines
+            height: fontSizeNumeric * linesCount + spaceBetweenLines
         };
     }
 

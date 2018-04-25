@@ -76,8 +76,8 @@ export class LayerLabels {
                 fontSize: 10,
                 fontColor: '#000',
                 hideEqualLabels: false,
-                wordBreak: false,
-                wordBreakSeparator: '',
+                lineBreak: false,
+                lineBreakSeparator: '',
                 position: [],
                 tickFormat: null,
                 tickFormatNullAlias: ''
@@ -90,8 +90,8 @@ export class LayerLabels {
 
         var model = this.model;
         var guide = this.guide;
-        var wordBreakAvailable = guide.wordBreak;
-        var wordBreakSeparator = guide.wordBreakSeparator;
+        var lineBreakAvailable = guide.lineBreak;
+        var lineBreakSeparator = guide.lineBreakSeparator;
 
         var seed = LayerLabelsModel.seed(
             model,
@@ -101,8 +101,8 @@ export class LayerLabels {
                 flip: self.flip,
                 formatter: FormatterRegistry.get(guide.tickFormat, guide.tickFormatNullAlias),
                 labelRectSize: (lines) => utilsDom.getLabelSize(lines, guide),
-                wordBreakAvailable: wordBreakAvailable,
-                wordBreakSeparator: wordBreakSeparator
+                lineBreakAvailable: lineBreakAvailable,
+                lineBreakSeparator: lineBreakSeparator
             });
 
         var args = {maxWidth: self.w, maxHeight: self.h, data: fibers.reduce((memo, f) => memo.concat(f), [])};
@@ -111,7 +111,7 @@ export class LayerLabels {
             .position
             .filter((token) => token.indexOf('auto:') === -1);
 
-        if (wordBreakAvailable) {
+        if (lineBreakAvailable) {
             fixedPosition.push('multiline-label-left-align');
         }
 
@@ -213,21 +213,23 @@ export class LayerLabels {
                 .attr('text-anchor', 'middle')
                 .attr('transform', (d, i) => `translate(${xi(d, i)},${yi(d, i)}) rotate(${angle(d, i)})`);
 
-            if (wordBreakAvailable) {
+            if (lineBreakAvailable) {
+                var nextLineDYKoeff = 1.2;
+
                 elements.each(function (d, i) {
                     var d3Label = d3SelectionJs.select(this);
 
                     d3Label.text(null);
 
                     label(d, i)
-                        .split(wordBreakSeparator)
+                        .split(lineBreakSeparator)
                         .forEach(function (word, index) {
                             d3Label
                                 .append('tspan')
                                 .attr('text-anchor', 'start')
                                 .attr('x', 0)
                                 .attr('y', 0)
-                                .attr('dy', (index + 1) * 1.2 + 'em')
+                                .attr('dy', (index + 1) * nextLineDYKoeff + 'em')
                                 .text(word);
                         });
                 });
