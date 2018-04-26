@@ -331,6 +331,8 @@ export interface ScaleGuide {
     avoidCollisions?: boolean;
     fillGaps?: boolean;
     facetAxis?: boolean;
+    lineBreak?: boolean;
+    lineBreakSeparator?: string;
 }
 
 export interface AxisLabelGuide {

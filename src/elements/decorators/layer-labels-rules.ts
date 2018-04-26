@@ -26,6 +26,15 @@ const cutString = (str: string, index: number) => ((index === 0) ?
     '' :
     str.slice(0, index).replace(/\.+$/g, '') + '\u2026');
 
+const cutLines = ({lines, separator}, labelWidth: number, availableSpace: number) => {
+    return lines
+        .map(function (line) {
+            const index = findCutIndex(line, labelWidth, availableSpace);
+            return ((index < line.length) ? cutString(line, index) : line);
+        })
+        .join(separator);
+};
+
 var isPositive = (scale, row) => scale.discrete || (!scale.discrete && row[scale.dim] >= 0);
 var isNegative = (scale, row) => !scale.discrete && row[scale.dim] < 0;
 var getXPad = (prev, row) => ((prev.w(row) / 2) + Math.floor(prev.model.size(row) / 5));
@@ -161,10 +170,8 @@ LayerLabelsRules
             h: (row) => {
                 const reserved = prev.h(row);
                 if (Math.abs(prev.angle(row)) > 0) {
-                    const text = prev.label(row);
                     const available = Math.abs(prev.model.y0(row) - prev.model.yi(row));
-                    const index = findCutIndex(text, reserved, available);
-                    return ((index < text.length) ? available : reserved);
+                    return ((available < reserved) ? available : reserved);
                 }
 
                 return reserved;
@@ -173,10 +180,8 @@ LayerLabelsRules
             w: (row) => {
                 const reserved = prev.w(row);
                 if (prev.angle(row) === 0) {
-                    const text = prev.label(row);
                     const available = prev.model.size(row);
-                    const index = findCutIndex(text, reserved, available);
-                    return ((index < text.length) ? available : reserved);
+                    return ((available < reserved) ? available : reserved);
                 }
 
                 return reserved;
@@ -193,10 +198,7 @@ LayerLabelsRules
                     available = Math.abs(prev.model.y0(row) - prev.model.yi(row));
                 }
 
-                const text = prev.label(row);
-                const index = findCutIndex(text, reserved, available);
-
-                return ((index < text.length) ? cutString(text, index) : text);
+                return cutLines(prev.labelLinesAndSeparator(row), reserved, available);
             },
 
             dy: (row) => {
@@ -205,10 +207,8 @@ LayerLabelsRules
                 if (prev.angle(row) !== 0) {
                     const reserved = prev.h(row);
                     const available = Math.abs(prev.model.y0(row) - prev.model.yi(row));
-                    const text = prev.label(row);
-                    const index = findCutIndex(text, reserved, available);
 
-                    return ((index < text.length) ?
+                    return ((available < reserved) ?
                             (available * prevDy / reserved) :
                             (prevDy)
                     );
@@ -226,12 +226,10 @@ LayerLabelsRules
             h: (row, args) => {
                 const reserved = prev.h(row);
                 if (Math.abs(prev.angle(row)) > 0) {
-                    const text = prev.label(row);
                     const available = (prev.model.y0(row) < prev.model.yi(row) ?
                         (args.maxHeight - prev.model.yi(row)) :
                         (prev.model.yi(row)));
-                    const index = findCutIndex(text, reserved, available);
-                    return ((index < text.length) ? available : reserved);
+                    return ((available < reserved) ? available : reserved);
                 }
 
                 return reserved;
@@ -240,10 +238,8 @@ LayerLabelsRules
             w: (row) => {
                 const reserved = prev.w(row);
                 if (prev.angle(row) === 0) {
-                    const text = prev.label(row);
                     const available = prev.model.size(row);
-                    const index = findCutIndex(text, reserved, available);
-                    return ((index < text.length) ? available : reserved);
+                    return ((available < reserved) ? available : reserved);
                 }
 
                 return reserved;
@@ -262,10 +258,7 @@ LayerLabelsRules
                         (prev.model.yi(row)));
                 }
 
-                const text = prev.label(row);
-                const index = findCutIndex(text, reserved, available);
-
-                return ((index < text.length) ? cutString(text, index) : text);
+                return cutLines(prev.labelLinesAndSeparator(row), reserved, available);
             },
 
             dy: (row, args) => {
@@ -276,10 +269,8 @@ LayerLabelsRules
                     const available = (prev.model.y0(row) < prev.model.yi(row) ?
                         (args.maxHeight - prev.model.yi(row)) :
                         (prev.model.yi(row)));
-                    const text = prev.label(row);
-                    const index = findCutIndex(text, reserved, available);
 
-                    return ((index < text.length) ?
+                    return ((available < reserved) ?
                             (available * prevDy / reserved) :
                             (prevDy)
                     );
@@ -425,31 +416,23 @@ LayerLabelsRules
         return {
 
             dx: (row) => {
-                const text = prev.label(row);
                 const required = prev.w(row);
                 const available = Math.abs(prev.model.y0(row) - prev.model.yi(row));
-                const index = findCutIndex(text, required, available);
                 const prevDx = prev.dx(row);
-                return ((index < text.length) ? (available * prevDx / required) : (prevDx));
+                return ((available < required) ? (available * prevDx / required) : (prevDx));
             },
 
             w: (row) => {
-                const text = prev.label(row);
                 const required = prev.w(row);
                 const available = Math.abs(prev.model.y0(row) - prev.model.yi(row));
-                const index = findCutIndex(text, required, available);
-                return ((index < text.length) ? available : required);
+                return ((available < required) ? available : required);
             },
 
             label: (row) => {
-                const text = prev.label(row);
                 const required = prev.w(row);
                 const available = Math.abs(prev.model.y0(row) - prev.model.yi(row));
-                const index = findCutIndex(text, required, available);
-                return ((index < text.length) ?
-                        (cutString(text, index)) :
-                        (text)
-                );
+
+                return cutLines(prev.labelLinesAndSeparator(row), required, available);
             }
         };
     })
@@ -459,37 +442,29 @@ LayerLabelsRules
         return {
 
             dx: (row) => {
-                const text = prev.label(row);
                 const required = prev.w(row);
                 const available = (prev.model.y0(row) < prev.model.yi(row) ?
                     (args.maxWidth - prev.model.yi(row)) :
                     (prev.model.yi(row)));
-                const index = findCutIndex(text, required, available);
                 const prevDx = prev.dx(row);
-                return ((index < text.length) ? (available * prevDx / required) : (prevDx));
+                return ((available < required) ? (available * prevDx / required) : (prevDx));
             },
 
             w: (row) => {
-                const text = prev.label(row);
                 const required = prev.w(row);
                 const available = (prev.model.y0(row) < prev.model.yi(row) ?
                     (args.maxWidth - prev.model.yi(row)) :
                     (prev.model.yi(row)));
-                const index = findCutIndex(text, required, available);
-                return ((index < text.length) ? available : required);
+                return ((available < required) ? available : required);
             },
 
             label: (row) => {
-                const text = prev.label(row);
                 const required = prev.w(row);
                 const available = (prev.model.y0(row) < prev.model.yi(row) ?
                     (args.maxWidth - prev.model.yi(row)) :
                     (prev.model.yi(row)));
-                const index = findCutIndex(text, required, available);
-                return ((index < text.length) ?
-                        (cutString(text, index)) :
-                        (text)
-                );
+
+                return cutLines(prev.labelLinesAndSeparator(row), required, available);
             }
         };
     })
@@ -546,6 +521,30 @@ LayerLabelsRules
                 }
 
                 return dy;
+            }
+        };
+    })
+
+    .regRule('multiline-label-left-align', (prev) => {
+        return {
+            dx: (row) => {
+                const prevDx = prev.dx(row);
+
+                if (prev.angle(row) === 0) {
+                    return alignByX(['l', -1, null])(prev).dx(row);
+                }
+
+                return prevDx;
+            },
+
+            dy: (row) => {
+                const prevDy = prev.dy(row);
+
+                if (prev.angle(row) !== 0) {
+                    return alignByY(['b', 1, null])(prev).dy(row);
+                }
+
+                return prevDy;
             }
         };
     });

@@ -28,6 +28,7 @@
             'linear-bars',
             'logarithmic-scale',
             'map',
+            'multiline-label',
             'negative-diff',
             'ordinal-facets',
             'scatterplot_facet_trendline',

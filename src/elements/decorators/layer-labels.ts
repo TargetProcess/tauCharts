@@ -6,6 +6,8 @@ import {LayerLabelsRules} from './layer-labels-rules';
 import {AnnealingSimulator} from './layer-labels-annealing-simulator';
 import {LayerLabelsPenalties, LabelPenaltyModel} from './layer-labels-penalties';
 import {FormatterRegistry} from '../../formatter-registry';
+import * as d3SelectionJs from 'd3-selection';
+
 import {
     d3Selection,
     GrammarModel,
@@ -74,6 +76,8 @@ export class LayerLabels {
                 fontSize: 10,
                 fontColor: '#000',
                 hideEqualLabels: false,
+                lineBreak: false,
+                lineBreakSeparator: '',
                 position: [],
                 tickFormat: null,
                 tickFormatNullAlias: ''
@@ -86,6 +90,8 @@ export class LayerLabels {
 
         var model = this.model;
         var guide = this.guide;
+        var lineBreakAvailable = guide.lineBreak;
+        var lineBreakSeparator = guide.lineBreakSeparator;
 
         var seed = LayerLabelsModel.seed(
             model,
@@ -94,7 +100,9 @@ export class LayerLabels {
                 fontColor: guide.fontColor,
                 flip: self.flip,
                 formatter: FormatterRegistry.get(guide.tickFormat, guide.tickFormatNullAlias),
-                labelRectSize: (str) => utilsDom.getLabelSize(str, guide)
+                labelRectSize: (lines) => utilsDom.getLabelSize(lines, guide),
+                lineBreakAvailable: lineBreakAvailable,
+                lineBreakSeparator: lineBreakSeparator
             });
 
         var args = {maxWidth: self.w, maxHeight: self.h, data: fibers.reduce((memo, f) => memo.concat(f), [])};
@@ -102,6 +110,10 @@ export class LayerLabels {
         var fixedPosition = guide
             .position
             .filter((token) => token.indexOf('auto:') === -1);
+
+        if (lineBreakAvailable) {
+            fixedPosition.push('multiline-label-left-align');
+        }
 
         var m = fixedPosition
             .map(LayerLabelsRules.getRule)
@@ -133,7 +145,8 @@ export class LayerLabels {
                         size: m.model.size(row),
                         angle: m.angle(row),
                         label: m.label(row),
-                        color: m.color(row)
+                        labelLinesAndSeparator: m.labelLinesAndSeparator(row),
+                        color: m.color(row),
                     };
                 });
 
@@ -198,8 +211,31 @@ export class LayerLabels {
                 .style('display', ((__, i) => labels[i].hide ? 'none' : null))
                 .attr('class', 'i-role-label')
                 .attr('text-anchor', 'middle')
-                .attr('transform', (d, i) => `translate(${xi(d, i)},${yi(d, i)}) rotate(${angle(d, i)})`)
-                .text(label);
+                .attr('transform', (d, i) => `translate(${xi(d, i)},${yi(d, i)}) rotate(${angle(d, i)})`);
+
+            if (lineBreakAvailable) {
+                var nextLineDYKoeff = 1.2;
+
+                elements.each(function (d, i) {
+                    var d3Label = d3SelectionJs.select(this);
+
+                    d3Label.text(null);
+
+                    label(d, i)
+                        .split(lineBreakSeparator)
+                        .forEach(function (word, index) {
+                            d3Label
+                                .append('tspan')
+                                .attr('text-anchor', 'start')
+                                .attr('x', 0)
+                                .attr('y', 0)
+                                .attr('dy', (index + 1) * nextLineDYKoeff + 'em')
+                                .text(word);
+                        });
+                });
+            } else {
+                elements.text(label);
+            }
         };
 
         if (guide.hideEqualLabels) {

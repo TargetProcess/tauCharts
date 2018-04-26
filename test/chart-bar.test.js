@@ -167,6 +167,51 @@ const {noScrollStyle} = testUtils;
             bar.destroy();
             removeTestDiv();
         });
+
+        it('should put multiline labels for bars', function () {
+            var toArray = (obj) => Array.prototype.slice.call(obj, 0);
+            var labelLinesCount = 2;
+            var testDiv = createTestDiv('should put multiline labels for bars');
+            var data = [
+                {x: 10, y: 10, l: 'Ann\nAndrew'},
+                {x: 20, y: 20, l: 'Mike\nIlya'},
+                {x: -20, y: 30, l: 'Steve\nAlice'},
+                {x: -10, y: 40, l: 'Bob\nSteve'}
+            ];
+            var bar = new tauChart.Chart({
+                type: 'bar',
+                data: data,
+                x: 'y',
+                y: 'x',
+                label: 'l',
+                guide: {
+                    label: {
+                        lineBreak: true,
+                        lineBreakSeparator: '\n'
+                    }
+                }
+            });
+            bar.renderTo(testDiv);
+            var svg = bar.getSVG();
+            var grid = svg.querySelector('.grid').getBoundingClientRect();
+            var labelsNodes = toArray(svg.querySelectorAll('.i-role-label'));
+            var labels = labelsNodes.map(el => el.getBoundingClientRect());
+
+            assert.equal(labels.length, data.length);
+
+            assert.equal(
+                labelsNodes.every(ln => ln.querySelectorAll('tspan').length === labelLinesCount),
+                true, 'labels separated on two lines'
+            );
+
+            assert.equal(labels.every(l => (
+                (l.top >= grid.top) &&
+                (l.bottom <= grid.bottom)
+            )), true, 'labels do not exceed grid');
+
+            bar.destroy();
+            removeTestDiv();
+        });
     });
 
     describe('Bar chart size', function () {

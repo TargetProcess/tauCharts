@@ -33,8 +33,8 @@ import {LayerLabelsRules} from '../src/elements/decorators/layer-labels-rules';
                     fontColor: '#000',
                     flip: false,
                     formatter: ((str) => String(str)),
-                    labelRectSize: ((str) => {
-                        return {width: str.length * 2, height: fontSize};
+                    labelRectSize: ((lines) => {
+                        return {width: lines[0].length * 2, height: fontSize};
                     })
                 });
         });
@@ -223,8 +223,8 @@ import {LayerLabelsRules} from '../src/elements/decorators/layer-labels-rules';
                     fontColor: '#000',
                     flip: false,
                     formatter: ((str) => String(str)),
-                    labelRectSize: ((str) => {
-                        return {width: str.length * 2, height: fontSize};
+                    labelRectSize: ((lines) => {
+                        return {width: lines[0].length * 2, height: fontSize};
                     })
                 });
 
@@ -259,8 +259,8 @@ import {LayerLabelsRules} from '../src/elements/decorators/layer-labels-rules';
                     fontColor: '#000',
                     flip: false,
                     formatter: ((str) => String(str)),
-                    labelRectSize: ((str) => {
-                        return {width: str.length * 2, height: fontSize};
+                    labelRectSize: ((lines) => {
+                        return {width: lines[0].length * 2, height: fontSize};
                     })
                 });
 
@@ -292,8 +292,8 @@ import {LayerLabelsRules} from '../src/elements/decorators/layer-labels-rules';
                     fontColor: '#000',
                     flip: true,
                     formatter: ((str) => String(str)),
-                    labelRectSize: ((str) => {
-                        return {width: str.length * 2, height: fontSize};
+                    labelRectSize: ((lines) => {
+                        return {width: lines[0].length * 2, height: fontSize};
                     })
                 });
 
@@ -323,8 +323,8 @@ import {LayerLabelsRules} from '../src/elements/decorators/layer-labels-rules';
                     fontColor: '#000',
                     flip: true,
                     formatter: ((str) => String(str)),
-                    labelRectSize: ((str) => {
-                        return {width: str.length * 2, height: fontSize};
+                    labelRectSize: ((lines) => {
+                        return {width: lines[0].length * 2, height: fontSize};
                     })
                 });
 
@@ -364,8 +364,8 @@ import {LayerLabelsRules} from '../src/elements/decorators/layer-labels-rules';
                     fontColor: '#000',
                     flip: false,
                     formatter: ((str) => String(str)),
-                    labelRectSize: ((str) => {
-                        return {width: str.length * 2, height: fontSize};
+                    labelRectSize: ((lines) => {
+                        return {width: lines[0].length * 2, height: fontSize};
                     })
                 });
 
@@ -415,8 +415,8 @@ import {LayerLabelsRules} from '../src/elements/decorators/layer-labels-rules';
                     fontColor: '#000',
                     flip: false,
                     formatter: ((str) => String(str)),
-                    labelRectSize: ((str) => {
-                        return {width: str.length * 2, height: fontSize};
+                    labelRectSize: ((lines) => {
+                        return {width: lines[0].length * 2, height: fontSize};
                     })
                 });
 
@@ -441,5 +441,95 @@ import {LayerLabelsRules} from '../src/elements/decorators/layer-labels-rules';
             expect(m.h(rows[2])).to.equal(2, 'swap width and height according to angle');
             expect(m.dx(rows[2])).to.equal(expectedDx, 'calc dx from height value');
             expect(m.label(rows[2])).to.equal('1', 'original label');
+        });
+
+        it('should support [cut-label-vertical] for multiline label', function () {
+
+            var gogModel = {
+                xi: (row) => 0,
+                yi: (row) => 0,
+                y0: (row) => 10,
+                size: (row) => 15,
+                label: (row) => row.text,
+                scaleY: {
+                    discrete: false,
+                    dim: 'y'
+                }
+            };
+
+            var rows = [{text: 'first long line 1\nsecond long line 2\nthird long line 3'}];
+
+            seedModel = LayerLabelsModel.seed(
+                gogModel,
+                {
+                    fontColor: '#000',
+                    flip: false,
+                    formatter: ((str) => String(str)),
+                    labelRectSize: ((lines) => {
+                        return {width: lines[0].length * 2, height: fontSize};
+                    }),
+                    lineBreakAvailable: true,
+                    lineBreakSeparator: '\n'
+                });
+
+            var m = createModel(['cut-label-vertical'], seedModel, {data:rows});
+
+            expect(m.label(rows[0])).to.equal('first \u2026\nsecond\u2026\nthird \u2026', 'ellipsis for each line');
+        });
+
+        it('should support [multiline-label-left-align] rule', function () {
+            var gogModel = {
+                xi: (row) => 0,
+                yi: (row) => 0,
+                y0: (row) => 10,
+                size: (row) => 5,
+                label: (row) => row.text,
+            };
+
+            var rows = [{text: '123'}];
+
+            seedModel = LayerLabelsModel.seed(
+                gogModel,
+                {
+                    fontColor: '#000',
+                    flip: false,
+                    formatter: ((str) => String(str)),
+                    labelRectSize: ((lines) => {
+                        return {width: lines[0].length * 2, height: fontSize};
+                    })
+                });
+
+            var m = createModel(['multiline-label-left-align'], seedModel, {data:rows});
+
+            expect(m.dx(rows[0])).to.equal(-4, 'calculate dx using "l" label rule');
+            expect(m.dy(rows[0])).to.equal(5, 'get dy from size');
+        });
+
+        it('should support [rotate-on-size-overflow] with [multiline-label-left-align] rule', function () {
+            var gogModel = {
+                xi: (row) => 0,
+                yi: (row) => 0,
+                y0: (row) => 10,
+                size: (row) => 5,
+                label: (row) => row.text
+            };
+
+            var rows = [{text: '123'}];
+
+            seedModel = LayerLabelsModel.seed(
+                gogModel,
+                {
+                    fontColor: '#000',
+                    flip: false,
+                    formatter: ((str) => String(str)),
+                    labelRectSize: ((lines) => {
+                        return {width: lines[0].length * 2, height: fontSize};
+                    })
+                });
+
+            var m = createModel(['rotate-on-size-overflow', 'multiline-label-left-align'], seedModel, {data:rows});
+
+            expect(m.dx(rows[0])).to.equal(3, 'get dx from prev');
+            expect(m.dy(rows[0])).to.equal(4, 'calculate dy using "r" label rule');
         });
     });

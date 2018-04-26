@@ -131,22 +131,30 @@ var scrollbarSizes: WeakMap<Node, {width: number; height: number;}> = new WeakMa
     }
 
     export function getLabelSize(
-        text: string,
+        lines: string[],
         {fontSize, fontFamily, fontWeight}: {fontSize?: number, fontFamily?: string, fontWeight?: string}
     ) {
-
         var xFontSize = typeof (fontSize) === 'string' ? fontSize : (`${fontSize}px`);
-        var w = 0;
-        var h = 0;
-        var l = text.length - 1;
-        for (var i = 0; i <= l; i++) {
-            var char = text.charAt(i);
-            var s = getCharSize(char, {fontSize: xFontSize, fontFamily, fontWeight});
-            w += s.width;
-            h = Math.max(h, s.height);
-        }
+        var maxWidthLine = lines
+            .map(function (line) {
+                for (var i = 0, width = 0; i <= line.length - 1; i++) {
+                    var s = getCharSize(line.charAt(i), {fontSize: xFontSize, fontFamily, fontWeight});
+                    width += s.width;
+                }
 
-        return {width: w, height: parseInt(xFontSize)};
+                return width;
+            })
+            .sort(function (w1, w2) {
+                return w2 - w1;
+            })[0];
+        var linesCount = lines.length;
+        var fontSizeNumeric = parseInt(xFontSize);
+        var spaceBetweenLines = (fontSizeNumeric * 0.39) * linesCount;
+
+        return {
+            width: maxWidthLine,
+            height: fontSizeNumeric * linesCount + spaceBetweenLines
+        };
     }
 
     export const getCharSize = utils.memoize(

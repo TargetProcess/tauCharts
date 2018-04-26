@@ -14,6 +14,7 @@ export interface LayerLabelsModelObj {
     h?: (row, args?) => number;
     hide?: (row, args?) => boolean;
     label?: (row, args?) => string;
+    labelLinesAndSeparator?: (row, args?) => {lines: string[], separator: string};
     color?: (row, args?) => string;
     angle?: (row, args?) => number;
 }
@@ -29,6 +30,7 @@ export class LayerLabelsModel implements LayerLabelsModelObj {
     h: (row, args?) => number;
     hide: (row, args?) => boolean;
     label: (row, args?) => string;
+    labelLinesAndSeparator: (row, args?) => {lines: string[], separator: string};
     color: (row, args?) => string;
     angle: (row, args?) => number;
 
@@ -44,23 +46,29 @@ export class LayerLabelsModel implements LayerLabelsModelObj {
         this.label = prev.label || createFunc('');
         this.color = prev.color || createFunc('');
         this.angle = prev.angle || createFunc(0);
+        this.labelLinesAndSeparator = prev.labelLinesAndSeparator || createFunc({lines: [], separator: ''});
     }
 
-    static seed(model: GrammarModel, {fontColor, flip, formatter, labelRectSize, paddingKoeff = 0.5}) {
-
+    static seed(model: GrammarModel, {
+        fontColor, flip, formatter, labelRectSize, paddingKoeff = 0.5, lineBreakAvailable, lineBreakSeparator
+    }) {
         var x = flip ? model.yi : model.xi;
         var y = flip ? model.xi : model.yi;
 
         var label = (row) => formatter(model.label(row));
+        var labelLinesAndSeparator = (row) => lineBreakAvailable
+            ? ({lines: label(row).split(lineBreakSeparator), separator: lineBreakSeparator})
+            : ({lines: [label(row)], separator: lineBreakSeparator});
 
         return new LayerLabelsModel({
             model: model,
             x: (row) => x(row),
             y: (row) => y(row),
-            dy: (row) => ((labelRectSize(label(row)).height) * paddingKoeff),
-            w: (row) => (labelRectSize(label(row)).width),
-            h: (row) => (labelRectSize(label(row)).height),
+            dy: (row) => ((labelRectSize(labelLinesAndSeparator(row).lines).height) * paddingKoeff),
+            w: (row) => (labelRectSize(labelLinesAndSeparator(row).lines).width),
+            h: (row) => (labelRectSize(labelLinesAndSeparator(row).lines).height),
             label: label,
+            labelLinesAndSeparator: labelLinesAndSeparator,
             color: (() => fontColor),
             angle: (() => 0)
         });
