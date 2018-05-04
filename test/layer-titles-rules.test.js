@@ -389,6 +389,43 @@ import {LayerLabelsRules} from '../src/elements/decorators/layer-labels-rules';
             expect(m.dx(rows[2])).to.equal(expectedDx, 'calc dx from height value');
         });
 
+        it('should support [rotate-on-size-overflow] rule with line break', function () {
+            var gogModel = {
+                xi: (row) => 0,
+                yi: (row) => 0,
+                y0: (row) => 10,
+                size: (row) => 5,
+                label: (row) => row.text,
+                scaleY: {
+                    discrete: false,
+                    dim: 'y'
+                }
+            };
+
+            var rows = [
+                {text: '123'},
+                {text: '3214'},
+                {text: '1'}
+            ];
+            var expectedDx = fontSize * (-0.5) - 2;
+
+            seedModel = LayerLabelsModel.seed(
+                gogModel,
+                {
+                    fontColor: '#000',
+                    flip: false,
+                    formatter: ((str) => String(str)),
+                    labelRectSize: ((lines) => {
+                        return {width: lines[0].length * 2, height: fontSize};
+                    })
+                });
+
+            var m = createModel(['rotate-on-size-overflow'], seedModel, {data:rows, lineBreakAvailable:true});
+            expect(m.dx(rows[0])).to.equal(expectedDx, 'calc dx from height value');
+            expect(m.dx(rows[1])).to.equal(expectedDx, 'calc dx from height value');
+            expect(m.dx(rows[2])).to.equal(expectedDx, 'calc dx from height value');
+        });
+
         it('should support [cut-label-vertical] with [rotate-on-size-overflow] rule', function () {
 
             var gogModel = {
@@ -501,8 +538,7 @@ import {LayerLabelsRules} from '../src/elements/decorators/layer-labels-rules';
 
             var m = createModel(['multiline-label-left-align'], seedModel, {data:rows});
 
-            expect(m.dx(rows[0])).to.equal(-4, 'calculate dx using "l" label rule');
-            expect(m.dy(rows[0])).to.equal(5, 'get dy from size');
+            expect(m.dy(rows[0])).to.equal(5, 'calculate dy');
         });
 
         it('should support [rotate-on-size-overflow] with [multiline-label-left-align] rule', function () {
@@ -529,7 +565,33 @@ import {LayerLabelsRules} from '../src/elements/decorators/layer-labels-rules';
 
             var m = createModel(['rotate-on-size-overflow', 'multiline-label-left-align'], seedModel, {data:rows});
 
-            expect(m.dx(rows[0])).to.equal(3, 'get dx from prev');
-            expect(m.dy(rows[0])).to.equal(4, 'calculate dy using "r" label rule');
+            expect(m.dy(rows[0])).to.equal(3, 'calculate dy');
+        });
+
+        it('should support [multiline-hide-on-container-overflow] rule', function () {
+            var gogModel = {
+                xi: (row) => 10,
+                yi: (row) => 20,
+                y0: (row) => 10,
+                size: (row) => 10,
+                label: (row) => row.text,
+            };
+
+            var rows = [{text: '123'}];
+
+            seedModel = LayerLabelsModel.seed(
+                gogModel,
+                {
+                    fontColor: '#000',
+                    flip: false,
+                    formatter: ((str) => String(str)),
+                    labelRectSize: ((lines) => {
+                        return {width: lines[0].length * 2, height: fontSize};
+                    })
+                });
+
+            var m = createModel(['multiline-hide-on-container-overflow'], seedModel, {data:rows, maxWidth:5, maxHeight:5});
+
+            expect(m.hide(rows[0])).to.equal(true, 'hide label on container overflow');
         });
     });

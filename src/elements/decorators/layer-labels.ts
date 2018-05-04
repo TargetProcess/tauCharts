@@ -96,28 +96,22 @@ export class LayerLabels {
         var seed = LayerLabelsModel.seed(
             model,
             {
-                // fontSize: guide.fontSize,
                 fontColor: guide.fontColor,
                 flip: self.flip,
                 formatter: FormatterRegistry.get(guide.tickFormat, guide.tickFormatNullAlias),
                 labelRectSize: (lines) => utilsDom.getLabelSize(lines, guide),
                 lineBreakAvailable: lineBreakAvailable,
-                lineBreakSeparator: lineBreakSeparator
+                lineBreakSeparator: lineBreakSeparator,
+                paddingKoeff: lineBreakAvailable ? 0 : 0.5
             });
 
-        var args = {maxWidth: self.w, maxHeight: self.h, data: fibers.reduce((memo, f) => memo.concat(f), [])};
-
-        var fixedPosition = guide
-            .position
-            .filter((token) => token.indexOf('auto:') === -1);
-
-        if (lineBreakAvailable) {
-            fixedPosition.push('multiline-label-left-align');
-        }
-
-        var m = fixedPosition
-            .map(LayerLabelsRules.getRule)
-            .reduce((prev, rule) => LayerLabelsModel.compose(prev, rule(prev, args)), seed);
+        var args = {
+            lineBreakAvailable: lineBreakAvailable,
+            maxWidth: self.w,
+            maxHeight: self.h,
+            data: fibers.reduce((memo, f) => memo.concat(f), [])
+        };
+        var m = this.applyFixedPositionRules(guide, args, seed, lineBreakAvailable);
 
         var readBy3 = <T, K>(list: T[], iterator: (a: T, b: T, c: T) => K) => {
             var l = list.length - 1;
@@ -172,15 +166,24 @@ export class LayerLabels {
             .filter((r) => r.label)
             .map((r, i) => Object.assign(r, {i: i}));
 
-        var tokens = this.guide.position.filter((token) => token.indexOf('auto:avoid') === 0);
+        var positions = lineBreakAvailable ?
+            [
+                'auto:hide-on-label-label-overlap',
+                'auto:adjust-on-multiline-label-overflow'
+            ] : this.guide.position;
+        var tokens = positions.filter((token) => token.indexOf('auto:avoid') === 0);
         parallel = ((parallel.text.length > 0) && (tokens.length > 0)) ?
             this.autoPosition(parallel, tokens) :
             parallel;
 
-        var flags = this.guide.position.reduce((memo, token) => Object.assign(memo, {[token]:true}), {});
+        var flags = positions.reduce((memo, token) => Object.assign(memo, {[token]:true}), {});
 
         parallel.text = parallel.text = flags['auto:adjust-on-label-overflow'] ?
             this.adjustOnOverflow(parallel.text, args) :
+            parallel.text;
+
+        parallel.text = parallel.text = flags['auto:adjust-on-multiline-label-overflow'] ?
+            this.adjustOnMultilineOverflow(parallel.text, args) :
             parallel.text;
 
         parallel.text = flags['auto:hide-on-label-edges-overlap'] ?
@@ -218,6 +221,7 @@ export class LayerLabels {
 
                 elements.each(function (d, i) {
                     var d3Label = d3SelectionJs.select(this);
+                    var angleValue = angle(d, i);
 
                     d3Label.text(null);
 
@@ -226,7 +230,7 @@ export class LayerLabels {
                         .forEach(function (word, index) {
                             d3Label
                                 .append('tspan')
-                                .attr('text-anchor', 'start')
+                                .attr('text-anchor', angleValue !== 0 ? 'start' : 'middle')
                                 .attr('x', 0)
                                 .attr('y', 0)
                                 .attr('dy', (index + 1) * nextLineDYKoeff + 'em')
@@ -260,6 +264,20 @@ export class LayerLabels {
             .call(update);
 
         return text as d3Selection;
+    }
+
+    applyFixedPositionRules(guide, args, seed, lineBreakAvailable) {
+        var fixedPosition = guide
+            .position
+            .filter((token) => token.indexOf('auto:') === -1);
+
+        if (lineBreakAvailable) {
+            fixedPosition.push('multiline-label-left-align', 'multiline-hide-on-container-overflow');
+        }
+
+        return fixedPosition
+            .map(LayerLabelsRules.getRule)
+            .reduce((prev, rule) => LayerLabelsModel.compose(prev, rule(prev, args)), seed);
     }
 
     autoPosition(parallel: Parallel, tokens: string[]) {
@@ -468,6 +486,15 @@ export class LayerLabels {
             if (!row.hide) {
                 row.x = Math.min(Math.max(row.x, row.w / 2), (maxWidth - row.w / 2));
                 row.y = Math.max(Math.min(row.y, (maxHeight - row.h / 2)), row.h / 2);
+            }
+            return row;
+        });
+    }
+
+    adjustOnMultilineOverflow(data: TextInfo[], {maxWidth}) {
+        return data.map((row) => {
+            if (!row.hide && row.angle === 0) {
+                row.x = Math.min(Math.max(row.x, row.w / 2), (maxWidth - row.w / 2));
             }
             return row;
         });

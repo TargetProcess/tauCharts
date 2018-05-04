@@ -1,5 +1,6 @@
 import {LayerLabelsModel, LayerLabelsModelObj} from './layer-labels-model';
 import {ScaleFunction} from '../../definitions';
+import {hasXOverflow, hasYOverflow} from '../../utils/utils';
 var rules: {[alias: string]: LabelRule} = {};
 
 type LabelRule = (prev?: LayerLabelsModelObj, args?) => LayerLabelsModelObj;
@@ -26,10 +27,10 @@ const cutString = (str: string, index: number) => ((index === 0) ?
     '' :
     str.slice(0, index).replace(/\.+$/g, '') + '\u2026');
 
-const cutLines = ({lines, separator}, labelWidth: number, availableSpace: number) => {
+const cutLines = ({lines, linesWidths, separator}, availableSpace: number) => {
     return lines
-        .map(function (line) {
-            const index = findCutIndex(line, labelWidth, availableSpace);
+        .map(function (line, lineIndex) {
+            const index = findCutIndex(line, linesWidths[lineIndex], availableSpace);
             return ((index < line.length) ? cutString(line, index) : line);
         })
         .join(separator);
@@ -116,7 +117,7 @@ LayerLabelsRules
     .regRule('B+', alignByY(['B', 1, '+']))
     .regRule('B-', alignByY(['B', 1, '-']))
 
-    .regRule('rotate-on-size-overflow', (prev, {data}) => {
+    .regRule('rotate-on-size-overflow', (prev, {data, lineBreakAvailable}) => {
 
         var out = ((row) => prev.model.size(row) < prev.w(row));
         var overflowCount = data.reduce((memo, row) => (memo + (out(row) ? 1 : 0)), 0);
@@ -125,7 +126,7 @@ LayerLabelsRules
 
         var changes = {};
         if (isRot) {
-            var padKoeff = 0.5;
+            var padKoeff = lineBreakAvailable ? -0.5 : 0.5;
             changes = {
                 angle: () => -90,
                 w: (row) => prev.h(row),
@@ -188,17 +189,15 @@ LayerLabelsRules
             },
 
             label: (row) => {
-                let reserved;
                 let available;
+
                 if (prev.angle(row) === 0) {
-                    reserved = prev.w(row);
                     available = prev.model.size(row);
                 } else {
-                    reserved = prev.h(row);
                     available = Math.abs(prev.model.y0(row) - prev.model.yi(row));
                 }
 
-                return cutLines(prev.labelLinesAndSeparator(row), reserved, available);
+                return cutLines(prev.labelLinesAndSeparator(row), available);
             },
 
             dy: (row) => {
@@ -246,19 +245,17 @@ LayerLabelsRules
             },
 
             label: (row, args) => {
-                let reserved;
                 let available;
+
                 if (prev.angle(row) === 0) {
-                    reserved = prev.w(row);
                     available = prev.model.size(row);
                 } else {
-                    reserved = prev.h(row);
                     available = (prev.model.y0(row) < prev.model.yi(row) ?
                         (args.maxHeight - prev.model.yi(row)) :
                         (prev.model.yi(row)));
                 }
 
-                return cutLines(prev.labelLinesAndSeparator(row), reserved, available);
+                return cutLines(prev.labelLinesAndSeparator(row), available);
             },
 
             dy: (row, args) => {
@@ -429,10 +426,9 @@ LayerLabelsRules
             },
 
             label: (row) => {
-                const required = prev.w(row);
                 const available = Math.abs(prev.model.y0(row) - prev.model.yi(row));
 
-                return cutLines(prev.labelLinesAndSeparator(row), required, available);
+                return cutLines(prev.labelLinesAndSeparator(row), available);
             }
         };
     })
@@ -459,12 +455,11 @@ LayerLabelsRules
             },
 
             label: (row) => {
-                const required = prev.w(row);
                 const available = (prev.model.y0(row) < prev.model.yi(row) ?
                     (args.maxWidth - prev.model.yi(row)) :
                     (prev.model.yi(row)));
 
-                return cutLines(prev.labelLinesAndSeparator(row), required, available);
+                return cutLines(prev.labelLinesAndSeparator(row), available);
             }
         };
     })
@@ -527,24 +522,30 @@ LayerLabelsRules
 
     .regRule('multiline-label-left-align', (prev) => {
         return {
-            dx: (row) => {
-                const prevDx = prev.dx(row);
-
-                if (prev.angle(row) === 0) {
-                    return alignByX(['l', -1, null])(prev).dx(row);
-                }
-
-                return prevDx;
-            },
-
             dy: (row) => {
                 const prevDy = prev.dy(row);
 
-                if (prev.angle(row) !== 0) {
-                    return alignByY(['b', 1, null])(prev).dy(row);
+                if (prev.angle(row) === -90) {
+                    return prevDy + (prev.h(row) / 2);
                 }
 
                 return prevDy;
+            }
+        };
+    })
+
+    .regRule('multiline-hide-on-container-overflow', (prev, {maxWidth, maxHeight}) => {
+        return {
+            hide: (row) => {
+                var angle = prev.angle(row);
+                var x = prev.x(row) + prev.dx(row);
+                var y = prev.y(row) + prev.dy(row);
+
+                if (hasXOverflow(x, prev.w(row), angle, maxWidth) || hasYOverflow(y, prev.h(row), angle, maxHeight)) {
+                    return true;
+                }
+
+                return prev.hide(row);
             }
         };
     });

@@ -193,7 +193,6 @@ const {noScrollStyle} = testUtils;
             });
             bar.renderTo(testDiv);
             var svg = bar.getSVG();
-            var grid = svg.querySelector('.grid').getBoundingClientRect();
             var labelsNodes = toArray(svg.querySelectorAll('.i-role-label'));
             var labels = labelsNodes.map(el => el.getBoundingClientRect());
 
@@ -203,11 +202,6 @@ const {noScrollStyle} = testUtils;
                 labelsNodes.every(ln => ln.querySelectorAll('tspan').length === labelLinesCount),
                 true, 'labels separated on two lines'
             );
-
-            assert.equal(labels.every(l => (
-                (l.top >= grid.top) &&
-                (l.bottom <= grid.bottom)
-            )), true, 'labels do not exceed grid');
 
             bar.destroy();
             removeTestDiv();
