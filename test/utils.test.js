@@ -375,3 +375,39 @@ import {avoidTickTextCollision} from '../src/utils/d3-decorators';
             expect(labelSize.height).to.equal(41.7);
         });
     });
+
+    describe('utils.hasXOverflow', function () {
+        it('should return true if x overflow (angle 0)', () => {
+            expect(utils.hasXOverflow(100, 50, 0, 140)).to.equal(true);
+        });
+
+        it('should return true if x overflow (angle 90)', () => {
+            expect(utils.hasXOverflow(100, 50, 90, 40)).to.equal(true);
+        });
+
+        it('should return false if no x overflow (angle 0)', () => {
+            expect(utils.hasXOverflow(100, 50, 0, 160)).to.equal(false);
+        });
+
+        it('should return false if no x overflow (angle 90)', () => {
+            expect(utils.hasXOverflow(100, 50, 90, 80)).to.equal(false);
+        });
+    });
+
+    describe('utils.hasYOverflow', function () {
+        it('should return true if y overflow (angle 0)', () => {
+            expect(utils.hasYOverflow(100, 50, 0, 140)).to.equal(true);
+        });
+
+        it('should return true if y overflow (angle -90)', () => {
+            expect(utils.hasYOverflow(100, 50, -90, 40)).to.equal(true);
+        });
+
+        it('should return false if no y overflow (angle 0)', () => {
+            expect(utils.hasYOverflow(100, 50, 0, 160)).to.equal(false);
+        });
+
+        it('should return false if no y overflow (angle -90)', () => {
+            expect(utils.hasYOverflow(100, 50, -90, 80)).to.equal(false);
+        });
+    });

@@ -14,7 +14,7 @@ export interface LayerLabelsModelObj {
     h?: (row, args?) => number;
     hide?: (row, args?) => boolean;
     label?: (row, args?) => string;
-    labelLinesAndSeparator?: (row, args?) => {lines: string[], separator: string};
+    labelLinesAndSeparator?: (row, args?) => {lines: string[], linesWidths: number[], separator: string};
     color?: (row, args?) => string;
     angle?: (row, args?) => number;
 }
@@ -30,7 +30,7 @@ export class LayerLabelsModel implements LayerLabelsModelObj {
     h: (row, args?) => number;
     hide: (row, args?) => boolean;
     label: (row, args?) => string;
-    labelLinesAndSeparator: (row, args?) => {lines: string[], separator: string};
+    labelLinesAndSeparator: (row, args?) => {lines: string[], linesWidths: number[], separator: string};
     color: (row, args?) => string;
     angle: (row, args?) => number;
 
@@ -46,7 +46,9 @@ export class LayerLabelsModel implements LayerLabelsModelObj {
         this.label = prev.label || createFunc('');
         this.color = prev.color || createFunc('');
         this.angle = prev.angle || createFunc(0);
-        this.labelLinesAndSeparator = prev.labelLinesAndSeparator || createFunc({lines: [], separator: ''});
+        this.labelLinesAndSeparator = prev.labelLinesAndSeparator || createFunc({
+            lines: [], linesWidths: [], separator: ''
+        });
     }
 
     static seed(model: GrammarModel, {
@@ -56,9 +58,15 @@ export class LayerLabelsModel implements LayerLabelsModelObj {
         var y = flip ? model.xi : model.yi;
 
         var label = (row) => formatter(model.label(row));
-        var labelLinesAndSeparator = (row) => lineBreakAvailable
-            ? ({lines: label(row).split(lineBreakSeparator), separator: lineBreakSeparator})
-            : ({lines: [label(row)], separator: lineBreakSeparator});
+        var labelLinesAndSeparator = (row) => {
+            const lines = lineBreakAvailable ? label(row).split(lineBreakSeparator) : [label(row)];
+
+            return {
+                lines: lines,
+                linesWidths: lines.map((line) => labelRectSize([line]).width),
+                separator: lineBreakSeparator
+            };
+        };
 
         return new LayerLabelsModel({
             model: model,
