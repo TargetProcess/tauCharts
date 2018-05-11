@@ -376,22 +376,22 @@ import Taucharts from '../src/tau.charts';
             {
                 x: 2,
                 y: 2,
-                color: new Date(2010, 1, 1)
+                color: new Date('2010-01-01T00:00:00.000Z')
             },
             {
                 x: 4,
                 y: 5,
-                color: new Date(2008, 1, 1)
+                color: new Date('2008-01-01T00:00:00.000Z')
             },
             {
                 x: 1,
                 y: 1,
-                color: new Date(2009, 1, 1)
+                color: new Date('2009-01-01T00:00:00.000Z')
             },
             {
                 x: 3,
                 y: 3,
-                color: new Date(2011, 1, 1)
+                color: new Date('2011-01-01T00:00:00.000Z')
             }
         ],
         function (context) {

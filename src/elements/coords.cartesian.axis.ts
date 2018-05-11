@@ -57,6 +57,16 @@ function center(scale: ScaleFunction) {
     };
 }
 
+function getContainer(selection: d3Selection) {
+    let svg: SVGElement = selection.node();
+
+    while (svg && svg.tagName !== 'svg') {
+        svg = svg.parentNode as SVGElement;
+    }
+
+    return svg;
+}
+
 const Orient = {
     'top': 1,
     'right': 2,
@@ -123,6 +133,7 @@ function createAxis(config: AxisConfig) {
 
         const transition = ((context as d3Transition).selection ? (context as d3Transition) : null);
         const selection = (transition ? transition.selection() : context as d3Selection);
+        const containerSize = getContainer(selection).getBoundingClientRect();
 
         // Set default style
         selection
@@ -341,7 +352,15 @@ function createAxis(config: AxisConfig) {
                         .text(format)
                         .attr('text-anchor', textAnchor);
 
-                    fixLongText(text);
+                    if (isHorizontal === false && scaleGuide.facetAxis === true) {
+                        const facetShift = utilsDraw
+                            .parseTransformTranslate(selection.node().parentNode.getAttribute('transform'));
+
+                        fixLongText(text, containerSize.width - Math.abs(facetShift.x));
+                    } else {
+                        fixLongText(text);
+                    }
+
                     if (isHorizontal && (scale.scaleType === 'time')) {
                         fixHorizontalTextOverflow(text);
                     }
@@ -398,8 +417,8 @@ function createAxis(config: AxisConfig) {
             }
         }
 
-        function fixLongText(text: d3Selection) {
-            const stepSize = (d) => Math.max(scale.stepSize(d), scaleGuide.tickFormatWordWrapLimit);
+        function fixLongText(text: d3Selection, containerWidth = 0) {
+            const stepSize = (d) => Math.max(scale.stepSize(d), scaleGuide.tickFormatWordWrapLimit, containerWidth);
 
             if (scaleGuide.tickFormatWordWrap) {
                 wrapText(
@@ -451,11 +470,6 @@ function createAxis(config: AxisConfig) {
             const value0 = values[0];
             const value1 = values[values.length - 1];
 
-            var svg: SVGElement = selection.node();
-            while (svg && svg.tagName !== 'svg') {
-                svg = svg.parentNode as SVGElement;
-            }
-            const svgRect = svg.getBoundingClientRect();
             const tempLeft = selection
                 .append('line')
                 .attr('x1', position(value0))
@@ -469,8 +483,8 @@ function createAxis(config: AxisConfig) {
                 .attr('y1', 0)
                 .attr('y2', 1) as d3Selection;
             const available = {
-                left: (tempLeft.node().getBoundingClientRect().left - svgRect.left),
-                right: (svgRect.right - tempRight.node().getBoundingClientRect().right)
+                left: (tempLeft.node().getBoundingClientRect().left - containerSize.left),
+                right: (containerSize.right - tempRight.node().getBoundingClientRect().right)
             };
             tempLeft.remove();
             tempRight.remove();
