@@ -348,6 +348,70 @@ import Taucharts from '../src/tau.charts';
     );
 
     describeChart(
+        "legend for color with dates",
+        {
+            type: 'scatterplot',
+            x: 'x',
+            y: 'y',
+            color: 'color',
+            plugins: [legend()],
+            guide: {
+                color: {
+                    brewer: ['#ff0000', '#00ff00', '#0000ff', '#000000'],
+                    tickFormat: 'month-year-utc',
+                    tickPeriod: 'month'
+                }
+            },
+
+            dimensions: {
+                x: {type: 'measure'},
+                y: {type: 'measure'},
+                color: {
+                    type: 'order',
+                    scale: 'periodic'
+                }
+            }
+        },
+        [
+            {
+                x: 2,
+                y: 2,
+                color: new Date('2010-01-01T00:00:00.000Z')
+            },
+            {
+                x: 4,
+                y: 5,
+                color: new Date('2008-01-01T00:00:00.000Z')
+            },
+            {
+                x: 1,
+                y: 1,
+                color: new Date('2009-01-01T00:00:00.000Z')
+            },
+            {
+                x: 3,
+                y: 3,
+                color: new Date('2011-01-01T00:00:00.000Z')
+            }
+        ],
+        function (context) {
+            it("should render with correct order", function () {
+                var sidebar = context.chart._layout.rightSidebar;
+                var legendBlock = sidebar.querySelector('.tau-chart__legend');
+                var nodeList = legendBlock.querySelectorAll('.tau-chart__legend__guide');
+
+                expect(getText(nodeList[0])).to.equal('January, 2008');
+                expect(getText(nodeList[1])).to.equal('January, 2009');
+                expect(getText(nodeList[2])).to.equal('January, 2010');
+                expect(getText(nodeList[3])).to.equal('January, 2011');
+            });
+        },
+        {
+            autoWidth: false
+        }
+    );
+
+    describeChart(
         "legend for size",
         {
             type: 'scatterplot',

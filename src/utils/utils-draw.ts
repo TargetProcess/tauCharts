@@ -12,6 +12,23 @@ import * as d3 from 'd3-selection';
         return ((['bottom', 'top'].indexOf(scaleOrient.toLowerCase()) >= 0) ? 'h' : 'v');
     }
 
+    export function parseTransformTranslate(transform: string) {
+        var result = {x: 0, y: 0};
+        var ts = transform.indexOf('translate(');
+
+        if (ts >= 0) {
+            var te = transform.indexOf(')', ts + 10);
+            var translateStr = transform.substring(ts + 10, te);
+            var translateParts = translateStr.trim().replace(',', ' ').replace(/\s+/, ' ').split(' ');
+            result.x = parseFloat(translateParts[0]);
+            if (translateParts.length > 1) {
+                result.y = parseFloat(translateParts[1]);
+            }
+        }
+
+        return result;
+    }
+
     export function isIntersect(
         ax0: number,
         ay0: number,
@@ -36,20 +53,6 @@ import * as d3 from 'd3-selection';
     }
 
     export function getDeepTransformTranslate(node: Element) {
-        const parseTransformTranslate = (transform) => {
-            var result = {x: 0, y: 0};
-            var ts = transform.indexOf('translate(');
-            if (ts >= 0) {
-                var te = transform.indexOf(')', ts + 10);
-                var translateStr = transform.substring(ts + 10, te);
-                var translateParts = translateStr.trim().replace(',', ' ').replace(/\s+/, ' ').split(' ');
-                result.x = parseFloat(translateParts[0]);
-                if (translateParts.length > 1) {
-                    result.y = parseFloat(translateParts[1]);
-                }
-            }
-            return result;
-        };
         var translate = {x: 0, y: 0};
         var parent = node;
         var tr, attr;

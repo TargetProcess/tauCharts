@@ -187,6 +187,11 @@ import {avoidTickTextCollision} from '../src/utils/d3-decorators';
 
             expect(x1).to.equal(true);
         });
+
+        it('should parse transform translate', function () {
+            expect(drawUtils.parseTransformTranslate('transform(translate(-10, 2))')).to.deep.equal({x: -10, y: 2});
+            expect(drawUtils.parseTransformTranslate('')).to.deep.equal({x: 0, y: 0});
+        });
     });
 
     describe('utils.splitEvenly()', function() {

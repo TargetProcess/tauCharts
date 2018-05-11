@@ -181,6 +181,12 @@ import * as d3 from 'd3-format';
             return (x === null) || (x === '') || (typeof x === 'undefined');
         };
 
+        var isDateDomain = function (domain) {
+            return domain.every(function (v) {
+                return utils.isDate(v);
+            });
+        };
+
         var createIsRowMatchInterceptor = function (dim, val) {
             return function (row) {
                 var d = row[dim];
@@ -394,9 +400,7 @@ import * as d3 from 'd3-format';
                             return a - b;
                         });
 
-                        var isDate = domain.reduce(function (memo, x) {
-                            return memo && utils.isDate(x);
-                        }, true);
+                        var isDate = isDateDomain(domain);
 
                         var numDomain = (isDate ?
                             domain.map(Number) :
@@ -775,8 +779,14 @@ import * as d3 from 'd3-format';
                             }));
 
                         var colorScaleConfig = self._chart.getSpec().scales[c];
+                        var isDate = isDateDomain(domain);
+
                         if (colorScaleConfig.order) {
                             domain = utils.union(utils.intersection(colorScaleConfig.order, domain), domain);
+                        } else if (colorScaleConfig.dimType === 'order' && isDate) {
+                            domain = domain.sort(function (a, b) {
+                                return new Date(a) - new Date(b);
+                            });
                         } else {
                             var orderState = self._legendOrderState[c];
                             domain = domain.sort(function (a, b) {
