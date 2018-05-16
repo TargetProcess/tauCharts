@@ -382,10 +382,11 @@ function createAxis(config: AxisConfig) {
 
                     rotateText(text);
                     fixTextPosForVerticalFacets(text);
-
-                    if (isOrdinalScale && scaleGuide.avoidCollisions) {
+                    if (isOrdinalScale && scaleGuide.avoidCollisions && !scaleGuide.facetAxis) {
                         if (transition) {
-                            transition.on('end.fixTickTextCollision', () => fixTickTextCollision(ticks.tick));
+                            transition.on('end.fixTickTextCollision', () => {
+                                return fixTickTextCollision(ticks.tick);
+                            });
                         } else {
                             fixTickTextCollision(ticks.tick);
                         }

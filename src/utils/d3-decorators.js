@@ -196,7 +196,7 @@ export function avoidTickTextCollision(ticks, isHorizontal) {
             }
 
             var dy = (curr.l * textOffsetStep); // -1 | 0 | +1
-            var newY = parseFloat(curr.textRef.attr('y')) + dy;
+            var newY = isHorizontal ? (parseFloat(curr.textRef.attr('y')) + dy) : 0;
             let tx = isHorizontal ? 0 : dy;
             let ty = isHorizontal ? dy : 0;
             var tr = (function (transform) {
