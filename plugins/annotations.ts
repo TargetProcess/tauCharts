@@ -517,32 +517,6 @@ function template(str: string, obj: {[prop: string]: string}) {
                 addToUnits(coordsUnit.units, annotatedLine, noteItem.position);
             },
 
-            onUnitsStructureExpanded() {
-                const chart: Plot = this._chart;
-
-                const specRef = chart.getSpec();
-                const data = chart.getDataSources()['/'].data;
-                const annotatedValues = this._getAnnotatedDimValues(settings.items);
-                const annotatedDims = Object.keys(annotatedValues);
-                annotatedDims.forEach((dim) => {
-                    const xScaleId = `x_${dim}`;
-                    const yScaleId = `y_${dim}`;
-                    [xScaleId, yScaleId].forEach((scaleId) => {
-                        if (scaleId in specRef.scales) {
-                            const config = specRef.scales[scaleId];
-                            const originalValues = data.map((row) => row[dim]);
-                            const isTimeScale = (['period', 'time'].indexOf(config.type) >= 0);
-                            const convertedAnnotations = (isTimeScale
-                                ? annotatedValues[dim].map((x) => new Date(x))
-                                : annotatedValues[dim]);
-                            config.series = utils.unique(originalValues.concat(convertedAnnotations));
-                        }
-                    });
-                });
-
-                this._startWatchingDataRefs();
-            },
-
             onRender() {
                 this._clearUnusedDataRefs();
             },
@@ -551,6 +525,10 @@ function template(str: string, obj: {[prop: string]: string}) {
 
                 var self = this;
                 var units: Unit[] = [];
+
+                this._setupAdditionalSeries();
+                this._startWatchingDataRefs();
+
                 chart.traverseSpec(specRef, function (unit) {
                     if (unit && (unit.type === 'COORDS.RECT') && (unit.units)) {
                         units.push(unit);
@@ -606,6 +584,31 @@ function template(str: string, obj: {[prop: string]: string}) {
                                 self.addLineNote(specRef, coordsUnit, item);
                             }
                         });
+                });
+            },
+
+            _setupAdditionalSeries: function () {
+                const chart: Plot = this._chart;
+
+                const specRef = chart.getSpec();
+                const data = chart.getDataSources()['/'].data;
+                const annotatedValues = this._getAnnotatedDimValues(settings.items);
+                const annotatedDims = Object.keys(annotatedValues);
+
+                annotatedDims.forEach((dim) => {
+                    const xScaleId = `x_${dim}`;
+                    const yScaleId = `y_${dim}`;
+                    [xScaleId, yScaleId].forEach((scaleId) => {
+                        if (scaleId in specRef.scales) {
+                            const config = specRef.scales[scaleId];
+                            const originalValues = data.map((row) => row[dim]);
+                            const isTimeScale = (['period', 'time'].indexOf(config.type) >= 0);
+                            const convertedAnnotations = (isTimeScale
+                                ? annotatedValues[dim].map((x) => new Date(x))
+                                : annotatedValues[dim]);
+                            config.series = utils.unique(originalValues.concat(convertedAnnotations));
+                        }
+                    });
                 });
             },
 

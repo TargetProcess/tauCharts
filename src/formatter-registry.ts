@@ -17,8 +17,8 @@ const removeRedundantZeros = (() => {
         .replace(zerosAfterNotZero, '$1$2');
 })();
 
-var FORMATS_MAP: {[format: string]: (x) => string} = {
-
+var FORMATS_MAP: {[format: string]: (x: any, nullAlias: string) => string} = {
+    '_identity': (x, nullAlias) => String(((x === null) || (typeof x === 'undefined')) ? nullAlias : x),
     'x-num-auto': function (x) {
         if (isNaN(x)) {
             return 'NaN';
@@ -104,10 +104,7 @@ var FORMATS_MAP: {[format: string]: (x) => string} = {
 var FormatterRegistry = {
 
     get: (formatAlias: string, nullOrUndefinedAlias?: string) => {
-
-        var nullAlias = nullOrUndefinedAlias || '';
-
-        var identity = ((x) => String(((x === null) || (typeof x === 'undefined')) ? nullAlias : x));
+        var identity = FORMATS_MAP['_identity'];
 
         var hasFormat = FORMATS_MAP.hasOwnProperty(formatAlias);
         var formatter = hasFormat ? FORMATS_MAP[formatAlias] : identity;
@@ -127,7 +124,7 @@ var FormatterRegistry = {
             formatter = identity;
         }
 
-        return formatter;
+        return formatter !== null ? (x) => formatter(x, nullOrUndefinedAlias || '') : null;
     },
 
     add: (formatAlias: string, formatter: (x) => string) => {
