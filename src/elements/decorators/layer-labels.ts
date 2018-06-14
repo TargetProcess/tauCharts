@@ -111,7 +111,7 @@ export class LayerLabels {
             maxHeight: self.h,
             data: fibers.reduce((memo, f) => memo.concat(f), [])
         };
-        var m = this.applyFixedPositionRules(guide, args, seed, lineBreakAvailable);
+        var m = this.applyFixedPositionRules(guide, args, seed, lineBreakAvailable, this.flip);
 
         var readBy3 = <T, K>(list: T[], iterator: (a: T, b: T, c: T) => K) => {
             var l = list.length - 1;
@@ -266,12 +266,16 @@ export class LayerLabels {
         return text as d3Selection;
     }
 
-    applyFixedPositionRules(guide, args, seed, lineBreakAvailable) {
+    applyFixedPositionRules(guide, args, seed, lineBreakAvailable, flip) {
         var fixedPosition = guide
             .position
             .filter((token) => token.indexOf('auto:') === -1);
 
         if (lineBreakAvailable) {
+            if (flip) {
+                fixedPosition.push('multiline-label-vertical-center-align');
+            }
+
             fixedPosition.push('multiline-label-left-align', 'multiline-hide-on-container-overflow');
         }
 

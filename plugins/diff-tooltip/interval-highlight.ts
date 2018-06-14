@@ -133,8 +133,8 @@ const IntervalHighlight = <HighlightElement>{
             rectEnter.merge(rect)
                 .attr('x', x)
                 .attr('y', y)
-                .attr('width', width)
-                .attr('height', height);
+                .attr('width', Math.abs(width))
+                .attr('height', Math.abs(height));
         }
 
         function drawStart({g, gEnter}: HighlightDataBinding) {

@@ -383,11 +383,11 @@ import {avoidTickTextCollision} from '../src/utils/d3-decorators';
 
     describe('utils.hasXOverflow', function () {
         it('should return true if x overflow (angle 0)', () => {
-            expect(utils.hasXOverflow(100, 50, 0, 140)).to.equal(true);
+            expect(utils.hasXOverflow(200, 50, 0, 140)).to.equal(true);
         });
 
         it('should return true if x overflow (angle 90)', () => {
-            expect(utils.hasXOverflow(100, 50, 90, 40)).to.equal(true);
+            expect(utils.hasXOverflow(200, 50, 90, 40)).to.equal(true);
         });
 
         it('should return false if no x overflow (angle 0)', () => {
@@ -401,11 +401,11 @@ import {avoidTickTextCollision} from '../src/utils/d3-decorators';
 
     describe('utils.hasYOverflow', function () {
         it('should return true if y overflow (angle 0)', () => {
-            expect(utils.hasYOverflow(100, 50, 0, 140)).to.equal(true);
+            expect(utils.hasYOverflow(150, 50, 0, 140)).to.equal(true);
         });
 
         it('should return true if y overflow (angle -90)', () => {
-            expect(utils.hasYOverflow(100, 50, -90, 40)).to.equal(true);
+            expect(utils.hasYOverflow(200, 50, -90, 40)).to.equal(true);
         });
 
         it('should return false if no y overflow (angle 0)', () => {
