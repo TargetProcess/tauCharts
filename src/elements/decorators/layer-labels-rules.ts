@@ -36,10 +36,15 @@ const cutLines = ({lines, linesWidths, separator}, availableSpace: number) => {
         .join(separator);
 };
 
+var getPadDivider = (prev, row): number => {
+    var labelInfo = prev.labelLinesAndSeparator(row);
+    var pad = 5 - (labelInfo.lines.length - 1);
+    return pad < 1 ? 1 : pad;
+};
 var isPositive = (scale, row) => scale.discrete || (!scale.discrete && row[scale.dim] >= 0);
 var isNegative = (scale, row) => !scale.discrete && row[scale.dim] < 0;
-var getXPad = (prev, row) => ((prev.w(row) / 2) + Math.floor(prev.model.size(row) / 5));
-var getYPad = (prev, row) => ((prev.h(row) / 2) + Math.floor(prev.model.size(row) / 5));
+var getXPad = (prev, row) => ((prev.w(row) / 2) + Math.floor(prev.model.size(row) / getPadDivider(prev, row)));
+var getYPad = (prev, row) => ((prev.h(row) / 2) + Math.floor(prev.model.size(row) / getPadDivider(prev, row)));
 var alignByX = (exp) => {
     return (prev) => {
         return {
@@ -381,7 +386,10 @@ LayerLabelsRules
             .map(LayerLabelsRules.getRule)
             .reduce((p, r) => LayerLabelsModel.compose(p, r(p, args)), prev);
 
-        var betterInside = (row) => (inner.label(row, args).length > outer.label(row, args).length);
+        var betterInside = (row) => {
+            var yPosition = outer.y(row, args) + outer.dy(row, args);
+            return yPosition <= 0 || yPosition >= args.maxHeight;
+        };
 
         return Object.assign(
             {},
@@ -530,6 +538,14 @@ LayerLabelsRules
                 }
 
                 return prevDy;
+            }
+        };
+    })
+
+    .regRule('multiline-label-vertical-center-align', (prev) => {
+        return {
+            dy: (row) => {
+                return prev.dy(row) - (prev.h(row) / 2);
             }
         };
     })

@@ -593,13 +593,15 @@ let templateSettings = {
     }
 
     export function hasXOverflow(x: number, size: number, angle: number, maxX: number) {
+        var allowedOverflow = 100;
         var direction = angle === 90 ? -1 : 1;
-        return x + size * direction > maxX;
+        return (x + size * direction) - maxX > allowedOverflow;
     }
 
     export function hasYOverflow(y: number, size: number, angle: number, maxY: number) {
+        var allowedOverflow = 20;
         var direction = angle === -90 ? -1 : 1;
-        return y + size * direction > maxY;
+        return (y + size * direction) - maxY > allowedOverflow;
     }
 
     export function flatten<T>(array: Array<T | T[]>): T[];

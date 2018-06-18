@@ -592,6 +592,33 @@ import {LayerLabelsRules} from '../src/elements/decorators/layer-labels-rules';
 
             var m = createModel(['multiline-hide-on-container-overflow'], seedModel, {data:rows, maxWidth:5, maxHeight:5});
 
-            expect(m.hide(rows[0])).to.equal(true, 'hide label on container overflow');
+            expect(m.hide(rows[0])).to.equal(true, 'not hide label on container overflow');
+        });
+
+        it('should support [multiline-label-vertical-center-align] rule', function () {
+            var gogModel = {
+                xi: (row) => 10,
+                yi: (row) => 20,
+                y0: (row) => 10,
+                size: (row) => 10,
+                label: (row) => row.text,
+            };
+
+            var rows = [{text: '123'}];
+
+            seedModel = LayerLabelsModel.seed(
+                gogModel,
+                {
+                    paddingKoeff: 1,
+                    fontColor: '#000',
+                    flip: false,
+                    formatter: ((str) => String(str)),
+                    labelRectSize: ((lines) => {
+                        return {width: lines[0].length * 2, height: fontSize};
+                    })
+                });
+
+            var m = createModel(['multiline-label-vertical-center-align'], seedModel, {data:rows, maxWidth:5, maxHeight:5});
+            expect(m.dy(rows[0])).to.equal(5, 'calculate dy on multiline-label-vertical-center-align');
         });
     });
