@@ -1,4 +1,4 @@
-## release 2.3.2 (june 25, 2018)
+## 2.3.2 (june 25, 2018)
 
 - fix diff tooltip [#534](https://github.com/TargetProcess/tauCharts/pull/534)
 
