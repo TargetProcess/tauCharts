@@ -505,7 +505,7 @@ export class GeoMap extends Element {
     _createProjection(topoJSONData, topContour, center) {
 
         // The map's scale out is based on the solution:
-        // http://stackoverflow.com/questions/14492284/center-a-map-in-d3-given-a-geojson-object
+        // https://stackoverflow.com/questions/14492284/center-a-map-in-d3-given-a-geojson-object
 
         var width = this.W;
         var height = this.H;

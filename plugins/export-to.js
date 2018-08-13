@@ -80,7 +80,7 @@ const MSG_TITLE = 'Taucharts Export Plug-in:';
         }
     }
 
-    // http://jsfiddle.net/kimiliini/HM4rW/show/light/
+    // https://jsfiddle.net/kimiliini/HM4rW/show/light/
     var downloadExportFile = function (fileName, type, strContent) {
         var utf8BOM = '%ef%bb%bf';
         var content = 'data:' + type + ';charset=UTF-8,' + utf8BOM + encodeURIComponent(strContent);

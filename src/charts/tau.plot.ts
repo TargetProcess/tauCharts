@@ -257,7 +257,7 @@ export class Plot extends Emitter {
                 if (!periodCaster) {
                     log([
                         `Unknown period "${scaleRef.period}".`,
-                        `Docs: http://api.taucharts.com/plugins/customticks.html#how-to-add-custom-tick-period`
+                        `Docs: https://api.taucharts.com/plugins/customticks.html#how-to-add-custom-tick-period`
                     ], 'WARN');
                     scaleRef.period = null;
                 }

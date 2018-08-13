@@ -2,21 +2,21 @@ Taucharts [![Build Status](https://travis-ci.org/TargetProcess/tauCharts.png?bra
 [![Slack Status](https://slack.taucharts.com/badge.svg)](https://slack.taucharts.com/)
 ======
 
-Taucharts is a [data-focused JavaScript charting library](http://blog.taucharts.com/taucharts-data-focused-charting-library/) based on D3 and designed with passion.
+Taucharts is a [data-focused JavaScript charting library](https://blog.taucharts.com/taucharts-data-focused-charting-library/) based on D3 and designed with passion.
 
-##### Official website: [www.taucharts.com](http://www.taucharts.com)
-##### Documentation: [api.taucharts.com](http://api.taucharts.com)
-##### Project blog: [blog.taucharts.com](http://blog.taucharts.com)
+##### Official website: [www.taucharts.com](https://www.taucharts.com)
+##### Documentation: [api.taucharts.com](https://api.taucharts.com)
+##### Project blog: [blog.taucharts.com](https://blog.taucharts.com)
 
 ## Why use Taucharts?
 #### Simplicity
 Data plays a key role in Taucharts. The library provides a declarative interface for fast mapping of data fields to visual properties.
 #### Flexibility
-The library's architecture allows you to build [facets](http://api.taucharts.com/basic/facet.html) and extend chart behaviour with reusable plugins.
+The library's architecture allows you to build [facets](https://api.taucharts.com/basic/facet.html) and extend chart behaviour with reusable plugins.
 #### Design
 The Taucharts team is passionate about beautiful design.
 #### ...
-Dive into the high-level [Taucharts concepts](http://blog.taucharts.com/taucharts-data-focused-charting-library/) and [usage reviews](#taucharts-examples--usage-reviews).
+Dive into the high-level [Taucharts concepts](https://blog.taucharts.com/taucharts-data-focused-charting-library/) and [usage reviews](#taucharts-examples--usage-reviews).
 If you want to contribute - see [how to run the project locally](#how-to-run-the-project-locally)
 
 ## How to use Taucharts
@@ -69,9 +69,9 @@ var chart = new Taucharts.Chart({
     ]
 });
 ```
-[![Scatterplot](examples/screenshots/Taucharts_Scatterplot.png)](http://api.taucharts.com/basic/scatterplot.html)
+[![Scatterplot](examples/screenshots/Taucharts_Scatterplot.png)](https://api.taucharts.com/basic/scatterplot.html)
 
-See [scatter plot documentation](http://api.taucharts.com/basic/scatterplot.html)
+See [scatter plot documentation](https://api.taucharts.com/basic/scatterplot.html)
 
 ___
 
@@ -87,9 +87,9 @@ var chart = new Taucharts.Chart({
     data : [{'Team': 'Alpha', 'Effort': 40, 'Y Scale': 23, 'X Scale': 72 }, ...]
 });
 ```
-[![Line Chart](examples/screenshots/Taucharts_Line.png)](http://api.taucharts.com/basic/line.html)
+[![Line Chart](examples/screenshots/Taucharts_Line.png)](https://api.taucharts.com/basic/line.html)
 
-See [line chart documentation](http://api.taucharts.com/basic/line.html)
+See [line chart documentation](https://api.taucharts.com/basic/line.html)
 
 ___
 
@@ -103,9 +103,9 @@ var chart = new Taucharts.Chart({
     data : [{'team': 'd', 'effort': 1, 'count': 1, 'priority': 'low'}, ...]
 });
 ```
-[![Bar Chart](examples/screenshots/Taucharts_Bar.png)](http://api.taucharts.com/basic/bar.html)
+[![Bar Chart](examples/screenshots/Taucharts_Bar.png)](https://api.taucharts.com/basic/bar.html)
 
-See [bar chart documentation](http://api.taucharts.com/basic/bar.html)
+See [bar chart documentation](https://api.taucharts.com/basic/bar.html)
 
 ___
 
@@ -119,9 +119,9 @@ var chart = new Taucharts.Chart({
     data : [{'team': 'alpha', 'effort': 8, 'priority': 'major'}, ...]
 });
 ```
-[![Horizontal Bar Chart](examples/screenshots/Taucharts_Horizontal-bar.png)](http://api.taucharts.com/basic/horizontal-bar.html)
+[![Horizontal Bar Chart](examples/screenshots/Taucharts_Horizontal-bar.png)](https://api.taucharts.com/basic/horizontal-bar.html)
 
-See [horizontal bar chart documentation](http://api.taucharts.com/basic/horizontal-bar.html)
+See [horizontal bar chart documentation](https://api.taucharts.com/basic/horizontal-bar.html)
 
 ___
 
@@ -135,9 +135,9 @@ var chart = new Taucharts.Chart({
     data : [{country: 'Canada', sport: 'Biathlon', medals: 20, age: 22}, ...]
 });
 ```
-[![Stacked Bar Chart](examples/screenshots/Taucharts_Stacked-bar.png)](http://api.taucharts.com/basic/stacked-bar.html)
+[![Stacked Bar Chart](examples/screenshots/Taucharts_Stacked-bar.png)](https://api.taucharts.com/basic/stacked-bar.html)
 
-See [stacked bar chart documentation](http://api.taucharts.com/basic/stacked-bar.html)
+See [stacked bar chart documentation](https://api.taucharts.com/basic/stacked-bar.html)
 
 ___
 
@@ -151,9 +151,9 @@ var chart = new Taucharts.Chart({
     data : [{process: 'sales', stage: 'visit', count: 100}, ...]
 });
 ```
-[![Horizontal Stacked Bar Chart](examples/screenshots/Taucharts_Horizontal-stacked-bar.png)](http://api.taucharts.com/basic/horizontal-stacked-bar.html)
+[![Horizontal Stacked Bar Chart](examples/screenshots/Taucharts_Horizontal-stacked-bar.png)](https://api.taucharts.com/basic/horizontal-stacked-bar.html)
 
-See [horizontal stacked bar chart documentation](http://api.taucharts.com/basic/horizontal-stacked-bar.html)
+See [horizontal stacked bar chart documentation](https://api.taucharts.com/basic/horizontal-stacked-bar.html)
 
 ___
 
@@ -170,9 +170,9 @@ var chart = new Taucharts.Chart({
     data : [{date: '2015-07-15', effort: 400, team: 'Alpha'}, ...]
 });
 ```
-[![Horizontal Stacked Bar Chart](examples/screenshots/Taucharts_Stacked-area.png)](http://api.taucharts.com/basic/stacked-area.html)
+[![Horizontal Stacked Bar Chart](examples/screenshots/Taucharts_Stacked-area.png)](https://api.taucharts.com/basic/stacked-area.html)
 
-See [stacked area chart documentation](http://api.taucharts.com/basic/stacked-area.html)
+See [stacked area chart documentation](https://api.taucharts.com/basic/stacked-area.html)
 
 ___
 
@@ -186,9 +186,9 @@ var chart1 = new Taucharts.Chart({
   data : [{class: "C", milespergallon: 41.26, price: 24509.74, vehicle: "Prius1"}, ...]
 });
 ```
-[![Facet scatterplot chart](examples/screenshots/Taucharts_Facet.png)](http://api.taucharts.com/basic/facet.html)
+[![Facet scatterplot chart](examples/screenshots/Taucharts_Facet.png)](https://api.taucharts.com/basic/facet.html)
 
-See [facet charts documentation](http://api.taucharts.com/basic/facet.html)
+See [facet charts documentation](https://api.taucharts.com/basic/facet.html)
 
 ___
 
@@ -211,9 +211,9 @@ See [streaming sample online](//jsfiddle.net/taucharts/qdn76nab/)
 ___
 
 #### Complex Composable charts
-[![Composable Chart](examples/screenshots/Taucharts_Composable.png)](http://jsfiddle.net/6LzefLo4/4/)
+[![Composable Chart](examples/screenshots/Taucharts_Composable.png)](https://jsfiddle.net/6LzefLo4/4/)
 
-See [composable chart sample online](http://jsfiddle.net/6LzefLo4/4/)
+See [composable chart sample online](https://jsfiddle.net/6LzefLo4/4/)
 
 ___
 
@@ -269,26 +269,26 @@ See the [Developer Guide](DEVELOPER-GUIDE.md) for more info.
 
 ## Taucharts examples / usage reviews
 
-[R Wrapper](http://www.buildingwidgets.com/blog/2015/8/5/week-31-taucharts)
+[R Wrapper](https://www.buildingwidgets.com/blog/2015/8/5/week-31-taucharts)
 
-[SqlPad Project](http://rickbergfalk.github.io/sqlpad/chart-tutorials/)
+[SqlPad Project](https://rickbergfalk.github.io/sqlpad/)
 
 [Targetprocess Graphical Reports](https://www.targetprocess.com/blog/2015/09/prototype-for-new-custom-graphical-reports-editor/)
 
-[Vizydrop project](http://vizydrop.com/)
+[Vizydrop project](https://vizydrop.com/)
 
 [Taucharts Twitter channel](https://twitter.com/search?q=taucharts)
 
 [Taucharts demo page](https://demo.taucharts.com/)
 
-[GeoTremor mobile app](http://geotremor.tangentapps.com)
+[GeoTremor mobile app](https://geotremor.tangentapps.com)
 
-[Dex](http://dexvis.net/)
+[Dex](https://dexvis.net/)
 
 [Dex integration video](https://youtu.be/mxD4aQmC4sg)
 
 ## License
 
-Licensing: [Apache License, Version 2.0](http://www.apache.org/licenses/LICENSE-2.0)
+Licensing: [Apache License, Version 2.0](https://www.apache.org/licenses/LICENSE-2.0)
 
 Have questions? [Contact us](mailto:michael@targetprocess.com)
