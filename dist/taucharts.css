@@ -1,0 +1,573 @@
+/*!
+ * /*
+ * taucharts@2.3.2 (2018-08-14)
+ * Copyright 2018 Targetprocess, Inc.
+ * Licensed under Apache License 2.0
+ * * /
+ * 
+ */
+.tau-chart__layout {
+  line-height: 1;
+  font-family: Helvetica Neue, Segoe UI, Open Sans, Ubuntu, sans-serif;
+}
+.tau-chart__layout text {
+  font: normal 13px Helvetica Neue, Segoe UI, Open Sans, Ubuntu, sans-serif;
+}
+.tau-chart__chart {
+  font-family: Helvetica Neue, Segoe UI, Open Sans, Ubuntu, sans-serif;
+  position: absolute;
+  height: 100%;
+  width: 100%;
+  overflow: auto;
+}
+.tau-chart__layout {
+  display: -webkit-box;
+  display: -webkit-flexbox;
+  display: -ms-flexbox;
+  display: flex;
+  -ms-flex-align: stretch;
+  -webkit-align-items: stretch;
+  align-items: stretch;
+  -ms-flex-direction: column;
+  -webkit-box-orient: vertical;
+  flex-direction: column;
+  height: 100%;
+  width: 100%;
+  overflow: auto;
+  background: transparent;
+  color: #333;
+}
+.tau-chart__layout__header {
+  -ms-flex: 0 0.1 auto;
+  -webkit-box-flex: 0 0.1 auto;
+  flex: 0 0.1 auto;
+  position: relative;
+}
+.tau-chart__layout__container {
+  display: -webkit-box;
+  display: -webkit-flexbox;
+  display: -ms-flexbox;
+  display: flex;
+  -ms-flex: 1 1 auto;
+  -webkit-box-flex: 1 1 auto;
+  flex: 1 1 auto;
+  height: 100%;
+}
+.tau-chart__layout__footer {
+  -ms-flex: 0 1 auto;
+  -webkit-box-flex: 0 1 auto;
+  flex: 0 1 auto;
+}
+.tau-chart__layout__sidebar {
+  -ms-flex: 0 1 auto;
+  -webkit-box-flex: 0 1 auto;
+  flex: 0 1 auto;
+}
+.tau-chart__layout__content {
+  -ms-flex: 1 1 auto;
+  -webkit-box-flex: 1 1 auto;
+  flex: 1 1 auto;
+  overflow: hidden;
+}
+.tau-chart__layout__sidebar-right {
+  position: relative;
+  overflow: hidden;
+  -ms-flex: 0 0 auto;
+  -webkit-box-flex: 0 0 auto;
+  flex: 0 0 auto;
+}
+.tau-chart__layout__sidebar-right__wrap {
+  max-height: 100%;
+  box-sizing: border-box;
+}
+.tau-chart__layout text {
+  fill: #333;
+}
+.tau-chart__layout.tau-chart__layout_rendering-error {
+  opacity: 0.75;
+}
+.tau-chart__rendering-timeout-warning {
+  align-items: center;
+  background: rgba(255, 255, 255, 0.5);
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  position: absolute;
+  top: 0;
+  width: 100%;
+}
+.tau-chart__rendering-timeout-warning svg {
+  height: 100%;
+  max-width: 32em;
+  width: 100%;
+}
+.tau-chart__rendering-timeout-warning text {
+  font-weight: 300;
+}
+.tau-chart__progress {
+  box-sizing: border-box;
+  height: 0.25em;
+  opacity: 0;
+  overflow: hidden;
+  pointer-events: none;
+  position: absolute;
+  top: 0;
+  transition: opacity 1s 0.75s;
+  width: 100%;
+}
+.tau-chart__progress_active {
+  opacity: 1;
+}
+.tau-chart__progress__value {
+  background: rgba(51, 51, 51, 0.25);
+  height: 100%;
+  transition: width 0.75s;
+}
+.tau-chart {
+  /* region Select --------------------------------------------------*/
+}
+.tau-chart__checkbox {
+  position: relative;
+  display: block;
+}
+.tau-chart__checkbox__input {
+  position: absolute;
+  z-index: -1;
+  opacity: 0;
+}
+.tau-chart__checkbox__icon {
+  position: relative;
+  width: 14px;
+  height: 14px;
+  top: 3px;
+  display: inline-block;
+  border: 1px solid #c3c3c3;
+  border-radius: 2px;
+  background: linear-gradient(to bottom, #fff 0%, #dbdbde 100%);
+}
+.tau-chart__checkbox__icon:before {
+  display: none;
+  content: '';
+  background-image: url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAA4AAAAOCAYAAAFoTx1HAAAAGXRFWHRTb2Z0d2FyZQBBZG9iZSBJbWFnZVJlYWR5ccllPAAAAyJpVFh0WE1MOmNvbS5hZG9iZS54bXAAAAAAADw/eHBhY2tldCBiZWdpbj0i77u/IiBpZD0iVzVNME1wQ2VoaUh6cmVTek5UY3prYzlkIj8+IDx4OnhtcG1ldGEgeG1sbnM6eD0iYWRvYmU6bnM6bWV0YS8iIHg6eG1wdGs9IkFkb2JlIFhNUCBDb3JlIDUuMC1jMDYxIDY0LjE0MDk0OSwgMjAxMC8xMi8wNy0xMDo1NzowMSAgICAgICAgIj4gPHJkZjpSREYgeG1sbnM6cmRmPSJodHRwOi8vd3d3LnczLm9yZy8xOTk5LzAyLzIyLXJkZi1zeW50YXgtbnMjIj4gPHJkZjpEZXNjcmlwdGlvbiByZGY6YWJvdXQ9IiIgeG1sbnM6eG1wPSJodHRwOi8vbnMuYWRvYmUuY29tL3hhcC8xLjAvIiB4bWxuczp4bXBNTT0iaHR0cDovL25zLmFkb2JlLmNvbS94YXAvMS4wL21tLyIgeG1sbnM6c3RSZWY9Imh0dHA6Ly9ucy5hZG9iZS5jb20veGFwLzEuMC9zVHlwZS9SZXNvdXJjZVJlZiMiIHhtcDpDcmVhdG9yVG9vbD0iQWRvYmUgUGhvdG9zaG9wIENTNS4xIFdpbmRvd3MiIHhtcE1NOkluc3RhbmNlSUQ9InhtcC5paWQ6MEQ4M0RDOTE4NDQ2MTFFNEE5RTdBRERDQzRBQzNEMTQiIHhtcE1NOkRvY3VtZW50SUQ9InhtcC5kaWQ6MEQ4M0RDOTI4NDQ2MTFFNEE5RTdBRERDQzRBQzNEMTQiPiA8eG1wTU06RGVyaXZlZEZyb20gc3RSZWY6aW5zdGFuY2VJRD0ieG1wLmlpZDowRDgzREM4Rjg0NDYxMUU0QTlFN0FERENDNEFDM0QxNCIgc3RSZWY6ZG9jdW1lbnRJRD0ieG1wLmRpZDowRDgzREM5MDg0NDYxMUU0QTlFN0FERENDNEFDM0QxNCIvPiA8L3JkZjpEZXNjcmlwdGlvbj4gPC9yZGY6UkRGPiA8L3g6eG1wbWV0YT4gPD94cGFja2V0IGVuZD0iciI/Pn2UjdoAAAEGSURBVHjaYvz//z8DGIAYSUlJdwECiBEukpiY/BDEAQggBrgIVBkLjAEDAAHEiMyBywBNOwDmJCYm/cdQBhBAqHrQAUgSojV5P8QtSY+A+D7cPTDdMAUwTQABhNdYJgZ8AF1nRkaGAgjDvQzi/AOCP3+YWX7+/HmXiYlRAcXY37//AEPs511OTg65uXPnPkQxNi0tTTklJUWGaNcCBBj+EMIDmBjIBCwo1jMyYigAul/x79//B4CulwOqODBv3hxHDKcmJycfAHLtgfrvMTExJf/7938xUF4GaOB9FhZmh1mzZj2CqUdNEkAdSUmZSsAgBNrAIAsUAQYlu+O0adMeo0cS/QMHAGJZps83N5ZDAAAAAElFTkSuQmCC');
+  width: 100%;
+  height: 100%;
+  position: absolute;
+  top: 0;
+  left: 0;
+}
+.tau-chart__checkbox__text {
+  margin-left: 5px;
+}
+.tau-chart__checkbox__input ~ .tau-chart__checkbox__text {
+  cursor: pointer;
+}
+.tau-chart__checkbox__input:disabled ~ .tau-chart__checkbox__text {
+  cursor: default;
+  opacity: 0.3;
+}
+.tau-chart__checkbox__input:not(:disabled):focus + .tau-chart__checkbox__icon {
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.3), 0 0 7px 0 #52a8ec;
+  outline: none;
+}
+.tau-chart__checkbox:hover .tau-chart__checkbox__input:not(:disabled) ~ .tau-chart__checkbox__icon {
+  border-color: #999;
+}
+.tau-chart__checkbox__input:checked + .tau-chart__checkbox__icon {
+  background: linear-gradient(to bottom, #fff 0%, #dbdbde 100%);
+}
+.tau-chart__checkbox__input:checked + .tau-chart__checkbox__icon:before {
+  display: block;
+}
+.tau-chart__select {
+  font-size: 13px;
+  font-family: inherit;
+  display: inline-block;
+  height: 24px;
+  line-height: 24px;
+  vertical-align: middle;
+  padding: 2px;
+  background-color: #fff;
+  border: 1px solid #c3c3c3;
+  border-radius: 2px;
+  color: #333;
+}
+.tau-chart__select:focus {
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.3), 0 0 7px 0 #52a8ec;
+  outline: none;
+}
+.tau-chart__select[disabled] {
+  opacity: 0.3;
+  cursor: default;
+}
+.tau-chart__select[multiple] {
+  height: auto;
+}
+.tau-chart__select option[disabled] {
+  opacity: 0.6;
+}
+.tau-chart__button {
+  background-color: rgba(255, 255, 255, 0.9);
+  border: 1px solid currentColor;
+  border-radius: 4px;
+  box-shadow: 0 0 1px rgba(0, 0, 0, 0.1);
+  box-sizing: border-box;
+  color: #b3b3b3;
+  cursor: pointer;
+  font-size: 13px;
+  padding: 0 6px;
+  line-height: 1.5em;
+  height: calc(1.5em + 2px);
+}
+.tau-chart__button:hover {
+  border-color: #999999;
+  color: #333;
+}
+/* region Generate .color@{n}-@{i}  function  */
+.tau-chart__svg .color20-1 {
+  stroke: #6FA1D9;
+  fill: #6FA1D9;
+}
+.tau-chart__svg .color20-2 {
+  stroke: #DF2B59;
+  fill: #DF2B59;
+}
+.tau-chart__svg .color20-3 {
+  stroke: #66DA26;
+  fill: #66DA26;
+}
+.tau-chart__svg .color20-4 {
+  stroke: #4C3862;
+  fill: #4C3862;
+}
+.tau-chart__svg .color20-5 {
+  stroke: #E5B011;
+  fill: #E5B011;
+}
+.tau-chart__svg .color20-6 {
+  stroke: #3A3226;
+  fill: #3A3226;
+}
+.tau-chart__svg .color20-7 {
+  stroke: #CB461A;
+  fill: #CB461A;
+}
+.tau-chart__svg .color20-8 {
+  stroke: #C7CE23;
+  fill: #C7CE23;
+}
+.tau-chart__svg .color20-9 {
+  stroke: #7FCDC2;
+  fill: #7FCDC2;
+}
+.tau-chart__svg .color20-10 {
+  stroke: #CCA1C8;
+  fill: #CCA1C8;
+}
+.tau-chart__svg .color20-11 {
+  stroke: #C84CCE;
+  fill: #C84CCE;
+}
+.tau-chart__svg .color20-12 {
+  stroke: #54762E;
+  fill: #54762E;
+}
+.tau-chart__svg .color20-13 {
+  stroke: #746BC9;
+  fill: #746BC9;
+}
+.tau-chart__svg .color20-14 {
+  stroke: #953441;
+  fill: #953441;
+}
+.tau-chart__svg .color20-15 {
+  stroke: #5C7A76;
+  fill: #5C7A76;
+}
+.tau-chart__svg .color20-16 {
+  stroke: #C8BF87;
+  fill: #C8BF87;
+}
+.tau-chart__svg .color20-17 {
+  stroke: #BFC1C3;
+  fill: #BFC1C3;
+}
+.tau-chart__svg .color20-18 {
+  stroke: #8E5C31;
+  fill: #8E5C31;
+}
+.tau-chart__svg .color20-19 {
+  stroke: #71CE7B;
+  fill: #71CE7B;
+}
+.tau-chart__svg .color20-20 {
+  stroke: #BE478B;
+  fill: #BE478B;
+}
+.tau-chart__svg .color-default {
+  stroke: #6FA1D9;
+  fill: #6FA1D9;
+}
+/* endregion */
+/* region Generate .line-params-@{n}  function  */
+/* Generate .line-size-@{n} */
+.tau-chart__line-width-1 {
+  stroke-width: 1px;
+}
+.tau-chart__line-width-2 {
+  stroke-width: 1.5px;
+}
+.tau-chart__line-width-3 {
+  stroke-width: 2px;
+}
+.tau-chart__line-width-4 {
+  stroke-width: 2.5px;
+}
+.tau-chart__line-width-5 {
+  stroke-width: 3px;
+}
+/* Generate .line-opacity-@{n} */
+.tau-chart__line-opacity-1 {
+  stroke-opacity: 1;
+}
+.tau-chart__line-opacity-2 {
+  stroke-opacity: 0.95;
+}
+.tau-chart__line-opacity-3 {
+  stroke-opacity: 0.9;
+}
+.tau-chart__line-opacity-4 {
+  stroke-opacity: 0.85;
+}
+.tau-chart__line-opacity-5 {
+  stroke-opacity: 0.8;
+}
+/* endregion */
+/* endregion */
+.tau-chart {
+  /* Links */
+  /* Axises and Grid */
+  /* Scatterplot  */
+  /* Linechart  */
+  /*  Bar  */
+  /* TODO: fix to avoid conflict on "stroke" with color brewer */
+  /* TODO: remove this when CSS for color brewer is fixed */
+  /*  PLUGINS  */
+  /*  Highlighter  */
+}
+.tau-chart a {
+  color: #3962FF;
+  border-bottom: 1px solid rgba(57, 98, 255, 0.3);
+  text-decoration: none;
+}
+.tau-chart a:hover {
+  color: #E17152;
+  border-bottom: 1px solid rgba(225, 113, 82, 0.3);
+}
+.tau-chart__time-axis-overflow .tick:nth-child(even) {
+  display: none;
+}
+.tau-chart__svg {
+  display: block;
+  overflow: hidden;
+}
+.tau-chart__svg .place {
+  fill: #fff;
+  stroke: #000;
+  stroke-opacity: 0.7;
+  stroke-width: 0.5;
+}
+.tau-chart__svg .place-label {
+  opacity: 0.7;
+  font-size: 11px;
+  color: #000000;
+  line-height: 13px;
+  text-anchor: start;
+}
+.tau-chart__svg .place-label-countries,
+.tau-chart__svg .place-label-subunits,
+.tau-chart__svg .place-label-states {
+  text-anchor: middle;
+  font-size: 10px;
+  fill: rgba(51, 51, 51, 0.5);
+  line-height: 10px;
+  text-transform: capitalize;
+}
+.tau-chart__svg .map-contour-level path {
+  stroke-opacity: 0.5;
+  stroke-linejoin: 'round';
+}
+.tau-chart__svg .map-contour-level-0 path {
+  stroke: #fff;
+}
+.tau-chart__svg .map-contour-level-1 path {
+  stroke: #fff;
+}
+.tau-chart__svg .map-contour-level-2 path {
+  stroke: #fff;
+}
+.tau-chart__svg .map-contour-level-3 path {
+  stroke: #fff;
+}
+.tau-chart__svg .map-contour-level-4 path {
+  stroke: #fff;
+}
+.tau-chart__svg .map-contour-highlighted,
+.tau-chart__svg .map-contour:hover {
+  fill: #FFBF00;
+}
+.tau-chart__svg .map-contour-highlighted path,
+.tau-chart__svg .map-contour:hover path {
+  stroke: #fff;
+}
+.tau-chart__svg .map-contour-highlighted text,
+.tau-chart__svg .map-contour:hover text {
+  fill: #000;
+}
+.tau-chart__svg .axis line,
+.tau-chart__svg .axis path {
+  stroke-width: 1;
+  fill: none;
+  stroke: rgba(189, 195, 205, 0.4);
+  shape-rendering: crispEdges;
+}
+.tau-chart__svg .axis.facet-axis .tick line {
+  opacity: 0;
+}
+.tau-chart__svg .axis.facet-axis .tick line.label-ref {
+  opacity: 1;
+}
+.tau-chart__svg .axis.facet-axis .tick text {
+  font-size: 12px;
+  font-weight: 600;
+}
+.tau-chart__svg .axis.facet-axis path.domain {
+  opacity: 0;
+}
+.tau-chart__svg .axis.facet-axis.compact .tick text {
+  font-weight: normal;
+}
+.tau-chart__svg .axis.facet-axis.compact .label {
+  font-weight: normal;
+}
+.tau-chart__svg .axis.facet-axis.compact .label .label-token {
+  font-weight: normal;
+}
+.tau-chart__svg .tick text {
+  font-size: 11px;
+}
+.tau-chart__svg .grid .grid-lines path {
+  shape-rendering: crispEdges;
+}
+.tau-chart__svg .grid .line path,
+.tau-chart__svg .grid path.line,
+.tau-chart__svg .grid path.domain {
+  fill: none;
+}
+.tau-chart__svg .grid .tick > line,
+.tau-chart__svg .grid .extra-tick-line {
+  fill: none;
+  stroke: rgba(189, 195, 205, 0.4);
+  stroke-width: 1px;
+  shape-rendering: crispEdges;
+}
+.tau-chart__svg .grid .tick.zero-tick > line {
+  stroke: rgba(126, 129, 134, 0.505);
+}
+.tau-chart__svg .grid .line path {
+  shape-rendering: auto;
+}
+.tau-chart__svg .grid .cursor-line {
+  shape-rendering: crispEdges;
+  stroke: #adadad;
+  stroke-width: 1px;
+}
+.tau-chart__svg .label {
+  font-size: 12px;
+  font-weight: 600;
+}
+.tau-chart__svg .label .label-token {
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: capitalize;
+}
+.tau-chart__svg .label .label-token-1,
+.tau-chart__svg .label .label-token-2 {
+  font-weight: normal;
+}
+.tau-chart__svg .label .label-token-2 {
+  fill: gray;
+}
+.tau-chart__svg .label .label-token-delimiter {
+  font-weight: normal;
+  fill: gray;
+}
+.tau-chart__svg .label.inline .label-token {
+  font-weight: normal;
+  fill: gray;
+  text-transform: none;
+}
+.tau-chart__svg .brush .selection {
+  fill-opacity: .3;
+  stroke: #fff;
+  shape-rendering: crispEdges;
+}
+.tau-chart__svg .background {
+  stroke: #f2f2f2;
+}
+.tau-chart__dot {
+  opacity: 0.7;
+  stroke-width: 0;
+  transition: stroke-width 0.1s ease, opacity 0.2s ease;
+}
+.tau-chart__line {
+  fill: none;
+  transition: stroke-opacity 0.2s ease, stroke-width 0.2s ease;
+}
+.tau-chart__dot-line {
+  opacity: 1;
+  transition: stroke-opacity 0.2s ease;
+}
+.tau-chart__bar {
+  opacity: 0.7;
+  shape-rendering: geometricPrecision;
+  stroke-opacity: 0.5;
+  stroke-width: 1;
+  stroke: #fff;
+  transition: opacity 0.2s ease;
+}
+.tau-chart__area {
+  transition: opacity 0.2s ease;
+}
+.tau-chart__area path:not(.i-data-anchor),
+.tau-chart__area polygon {
+  opacity: 0.6;
+  transition: stroke-opacity 0.2s ease, stroke-width 0.2s ease;
+}
+.tau-chart__svg .tau-chart__bar {
+  stroke: #fff;
+}
+.tau-chart__dot.tau-chart__highlighted {
+  stroke-width: 1;
+  opacity: 1;
+}
+.tau-chart__dot.tau-chart__dimmed {
+  opacity: 0.2;
+}
+.tau-chart__line.tau-chart__highlighted {
+  stroke-opacity: 1;
+  stroke-width: 3;
+}
+.tau-chart__line.tau-chart__dimmed {
+  stroke-opacity: 0.2;
+}
+.i-role-label.tau-chart__highlighted,
+.tau-chart__area.tau-chart__highlighted,
+.tau-chart__bar.tau-chart__highlighted {
+  stroke-opacity: 1;
+  opacity: 1;
+}
+.i-role-label.tau-chart__dimmed,
+.tau-chart__area.tau-chart__dimmed,
+.tau-chart__bar.tau-chart__dimmed {
+  opacity: 0.2;
+}

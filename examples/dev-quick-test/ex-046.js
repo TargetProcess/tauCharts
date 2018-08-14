@@ -75,7 +75,7 @@ dev.spec({
     y: ['followers'],
     plugins: [
 
-        tauCharts.api.plugins.get('layers')({
+        Taucharts.api.plugins.get('layers')({
             mode: 'dock',
             showPanel: true,
             brewer: {
@@ -83,7 +83,7 @@ dev.spec({
                 "reposts": 'color20-7',
                 "comments": 'color20-9',
                 "Followers": 'color20-2',
-                "followersNoneData": 'color20-3 graphical-report__trendline'
+                "followersNoneData": 'color20-3 tau-chart__trendline'
             },
             layers: [
                 {
@@ -113,8 +113,8 @@ dev.spec({
         })
         ,
 
-        tauCharts.api.plugins.get('legend')()
+        Taucharts.api.plugins.get('legend')()
         ,
-        tauCharts.api.plugins.get('tooltip')()
+        Taucharts.api.plugins.get('tooltip')()
     ]
 });

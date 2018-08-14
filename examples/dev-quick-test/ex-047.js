@@ -76,7 +76,7 @@ dev.spec({
     color: 'fc',
     plugins: [
 
-        tauCharts.api.plugins.get('layers')({
+        Taucharts.api.plugins.get('layers')({
             mode: 'dock',
             showPanel: true,
             brewer: {
@@ -99,9 +99,9 @@ dev.spec({
         })
         ,
 
-        tauCharts.api.plugins.get('legend')()
+        Taucharts.api.plugins.get('legend')()
         ,
-        tauCharts.api.plugins.get('tooltip')({
+        Taucharts.api.plugins.get('tooltip')({
             formatters: {
                 //'x': '(%Y-%d-%b)',
                 'x': 'month',

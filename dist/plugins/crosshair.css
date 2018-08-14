@@ -1,0 +1,224 @@
+/*!
+ * /*
+ * taucharts@2.3.2 (2018-08-14)
+ * Copyright 2018 Targetprocess, Inc.
+ * Licensed under Apache License 2.0
+ * * /
+ * 
+ */
+.tau-chart__layout .tau-crosshair__line {
+  shape-rendering: crispEdges;
+  stroke-dasharray: 1px 1px;
+  stroke-width: 1px;
+}
+.tau-chart__layout .tau-crosshair__label__text {
+  fill: #fff;
+  stroke: none;
+}
+.tau-chart__layout .tau-crosshair__label__text,
+.tau-chart__layout .tau-crosshair__label__text-shadow {
+  font-size: 12px;
+  font-weight: normal;
+}
+.tau-chart__layout .tau-crosshair__line-shadow {
+  shape-rendering: crispEdges;
+  stroke: #cccccc;
+  stroke-width: 1px;
+}
+.tau-chart__layout .tau-crosshair__group.y .tau-crosshair__line-shadow {
+  transform: translateX(-0.5px);
+}
+.tau-chart__layout .tau-crosshair__group.x .tau-crosshair__line-shadow {
+  transform: translateY(0.5px);
+}
+.tau-chart__layout .tau-crosshair__label__text-shadow {
+  stroke-linejoin: round;
+  stroke-width: 3px;
+  visibility: hidden;
+}
+.tau-chart__layout .tau-crosshair__label__box {
+  fill-opacity: 0.85;
+  rx: 3px;
+  ry: 3px;
+  stroke: none;
+}
+.tau-chart__layout .tau-crosshair__line.color20-1 {
+  stroke: #6FA1D9;
+}
+.tau-chart__layout .tau-crosshair__label.color20-1 .tau-crosshair__label__text-shadow {
+  stroke: #6FA1D9;
+}
+.tau-chart__layout .tau-crosshair__label.color20-1 .tau-crosshair__label__box {
+  fill: #6FA1D9;
+}
+.tau-chart__layout .tau-crosshair__line.color20-2 {
+  stroke: #DF2B59;
+}
+.tau-chart__layout .tau-crosshair__label.color20-2 .tau-crosshair__label__text-shadow {
+  stroke: #DF2B59;
+}
+.tau-chart__layout .tau-crosshair__label.color20-2 .tau-crosshair__label__box {
+  fill: #DF2B59;
+}
+.tau-chart__layout .tau-crosshair__line.color20-3 {
+  stroke: #66DA26;
+}
+.tau-chart__layout .tau-crosshair__label.color20-3 .tau-crosshair__label__text-shadow {
+  stroke: #66DA26;
+}
+.tau-chart__layout .tau-crosshair__label.color20-3 .tau-crosshair__label__box {
+  fill: #66DA26;
+}
+.tau-chart__layout .tau-crosshair__line.color20-4 {
+  stroke: #4C3862;
+}
+.tau-chart__layout .tau-crosshair__label.color20-4 .tau-crosshair__label__text-shadow {
+  stroke: #4C3862;
+}
+.tau-chart__layout .tau-crosshair__label.color20-4 .tau-crosshair__label__box {
+  fill: #4C3862;
+}
+.tau-chart__layout .tau-crosshair__line.color20-5 {
+  stroke: #E5B011;
+}
+.tau-chart__layout .tau-crosshair__label.color20-5 .tau-crosshair__label__text-shadow {
+  stroke: #E5B011;
+}
+.tau-chart__layout .tau-crosshair__label.color20-5 .tau-crosshair__label__box {
+  fill: #E5B011;
+}
+.tau-chart__layout .tau-crosshair__line.color20-6 {
+  stroke: #3A3226;
+}
+.tau-chart__layout .tau-crosshair__label.color20-6 .tau-crosshair__label__text-shadow {
+  stroke: #3A3226;
+}
+.tau-chart__layout .tau-crosshair__label.color20-6 .tau-crosshair__label__box {
+  fill: #3A3226;
+}
+.tau-chart__layout .tau-crosshair__line.color20-7 {
+  stroke: #CB461A;
+}
+.tau-chart__layout .tau-crosshair__label.color20-7 .tau-crosshair__label__text-shadow {
+  stroke: #CB461A;
+}
+.tau-chart__layout .tau-crosshair__label.color20-7 .tau-crosshair__label__box {
+  fill: #CB461A;
+}
+.tau-chart__layout .tau-crosshair__line.color20-8 {
+  stroke: #C7CE23;
+}
+.tau-chart__layout .tau-crosshair__label.color20-8 .tau-crosshair__label__text-shadow {
+  stroke: #C7CE23;
+}
+.tau-chart__layout .tau-crosshair__label.color20-8 .tau-crosshair__label__box {
+  fill: #C7CE23;
+}
+.tau-chart__layout .tau-crosshair__line.color20-9 {
+  stroke: #7FCDC2;
+}
+.tau-chart__layout .tau-crosshair__label.color20-9 .tau-crosshair__label__text-shadow {
+  stroke: #7FCDC2;
+}
+.tau-chart__layout .tau-crosshair__label.color20-9 .tau-crosshair__label__box {
+  fill: #7FCDC2;
+}
+.tau-chart__layout .tau-crosshair__line.color20-10 {
+  stroke: #CCA1C8;
+}
+.tau-chart__layout .tau-crosshair__label.color20-10 .tau-crosshair__label__text-shadow {
+  stroke: #CCA1C8;
+}
+.tau-chart__layout .tau-crosshair__label.color20-10 .tau-crosshair__label__box {
+  fill: #CCA1C8;
+}
+.tau-chart__layout .tau-crosshair__line.color20-11 {
+  stroke: #C84CCE;
+}
+.tau-chart__layout .tau-crosshair__label.color20-11 .tau-crosshair__label__text-shadow {
+  stroke: #C84CCE;
+}
+.tau-chart__layout .tau-crosshair__label.color20-11 .tau-crosshair__label__box {
+  fill: #C84CCE;
+}
+.tau-chart__layout .tau-crosshair__line.color20-12 {
+  stroke: #54762E;
+}
+.tau-chart__layout .tau-crosshair__label.color20-12 .tau-crosshair__label__text-shadow {
+  stroke: #54762E;
+}
+.tau-chart__layout .tau-crosshair__label.color20-12 .tau-crosshair__label__box {
+  fill: #54762E;
+}
+.tau-chart__layout .tau-crosshair__line.color20-13 {
+  stroke: #746BC9;
+}
+.tau-chart__layout .tau-crosshair__label.color20-13 .tau-crosshair__label__text-shadow {
+  stroke: #746BC9;
+}
+.tau-chart__layout .tau-crosshair__label.color20-13 .tau-crosshair__label__box {
+  fill: #746BC9;
+}
+.tau-chart__layout .tau-crosshair__line.color20-14 {
+  stroke: #953441;
+}
+.tau-chart__layout .tau-crosshair__label.color20-14 .tau-crosshair__label__text-shadow {
+  stroke: #953441;
+}
+.tau-chart__layout .tau-crosshair__label.color20-14 .tau-crosshair__label__box {
+  fill: #953441;
+}
+.tau-chart__layout .tau-crosshair__line.color20-15 {
+  stroke: #5C7A76;
+}
+.tau-chart__layout .tau-crosshair__label.color20-15 .tau-crosshair__label__text-shadow {
+  stroke: #5C7A76;
+}
+.tau-chart__layout .tau-crosshair__label.color20-15 .tau-crosshair__label__box {
+  fill: #5C7A76;
+}
+.tau-chart__layout .tau-crosshair__line.color20-16 {
+  stroke: #C8BF87;
+}
+.tau-chart__layout .tau-crosshair__label.color20-16 .tau-crosshair__label__text-shadow {
+  stroke: #C8BF87;
+}
+.tau-chart__layout .tau-crosshair__label.color20-16 .tau-crosshair__label__box {
+  fill: #C8BF87;
+}
+.tau-chart__layout .tau-crosshair__line.color20-17 {
+  stroke: #BFC1C3;
+}
+.tau-chart__layout .tau-crosshair__label.color20-17 .tau-crosshair__label__text-shadow {
+  stroke: #BFC1C3;
+}
+.tau-chart__layout .tau-crosshair__label.color20-17 .tau-crosshair__label__box {
+  fill: #BFC1C3;
+}
+.tau-chart__layout .tau-crosshair__line.color20-18 {
+  stroke: #8E5C31;
+}
+.tau-chart__layout .tau-crosshair__label.color20-18 .tau-crosshair__label__text-shadow {
+  stroke: #8E5C31;
+}
+.tau-chart__layout .tau-crosshair__label.color20-18 .tau-crosshair__label__box {
+  fill: #8E5C31;
+}
+.tau-chart__layout .tau-crosshair__line.color20-19 {
+  stroke: #71CE7B;
+}
+.tau-chart__layout .tau-crosshair__label.color20-19 .tau-crosshair__label__text-shadow {
+  stroke: #71CE7B;
+}
+.tau-chart__layout .tau-crosshair__label.color20-19 .tau-crosshair__label__box {
+  fill: #71CE7B;
+}
+.tau-chart__layout .tau-crosshair__line.color20-20 {
+  stroke: #BE478B;
+}
+.tau-chart__layout .tau-crosshair__label.color20-20 .tau-crosshair__label__text-shadow {
+  stroke: #BE478B;
+}
+.tau-chart__layout .tau-crosshair__label.color20-20 .tau-crosshair__label__box {
+  fill: #BE478B;
+}

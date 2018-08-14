@@ -1,8 +1,8 @@
-import tauCharts from 'taucharts';
+import Taucharts from 'taucharts';
 
 // Create simple chart
 {
-    let chart = new tauCharts.Chart({
+    let chart = new Taucharts.Chart({
 
         type: 'bar',
 
@@ -21,7 +21,7 @@ import tauCharts from 'taucharts';
 
 // Create chart with facets, plugins, custom colors and custom settings
 {
-    let chart = new tauCharts.Chart({
+    let chart = new Taucharts.Chart({
 
         type: 'bar',
 
@@ -53,10 +53,10 @@ import tauCharts from 'taucharts';
         ],
 
         plugins: [
-            tauCharts.api.plugins.get('tooltip')(),
-            tauCharts.api.plugins.get('legend')(),
-            tauCharts.api.plugins.get('quick-filter')(),
-            tauCharts.api.plugins.get('annotations')({
+            Taucharts.api.plugins.get('tooltip')(),
+            Taucharts.api.plugins.get('legend')(),
+            Taucharts.api.plugins.get('quick-filter')(),
+            Taucharts.api.plugins.get('annotations')({
                 items: [
                     {
                         dim: 'effort',
@@ -78,7 +78,7 @@ import tauCharts from 'taucharts';
 
 // Setup custom period and format
 {
-    tauCharts.api.tickPeriod.add('half-year', {
+    Taucharts.api.tickPeriod.add('half-year', {
         cast(d) {
             var date = new Date(d);
             date.setUTCHours(0, 0, 0, 0);
@@ -94,7 +94,7 @@ import tauCharts from 'taucharts';
         }
     }, { utc: true });
 
-    tauCharts.api.tickFormat.add('half-year-utc', (x) => {
+    Taucharts.api.tickFormat.add('half-year-utc', (x) => {
         var date = new Date(x);
         var m = date.getUTCMonth();
         var h = (m - (m % 6)) / 6 + 1;
@@ -102,7 +102,7 @@ import tauCharts from 'taucharts';
         return h + ending[h] + ' half of ' + date.getUTCFullYear();
     });
 
-    let periodChart = new tauCharts.Chart({
+    let periodChart = new Taucharts.Chart({
 
         type: 'stacked-bar',
         x: 'date',

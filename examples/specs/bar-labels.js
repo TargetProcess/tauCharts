@@ -8,7 +8,7 @@
     }
 
     var barData = utils.flatten(utils.range(3).map(function (i) {
-        var team = ['Team A', 'Team B', 'Team C', 'Team D', 'Team E'][i];
+        var team = ['Team A', 'Team B', 'Team C', 'Team D', 'Team E', 'Team F', 'Team G', 'Team H'][i];
         return utils.range(5).map(function (i) {
             var status = ['No Epic', 'Ideation', 'Planning', 'Development', 'Sourcing'][i];
             return utils.range(2).map(function (i) {
@@ -28,6 +28,44 @@
             type: 'horizontal-bar',
             x: 'hours',
             y: ['team', 'type'],
+            color: 'status',
+            label: 'hours',
+            guide: [{}, {
+                label: {
+                    fontSize: 12
+                }
+            }],
+            data: barData
+        };
+    })());
+
+    dev.spec({
+        type: 'horizontal-bar',
+        x: 'count',
+        y: 'type',
+        color: 'type2',
+        label: 'count2',
+        guide: {
+            label: {
+                fontSize: 12
+            }
+        },
+        data: [
+            {type: 'Bug', type2: 'Bug', count: 8913, count2: 8913},
+            {type: 'Request', type2: 'Request', count: 726, count2: 726},
+            {type: 'UserStory', type2: 'UserStory', count: 8013, count2: 8013},
+            {type: 'Feature', type2: 'Feature', count: 848, count2: 848},
+            {type: 'Task', type2: 'Task', count: 3615, count2: 3615},
+            {type: 'Epic', type2: 'Epic', count: 63, count2: 63},
+            {type: 'TestPlanRun', type2: 'TestPlanRun', count: 86, count2: 86},
+        ]
+    });
+
+    dev.spec((function () {
+        return {
+            type: 'horizontal-stacked-bar',
+            x: 'hours',
+            y: 'team',
             color: 'status',
             label: 'hours',
             guide: [{}, {
@@ -143,7 +181,7 @@
             };
         }
 
-        tauCharts.api.plugins.add('diff', diff);
+        Taucharts.api.plugins.add('diff', diff);
 
     })();
 
@@ -162,7 +200,7 @@
             label: 'hours',
             data: barData,
             plugins: [
-                tauCharts.api.plugins.get('diff')()
+                Taucharts.api.plugins.get('diff')()
             ]
         };
     })());

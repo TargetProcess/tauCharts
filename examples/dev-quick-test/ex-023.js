@@ -41,9 +41,9 @@ dev.spec({
         }
     },
     plugins: [
-        tauCharts.api.plugins.get('tooltip')({fields: ['team', 'project', 'cycleTime', 'effort']}),
-        tauCharts.api.plugins.get('trendline')(),
-        tauCharts.api.plugins.get('legend')()
+        Taucharts.api.plugins.get('tooltip')({fields: ['team', 'project', 'cycleTime', 'effort']}),
+        Taucharts.api.plugins.get('trendline')(),
+        Taucharts.api.plugins.get('legend')()
     ]
 
 });

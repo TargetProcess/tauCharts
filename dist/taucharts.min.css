@@ -1,0 +1,1717 @@
+/*!
+ * /*
+ * taucharts@2.3.2 (2018-08-14)
+ * Copyright 2018 Targetprocess, Inc.
+ * Licensed under Apache License 2.0
+ * * /
+ * 
+ */
+.tau-chart__layout {
+  line-height: 1;
+  font-family: Helvetica Neue, Segoe UI, Open Sans, Ubuntu, sans-serif;
+}
+.tau-chart__layout text {
+  font: normal 13px Helvetica Neue, Segoe UI, Open Sans, Ubuntu, sans-serif;
+}
+.tau-chart__chart {
+  font-family: Helvetica Neue, Segoe UI, Open Sans, Ubuntu, sans-serif;
+  position: absolute;
+  height: 100%;
+  width: 100%;
+  overflow: auto;
+}
+.tau-chart__layout {
+  display: -webkit-box;
+  display: -webkit-flexbox;
+  display: -ms-flexbox;
+  display: flex;
+  -ms-flex-align: stretch;
+  -webkit-align-items: stretch;
+  align-items: stretch;
+  -ms-flex-direction: column;
+  -webkit-box-orient: vertical;
+  flex-direction: column;
+  height: 100%;
+  width: 100%;
+  overflow: auto;
+  background: transparent;
+  color: #333;
+}
+.tau-chart__layout__header {
+  -ms-flex: 0 0.1 auto;
+  -webkit-box-flex: 0 0.1 auto;
+  flex: 0 0.1 auto;
+  position: relative;
+}
+.tau-chart__layout__container {
+  display: -webkit-box;
+  display: -webkit-flexbox;
+  display: -ms-flexbox;
+  display: flex;
+  -ms-flex: 1 1 auto;
+  -webkit-box-flex: 1 1 auto;
+  flex: 1 1 auto;
+  height: 100%;
+}
+.tau-chart__layout__footer {
+  -ms-flex: 0 1 auto;
+  -webkit-box-flex: 0 1 auto;
+  flex: 0 1 auto;
+}
+.tau-chart__layout__sidebar {
+  -ms-flex: 0 1 auto;
+  -webkit-box-flex: 0 1 auto;
+  flex: 0 1 auto;
+}
+.tau-chart__layout__content {
+  -ms-flex: 1 1 auto;
+  -webkit-box-flex: 1 1 auto;
+  flex: 1 1 auto;
+  overflow: hidden;
+}
+.tau-chart__layout__sidebar-right {
+  position: relative;
+  overflow: hidden;
+  -ms-flex: 0 0 auto;
+  -webkit-box-flex: 0 0 auto;
+  flex: 0 0 auto;
+}
+.tau-chart__layout__sidebar-right__wrap {
+  max-height: 100%;
+  box-sizing: border-box;
+}
+.tau-chart__layout text {
+  fill: #333;
+}
+.tau-chart__layout.tau-chart__layout_rendering-error {
+  opacity: 0.75;
+}
+.tau-chart__rendering-timeout-warning {
+  align-items: center;
+  background: rgba(255, 255, 255, 0.5);
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  position: absolute;
+  top: 0;
+  width: 100%;
+}
+.tau-chart__rendering-timeout-warning svg {
+  height: 100%;
+  max-width: 32em;
+  width: 100%;
+}
+.tau-chart__rendering-timeout-warning text {
+  font-weight: 300;
+}
+.tau-chart__progress {
+  box-sizing: border-box;
+  height: 0.25em;
+  opacity: 0;
+  overflow: hidden;
+  pointer-events: none;
+  position: absolute;
+  top: 0;
+  transition: opacity 1s 0.75s;
+  width: 100%;
+}
+.tau-chart__progress_active {
+  opacity: 1;
+}
+.tau-chart__progress__value {
+  background: rgba(51, 51, 51, 0.25);
+  height: 100%;
+  transition: width 0.75s;
+}
+.tau-chart {
+  /* region Select --------------------------------------------------*/
+}
+.tau-chart__checkbox {
+  position: relative;
+  display: block;
+}
+.tau-chart__checkbox__input {
+  position: absolute;
+  z-index: -1;
+  opacity: 0;
+}
+.tau-chart__checkbox__icon {
+  position: relative;
+  width: 14px;
+  height: 14px;
+  top: 3px;
+  display: inline-block;
+  border: 1px solid #c3c3c3;
+  border-radius: 2px;
+  background: linear-gradient(to bottom, #fff 0%, #dbdbde 100%);
+}
+.tau-chart__checkbox__icon:before {
+  display: none;
+  content: '';
+  background-image: url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAA4AAAAOCAYAAAFoTx1HAAAAGXRFWHRTb2Z0d2FyZQBBZG9iZSBJbWFnZVJlYWR5ccllPAAAAyJpVFh0WE1MOmNvbS5hZG9iZS54bXAAAAAAADw/eHBhY2tldCBiZWdpbj0i77u/IiBpZD0iVzVNME1wQ2VoaUh6cmVTek5UY3prYzlkIj8+IDx4OnhtcG1ldGEgeG1sbnM6eD0iYWRvYmU6bnM6bWV0YS8iIHg6eG1wdGs9IkFkb2JlIFhNUCBDb3JlIDUuMC1jMDYxIDY0LjE0MDk0OSwgMjAxMC8xMi8wNy0xMDo1NzowMSAgICAgICAgIj4gPHJkZjpSREYgeG1sbnM6cmRmPSJodHRwOi8vd3d3LnczLm9yZy8xOTk5LzAyLzIyLXJkZi1zeW50YXgtbnMjIj4gPHJkZjpEZXNjcmlwdGlvbiByZGY6YWJvdXQ9IiIgeG1sbnM6eG1wPSJodHRwOi8vbnMuYWRvYmUuY29tL3hhcC8xLjAvIiB4bWxuczp4bXBNTT0iaHR0cDovL25zLmFkb2JlLmNvbS94YXAvMS4wL21tLyIgeG1sbnM6c3RSZWY9Imh0dHA6Ly9ucy5hZG9iZS5jb20veGFwLzEuMC9zVHlwZS9SZXNvdXJjZVJlZiMiIHhtcDpDcmVhdG9yVG9vbD0iQWRvYmUgUGhvdG9zaG9wIENTNS4xIFdpbmRvd3MiIHhtcE1NOkluc3RhbmNlSUQ9InhtcC5paWQ6MEQ4M0RDOTE4NDQ2MTFFNEE5RTdBRERDQzRBQzNEMTQiIHhtcE1NOkRvY3VtZW50SUQ9InhtcC5kaWQ6MEQ4M0RDOTI4NDQ2MTFFNEE5RTdBRERDQzRBQzNEMTQiPiA8eG1wTU06RGVyaXZlZEZyb20gc3RSZWY6aW5zdGFuY2VJRD0ieG1wLmlpZDowRDgzREM4Rjg0NDYxMUU0QTlFN0FERENDNEFDM0QxNCIgc3RSZWY6ZG9jdW1lbnRJRD0ieG1wLmRpZDowRDgzREM5MDg0NDYxMUU0QTlFN0FERENDNEFDM0QxNCIvPiA8L3JkZjpEZXNjcmlwdGlvbj4gPC9yZGY6UkRGPiA8L3g6eG1wbWV0YT4gPD94cGFja2V0IGVuZD0iciI/Pn2UjdoAAAEGSURBVHjaYvz//z8DGIAYSUlJdwECiBEukpiY/BDEAQggBrgIVBkLjAEDAAHEiMyBywBNOwDmJCYm/cdQBhBAqHrQAUgSojV5P8QtSY+A+D7cPTDdMAUwTQABhNdYJgZ8AF1nRkaGAgjDvQzi/AOCP3+YWX7+/HmXiYlRAcXY37//AEPs511OTg65uXPnPkQxNi0tTTklJUWGaNcCBBj+EMIDmBjIBCwo1jMyYigAul/x79//B4CulwOqODBv3hxHDKcmJycfAHLtgfrvMTExJf/7938xUF4GaOB9FhZmh1mzZj2CqUdNEkAdSUmZSsAgBNrAIAsUAQYlu+O0adMeo0cS/QMHAGJZps83N5ZDAAAAAElFTkSuQmCC');
+  width: 100%;
+  height: 100%;
+  position: absolute;
+  top: 0;
+  left: 0;
+}
+.tau-chart__checkbox__text {
+  margin-left: 5px;
+}
+.tau-chart__checkbox__input ~ .tau-chart__checkbox__text {
+  cursor: pointer;
+}
+.tau-chart__checkbox__input:disabled ~ .tau-chart__checkbox__text {
+  cursor: default;
+  opacity: 0.3;
+}
+.tau-chart__checkbox__input:not(:disabled):focus + .tau-chart__checkbox__icon {
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.3), 0 0 7px 0 #52a8ec;
+  outline: none;
+}
+.tau-chart__checkbox:hover .tau-chart__checkbox__input:not(:disabled) ~ .tau-chart__checkbox__icon {
+  border-color: #999;
+}
+.tau-chart__checkbox__input:checked + .tau-chart__checkbox__icon {
+  background: linear-gradient(to bottom, #fff 0%, #dbdbde 100%);
+}
+.tau-chart__checkbox__input:checked + .tau-chart__checkbox__icon:before {
+  display: block;
+}
+.tau-chart__select {
+  font-size: 13px;
+  font-family: inherit;
+  display: inline-block;
+  height: 24px;
+  line-height: 24px;
+  vertical-align: middle;
+  padding: 2px;
+  background-color: #fff;
+  border: 1px solid #c3c3c3;
+  border-radius: 2px;
+  color: #333;
+}
+.tau-chart__select:focus {
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.3), 0 0 7px 0 #52a8ec;
+  outline: none;
+}
+.tau-chart__select[disabled] {
+  opacity: 0.3;
+  cursor: default;
+}
+.tau-chart__select[multiple] {
+  height: auto;
+}
+.tau-chart__select option[disabled] {
+  opacity: 0.6;
+}
+.tau-chart__button {
+  background-color: rgba(255, 255, 255, 0.9);
+  border: 1px solid currentColor;
+  border-radius: 4px;
+  box-shadow: 0 0 1px rgba(0, 0, 0, 0.1);
+  box-sizing: border-box;
+  color: #b3b3b3;
+  cursor: pointer;
+  font-size: 13px;
+  padding: 0 6px;
+  line-height: 1.5em;
+  height: calc(1.5em + 2px);
+}
+.tau-chart__button:hover {
+  border-color: #999999;
+  color: #333;
+}
+/* region Generate .color@{n}-@{i}  function  */
+.tau-chart__svg .color20-1 {
+  stroke: #6FA1D9;
+  fill: #6FA1D9;
+}
+.tau-chart__svg .color20-2 {
+  stroke: #DF2B59;
+  fill: #DF2B59;
+}
+.tau-chart__svg .color20-3 {
+  stroke: #66DA26;
+  fill: #66DA26;
+}
+.tau-chart__svg .color20-4 {
+  stroke: #4C3862;
+  fill: #4C3862;
+}
+.tau-chart__svg .color20-5 {
+  stroke: #E5B011;
+  fill: #E5B011;
+}
+.tau-chart__svg .color20-6 {
+  stroke: #3A3226;
+  fill: #3A3226;
+}
+.tau-chart__svg .color20-7 {
+  stroke: #CB461A;
+  fill: #CB461A;
+}
+.tau-chart__svg .color20-8 {
+  stroke: #C7CE23;
+  fill: #C7CE23;
+}
+.tau-chart__svg .color20-9 {
+  stroke: #7FCDC2;
+  fill: #7FCDC2;
+}
+.tau-chart__svg .color20-10 {
+  stroke: #CCA1C8;
+  fill: #CCA1C8;
+}
+.tau-chart__svg .color20-11 {
+  stroke: #C84CCE;
+  fill: #C84CCE;
+}
+.tau-chart__svg .color20-12 {
+  stroke: #54762E;
+  fill: #54762E;
+}
+.tau-chart__svg .color20-13 {
+  stroke: #746BC9;
+  fill: #746BC9;
+}
+.tau-chart__svg .color20-14 {
+  stroke: #953441;
+  fill: #953441;
+}
+.tau-chart__svg .color20-15 {
+  stroke: #5C7A76;
+  fill: #5C7A76;
+}
+.tau-chart__svg .color20-16 {
+  stroke: #C8BF87;
+  fill: #C8BF87;
+}
+.tau-chart__svg .color20-17 {
+  stroke: #BFC1C3;
+  fill: #BFC1C3;
+}
+.tau-chart__svg .color20-18 {
+  stroke: #8E5C31;
+  fill: #8E5C31;
+}
+.tau-chart__svg .color20-19 {
+  stroke: #71CE7B;
+  fill: #71CE7B;
+}
+.tau-chart__svg .color20-20 {
+  stroke: #BE478B;
+  fill: #BE478B;
+}
+.tau-chart__svg .color-default {
+  stroke: #6FA1D9;
+  fill: #6FA1D9;
+}
+/* endregion */
+/* region Generate .line-params-@{n}  function  */
+/* Generate .line-size-@{n} */
+.tau-chart__line-width-1 {
+  stroke-width: 1px;
+}
+.tau-chart__line-width-2 {
+  stroke-width: 1.5px;
+}
+.tau-chart__line-width-3 {
+  stroke-width: 2px;
+}
+.tau-chart__line-width-4 {
+  stroke-width: 2.5px;
+}
+.tau-chart__line-width-5 {
+  stroke-width: 3px;
+}
+/* Generate .line-opacity-@{n} */
+.tau-chart__line-opacity-1 {
+  stroke-opacity: 1;
+}
+.tau-chart__line-opacity-2 {
+  stroke-opacity: 0.95;
+}
+.tau-chart__line-opacity-3 {
+  stroke-opacity: 0.9;
+}
+.tau-chart__line-opacity-4 {
+  stroke-opacity: 0.85;
+}
+.tau-chart__line-opacity-5 {
+  stroke-opacity: 0.8;
+}
+/* endregion */
+/* endregion */
+.tau-chart {
+  /* Links */
+  /* Axises and Grid */
+  /* Scatterplot  */
+  /* Linechart  */
+  /*  Bar  */
+  /* TODO: fix to avoid conflict on "stroke" with color brewer */
+  /* TODO: remove this when CSS for color brewer is fixed */
+  /*  PLUGINS  */
+  /*  Highlighter  */
+}
+.tau-chart a {
+  color: #3962FF;
+  border-bottom: 1px solid rgba(57, 98, 255, 0.3);
+  text-decoration: none;
+}
+.tau-chart a:hover {
+  color: #E17152;
+  border-bottom: 1px solid rgba(225, 113, 82, 0.3);
+}
+.tau-chart__time-axis-overflow .tick:nth-child(even) {
+  display: none;
+}
+.tau-chart__svg {
+  display: block;
+  overflow: hidden;
+}
+.tau-chart__svg .place {
+  fill: #fff;
+  stroke: #000;
+  stroke-opacity: 0.7;
+  stroke-width: 0.5;
+}
+.tau-chart__svg .place-label {
+  opacity: 0.7;
+  font-size: 11px;
+  color: #000000;
+  line-height: 13px;
+  text-anchor: start;
+}
+.tau-chart__svg .place-label-countries,
+.tau-chart__svg .place-label-subunits,
+.tau-chart__svg .place-label-states {
+  text-anchor: middle;
+  font-size: 10px;
+  fill: rgba(51, 51, 51, 0.5);
+  line-height: 10px;
+  text-transform: capitalize;
+}
+.tau-chart__svg .map-contour-level path {
+  stroke-opacity: 0.5;
+  stroke-linejoin: 'round';
+}
+.tau-chart__svg .map-contour-level-0 path {
+  stroke: #fff;
+}
+.tau-chart__svg .map-contour-level-1 path {
+  stroke: #fff;
+}
+.tau-chart__svg .map-contour-level-2 path {
+  stroke: #fff;
+}
+.tau-chart__svg .map-contour-level-3 path {
+  stroke: #fff;
+}
+.tau-chart__svg .map-contour-level-4 path {
+  stroke: #fff;
+}
+.tau-chart__svg .map-contour-highlighted,
+.tau-chart__svg .map-contour:hover {
+  fill: #FFBF00;
+}
+.tau-chart__svg .map-contour-highlighted path,
+.tau-chart__svg .map-contour:hover path {
+  stroke: #fff;
+}
+.tau-chart__svg .map-contour-highlighted text,
+.tau-chart__svg .map-contour:hover text {
+  fill: #000;
+}
+.tau-chart__svg .axis line,
+.tau-chart__svg .axis path {
+  stroke-width: 1;
+  fill: none;
+  stroke: rgba(189, 195, 205, 0.4);
+  shape-rendering: crispEdges;
+}
+.tau-chart__svg .axis.facet-axis .tick line {
+  opacity: 0;
+}
+.tau-chart__svg .axis.facet-axis .tick line.label-ref {
+  opacity: 1;
+}
+.tau-chart__svg .axis.facet-axis .tick text {
+  font-size: 12px;
+  font-weight: 600;
+}
+.tau-chart__svg .axis.facet-axis path.domain {
+  opacity: 0;
+}
+.tau-chart__svg .axis.facet-axis.compact .tick text {
+  font-weight: normal;
+}
+.tau-chart__svg .axis.facet-axis.compact .label {
+  font-weight: normal;
+}
+.tau-chart__svg .axis.facet-axis.compact .label .label-token {
+  font-weight: normal;
+}
+.tau-chart__svg .tick text {
+  font-size: 11px;
+}
+.tau-chart__svg .grid .grid-lines path {
+  shape-rendering: crispEdges;
+}
+.tau-chart__svg .grid .line path,
+.tau-chart__svg .grid path.line,
+.tau-chart__svg .grid path.domain {
+  fill: none;
+}
+.tau-chart__svg .grid .tick > line,
+.tau-chart__svg .grid .extra-tick-line {
+  fill: none;
+  stroke: rgba(189, 195, 205, 0.4);
+  stroke-width: 1px;
+  shape-rendering: crispEdges;
+}
+.tau-chart__svg .grid .tick.zero-tick > line {
+  stroke: rgba(126, 129, 134, 0.505);
+}
+.tau-chart__svg .grid .line path {
+  shape-rendering: auto;
+}
+.tau-chart__svg .grid .cursor-line {
+  shape-rendering: crispEdges;
+  stroke: #adadad;
+  stroke-width: 1px;
+}
+.tau-chart__svg .label {
+  font-size: 12px;
+  font-weight: 600;
+}
+.tau-chart__svg .label .label-token {
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: capitalize;
+}
+.tau-chart__svg .label .label-token-1,
+.tau-chart__svg .label .label-token-2 {
+  font-weight: normal;
+}
+.tau-chart__svg .label .label-token-2 {
+  fill: gray;
+}
+.tau-chart__svg .label .label-token-delimiter {
+  font-weight: normal;
+  fill: gray;
+}
+.tau-chart__svg .label.inline .label-token {
+  font-weight: normal;
+  fill: gray;
+  text-transform: none;
+}
+.tau-chart__svg .brush .selection {
+  fill-opacity: .3;
+  stroke: #fff;
+  shape-rendering: crispEdges;
+}
+.tau-chart__svg .background {
+  stroke: #f2f2f2;
+}
+.tau-chart__dot {
+  opacity: 0.7;
+  stroke-width: 0;
+  transition: stroke-width 0.1s ease, opacity 0.2s ease;
+}
+.tau-chart__line {
+  fill: none;
+  transition: stroke-opacity 0.2s ease, stroke-width 0.2s ease;
+}
+.tau-chart__dot-line {
+  opacity: 1;
+  transition: stroke-opacity 0.2s ease;
+}
+.tau-chart__bar {
+  opacity: 0.7;
+  shape-rendering: geometricPrecision;
+  stroke-opacity: 0.5;
+  stroke-width: 1;
+  stroke: #fff;
+  transition: opacity 0.2s ease;
+}
+.tau-chart__area {
+  transition: opacity 0.2s ease;
+}
+.tau-chart__area path:not(.i-data-anchor),
+.tau-chart__area polygon {
+  opacity: 0.6;
+  transition: stroke-opacity 0.2s ease, stroke-width 0.2s ease;
+}
+.tau-chart__svg .tau-chart__bar {
+  stroke: #fff;
+}
+.tau-chart__dot.tau-chart__highlighted {
+  stroke-width: 1;
+  opacity: 1;
+}
+.tau-chart__dot.tau-chart__dimmed {
+  opacity: 0.2;
+}
+.tau-chart__line.tau-chart__highlighted {
+  stroke-opacity: 1;
+  stroke-width: 3;
+}
+.tau-chart__line.tau-chart__dimmed {
+  stroke-opacity: 0.2;
+}
+.i-role-label.tau-chart__highlighted,
+.tau-chart__area.tau-chart__highlighted,
+.tau-chart__bar.tau-chart__highlighted {
+  stroke-opacity: 1;
+  opacity: 1;
+}
+.i-role-label.tau-chart__dimmed,
+.tau-chart__area.tau-chart__dimmed,
+.tau-chart__bar.tau-chart__dimmed {
+  opacity: 0.2;
+}
+.tau-chart__annotation-line {
+  stroke-width: 2px;
+  stroke-dasharray: 1,1;
+  shape-rendering: crispEdges;
+}
+.tau-chart__annotation-area.tau-chart__area polygon {
+  opacity: 0.1;
+}
+.tau-chart__category-filter {
+  box-sizing: border-box;
+  margin-right: 30px;
+  padding: 20px 0 10px 10px;
+  width: 160px;
+}
+.tau-chart__category-filter__category__label {
+  font-weight: 600;
+  font-size: 13px;
+  margin: 0 0 10px 10px;
+  text-transform: capitalize;
+}
+.tau-chart__category-filter__category__values {
+  margin-bottom: 10px;
+}
+.tau-chart__category-filter__value {
+  align-items: center;
+  color: #ccc;
+  cursor: pointer;
+  display: flex;
+  flex-direction: row;
+  font-size: 13px;
+  width: 100%;
+}
+.tau-chart__category-filter__value:hover {
+  background-color: rgba(189, 195, 205, 0.2);
+}
+.tau-chart__category-filter__value_checked {
+  color: #333;
+}
+.tau-chart__category-filter__value__toggle {
+  flex: none;
+  padding: 10px 10px 8px 10px;
+}
+.tau-chart__category-filter__value__toggle__icon {
+  background-color: transparent;
+  border: 1px solid #8694a3;
+  box-sizing: border-box;
+  border-radius: 50%;
+  display: inline-block;
+  height: 16px;
+  pointer-events: none;
+  position: relative;
+  width: 16px;
+}
+.tau-chart__category-filter__value__toggle__icon::before,
+.tau-chart__category-filter__value__toggle__icon::after {
+  background-color: #333;
+  content: "";
+  display: block;
+  opacity: 0;
+  position: absolute;
+}
+.tau-chart__category-filter__value__toggle__icon::before {
+  height: 2px;
+  left: 3px;
+  top: 6px;
+  width: 8px;
+}
+.tau-chart__category-filter__value__toggle__icon::after {
+  height: 8px;
+  left: 6px;
+  top: 3px;
+  width: 2px;
+}
+.tau-chart__category-filter__value__toggle:hover .tau-chart__category-filter__value__toggle__icon::before,
+.tau-chart__category-filter__value__toggle:hover .tau-chart__category-filter__value__toggle__icon::after {
+  opacity: 1;
+}
+.tau-chart__category-filter__value_checked .tau-chart__category-filter__value__toggle__icon {
+  background-color: #8694a3;
+  border-color: transparent;
+}
+.tau-chart__category-filter__value_checked .tau-chart__category-filter__value__toggle__icon::before,
+.tau-chart__category-filter__value_checked .tau-chart__category-filter__value__toggle__icon::after {
+  background-color: #fff;
+  transform: rotate(45deg);
+}
+.tau-chart__category-filter__value__label {
+  padding-left: 4px;
+}
+.tau-chart__layout .tau-crosshair__line {
+  shape-rendering: crispEdges;
+  stroke-dasharray: 1px 1px;
+  stroke-width: 1px;
+}
+.tau-chart__layout .tau-crosshair__label__text {
+  fill: #fff;
+  stroke: none;
+}
+.tau-chart__layout .tau-crosshair__label__text,
+.tau-chart__layout .tau-crosshair__label__text-shadow {
+  font-size: 12px;
+  font-weight: normal;
+}
+.tau-chart__layout .tau-crosshair__line-shadow {
+  shape-rendering: crispEdges;
+  stroke: #cccccc;
+  stroke-width: 1px;
+}
+.tau-chart__layout .tau-crosshair__group.y .tau-crosshair__line-shadow {
+  transform: translateX(-0.5px);
+}
+.tau-chart__layout .tau-crosshair__group.x .tau-crosshair__line-shadow {
+  transform: translateY(0.5px);
+}
+.tau-chart__layout .tau-crosshair__label__text-shadow {
+  stroke-linejoin: round;
+  stroke-width: 3px;
+  visibility: hidden;
+}
+.tau-chart__layout .tau-crosshair__label__box {
+  fill-opacity: 0.85;
+  rx: 3px;
+  ry: 3px;
+  stroke: none;
+}
+.tau-chart__layout .tau-crosshair__line.color20-1 {
+  stroke: #6FA1D9;
+}
+.tau-chart__layout .tau-crosshair__label.color20-1 .tau-crosshair__label__text-shadow {
+  stroke: #6FA1D9;
+}
+.tau-chart__layout .tau-crosshair__label.color20-1 .tau-crosshair__label__box {
+  fill: #6FA1D9;
+}
+.tau-chart__layout .tau-crosshair__line.color20-2 {
+  stroke: #DF2B59;
+}
+.tau-chart__layout .tau-crosshair__label.color20-2 .tau-crosshair__label__text-shadow {
+  stroke: #DF2B59;
+}
+.tau-chart__layout .tau-crosshair__label.color20-2 .tau-crosshair__label__box {
+  fill: #DF2B59;
+}
+.tau-chart__layout .tau-crosshair__line.color20-3 {
+  stroke: #66DA26;
+}
+.tau-chart__layout .tau-crosshair__label.color20-3 .tau-crosshair__label__text-shadow {
+  stroke: #66DA26;
+}
+.tau-chart__layout .tau-crosshair__label.color20-3 .tau-crosshair__label__box {
+  fill: #66DA26;
+}
+.tau-chart__layout .tau-crosshair__line.color20-4 {
+  stroke: #4C3862;
+}
+.tau-chart__layout .tau-crosshair__label.color20-4 .tau-crosshair__label__text-shadow {
+  stroke: #4C3862;
+}
+.tau-chart__layout .tau-crosshair__label.color20-4 .tau-crosshair__label__box {
+  fill: #4C3862;
+}
+.tau-chart__layout .tau-crosshair__line.color20-5 {
+  stroke: #E5B011;
+}
+.tau-chart__layout .tau-crosshair__label.color20-5 .tau-crosshair__label__text-shadow {
+  stroke: #E5B011;
+}
+.tau-chart__layout .tau-crosshair__label.color20-5 .tau-crosshair__label__box {
+  fill: #E5B011;
+}
+.tau-chart__layout .tau-crosshair__line.color20-6 {
+  stroke: #3A3226;
+}
+.tau-chart__layout .tau-crosshair__label.color20-6 .tau-crosshair__label__text-shadow {
+  stroke: #3A3226;
+}
+.tau-chart__layout .tau-crosshair__label.color20-6 .tau-crosshair__label__box {
+  fill: #3A3226;
+}
+.tau-chart__layout .tau-crosshair__line.color20-7 {
+  stroke: #CB461A;
+}
+.tau-chart__layout .tau-crosshair__label.color20-7 .tau-crosshair__label__text-shadow {
+  stroke: #CB461A;
+}
+.tau-chart__layout .tau-crosshair__label.color20-7 .tau-crosshair__label__box {
+  fill: #CB461A;
+}
+.tau-chart__layout .tau-crosshair__line.color20-8 {
+  stroke: #C7CE23;
+}
+.tau-chart__layout .tau-crosshair__label.color20-8 .tau-crosshair__label__text-shadow {
+  stroke: #C7CE23;
+}
+.tau-chart__layout .tau-crosshair__label.color20-8 .tau-crosshair__label__box {
+  fill: #C7CE23;
+}
+.tau-chart__layout .tau-crosshair__line.color20-9 {
+  stroke: #7FCDC2;
+}
+.tau-chart__layout .tau-crosshair__label.color20-9 .tau-crosshair__label__text-shadow {
+  stroke: #7FCDC2;
+}
+.tau-chart__layout .tau-crosshair__label.color20-9 .tau-crosshair__label__box {
+  fill: #7FCDC2;
+}
+.tau-chart__layout .tau-crosshair__line.color20-10 {
+  stroke: #CCA1C8;
+}
+.tau-chart__layout .tau-crosshair__label.color20-10 .tau-crosshair__label__text-shadow {
+  stroke: #CCA1C8;
+}
+.tau-chart__layout .tau-crosshair__label.color20-10 .tau-crosshair__label__box {
+  fill: #CCA1C8;
+}
+.tau-chart__layout .tau-crosshair__line.color20-11 {
+  stroke: #C84CCE;
+}
+.tau-chart__layout .tau-crosshair__label.color20-11 .tau-crosshair__label__text-shadow {
+  stroke: #C84CCE;
+}
+.tau-chart__layout .tau-crosshair__label.color20-11 .tau-crosshair__label__box {
+  fill: #C84CCE;
+}
+.tau-chart__layout .tau-crosshair__line.color20-12 {
+  stroke: #54762E;
+}
+.tau-chart__layout .tau-crosshair__label.color20-12 .tau-crosshair__label__text-shadow {
+  stroke: #54762E;
+}
+.tau-chart__layout .tau-crosshair__label.color20-12 .tau-crosshair__label__box {
+  fill: #54762E;
+}
+.tau-chart__layout .tau-crosshair__line.color20-13 {
+  stroke: #746BC9;
+}
+.tau-chart__layout .tau-crosshair__label.color20-13 .tau-crosshair__label__text-shadow {
+  stroke: #746BC9;
+}
+.tau-chart__layout .tau-crosshair__label.color20-13 .tau-crosshair__label__box {
+  fill: #746BC9;
+}
+.tau-chart__layout .tau-crosshair__line.color20-14 {
+  stroke: #953441;
+}
+.tau-chart__layout .tau-crosshair__label.color20-14 .tau-crosshair__label__text-shadow {
+  stroke: #953441;
+}
+.tau-chart__layout .tau-crosshair__label.color20-14 .tau-crosshair__label__box {
+  fill: #953441;
+}
+.tau-chart__layout .tau-crosshair__line.color20-15 {
+  stroke: #5C7A76;
+}
+.tau-chart__layout .tau-crosshair__label.color20-15 .tau-crosshair__label__text-shadow {
+  stroke: #5C7A76;
+}
+.tau-chart__layout .tau-crosshair__label.color20-15 .tau-crosshair__label__box {
+  fill: #5C7A76;
+}
+.tau-chart__layout .tau-crosshair__line.color20-16 {
+  stroke: #C8BF87;
+}
+.tau-chart__layout .tau-crosshair__label.color20-16 .tau-crosshair__label__text-shadow {
+  stroke: #C8BF87;
+}
+.tau-chart__layout .tau-crosshair__label.color20-16 .tau-crosshair__label__box {
+  fill: #C8BF87;
+}
+.tau-chart__layout .tau-crosshair__line.color20-17 {
+  stroke: #BFC1C3;
+}
+.tau-chart__layout .tau-crosshair__label.color20-17 .tau-crosshair__label__text-shadow {
+  stroke: #BFC1C3;
+}
+.tau-chart__layout .tau-crosshair__label.color20-17 .tau-crosshair__label__box {
+  fill: #BFC1C3;
+}
+.tau-chart__layout .tau-crosshair__line.color20-18 {
+  stroke: #8E5C31;
+}
+.tau-chart__layout .tau-crosshair__label.color20-18 .tau-crosshair__label__text-shadow {
+  stroke: #8E5C31;
+}
+.tau-chart__layout .tau-crosshair__label.color20-18 .tau-crosshair__label__box {
+  fill: #8E5C31;
+}
+.tau-chart__layout .tau-crosshair__line.color20-19 {
+  stroke: #71CE7B;
+}
+.tau-chart__layout .tau-crosshair__label.color20-19 .tau-crosshair__label__text-shadow {
+  stroke: #71CE7B;
+}
+.tau-chart__layout .tau-crosshair__label.color20-19 .tau-crosshair__label__box {
+  fill: #71CE7B;
+}
+.tau-chart__layout .tau-crosshair__line.color20-20 {
+  stroke: #BE478B;
+}
+.tau-chart__layout .tau-crosshair__label.color20-20 .tau-crosshair__label__text-shadow {
+  stroke: #BE478B;
+}
+.tau-chart__layout .tau-crosshair__label.color20-20 .tau-crosshair__label__box {
+  fill: #BE478B;
+}
+.diff-tooltip__table {
+  border-top: 1px solid rgba(51, 51, 51, 0.2);
+  margin-top: 5px;
+  padding-top: 5px;
+  width: calc(100% + 15px);
+}
+.diff-tooltip__header {
+  align-items: stretch;
+  display: flex;
+  font-weight: 600;
+  justify-content: space-between;
+  padding: 2px 0px;
+  position: relative;
+}
+.diff-tooltip__header__text {
+  align-items: center;
+  display: inline-flex;
+  flex: 1 1 auto;
+  justify-content: flex-start;
+  max-width: 120px;
+}
+.diff-tooltip__header__value {
+  align-items: center;
+  display: inline-flex;
+  flex: 1 1 auto;
+  justify-content: flex-end;
+  margin-right: 15px;
+  max-width: 120px;
+  padding-left: 10px;
+  text-align: right;
+}
+.diff-tooltip__header__updown {
+  align-items: center;
+  display: inline-flex;
+  flex: 1 1 auto;
+  font-size: 75%;
+  height: 100%;
+  justify-content: flex-start;
+  padding-left: 2px;
+  position: absolute;
+  right: 0;
+  visibility: hidden;
+}
+.diff-tooltip__body {
+  max-height: 250px;
+  overflow: hidden;
+  padding: 1px;
+  position: relative;
+}
+.diff-tooltip__body__content {
+  padding-bottom: 1px;
+}
+.diff-tooltip__body_overflow-top::before,
+.diff-tooltip__body_overflow-bottom::after {
+  align-items: center;
+  color: rgba(51, 51, 51, 0.7);
+  content: "...";
+  display: flex;
+  flex-direction: column;
+  height: 26px;
+  left: 0;
+  position: absolute;
+  width: 100%;
+  z-index: 2;
+}
+.diff-tooltip__body_overflow-top::before {
+  background: linear-gradient(to bottom, #fff, rgba(255, 255, 255, 0));
+  justify-content: flex-start;
+  top: 0;
+}
+.diff-tooltip__body_overflow-bottom::after {
+  background: linear-gradient(to top, #fff, rgba(255, 255, 255, 0));
+  justify-content: flex-end;
+  bottom: 0;
+}
+.diff-tooltip__item {
+  display: flex;
+  justify-content: space-between;
+  margin-right: 15px;
+  min-width: 100px;
+  position: relative;
+}
+.diff-tooltip__item_highlighted {
+  background-color: rgba(241, 233, 255, 0.5);
+  box-shadow: 0 0 0 1px #877aa1;
+  z-index: 1;
+}
+.diff-tooltip__item__bg {
+  align-items: center;
+  display: inline-flex;
+  height: 100%;
+  justify-content: center;
+  min-width: 3px;
+  opacity: 0.6;
+  position: absolute;
+  z-index: 0;
+}
+.diff-tooltip__item__text {
+  flex: 1 1 auto;
+  overflow: hidden;
+  padding: 2px 4px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  width: 100%;
+  z-index: 1;
+}
+.diff-tooltip__item__value {
+  flex: none;
+  display: table-cell;
+  padding: 2px 4px 2px 30px;
+  z-index: 1;
+}
+.diff-tooltip__item__updown {
+  align-items: center;
+  display: inline-flex;
+  flex: 4;
+  justify-content: flex-start;
+  left: 100%;
+  height: 100%;
+  padding: 0 4px 0 4px;
+  position: absolute;
+}
+.diff-tooltip__item__updown_positive {
+  color: #4ca383;
+}
+.diff-tooltip__item__updown_negative {
+  color: #df6772;
+}
+.diff-tooltip__field__updown_positive {
+  color: #4ca383;
+}
+.diff-tooltip__field__updown_negative {
+  color: #df6772;
+}
+.interval-highlight__range {
+  shape-rendering: crispEdges;
+}
+.interval-highlight__range-start {
+  shape-rendering: crispEdges;
+  stroke: #b8aecb;
+  stroke-dasharray: 2 1;
+}
+.interval-highlight__range-end {
+  shape-rendering: crispEdges;
+  stroke: #b8aecb;
+}
+.interval-highlight__gradient-start {
+  stop-color: #c4b3e6;
+  stop-opacity: 0.02;
+}
+.interval-highlight__gradient-end {
+  stop-color: #c4b3e6;
+  stop-opacity: 0.2;
+}
+.diff-tooltip__item__bg.color20-1 {
+  background-color: #6FA1D9;
+}
+.diff-tooltip__item__bg.color20-2 {
+  background-color: #DF2B59;
+}
+.diff-tooltip__item__bg.color20-3 {
+  background-color: #66DA26;
+}
+.diff-tooltip__item__bg.color20-4 {
+  background-color: #4C3862;
+}
+.diff-tooltip__item__bg.color20-5 {
+  background-color: #E5B011;
+}
+.diff-tooltip__item__bg.color20-6 {
+  background-color: #3A3226;
+}
+.diff-tooltip__item__bg.color20-7 {
+  background-color: #CB461A;
+}
+.diff-tooltip__item__bg.color20-8 {
+  background-color: #C7CE23;
+}
+.diff-tooltip__item__bg.color20-9 {
+  background-color: #7FCDC2;
+}
+.diff-tooltip__item__bg.color20-10 {
+  background-color: #CCA1C8;
+}
+.diff-tooltip__item__bg.color20-11 {
+  background-color: #C84CCE;
+}
+.diff-tooltip__item__bg.color20-12 {
+  background-color: #54762E;
+}
+.diff-tooltip__item__bg.color20-13 {
+  background-color: #746BC9;
+}
+.diff-tooltip__item__bg.color20-14 {
+  background-color: #953441;
+}
+.diff-tooltip__item__bg.color20-15 {
+  background-color: #5C7A76;
+}
+.diff-tooltip__item__bg.color20-16 {
+  background-color: #C8BF87;
+}
+.diff-tooltip__item__bg.color20-17 {
+  background-color: #BFC1C3;
+}
+.diff-tooltip__item__bg.color20-18 {
+  background-color: #8E5C31;
+}
+.diff-tooltip__item__bg.color20-19 {
+  background-color: #71CE7B;
+}
+.diff-tooltip__item__bg.color20-20 {
+  background-color: #BE478B;
+}
+.tau-chart__print-block {
+  display: none;
+}
+.tau-chart__export {
+  float: right;
+  margin: 0 20px 0 0;
+  display: block;
+  text-indent: 20px;
+  overflow: hidden;
+  background-repeat: no-repeat;
+  background-image: url(data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTgiIGhlaWdodD0iMTgiIHZpZXdCb3g9IjAgMCAxOCAxOCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48dGl0bGU+ZXhwb3J0PC90aXRsZT48ZGVzYz5DcmVhdGVkIHdpdGggU2tldGNoLjwvZGVzYz48ZyBmaWxsPSJub25lIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiPjxnIGZpbGw9IiMwMDAiPjxwYXRoIGQ9Ik0xNyAxLjY3bC04LjMyOCA4LjM2Nkw4IDkuNSAxNi4zNTMgMUgxMlYwaDZ2NmgtMVYxLjY3eiIgb3BhY2l0eT0iLjgiLz48cGF0aCBkPSJNMCA1LjAxQzAgMy4zNDYgMS4zMzcgMiAzLjAxIDJIMTZ2MTIuOTljMCAxLjY2My0xLjMzNyAzLjAxLTMuMDEgMy4wMUgzLjAxQzEuMzQ2IDE4IDAgMTYuNjYzIDAgMTQuOTlWNS4wMXpNMTUgMTVDMTUgMTYuMTA1IDE0LjEwMyAxNyAxMi45OTQgMTdIMy4wMDZDMS44OTggMTcgMSAxNi4xMDMgMSAxNC45OTRWNS4wMDZDMSAzLjg5OCAxLjg4NyAzIDIuOTk4IDNIOVYyaDd2N2gtMXY2LjAwMnoiIG9wYWNpdHk9Ii40Ii8+PC9nPjwvZz48L3N2Zz4=);
+  width: 20px;
+  height: 20px;
+  color: transparent;
+  opacity: 0.6;
+  cursor: pointer;
+  text-decoration: none;
+  position: relative;
+  z-index: 2;
+}
+.tau-chart__export:hover {
+  opacity: 1;
+  text-decoration: none;
+}
+.tau-chart__export__list {
+  font-size: 11px;
+  margin: 0;
+  padding: 0;
+}
+.tau-chart__export__item {
+  overflow: hidden;
+  box-sizing: border-box;
+}
+.tau-chart__export__item > a {
+  display: block;
+  padding: 7px 15px;
+  color: inherit;
+  text-decoration: none;
+  cursor: pointer;
+}
+.tau-chart__export__item > a:hover,
+.tau-chart__export__item > a:focus {
+  background: #EAF2FC;
+  outline: none;
+  box-shadow: none;
+}
+.tau-chart__legend {
+  padding: 20px 0 10px 10px;
+  position: relative;
+  margin-right: 30px;
+  width: 160px;
+  box-sizing: border-box;
+}
+.tau-chart__legend__wrap {
+  margin-bottom: 30px;
+  position: relative;
+}
+.tau-chart__legend__wrap:last-child {
+  margin-bottom: 0;
+}
+.tau-chart__legend__title {
+  margin: 0 0 10px 10px;
+  text-transform: capitalize;
+  font-weight: 600;
+  font-size: 13px;
+}
+.tau-chart__legend__reset {
+  margin-top: -4px;
+  position: absolute;
+  right: -25px;
+  top: 0;
+  z-index: 1;
+}
+.tau-chart__legend__reset.disabled {
+  display: none;
+}
+.tau-chart__legend__reset + .tau-chart__legend__title {
+  margin-right: 1.7em;
+}
+.tau-chart__legend__item {
+  padding: 10px 20px 8px 40px;
+  position: relative;
+  font-size: 13px;
+  line-height: 1.2em;
+  cursor: pointer;
+}
+.tau-chart__legend__item:hover {
+  background-color: rgba(189, 195, 205, 0.2);
+}
+.tau-chart__legend__item--size {
+  cursor: default;
+}
+.tau-chart__legend__item--size:hover {
+  background: none;
+}
+.tau-chart__legend__item .color-default {
+  background: #6FA1D9;
+  border-color: #6FA1D9;
+}
+.tau-chart__legend__item:disabled,
+.tau-chart__legend__item.disabled {
+  color: #ccc;
+}
+.tau-chart__legend__item.disabled .tau-chart__legend__guide {
+  background: transparent;
+}
+.tau-chart__legend__guide {
+  position: absolute;
+  box-sizing: border-box;
+  width: 100%;
+  height: 100%;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  border: 1px solid transparent;
+  border-radius: 50%;
+}
+.tau-chart__legend__guide__wrap {
+  position: absolute;
+  top: calc((10px - 8px) + 0.6em);
+  left: 10px;
+  width: 16px;
+  height: 16px;
+}
+.tau-chart__legend__guide--size {
+  stroke: #6FA1D9;
+  fill: #6FA1D9;
+}
+.tau-chart__legend__guide--color__overlay {
+  background-color: transparent;
+  height: 36px;
+  left: -12px;
+  position: absolute;
+  top: -12px;
+  width: 36px;
+}
+.tau-chart__legend__guide--color::before {
+  content: "";
+  display: none;
+  height: 2px;
+  left: 3px;
+  pointer-events: none;
+  position: absolute;
+  top: 6px;
+  width: 8px;
+}
+.tau-chart__legend__guide--color::after {
+  content: "";
+  display: none;
+  height: 8px;
+  left: 6px;
+  pointer-events: none;
+  position: absolute;
+  top: 3px;
+  width: 2px;
+}
+.tau-chart__legend__item .tau-chart__legend__guide--color:hover::before,
+.tau-chart__legend__item .tau-chart__legend__guide--color:hover::after {
+  background-color: #fff;
+  display: inline-block;
+  transform: rotate(45deg);
+}
+.tau-chart__legend__item.disabled .tau-chart__legend__guide--color:hover {
+  background: #fff;
+}
+.tau-chart__legend__item.disabled .tau-chart__legend__guide--color:hover::before,
+.tau-chart__legend__item.disabled .tau-chart__legend__guide--color:hover::after {
+  background-color: #333;
+  transform: none;
+}
+.tau-chart__legend__size-wrapper,
+.tau-chart__legend__gradient-wrapper {
+  box-sizing: border-box;
+  margin: 10px;
+  overflow: visible;
+  width: 100%;
+}
+.tau-chart__legend__size,
+.tau-chart__legend__gradient {
+  overflow: visible;
+}
+.tau-chart__legend__size__item__circle.color-definite {
+  stroke: #cacaca;
+  fill: #cacaca;
+}
+.tau-chart__legend__size__item__circle.color-default-size {
+  stroke: #6FA1D9;
+  fill: #6FA1D9;
+}
+.tau-chart__legend__gradient__bar {
+  rx: 4px;
+  ry: 4px;
+}
+.tau-chart__legend__item .color20-1 {
+  background: #6FA1D9;
+  border: 1px solid #6FA1D9;
+}
+.tau-chart__legend__item.disabled .color20-1 {
+  background-color: transparent;
+}
+.tau-chart__legend__item .color20-2 {
+  background: #DF2B59;
+  border: 1px solid #DF2B59;
+}
+.tau-chart__legend__item.disabled .color20-2 {
+  background-color: transparent;
+}
+.tau-chart__legend__item .color20-3 {
+  background: #66DA26;
+  border: 1px solid #66DA26;
+}
+.tau-chart__legend__item.disabled .color20-3 {
+  background-color: transparent;
+}
+.tau-chart__legend__item .color20-4 {
+  background: #4C3862;
+  border: 1px solid #4C3862;
+}
+.tau-chart__legend__item.disabled .color20-4 {
+  background-color: transparent;
+}
+.tau-chart__legend__item .color20-5 {
+  background: #E5B011;
+  border: 1px solid #E5B011;
+}
+.tau-chart__legend__item.disabled .color20-5 {
+  background-color: transparent;
+}
+.tau-chart__legend__item .color20-6 {
+  background: #3A3226;
+  border: 1px solid #3A3226;
+}
+.tau-chart__legend__item.disabled .color20-6 {
+  background-color: transparent;
+}
+.tau-chart__legend__item .color20-7 {
+  background: #CB461A;
+  border: 1px solid #CB461A;
+}
+.tau-chart__legend__item.disabled .color20-7 {
+  background-color: transparent;
+}
+.tau-chart__legend__item .color20-8 {
+  background: #C7CE23;
+  border: 1px solid #C7CE23;
+}
+.tau-chart__legend__item.disabled .color20-8 {
+  background-color: transparent;
+}
+.tau-chart__legend__item .color20-9 {
+  background: #7FCDC2;
+  border: 1px solid #7FCDC2;
+}
+.tau-chart__legend__item.disabled .color20-9 {
+  background-color: transparent;
+}
+.tau-chart__legend__item .color20-10 {
+  background: #CCA1C8;
+  border: 1px solid #CCA1C8;
+}
+.tau-chart__legend__item.disabled .color20-10 {
+  background-color: transparent;
+}
+.tau-chart__legend__item .color20-11 {
+  background: #C84CCE;
+  border: 1px solid #C84CCE;
+}
+.tau-chart__legend__item.disabled .color20-11 {
+  background-color: transparent;
+}
+.tau-chart__legend__item .color20-12 {
+  background: #54762E;
+  border: 1px solid #54762E;
+}
+.tau-chart__legend__item.disabled .color20-12 {
+  background-color: transparent;
+}
+.tau-chart__legend__item .color20-13 {
+  background: #746BC9;
+  border: 1px solid #746BC9;
+}
+.tau-chart__legend__item.disabled .color20-13 {
+  background-color: transparent;
+}
+.tau-chart__legend__item .color20-14 {
+  background: #953441;
+  border: 1px solid #953441;
+}
+.tau-chart__legend__item.disabled .color20-14 {
+  background-color: transparent;
+}
+.tau-chart__legend__item .color20-15 {
+  background: #5C7A76;
+  border: 1px solid #5C7A76;
+}
+.tau-chart__legend__item.disabled .color20-15 {
+  background-color: transparent;
+}
+.tau-chart__legend__item .color20-16 {
+  background: #C8BF87;
+  border: 1px solid #C8BF87;
+}
+.tau-chart__legend__item.disabled .color20-16 {
+  background-color: transparent;
+}
+.tau-chart__legend__item .color20-17 {
+  background: #BFC1C3;
+  border: 1px solid #BFC1C3;
+}
+.tau-chart__legend__item.disabled .color20-17 {
+  background-color: transparent;
+}
+.tau-chart__legend__item .color20-18 {
+  background: #8E5C31;
+  border: 1px solid #8E5C31;
+}
+.tau-chart__legend__item.disabled .color20-18 {
+  background-color: transparent;
+}
+.tau-chart__legend__item .color20-19 {
+  background: #71CE7B;
+  border: 1px solid #71CE7B;
+}
+.tau-chart__legend__item.disabled .color20-19 {
+  background-color: transparent;
+}
+.tau-chart__legend__item .color20-20 {
+  background: #BE478B;
+  border: 1px solid #BE478B;
+}
+.tau-chart__legend__item.disabled .color20-20 {
+  background-color: transparent;
+}
+.tau-chart__filter__wrap {
+  padding: 20px 0 10px 10px;
+  margin-right: 30px;
+  width: 160px;
+  box-sizing: border-box;
+}
+.tau-chart__filter__wrap__title {
+  margin: 0 0 10px 10px;
+  text-transform: capitalize;
+  font-weight: 600;
+  font-size: 13px;
+}
+.tau-chart__filter__wrap rect {
+  fill: rgba(0, 0, 0, 0.2);
+}
+.tau-chart__filter__wrap .brush .overlay,
+.tau-chart__filter__wrap .brush .handle {
+  opacity: 0;
+}
+.tau-chart__filter__wrap .brush .selection {
+  shape-rendering: crispEdges;
+  fill-opacity: 0.4;
+  fill: #0074FF;
+}
+.tau-chart__filter__wrap text.date-label {
+  text-anchor: middle;
+  font-size: 12px;
+}
+.tau-chart__filter__wrap text.date-label .common {
+  font-weight: 600;
+}
+.tau-chart__filter__wrap .resize line {
+  stroke: #000;
+  stroke-width: 1px;
+  shape-rendering: crispEdges;
+}
+.tau-chart__filter__wrap .resize.e text {
+  text-anchor: middle;
+  font-size: 12px;
+}
+.tau-chart__filter__wrap .resize.w text {
+  text-anchor: middle;
+  font-size: 12px;
+}
+.tau-chart__tooltip {
+  background: rgba(255, 255, 255, 0.9);
+  position: absolute;
+  top: 0;
+  left: 0;
+  max-width: none;
+  z-index: 900;
+  align-items: stretch;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 1px 4px 0 rgba(0, 0, 0, 0.2), 0 0 0 1px rgba(0, 0, 0, 0.005);
+  font-size: 11px;
+  font-family: Helvetica Neue, Segoe UI, Open Sans, Ubuntu, sans-serif;
+  /* Fade */
+}
+.tau-chart__tooltip.fade {
+  opacity: 0;
+  transition: opacity 200ms ease-out;
+}
+.tau-chart__tooltip.fade.in {
+  opacity: 1;
+  transition-duration: 500ms;
+}
+.tau-chart__tooltip.top-right,
+.tau-chart__tooltip.bottom-right {
+  margin-left: 8px;
+}
+.tau-chart__tooltip.top-left,
+.tau-chart__tooltip.bottom-left {
+  margin-left: -8px;
+}
+.tau-chart__tooltip.top,
+.tau-chart__tooltip.top-right,
+.tau-chart__tooltip.top-left {
+  margin-top: 8px;
+}
+.tau-chart__tooltip__content {
+  box-sizing: border-box;
+  max-width: 500px;
+  min-width: 100px;
+  overflow: hidden;
+  padding: 15px 15px 10px 15px;
+}
+.tau-chart__tooltip__buttons {
+  background: #EBEEF1;
+  bottom: 100%;
+  box-shadow: 0 1px 4px 0 rgba(0, 0, 0, 0.2), 0 0 0 1px rgba(0, 0, 0, 0.005);
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  max-width: 500px;
+  min-width: 86px;
+  position: absolute;
+  width: 100%;
+  z-index: -1;
+}
+.tau-chart__tooltip__buttons::after {
+  background: linear-gradient(to bottom, #fff 50%, rgba(255, 255, 255, 0));
+  content: "";
+  display: block;
+  height: 8px;
+  left: 0;
+  pointer-events: none;
+  position: absolute;
+  top: 100%;
+  width: 100%;
+}
+.tau-chart__tooltip__button {
+  color: #65717F;
+  cursor: pointer;
+  display: inline-flex;
+  flex: 1 0 auto;
+  height: 0;
+  overflow: hidden;
+  transition: height 500ms;
+}
+.tau-chart__tooltip__button__wrap {
+  line-height: 26px;
+  padding: 0 15px;
+}
+.tau-chart__tooltip__button:hover {
+  background: #f5f7f8;
+  color: #333;
+}
+.tau-chart__tooltip__button .tau-icon-close-gray {
+  background-image: url(data:image/svg+xml;base64,PHN2ZyB2ZXJzaW9uPSIxLjEiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyIgeD0iMHB4IiB5PSIwcHgiIHdpZHRoPSIzMHB4IiBoZWlnaHQ9IjMwcHgiIHZpZXdCb3g9IjAgMCAzMCAzMCI+PHBhdGggZmlsbD0iIzg0OTZBNyIgZD0iTTEwLDAuNzE1TDkuMjg1LDBMNSw0LjI4NUwwLjcxNSwwTDAsMC43MTVMNC4yODUsNUwwLDkuMjg1TDAuNzE1LDEwTDUsNS43MTVMOS4yODUsMTBMMTAsOS4yODVMNS43MTUsNUwxMCwwLjcxNXoiLz48L3N2Zz4=);
+  display: inline-block;
+  width: 12px;
+  height: 12px;
+  position: relative;
+  top: 3px;
+  margin-right: 5px;
+}
+.tau-chart__tooltip.stuck .tau-chart__tooltip__button {
+  height: 26px;
+}
+.tau-chart__tooltip.top .tau-chart__tooltip__buttons,
+.tau-chart__tooltip.top-right .tau-chart__tooltip__buttons,
+.tau-chart__tooltip.top-left .tau-chart__tooltip__buttons {
+  bottom: initial;
+  top: 100%;
+}
+.tau-chart__tooltip.top .tau-chart__tooltip__buttons__wrap,
+.tau-chart__tooltip.top-right .tau-chart__tooltip__buttons__wrap,
+.tau-chart__tooltip.top-left .tau-chart__tooltip__buttons__wrap {
+  position: relative;
+  top: calc(100% - 26px);
+}
+.tau-chart__tooltip.top .tau-chart__tooltip__buttons::after,
+.tau-chart__tooltip.top-right .tau-chart__tooltip__buttons::after,
+.tau-chart__tooltip.top-left .tau-chart__tooltip__buttons::after {
+  background: linear-gradient(to top, #fff 50%, rgba(255, 255, 255, 0));
+  bottom: 100%;
+  top: initial;
+}
+.tau-chart__tooltip.top-right .tau-chart__tooltip__button__wrap,
+.tau-chart__tooltip.top-left .tau-chart__tooltip__button__wrap {
+  position: relative;
+  top: calc(100% - 26px);
+}
+.tau-chart__tooltip__list {
+  display: table;
+}
+.tau-chart__tooltip__list__item {
+  display: table-row;
+}
+.tau-chart__tooltip__list__elem {
+  display: table-cell;
+  padding-bottom: 4px;
+  line-height: 1.3;
+  color: #000;
+}
+.tau-chart__tooltip__list__elem:not(:first-child) {
+  padding-left: 15px;
+}
+.tau-chart__tooltip__list__elem:first-child {
+  color: #8e8e8e;
+}
+.tau-chart__tooltip__gray-text {
+  color: #8e8e8e;
+}
+.tau-chart__tooltip-target {
+  cursor: pointer;
+}
+.tau-chart__tooltip-target .tau-chart__dot.tau-chart__highlighted,
+.tau-chart__tooltip-target .tau-chart__bar.tau-chart__highlighted,
+.tau-chart__tooltip-target .i-data-anchor.tau-chart__highlighted {
+  stroke: #333;
+  stroke-width: 1;
+}
+.tau-chart__tooltip-target .tau-chart__bar.tau-chart__highlighted {
+  shape-rendering: crispEdges;
+}
+.tau-chart__svg .tau-chart__trendline.color20-1 {
+  stroke: #357ac7;
+}
+.tau-chart__svg .tau-chart__trendline.color20-2 {
+  stroke: #a5193d;
+}
+.tau-chart__svg .tau-chart__trendline.color20-3 {
+  stroke: #47991a;
+}
+.tau-chart__svg .tau-chart__trendline.color20-4 {
+  stroke: #261c31;
+}
+.tau-chart__svg .tau-chart__trendline.color20-5 {
+  stroke: #9e790c;
+}
+.tau-chart__svg .tau-chart__trendline.color20-6 {
+  stroke: #0c0a08;
+}
+.tau-chart__svg .tau-chart__trendline.color20-7 {
+  stroke: #872f11;
+}
+.tau-chart__svg .tau-chart__trendline.color20-8 {
+  stroke: #888d18;
+}
+.tau-chart__svg .tau-chart__trendline.color20-9 {
+  stroke: #48b8a8;
+}
+.tau-chart__svg .tau-chart__trendline.color20-10 {
+  stroke: #b16fab;
+}
+.tau-chart__svg .tau-chart__trendline.color20-11 {
+  stroke: #9c2ca1;
+}
+.tau-chart__svg .tau-chart__trendline.color20-12 {
+  stroke: #2d3f19;
+}
+.tau-chart__svg .tau-chart__trendline.color20-13 {
+  stroke: #483eaa;
+}
+.tau-chart__svg .tau-chart__trendline.color20-14 {
+  stroke: #5c2028;
+}
+.tau-chart__svg .tau-chart__trendline.color20-15 {
+  stroke: #3b4e4c;
+}
+.tau-chart__svg .tau-chart__trendline.color20-16 {
+  stroke: #b0a353;
+}
+.tau-chart__svg .tau-chart__trendline.color20-17 {
+  stroke: #989b9e;
+}
+.tau-chart__svg .tau-chart__trendline.color20-18 {
+  stroke: #55371d;
+}
+.tau-chart__svg .tau-chart__trendline.color20-19 {
+  stroke: #3eb44b;
+}
+.tau-chart__svg .tau-chart__trendline.color20-20 {
+  stroke: #883063;
+}
+.tau-chart__svg .tau-chart__trendline.color-default {
+  stroke: #357ac7;
+}
+.tau-chart {
+  /* TrendLine */
+}
+.tau-chart__trendlinepanel {
+  padding: 20px 0 20px 20px;
+  margin-right: 20px;
+  width: 160px;
+  box-sizing: border-box;
+}
+.tau-chart__trendlinepanel__title {
+  margin: 0 0 10px 0;
+  text-transform: capitalize;
+  font-weight: 600;
+  font-size: 13px;
+}
+.tau-chart__trendlinepanel__control {
+  width: 100%;
+}
+.tau-chart__trendlinepanel__error-message {
+  font-size: 11px;
+  line-height: 16px;
+  margin-left: 5px;
+}
+.tau-chart__trendlinepanel.applicable-false.hide-trendline-error,
+.tau-chart__trendlinepanel.applicable-false .tau-chart__checkbox__input,
+.tau-chart__trendlinepanel.applicable-false .tau-chart__trendlinepanel__control,
+.tau-chart__trendlinepanel.applicable-false .tau-chart__checkbox__icon {
+  display: none;
+}
+.tau-chart__trendline {
+  stroke-dasharray: 4, 4;
+}

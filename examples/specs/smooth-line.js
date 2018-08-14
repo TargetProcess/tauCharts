@@ -33,8 +33,8 @@ dev.spec({
         [90, 70, 80, 'B']
     ],
     plugins: [
-        tauCharts.api.plugins.get('legend')(),
-        tauCharts.api.plugins.get('quick-filter')(),
-        tauCharts.api.plugins.get('tooltip')()
+        Taucharts.api.plugins.get('legend')(),
+        Taucharts.api.plugins.get('quick-filter')(),
+        Taucharts.api.plugins.get('tooltip')()
     ]
 });

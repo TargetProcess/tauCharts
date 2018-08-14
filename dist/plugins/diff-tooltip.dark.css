@@ -1,0 +1,222 @@
+/*!
+ * /*
+ * taucharts@2.3.2 (2018-08-14)
+ * Copyright 2018 Targetprocess, Inc.
+ * Licensed under Apache License 2.0
+ * * /
+ * 
+ */
+.diff-tooltip__table {
+  border-top: 1px solid rgba(255, 255, 255, 0.2);
+  margin-top: 5px;
+  padding-top: 5px;
+  width: calc(100% + 15px);
+}
+.diff-tooltip__header {
+  align-items: stretch;
+  display: flex;
+  font-weight: 600;
+  justify-content: space-between;
+  padding: 2px 0px;
+  position: relative;
+}
+.diff-tooltip__header__text {
+  align-items: center;
+  display: inline-flex;
+  flex: 1 1 auto;
+  justify-content: flex-start;
+  max-width: 120px;
+}
+.diff-tooltip__header__value {
+  align-items: center;
+  display: inline-flex;
+  flex: 1 1 auto;
+  justify-content: flex-end;
+  margin-right: 15px;
+  max-width: 120px;
+  padding-left: 10px;
+  text-align: right;
+}
+.diff-tooltip__header__updown {
+  align-items: center;
+  display: inline-flex;
+  flex: 1 1 auto;
+  font-size: 75%;
+  height: 100%;
+  justify-content: flex-start;
+  padding-left: 2px;
+  position: absolute;
+  right: 0;
+  visibility: hidden;
+}
+.diff-tooltip__body {
+  max-height: 250px;
+  overflow: hidden;
+  padding: 1px;
+  position: relative;
+}
+.diff-tooltip__body__content {
+  padding-bottom: 1px;
+}
+.diff-tooltip__body_overflow-top::before,
+.diff-tooltip__body_overflow-bottom::after {
+  align-items: center;
+  color: rgba(255, 255, 255, 0.7);
+  content: "...";
+  display: flex;
+  flex-direction: column;
+  height: 26px;
+  left: 0;
+  position: absolute;
+  width: 100%;
+  z-index: 2;
+}
+.diff-tooltip__body_overflow-top::before {
+  background: linear-gradient(to bottom, #000, rgba(0, 0, 0, 0));
+  justify-content: flex-start;
+  top: 0;
+}
+.diff-tooltip__body_overflow-bottom::after {
+  background: linear-gradient(to top, #000, rgba(0, 0, 0, 0));
+  justify-content: flex-end;
+  bottom: 0;
+}
+.diff-tooltip__item {
+  display: flex;
+  justify-content: space-between;
+  margin-right: 15px;
+  min-width: 100px;
+  position: relative;
+}
+.diff-tooltip__item_highlighted {
+  background-color: rgba(241, 233, 255, 0.5);
+  box-shadow: 0 0 0 1px #877aa1;
+  z-index: 1;
+}
+.diff-tooltip__item__bg {
+  align-items: center;
+  display: inline-flex;
+  height: 100%;
+  justify-content: center;
+  min-width: 3px;
+  opacity: 0.6;
+  position: absolute;
+  z-index: 0;
+}
+.diff-tooltip__item__text {
+  flex: 1 1 auto;
+  overflow: hidden;
+  padding: 2px 4px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  width: 100%;
+  z-index: 1;
+}
+.diff-tooltip__item__value {
+  flex: none;
+  display: table-cell;
+  padding: 2px 4px 2px 30px;
+  z-index: 1;
+}
+.diff-tooltip__item__updown {
+  align-items: center;
+  display: inline-flex;
+  flex: 4;
+  justify-content: flex-start;
+  left: 100%;
+  height: 100%;
+  padding: 0 4px 0 4px;
+  position: absolute;
+}
+.diff-tooltip__item__updown_positive {
+  color: #4ca383;
+}
+.diff-tooltip__item__updown_negative {
+  color: #df6772;
+}
+.diff-tooltip__field__updown_positive {
+  color: #4ca383;
+}
+.diff-tooltip__field__updown_negative {
+  color: #df6772;
+}
+.interval-highlight__range {
+  shape-rendering: crispEdges;
+}
+.interval-highlight__range-start {
+  shape-rendering: crispEdges;
+  stroke: #b8aecb;
+  stroke-dasharray: 2 1;
+}
+.interval-highlight__range-end {
+  shape-rendering: crispEdges;
+  stroke: #b8aecb;
+}
+.interval-highlight__gradient-start {
+  stop-color: #c4b3e6;
+  stop-opacity: 0.02;
+}
+.interval-highlight__gradient-end {
+  stop-color: #c4b3e6;
+  stop-opacity: 0.2;
+}
+.diff-tooltip__item__bg.color20-1 {
+  background-color: #6FA1D9;
+}
+.diff-tooltip__item__bg.color20-2 {
+  background-color: #DF2B59;
+}
+.diff-tooltip__item__bg.color20-3 {
+  background-color: #66DA26;
+}
+.diff-tooltip__item__bg.color20-4 {
+  background-color: #755797;
+}
+.diff-tooltip__item__bg.color20-5 {
+  background-color: #E5B011;
+}
+.diff-tooltip__item__bg.color20-6 {
+  background-color: #746650;
+}
+.diff-tooltip__item__bg.color20-7 {
+  background-color: #CB461A;
+}
+.diff-tooltip__item__bg.color20-8 {
+  background-color: #C7CE23;
+}
+.diff-tooltip__item__bg.color20-9 {
+  background-color: #7FCDC2;
+}
+.diff-tooltip__item__bg.color20-10 {
+  background-color: #CCA1C8;
+}
+.diff-tooltip__item__bg.color20-11 {
+  background-color: #C84CCE;
+}
+.diff-tooltip__item__bg.color20-12 {
+  background-color: #54762E;
+}
+.diff-tooltip__item__bg.color20-13 {
+  background-color: #746BC9;
+}
+.diff-tooltip__item__bg.color20-14 {
+  background-color: #A43B49;
+}
+.diff-tooltip__item__bg.color20-15 {
+  background-color: #5C7A76;
+}
+.diff-tooltip__item__bg.color20-16 {
+  background-color: #C8BF87;
+}
+.diff-tooltip__item__bg.color20-17 {
+  background-color: #BFC1C3;
+}
+.diff-tooltip__item__bg.color20-18 {
+  background-color: #AA7243;
+}
+.diff-tooltip__item__bg.color20-19 {
+  background-color: #71CE7B;
+}
+.diff-tooltip__item__bg.color20-20 {
+  background-color: #BE478B;
+}

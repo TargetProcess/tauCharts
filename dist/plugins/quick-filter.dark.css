@@ -1,0 +1,52 @@
+/*!
+ * /*
+ * taucharts@2.3.2 (2018-08-14)
+ * Copyright 2018 Targetprocess, Inc.
+ * Licensed under Apache License 2.0
+ * * /
+ * 
+ */
+.tau-chart__filter__wrap {
+  padding: 20px 0 10px 10px;
+  margin-right: 30px;
+  width: 160px;
+  box-sizing: border-box;
+}
+.tau-chart__filter__wrap__title {
+  margin: 0 0 10px 10px;
+  text-transform: capitalize;
+  font-weight: 600;
+  font-size: 13px;
+}
+.tau-chart__filter__wrap rect {
+  fill: rgba(0, 0, 0, 0.2);
+}
+.tau-chart__filter__wrap .brush .overlay,
+.tau-chart__filter__wrap .brush .handle {
+  opacity: 0;
+}
+.tau-chart__filter__wrap .brush .selection {
+  shape-rendering: crispEdges;
+  fill-opacity: 0.4;
+  fill: #0074FF;
+}
+.tau-chart__filter__wrap text.date-label {
+  text-anchor: middle;
+  font-size: 12px;
+}
+.tau-chart__filter__wrap text.date-label .common {
+  font-weight: 600;
+}
+.tau-chart__filter__wrap .resize line {
+  stroke: #000;
+  stroke-width: 1px;
+  shape-rendering: crispEdges;
+}
+.tau-chart__filter__wrap .resize.e text {
+  text-anchor: middle;
+  font-size: 12px;
+}
+.tau-chart__filter__wrap .resize.w text {
+  text-anchor: middle;
+  font-size: 12px;
+}

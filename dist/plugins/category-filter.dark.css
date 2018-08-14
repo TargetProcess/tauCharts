@@ -1,0 +1,89 @@
+/*!
+ * /*
+ * taucharts@2.3.2 (2018-08-14)
+ * Copyright 2018 Targetprocess, Inc.
+ * Licensed under Apache License 2.0
+ * * /
+ * 
+ */
+.tau-chart__category-filter {
+  box-sizing: border-box;
+  margin-right: 30px;
+  padding: 20px 0 10px 10px;
+  width: 160px;
+}
+.tau-chart__category-filter__category__label {
+  font-weight: 600;
+  font-size: 13px;
+  margin: 0 0 10px 10px;
+  text-transform: capitalize;
+}
+.tau-chart__category-filter__category__values {
+  margin-bottom: 10px;
+}
+.tau-chart__category-filter__value {
+  align-items: center;
+  color: #8e8e8e;
+  cursor: pointer;
+  display: flex;
+  flex-direction: row;
+  font-size: 13px;
+  width: 100%;
+}
+.tau-chart__category-filter__value:hover {
+  background-color: rgba(37, 39, 46, 0.2);
+}
+.tau-chart__category-filter__value_checked {
+  color: #fff;
+}
+.tau-chart__category-filter__value__toggle {
+  flex: none;
+  padding: 10px 10px 8px 10px;
+}
+.tau-chart__category-filter__value__toggle__icon {
+  background-color: transparent;
+  border: 1px solid #8694a3;
+  box-sizing: border-box;
+  border-radius: 50%;
+  display: inline-block;
+  height: 16px;
+  pointer-events: none;
+  position: relative;
+  width: 16px;
+}
+.tau-chart__category-filter__value__toggle__icon::before,
+.tau-chart__category-filter__value__toggle__icon::after {
+  background-color: #fff;
+  content: "";
+  display: block;
+  opacity: 0;
+  position: absolute;
+}
+.tau-chart__category-filter__value__toggle__icon::before {
+  height: 2px;
+  left: 3px;
+  top: 6px;
+  width: 8px;
+}
+.tau-chart__category-filter__value__toggle__icon::after {
+  height: 8px;
+  left: 6px;
+  top: 3px;
+  width: 2px;
+}
+.tau-chart__category-filter__value__toggle:hover .tau-chart__category-filter__value__toggle__icon::before,
+.tau-chart__category-filter__value__toggle:hover .tau-chart__category-filter__value__toggle__icon::after {
+  opacity: 1;
+}
+.tau-chart__category-filter__value_checked .tau-chart__category-filter__value__toggle__icon {
+  background-color: #8694a3;
+  border-color: transparent;
+}
+.tau-chart__category-filter__value_checked .tau-chart__category-filter__value__toggle__icon::before,
+.tau-chart__category-filter__value_checked .tau-chart__category-filter__value__toggle__icon::after {
+  background-color: #000;
+  transform: rotate(45deg);
+}
+.tau-chart__category-filter__value__label {
+  padding-left: 4px;
+}

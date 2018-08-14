@@ -12,14 +12,14 @@ dev.spec({
     ],
     color: 'year',
     plugins: [
-        tauCharts.api.plugins.get('parallel-brushing')({
+        Taucharts.api.plugins.get('parallel-brushing')({
             forceBrush: {
                 year: [80, 81]
             }
         }),
-        tauCharts.api.plugins.get('parallel-tooltip')()
+        Taucharts.api.plugins.get('parallel-tooltip')()
         ,
-        tauCharts.api.plugins.get('geomap-legend')()
+        Taucharts.api.plugins.get('geomap-legend')()
     ]
 
 });

@@ -1,0 +1,161 @@
+/*!
+ * /*
+ * taucharts@2.3.2 (2018-08-14)
+ * Copyright 2018 Targetprocess, Inc.
+ * Licensed under Apache License 2.0
+ * * /
+ * 
+ */
+.tau-chart__tooltip {
+  background: rgba(255, 255, 255, 0.9);
+  position: absolute;
+  top: 0;
+  left: 0;
+  max-width: none;
+  z-index: 900;
+  align-items: stretch;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 1px 4px 0 rgba(0, 0, 0, 0.2), 0 0 0 1px rgba(0, 0, 0, 0.005);
+  font-size: 11px;
+  font-family: Helvetica Neue, Segoe UI, Open Sans, Ubuntu, sans-serif;
+  /* Fade */
+}
+.tau-chart__tooltip.fade {
+  opacity: 0;
+  transition: opacity 200ms ease-out;
+}
+.tau-chart__tooltip.fade.in {
+  opacity: 1;
+  transition-duration: 500ms;
+}
+.tau-chart__tooltip.top-right,
+.tau-chart__tooltip.bottom-right {
+  margin-left: 8px;
+}
+.tau-chart__tooltip.top-left,
+.tau-chart__tooltip.bottom-left {
+  margin-left: -8px;
+}
+.tau-chart__tooltip.top,
+.tau-chart__tooltip.top-right,
+.tau-chart__tooltip.top-left {
+  margin-top: 8px;
+}
+.tau-chart__tooltip__content {
+  box-sizing: border-box;
+  max-width: 500px;
+  min-width: 100px;
+  overflow: hidden;
+  padding: 15px 15px 10px 15px;
+}
+.tau-chart__tooltip__buttons {
+  background: #EBEEF1;
+  bottom: 100%;
+  box-shadow: 0 1px 4px 0 rgba(0, 0, 0, 0.2), 0 0 0 1px rgba(0, 0, 0, 0.005);
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  max-width: 500px;
+  min-width: 86px;
+  position: absolute;
+  width: 100%;
+  z-index: -1;
+}
+.tau-chart__tooltip__buttons::after {
+  background: linear-gradient(to bottom, #fff 50%, rgba(255, 255, 255, 0));
+  content: "";
+  display: block;
+  height: 8px;
+  left: 0;
+  pointer-events: none;
+  position: absolute;
+  top: 100%;
+  width: 100%;
+}
+.tau-chart__tooltip__button {
+  color: #65717F;
+  cursor: pointer;
+  display: inline-flex;
+  flex: 1 0 auto;
+  height: 0;
+  overflow: hidden;
+  transition: height 500ms;
+}
+.tau-chart__tooltip__button__wrap {
+  line-height: 26px;
+  padding: 0 15px;
+}
+.tau-chart__tooltip__button:hover {
+  background: #f5f7f8;
+  color: #333;
+}
+.tau-chart__tooltip__button .tau-icon-close-gray {
+  background-image: url(data:image/svg+xml;base64,PHN2ZyB2ZXJzaW9uPSIxLjEiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyIgeD0iMHB4IiB5PSIwcHgiIHdpZHRoPSIzMHB4IiBoZWlnaHQ9IjMwcHgiIHZpZXdCb3g9IjAgMCAzMCAzMCI+PHBhdGggZmlsbD0iIzg0OTZBNyIgZD0iTTEwLDAuNzE1TDkuMjg1LDBMNSw0LjI4NUwwLjcxNSwwTDAsMC43MTVMNC4yODUsNUwwLDkuMjg1TDAuNzE1LDEwTDUsNS43MTVMOS4yODUsMTBMMTAsOS4yODVMNS43MTUsNUwxMCwwLjcxNXoiLz48L3N2Zz4=);
+  display: inline-block;
+  width: 12px;
+  height: 12px;
+  position: relative;
+  top: 3px;
+  margin-right: 5px;
+}
+.tau-chart__tooltip.stuck .tau-chart__tooltip__button {
+  height: 26px;
+}
+.tau-chart__tooltip.top .tau-chart__tooltip__buttons,
+.tau-chart__tooltip.top-right .tau-chart__tooltip__buttons,
+.tau-chart__tooltip.top-left .tau-chart__tooltip__buttons {
+  bottom: initial;
+  top: 100%;
+}
+.tau-chart__tooltip.top .tau-chart__tooltip__buttons__wrap,
+.tau-chart__tooltip.top-right .tau-chart__tooltip__buttons__wrap,
+.tau-chart__tooltip.top-left .tau-chart__tooltip__buttons__wrap {
+  position: relative;
+  top: calc(100% - 26px);
+}
+.tau-chart__tooltip.top .tau-chart__tooltip__buttons::after,
+.tau-chart__tooltip.top-right .tau-chart__tooltip__buttons::after,
+.tau-chart__tooltip.top-left .tau-chart__tooltip__buttons::after {
+  background: linear-gradient(to top, #fff 50%, rgba(255, 255, 255, 0));
+  bottom: 100%;
+  top: initial;
+}
+.tau-chart__tooltip.top-right .tau-chart__tooltip__button__wrap,
+.tau-chart__tooltip.top-left .tau-chart__tooltip__button__wrap {
+  position: relative;
+  top: calc(100% - 26px);
+}
+.tau-chart__tooltip__list {
+  display: table;
+}
+.tau-chart__tooltip__list__item {
+  display: table-row;
+}
+.tau-chart__tooltip__list__elem {
+  display: table-cell;
+  padding-bottom: 4px;
+  line-height: 1.3;
+  color: #000;
+}
+.tau-chart__tooltip__list__elem:not(:first-child) {
+  padding-left: 15px;
+}
+.tau-chart__tooltip__list__elem:first-child {
+  color: #8e8e8e;
+}
+.tau-chart__tooltip__gray-text {
+  color: #8e8e8e;
+}
+.tau-chart__tooltip-target {
+  cursor: pointer;
+}
+.tau-chart__tooltip-target .tau-chart__dot.tau-chart__highlighted,
+.tau-chart__tooltip-target .tau-chart__bar.tau-chart__highlighted,
+.tau-chart__tooltip-target .i-data-anchor.tau-chart__highlighted {
+  stroke: #333;
+  stroke-width: 1;
+}
+.tau-chart__tooltip-target .tau-chart__bar.tau-chart__highlighted {
+  shape-rendering: crispEdges;
+}

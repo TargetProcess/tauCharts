@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <script src="../node_modules/d3/build/d3.js"></script>
+    <script src="../dist/taucharts.min.js"></script>
+    <link rel="stylesheet" href="../dist/taucharts.min.css">
+</head>
+<body>
+<div style="height: 400px" id="line"></div>
+<script>
+    const datasource = [{
+        type:'us', count:20, date:'12-2013'
+    },{
+        type:'us', count:10, date:'01-2014'
+    },{
+        type:'bug', count:15, date:'02-2014'
+    },{
+        type:'bug', count:23, date:'05-2014'
+    }];
+    const chart = new Taucharts.Chart({
+        data: datasource,
+        plugins: [
+            Taucharts.api.plugins.get('tooltip')(),
+            Taucharts.api.plugins.get('legend')(),
+            Taucharts.api.plugins.get('export-to')(),
+        ],
+        type: 'line',
+        x: 'date',
+        y: 'count',
+        color: 'type' // there will be two lines with different colors on the chart
+    });
+    chart.renderTo('#line');
+</script>
+</body>
+</html>

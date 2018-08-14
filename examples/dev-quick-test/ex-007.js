@@ -101,8 +101,8 @@ dev.spec({
         }
     },
     plugins: [
-        tauCharts.api.plugins.get('tooltip')({fields:['complex','date','simple','colorValue','sizeValue']}),
-        tauCharts.api.plugins.get('legend')()
+        Taucharts.api.plugins.get('tooltip')({fields:['complex','date','simple','colorValue','sizeValue']}),
+        Taucharts.api.plugins.get('legend')()
     ]
 
 });
