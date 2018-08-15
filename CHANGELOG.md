@@ -1,3 +1,7 @@
+## 2.4.0 (august 15, 2018)
+
+- add posibility set field bounds for quick filter [#543](https://github.com/TargetProcess/tauCharts/pull/543)
+
 ## 2.3.2 (june 25, 2018)
 
 - fix diff tooltip [#534](https://github.com/TargetProcess/tauCharts/pull/534)
