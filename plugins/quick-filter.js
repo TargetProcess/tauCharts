@@ -15,7 +15,7 @@ const d3 = {
     var utils = Taucharts.api.utils;
     var REFRESH_DELAY = 0;
 
-    function QuickFilter(xSettings) {
+    function QuickFilter(xSettings = {}) {
 
         var log10 = function (x) {
             return Math.log(x) / Math.LN10;
@@ -44,13 +44,13 @@ const d3 = {
                 var spec = this._chart.getSpec();
                 var sources = spec.sources['/'];
 
-                var fields = (xSettings && xSettings.fields || xSettings);
+                var fields = (xSettings.fields || xSettings);
 
                 this._fields = ((Array.isArray(fields) && fields.length > 0) ?
                     (fields) :
                     (Object.keys(sources.dims)));
-
-                this._applyImmediately = Boolean(xSettings && xSettings.applyImmediately);
+                this._fieldBounds = xSettings.fieldBounds || {};
+                this._applyImmediately = Boolean(xSettings.applyImmediately);
 
                 var chartData = self._chart.getChartModelData();
 
@@ -70,7 +70,13 @@ const d3 = {
                         self._data[dim] = chartData.map(function (x) {
                             return x[dim];
                         });
-                        self._bounds[dim] = d3.extent(self._data[dim]);
+                        const fieldBound = self._fieldBounds[dim];
+                        if(fieldBound) {
+                            self._bounds[dim] = [fieldBound.min, fieldBound.max];
+                        } else {
+                            self._bounds[dim] = d3.extent(self._data[dim]);
+                        }
+
                         self._filter[dim] = self._bounds[dim];
 
                         self._filtersContainer.insertAdjacentHTML('beforeend', self._filterWrapper({name: dim}));
