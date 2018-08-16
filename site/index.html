@@ -1,0 +1,316 @@
+<!doctype html>
+<html lang="en">
+<head>
+
+    <meta charset="UTF-8"/>
+
+    <meta id="myViewport" name="viewport" content="width=device-width,  initial-scale=1" />
+
+    <title>Taucharts flexible javascript charting library for data exploration</title>
+
+    <meta name="description"
+          content="Open source D3.js-based charting and visualization library for data exploration and data analysis">
+    <meta name="keywords"
+          content="javascript, charts, d3, visualization, trendline, data analysis, data exploration">
+
+    <link rel="apple-touch-icon" sizes="57x57" href="/apple-touch-icon-57x57.png">
+    <link rel="apple-touch-icon" sizes="60x60" href="/apple-touch-icon-60x60.png">
+    <link rel="apple-touch-icon" sizes="72x72" href="/apple-touch-icon-72x72.png">
+    <link rel="apple-touch-icon" sizes="76x76" href="/apple-touch-icon-76x76.png">
+    <link rel="apple-touch-icon" sizes="114x114" href="/apple-touch-icon-114x114.png">
+    <link rel="apple-touch-icon" sizes="120x120" href="/apple-touch-icon-120x120.png">
+    <link rel="apple-touch-icon" sizes="144x144" href="/apple-touch-icon-144x144.png">
+    <link rel="apple-touch-icon" sizes="152x152" href="/apple-touch-icon-152x152.png">
+    <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon-180x180.png">
+
+    <link rel="icon" type="image/png" href="/favicon-32x32.png" sizes="32x32">
+    <link rel="icon" type="image/png" href="/android-chrome-192x192.png" sizes="192x192">
+    <link rel="icon" type="image/png" href="/favicon-96x96.png" sizes="96x96">
+    <link rel="icon" type="image/png" href="/favicon-16x16.png" sizes="16x16">
+    <link href="https://fonts.googleapis.com/css?family=Open+Sans:300,300i,400,400i,600|Inconsolata:400,700" rel="stylesheet">
+
+    <link rel="stylesheet" href="css/main.css">
+    <link rel="stylesheet" href="css/editor.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/taucharts@1/build/production/tauCharts.min.css">
+
+
+    <script src="https://cdn.jsdelivr.net/jquery/1.11.3/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/react/0.14.3/react.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/react/0.14.3/react-dom.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/d3js/3.5.10/d3.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/underscorejs/1.8.3/underscore-min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/taucharts@1/build/production/tauCharts.min.js"></script>
+
+    <script>
+        (function (i, s, o, g, r, a, m) {
+            i['GoogleAnalyticsObject'] = r;
+            i[r] = i[r] || function () {
+                        (i[r].q = i[r].q || []).push(arguments)
+                    }, i[r].l = 1 * new Date();
+            a = s.createElement(o),
+                    m = s.getElementsByTagName(o)[0];
+            a.async = 1;
+            a.src = g;
+            m.parentNode.insertBefore(a, m)
+        })(window, document, 'script', '//www.google-analytics.com/analytics.js', 'ga');
+
+        ga('create', 'UA-58949492-1', 'auto');
+        ga('send', 'pageview');
+    </script>
+
+    <script type="text/javascript" src="js/main.js"></script>
+</head>
+<body>
+
+
+<header class="header">
+
+
+    <div class="example-link">
+        <a class="ex-link" href="#section1"><span>live demo</span></a>
+        <a class="download-link" href="#"><span>DOWNLOAD</span></a>
+    </div>
+
+    <div class="logo">
+        <a href="#main"></a>
+    </div>
+
+    <ul class="menu-list">
+        <li class="menu-item"><a href="https://api.taucharts.com/">Docs</a></li>
+        <li class="menu-item"><a href="https://blog.taucharts.com/">Blog</a></li>
+        <li class="menu-item"><a href="https://github.com/TargetProcess/tauCharts">Github</a></li>
+        <li class="menu-item"><a href="https://slack.taucharts.com/">Slack</a></li>
+    </ul>
+</header>
+
+<section class="wrapper">
+
+    <section class="section main" id="section0">
+
+        <div class="promo">
+
+            <div class="main-logo"></div>
+
+            <div class="promo-info">
+                <h1 class="main-info">
+                    Flexible javascript charting library<br/> for data exploration.
+                </h1>
+                <p class="sub-info">Designed with passion and taste :)</p>
+            </div>
+
+
+            <div class="download-side">
+
+                <a href="https://api.taucharts.com/download/index.html" class="download-btn">
+                    Download
+                    <span>latest release (2.4.0)</span>
+                </a>
+                <div class="social">
+                    <ul>
+                        <li>
+                            <iframe src="https://ghbtns.com/github-btn.html?user=TargetProcess&repo=tauCharts&type=star&count=true"
+                                    frameborder="0" scrolling="0" width="170px" height="20px"></iframe>
+                        </li>
+                        <li><a href="https://twitter.com/share" class="twitter-share-button"
+                               data-url="https://www.taucharts.com" data-via="taucharts"
+                               data-hashtags="visualization">Tweet</a>
+                            <script>!function (d, s, id) {
+                                var js, fjs = d.getElementsByTagName(s)[0], p = /^http:/.test(d.location) ? 'http' : 'https';
+                                if (!d.getElementById(id)) {
+                                    js = d.createElement(s);
+                                    js.id = id;
+                                    js.src = p + '://platform.twitter.com/widgets.js';
+                                    fjs.parentNode.insertBefore(js, fjs);
+                                }
+                            }(document, 'script', 'twitter-wjs');</script>
+                        </li>
+                        <li>
+                            <a href="https://slack.taucharts.com/">
+                                <img src="https://slack.taucharts.com/badge.svg">
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+
+            </div>
+
+        </div>
+        <div class="description">
+            <div class="scroll-tip">
+                <a class="ex-link" href="#section1">scroll down</a>
+            </div>
+            <div class="content-side">
+
+                <div class="benefit clear">
+                    <p><b>Clear API.</b> Use declarative API to map seamlessly dataset columns to visual properties</p>
+                </div>
+
+                <div class="benefit facets">
+                    <p><b>Facets.</b> Explore data patterns across different segments in one chart</p>
+                </div>
+
+                <div class="benefit plugins">
+                    <p><b>Plugins.</b> Get trendline, annotations, layers and export to PNG out of&nbsp;the&nbsp;box.</p>
+                    <p>Have some sophisticated needs? Write&nbsp;your&nbsp;own&nbsp;plugin!</p>
+                </div>
+
+            </div>
+        </div>
+    </section>
+
+    <section class="section examples" id="section1">
+    </section>
+
+    <section class="section latest" id="section3">
+
+        <div class="blog-review">
+
+            <div class="side blog" id="blog-holder">
+
+            </div>
+
+            <div class="side review">
+
+                <span class="head">Testimonials<a class="refresh"></a></span>
+
+                <div class="review-item" id="review-item-0">
+                    <p class="review-text">
+                        We tried a lot of chart libraries during the last few years and I can really say that TauCharts is the best open source solution! What we love is that you can adapt design, ux, ui and product requirements according to your own needs. I would also want to pay our respect to TauChart’s team for great support and personal care.
+                    </p>
+                    <span class="author">
+                        <b>Dima Dudin (CTO KUKU.io)</b>
+                    </span>
+                </div>
+
+                <div class="review-item" id="review-item-1">
+                    <p class="review-text">
+                        I ​​*really*​​ enjoy taucharts api and chart facets... I would love to see taucharts get more adoption. You all have done a really nice job with it!
+                    </p>
+                    <span class="author">
+                        <b>Rick Bergfalk</b> (creator of <a href="https://rickbergfalk.github.io/sqlpad/">SqlPad</a>)
+                    </span>
+                </div>
+
+                <div class="review-item" id="review-item-2">
+                    <p class="review-text">
+                        The most exciting part is the switch to @taucharts for the charting capabilities. SqlPad charting is on a whole new level now
+                    </p>
+                    <span class="author">
+                        <b>Rick Bergfalk</b> (creator of <a href="https://rickbergfalk.github.io/sqlpad/">SqlPad</a>)
+                    </span>
+                </div>
+
+                <div class="review-item" id="review-item-3">
+                    <p class="review-text">
+                        TauCharts definitely has a “grammar of graphics” feel about it and the default aesthetics are super-nifty.
+                    </p>
+                    <span class="author">
+                        <b>Bob Rudis aka @hrbrmstr</b>
+                    </span>
+                </div>
+
+            </div>
+
+        </div>
+
+    </section>
+
+    <section class="section about" id="section2">
+        <div class="about-table">
+            <div class="about-line">
+                <div class="info">
+                    <p>
+                        <span class="head">Used by</span>
+                        Taucharts are production ready and used by these products:
+                    </p>
+                </div>
+                <div class="link-side">
+                    <a class="about-link tp" href="https://www.targetprocess.com/">
+                            <span class="hidden-info">
+                                <b>targetprocess</b>
+                                visual management <br/> software
+                            </span>
+                    </a>
+                    <a class="about-link vd" href="https://vizydrop.com/">
+                            <span class="hidden-info">
+                                <b>vizydrop</b>
+                                information visualization <br/> software
+                            </span>
+                    </a>
+                    <a class="about-link ku" href="https://kuku.io/">
+                        <span class="hidden-info">
+                                <b>KUKU.io</b>
+                                social media <br> management tool
+                            </span>
+
+                    </a>
+                    <a class="about-link sq" href="https://rickbergfalk.github.io/sqlpad/">
+                        <span class="visible-info">
+                                SqlPad
+                        </span>
+                    </a>
+                    <a class="about-link rwg" href="https://www.buildingwidgets.com/blog/2015/8/5/week-31-taucharts">
+                        <span class="visible-info">
+                                R widgets
+                        </span>
+                    </a>
+                    
+                </div>
+
+            </div>
+            <div class="about-line">
+                <div class="info">
+                    <p>
+                        <span class="head">Docs </span>
+                        Read documentation and create your own beautiful <br/> and informative charts.
+                    </p>
+                </div>
+                <div class="link-side">
+
+                    <a class="about-link docs" href="https://api.taucharts.com/tutorials/1min.html">
+                            <span class="visible-info">
+                                Getting started
+                            </span>
+                    </a>
+                    <a class="about-link docs" href="https://api.taucharts.com/">
+                            <span class="visible-info">
+                                Explore API
+                            </span>
+                    </a>
+
+                </div>
+            </div>
+            <div class="about-line">
+                <div class="info">
+                    <p>
+                        <span class="head">Ask questions</span>
+                        Don’t hesitate to contact us in:
+                    </p>
+                </div>
+                <div class="link-side social">
+                    <a class="about-link slack" href="https://slack.taucharts.com/"></a>
+                    <a class="about-link fb" href="https://www.facebook.com/taucharts"></a>
+                    <a class="about-link tw" href="https://twitter.com/taucharts"></a>
+                    <a class="about-link uv" href="https://tp3.uservoice.com/forums/277582-taucharts"></a>
+                    <a class="about-link git" href="https://github.com/TargetProcess/tauCharts"></a>
+                </div>
+            </div>
+        </div>
+
+        <div class="footer">
+            <div class="copy">
+                <span>&copy; 2018</span>
+                <span class="lic">Code licensed under <a href="https://www.apache.org/licenses/LICENSE-2.0">Apache License, Version 2.0</a></span>
+            </div>
+        </div>
+
+    </section>
+
+</section>
+
+<script type="text/javascript" src="js/datasets.js"></script>
+<script type="text/javascript" src="js/editor.js"></script>
+<script type="text/javascript" src="js/blog.js?v=1"></script>
+
+</body>
+</html>
