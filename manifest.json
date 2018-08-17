@@ -1,6 +1,6 @@
 {
-  "short_name": "React App",
-  "name": "Create React App Sample",
+  "short_name": "Taucharts",
+  "name": "Taucharts javascript charting library",
   "icons": [
     {
       "src": "favicon.ico",
