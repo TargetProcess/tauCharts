@@ -1,3 +1,7 @@
+import React from 'react';
+import ReactDOM from 'react-dom';
+import createClass from 'create-react-class';
+import $ from 'jquery';
 function timeSince(dateStr) {
 
     var date = new Date(dateStr.replace(' ', 'T'));
@@ -28,7 +32,7 @@ function timeSince(dateStr) {
     return Math.floor(seconds) + " seconds";
 }
 
-var BlogApp = React.createClass({
+var BlogApp = createClass({
 
     getInitialState: function () {
         return {posts: []};
@@ -36,9 +40,7 @@ var BlogApp = React.createClass({
 
     componentDidMount: function () {
         $.get('//blog.taucharts.com/content/plugins/custom-latest-posts.php', function (result) {
-            if (this.isMounted()) {
                 this.setState({posts: result.posts});
-            }
         }.bind(this));
     },
 
@@ -51,10 +53,10 @@ var BlogApp = React.createClass({
                 {className: 'head'},
                 'Latest blog posts'
             ),
-            this.state.posts.map(function (post) {
+            this.state.posts.map(function (post, index) {
                 return React.createElement(
                     'p',
-                    {className: 'blog-item'},
+                    {className: 'blog-item', key: index},
                     React.createElement(
                         'a',
                         {

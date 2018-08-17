@@ -1,55 +1,28 @@
-var chartTypes = ['scatterplot', 'line', 'area', 'bar', 'horizontal-bar', 'stacked-bar', 'horizontal-stacked-bar'];
-var pluginsList = ['tooltip', 'legend', 'quick-filter', 'trendline'];
+import React from 'react';
+import createClass from 'create-react-class'
+import tauCharts from 'taucharts';
+import 'taucharts/build/development/plugins/tauCharts.tooltip';
+import 'taucharts/build/development/plugins/tauCharts.legend';
+import 'taucharts/build/development/plugins/tauCharts.quick-filter';
+import 'taucharts/build/development/plugins/tauCharts.trendline';
+import 'taucharts/build/production/tauCharts.min.css';
+import _ from 'underscore';
+import './Editor.css';
 
-var configs = [{
-    data: 'OscarNominees',
-    type: 'scatterplot',
-    x: 'Year',
-    y: 'Runtime',
-    color: 'isWinner',
-    size: null,
-    plugins: ['tooltip', 'legend'],
-    description: ['How duration of Oscar\'s Best Picture Nominees was changing', 'Dataset about Oscar\'s Best Picture Nominees, including IMDB and Rotten Tomatoes ratings']
-}, {
-    data: 'Comets',
-    type: 'scatterplot',
-    x: 'Discovery Date',
-    y: ['PHA', 'q (AU)'],
-    color: 'Orbit Class',
-    size: 'period (yr)',
-    plugins: ['tooltip', 'legend'],
-    description: ['Just a cool chart about comets', 'Source: data.nasa.gov']
-}, {
-    data: 'WorldBank',
-    type: 'scatterplot',
-    x: 'Adolescent fertility rate (births per 1,000 women ages 15-19)',
-    y: 'Internet users (per 100 people)',
-    color: 'Region',
-    size: null,
-    plugins: ['tooltip', 'legend', 'trendline'],
-    description: ['How count of internet users correlates with adolescent fertility', 'A lot demographic data about countries from worldbank.org']
-}, {
-    data: 'EnglishPremierLeague',
-    type: 'line',
-    x: 'Year',
-    y: 'Points',
-    color: 'Position',
-    size: null,
-    plugins: ['tooltip', 'legend'],
-    description: ['How much points had a team on a particular place in English Premier League', 'Dataset based on final standings of Barclays Premier League 1992—2015']
-}];
+const chartTypes = ['scatterplot', 'line', 'area', 'bar', 'horizontal-bar', 'stacked-bar', 'horizontal-stacked-bar'];
+const pluginsList = ['tooltip', 'legend', 'quick-filter', 'trendline'];
 
-var toggleArray = function (array, value) {
-    var index = array.indexOf(value);
+const toggleArray = function (array, value) {
+    const index = array.indexOf(value);
     (index === -1) ? array.push(value) : array.splice(index, 1);
     return array;
 };
 
-var randomFromArray = function (array) {
+const randomFromArray = function (array) {
     return array[Math.floor((Math.random() * (array.length)))];
 };
 
-var App = React.createClass({
+const Editor = createClass({
     getInitialState: function () {
         return {config: this.getConfigByNumber(0)};
     },
@@ -58,43 +31,43 @@ var App = React.createClass({
     },
     render: function () {
         return (
-          <div>
-              <div className="editor right-panel">
-                  <div className="editor-wrapper">
-                      <div className="controls">
-                          <div className="controls-place">
-                              <NavButtons updateConfig={this.updateConfig} randomConfig={this.getRandomConfig}
-                                          getConfigByNumber={this.getConfigByNumber} maxConfig={this.props.configs.length} />
-                          </div>
-                          <span className="play-tip">Play with me ;) </span>
-                      </div>
-                      <div className="code" id="code">
-                          <ChartConfig config={this.state.config} datasets={this.props.datasets}
-                                       replaceDataset={this.replaceDataset} updateConfig={this.updateConfig}/>
-                      </div>
-                  </div>
-              </div>
-              <div className="description">
-                  <div className="content-side">
-                      <p>
+            <div>
+                <div className="editor right-panel">
+                    <div className="editor-wrapper">
+                        <div className="controls">
+                            <div className="controls-place">
+                                <NavButtons updateConfig={this.updateConfig} randomConfig={this.getRandomConfig}
+                                            getConfigByNumber={this.getConfigByNumber} maxConfig={this.props.configs.length} />
+                            </div>
+                            <span className="play-tip">Play with me ;) </span>
+                        </div>
+                        <div className="code" id="code">
+                            <ChartConfig config={this.state.config} datasets={this.props.datasets}
+                                         replaceDataset={this.replaceDataset} updateConfig={this.updateConfig}/>
+                        </div>
+                    </div>
+                </div>
+                <div className="description">
+                    <div className="content-side">
+                        <p>
                           <span className="head">
                               {this.state.config.description[0]}
                           </span>
-                          <b>
-                              {this.state.config.description[1]}
-                          </b>
-                      </p>
-                  </div>
-              </div>
-              <div className="example-box">
-                  <div className="data-chart" id="data-chart">
-                      <section className="editor">
-                      <div className="error" id="error"></div>
-                      <div className="chart" id="chart"></div>
-                  </section>
-                  </div>
-              </div>
-          </div>
+                            <b>
+                                {this.state.config.description[1]}
+                            </b>
+                        </p>
+                    </div>
+                </div>
+                <div className="example-box">
+                    <div className="data-chart" id="data-chart">
+                        <section className="editor">
+                            <div className="error" id="error"/>
+                            <div className="chart" id="chart"/>
+                        </section>
+                    </div>
+                </div>
+            </div>
         )
     },
     renderChart: function () {
@@ -102,6 +75,7 @@ var App = React.createClass({
             this.chart = new tauCharts.Chart(this.prepareConfig(this.state.config));
             this.chart.renderTo('#chart');
         } catch (err) {
+            console.log(err);
             document.getElementById('error').classList.add('show');
             document.getElementById('error').innerHTML = err;
         }
@@ -165,7 +139,7 @@ var App = React.createClass({
 
         var config = {};
         var data = config.data = this.state.config.data;
-
+        const datasets = this.props.datasets;
         var keys = {
             OscarNominees: _.keys(datasets['OscarNominees'][0]),
             Comets: _.keys(datasets['Comets'][0]),
@@ -318,7 +292,7 @@ var App = React.createClass({
     }
 });
 
-var SelectPropertyLink = React.createClass({
+var SelectPropertyLink = createClass({
     render: function () {
 
         var value = (_.isNull(this.props.value) && 'null') || this.props.value;
@@ -331,7 +305,7 @@ var SelectPropertyLink = React.createClass({
     }
 });
 
-var DropDownMenu = React.createClass({
+var DropDownMenu = createClass({
 
     getInitialState: function () {
         return {
@@ -401,7 +375,7 @@ var DropDownMenu = React.createClass({
     }
 });
 
-var PropertyLine = React.createClass({
+var PropertyLine = createClass({
 
     render: function () {
 
@@ -441,13 +415,13 @@ var PropertyLine = React.createClass({
             <dl className={name}>
                 <dt>{name}:</dt>
                 <dd className={type} onClick={this.handleClick}>{(menu) ?
-                  (<div>
+                    (<div>
                         <div className="fullscreen"></div>
                         <DropDownMenu value={value} options={options} name={name}
-                                  maxChecked={(name === 'x' || name === 'y') ? 2 : 1}
-                                  minChecked={(name === 'size' || name === 'color') ? 0 : 1}
-                                  replaceDataset={this.props.replaceDataset} updateConfig={this.props.updateConfig}
-                    /></div>) : null}{links}</dd>
+                                      maxChecked={(name === 'x' || name === 'y') ? 2 : 1}
+                                      minChecked={(name === 'size' || name === 'color') ? 0 : 1}
+                                      replaceDataset={this.props.replaceDataset} updateConfig={this.props.updateConfig}
+                        /></div>) : null}{links}</dd>
                 ,
             </dl>
 
@@ -458,7 +432,7 @@ var PropertyLine = React.createClass({
     }
 });
 
-var PluginLine = React.createClass({
+var PluginLine = createClass({
     render: function () {
 
         var name = this.props.name;
@@ -477,7 +451,7 @@ var PluginLine = React.createClass({
     }
 });
 
-var PluginsBlock = React.createClass({
+const PluginsBlock = createClass({
     render: function () {
 
         var value = this.props.value;
@@ -505,7 +479,7 @@ var PluginsBlock = React.createClass({
     }
 });
 
-var ChartConfig = React.createClass({
+const ChartConfig = createClass({
 
     getInitialState: function () {
         return {
@@ -548,7 +522,7 @@ var ChartConfig = React.createClass({
     }
 });
 
-var NavButtons = React.createClass({
+const NavButtons = createClass({
     getInitialState: function () {
         return {configNumber: 0}
     },
@@ -577,7 +551,5 @@ var NavButtons = React.createClass({
     }
 });
 
-ReactDOM.render(
-    <App configs={configs} datasets={datasets}/>,
-    document.getElementById('section1')
-);
+
+export default Editor;

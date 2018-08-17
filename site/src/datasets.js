@@ -1,4 +1,4 @@
-var datasets = {
+export const datasets = {
     'OscarNominees': [{
         "url": "https://en.wikipedia.org/wiki/Seventh_Heaven_(1927_film)",
         "budget": 1300000,
@@ -17265,7 +17265,7 @@ var datasets = {
             //film.Production = film.Production.replace('Metro-Goldwyn-Mayer', 'MGM');
             //film.Production = film.Production.replace('Twentieth', '20th');
 
-            for (attr in film) {
+            for (let attr in film) {
                 film[attr] = (film[attr] === null) ? 0 : film[attr];
             }
             return film
