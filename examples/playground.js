@@ -6,7 +6,7 @@ const data = [{
     {
         "time": "2018-06-24T16:30:01.904Z",
         "cpu": 10.424267786483867,
-        "server": "demo-server"
+        "server": "test-server"
     },
     {
         "time": "2018-06-24T17:30:01.904Z",
@@ -21,7 +21,7 @@ const data = [{
     {
         "time": "2018-06-24T19:30:01.904Z",
         "cpu": 23.271353786153327,
-        "server": "demo-server"
+        "server": "test-server"
     },
     {
         "time": "2018-06-24T20:30:01.904Z",
@@ -31,7 +31,7 @@ const data = [{
     {
         "time": "2018-06-24T21:30:01.904Z",
         "cpu": 23.11210282740022,
-        "server": "demo-server"
+        "server": "test-server"
     },
     {
         "time": "2018-06-24T22:30:01.904Z",
@@ -91,7 +91,7 @@ const data = [{
     {
         "time": "2018-06-25T09:30:01.904Z",
         "cpu": 24.39876445385598,
-        "server": "demo-server"
+        "server": "prod-server"
     },
     {
         "time": "2018-06-25T10:30:01.904Z",
@@ -111,7 +111,7 @@ const data = [{
     {
         "time": "2018-06-25T13:30:01.904Z",
         "cpu": 24.484520729822147,
-        "server": "demo-server"
+        "server": "prod-server"
     },
     {
         "time": "2018-06-25T14:30:01.904Z",
@@ -121,10 +121,16 @@ const data = [{
 ];
 
 
+const params = location.hash.match(/filter=(.+)/);
+let selectedCategories = null;
+if(params) {
+    selectedCategories = JSON.parse(decodeURIComponent(params[1]));
+}
 let config = {
     type: 'line',
     x: 'time',
     y: 'cpu',
+    color: 'server',
     dimensions: {
         time: {
             scale: 'time',
@@ -132,17 +138,17 @@ let config = {
         },
         cpu: {
             type: 'measure'
+        },
+        server: {
+            type: 'category'
         }
     },
     plugins: [
-        Taucharts.api.plugins.get('quick-filter')({
-            fields: ['cpu', 'time'],
-            fieldBounds: {
-                cpu: {
-                    min: 0,
-                    max: 100,
-                }
-            }
+        Taucharts.api.plugins.get('legend')({
+            onSelect({selectedCategories}) {
+                location.hash = 'filter=' + JSON.stringify(selectedCategories);
+            },
+            selectedCategories: selectedCategories
         }),
     ],
 
@@ -151,13 +157,4 @@ let config = {
 const chart = new Taucharts.Chart(config);
 
 chart.renderTo(document.body);
-let s = 5;
-const id = setInterval(() => {
-    chart.setData(data.map(value => Object.assign({}, value, {
-            cpu: value.cpu + s
-        })));
-    s += 5;
-    if(s > 20) {
-        clearInterval(id);
-    }
-}, 5000);
+
