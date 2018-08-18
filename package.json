@@ -1,6 +1,6 @@
 {
   "name": "taucharts",
-  "version": "2.4.0",
+  "version": "2.5.0",
   "homepage": "https://github.com/TargetProcess/taucharts",
   "description": "Data-focused charting library based on D3",
   "author": {
@@ -60,7 +60,7 @@
     "@types/d3": "4.11.0",
     "canvg": "1.0.0",
     "chai": "4.1.2",
-    "css-loader": "0.28.10",
+    "css-loader": "1.0.0",
     "d3": "4.13.0",
     "extract-text-webpack-plugin": "4.0.0-beta.0",
     "file-saver": "1.3.3",
@@ -83,14 +83,14 @@
     "mocha": "5.0.4",
     "style-loader": "0.20.3",
     "tau-tooltip": "1.1.3",
-    "ts-loader": "4.0.1",
+    "ts-loader": "4.5.0",
     "tslint": "5.9.1",
     "tslint-eslint-rules": "5.1.0",
     "typescript": "2.7.2",
-    "webpack": "4.1.1",
-    "webpack-bundle-analyzer": "2.11.1",
-    "webpack-cli": "2.0.11",
-    "webpack-dev-server": "3.1.1"
+    "webpack": "4.16.5",
+    "webpack-bundle-analyzer": "2.13.1",
+    "webpack-cli": "3.1.0",
+    "webpack-dev-server": "3.1.5"
   },
   "types": "./types/index.d.ts"
 }

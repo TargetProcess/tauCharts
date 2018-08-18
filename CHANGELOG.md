@@ -1,3 +1,7 @@
+## 2.5.0 (august 18, 2018)
+
+- add new settings for legend plugin (onSelect handler and selectedCategories) [#545](https://github.com/TargetProcess/tauCharts/pull/545)
+
 ## 2.4.0 (august 15, 2018)
 
 - add posibility set field bounds for quick filter [#543](https://github.com/TargetProcess/tauCharts/pull/543)
