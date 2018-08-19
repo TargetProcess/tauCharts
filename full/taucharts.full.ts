@@ -26,6 +26,7 @@ import '../plugins/quick-filter';
 import '../plugins/settings';
 import '../plugins/tooltip';
 import '../plugins/trendline';
+import '../src/addons/color-brewer';
 
 
 export {

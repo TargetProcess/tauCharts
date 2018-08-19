@@ -4,7 +4,9 @@ const {resolvePath, resolve} = require('./resolve');
 const externals = require('./externals');
 const webpackModule = require('./scripts-module');
 
-const pluginsEntry = {};
+const pluginsEntry = {
+    ['color-brewer']: resolvePath(`../src/addons/color-brewer`)
+};
 
 fs.readdirSync(resolvePath(`../plugins/`)).forEach((file) => {
     if(file.endsWith('.js') || file.endsWith('.ts')) {
@@ -28,7 +30,7 @@ module.exports = {
         }
     },
     devtool: 'none',
-    mode: `development`,
+    mode: 'development',
     module: webpackModule,
     stats: {
         colors: true,
