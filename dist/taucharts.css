@@ -1,6 +1,6 @@
 /*!
  * /*
- * taucharts@2.5.0 (2018-08-18)
+ * taucharts@2.5.1 (2018-08-19)
  * Copyright 2018 Targetprocess, Inc.
  * Licensed under Apache License 2.0
  * * /
@@ -507,7 +507,7 @@
   text-transform: none;
 }
 .tau-chart__svg .brush .selection {
-  fill-opacity: .3;
+  fill-opacity: 0.3;
   stroke: #fff;
   shape-rendering: crispEdges;
 }

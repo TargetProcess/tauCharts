@@ -143,6 +143,11 @@ let config = {
             type: 'category'
         }
     },
+    guide:{
+        color:{
+            brewer: Taucharts.api.colorBrewers.get('tauBrewer')('RdYlBu', 9)
+        }
+    },
     plugins: [
         Taucharts.api.plugins.get('legend')({
             onSelect({selectedCategories}) {
