@@ -1,3 +1,7 @@
+## 2.5.1 (august 19, 2018)
+
+- return color brewer addon to package [#547](https://github.com/TargetProcess/tauCharts/pull/547)
+
 ## 2.5.0 (august 18, 2018)
 
 - add new settings for legend plugin (onSelect handler and selectedCategories) [#545](https://github.com/TargetProcess/tauCharts/pull/545)
