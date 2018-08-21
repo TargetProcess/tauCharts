@@ -143,7 +143,6 @@
                 "variable-declaration": "onespace"
             }
         ],
-        "typeof-compare": true,
         "unified-signatures": true,
         "whitespace": [
             "check-branch",
@@ -246,7 +245,6 @@
                 "singleline": "never"
             }
         ],
-        "typeof-compare": true,
         "whitespace": [
             "check-branch",
             "check-decl",
