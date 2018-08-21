@@ -67,11 +67,8 @@ function getTestWebpackConfig(DEBUG) {
                 'node_modules'
             ],
             alias: {
-                'canvg': 'node_modules/canvg/canvg.js',
                 'file-saver': 'test/utils/saveAs.js',
                 'print.style.css': 'plugins/print.style.css',
-                'rgbcolor': 'node_modules/canvg/rgbcolor.js',
-                'stackblur': 'node_modules/canvg/StackBlur.js',
                 'taucharts': 'src/tau.charts.ts',
                 'tau-tooltip': 'node_modules/tau-tooltip/tooltip.js'
             },
