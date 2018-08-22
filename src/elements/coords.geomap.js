@@ -1,11 +1,10 @@
 import * as d3Array from 'd3-array';
 import * as d3Geo from 'd3-geo';
-import * as d3Json from 'd3-request';
 import * as d3Selection from 'd3-selection';
+import fetchJson from '../utils/fetchJson';
 const d3 = {
     ...d3Array,
     ...d3Geo,
-    ...d3Json,
     ...d3Selection,
 };
 import * as utils from '../utils/utils';
@@ -98,7 +97,7 @@ export class GeoMap extends Element {
 
         if (typeof (guide.sourcemap) === 'string') {
 
-            d3.json(guide.sourcemap, (e, topoJSONData) => {
+            fetchJson(guide.sourcemap, (e, topoJSONData) => {
 
                 if (e) {
                     throw e;

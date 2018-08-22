@@ -5,7 +5,6 @@ const d3Modules =  [
     'd3-color',
     'd3-format',
     'd3-geo',
-    'd3-request',
     'd3-scale',
     'd3-selection',
     'd3-shape',
