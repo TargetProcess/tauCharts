@@ -1,8 +1,11 @@
 const fs = require('fs');
-const ExtractTextPlugin = require('extract-text-webpack-plugin');
+const MiniCssExtractPlugin = require('mini-css-extract-plugin');
 const {resolvePath} = require('./resolve');
 const banner = require('./banner');
 const stylesLoader = (lessVariables) => [
+    {
+        loader: MiniCssExtractPlugin.loader,
+    },
     {
         loader: `css-loader`,
         options: {
@@ -24,10 +27,7 @@ const webpackModules = (theme) => ({
     rules: [{
         test: /\.(css|less)$/,
         include: [resolvePath('../less'), resolvePath('../full')],
-        use: ExtractTextPlugin.extract({
-            fallback: `style-loader`,
-            use: stylesLoader({theme: theme || 'default'}),
-        }),
+        use: stylesLoader({theme: theme || 'default'}),
     }]
 });
 
@@ -35,7 +35,11 @@ const themes = ['', 'dark'];
 const pluginsEntry = {};
 const plugins = [
     banner,
-    new ExtractTextPlugin({filename: `[name].css`}),
+    new MiniCssExtractPlugin({
+        // Options similar to the same options in webpackOptions.output
+        // both options are optional
+        filename: "[name].css",
+    }),
 ];
 
 fs.readdirSync(resolvePath(`../less/plugins/`)).forEach((file) => {
