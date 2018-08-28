@@ -7,16 +7,49 @@ interface PeriodMap {
     [name: string]: PeriodGenerator;
 }
 
-var PERIODS_MAP: PeriodMap = {
+interface DateMethods {
+    setHours: string;
+    setDate: string;
+    getDate: string;
+    getDay: string;
+    setMonth: string;
+    getMonth: string;
+    setFullYear: string;
+    getFullYear: string;
+}
+
+const localDateMethods: DateMethods = {
+    setHours: 'setHours',
+    setDate: 'setDate',
+    getDate: 'getDate',
+    setMonth: 'setMonth',
+    getDay: 'getDay',
+    getMonth: 'getMonth',
+    setFullYear: 'setFullYear',
+    getFullYear: 'getFullYear',
+};
+
+const UTCDateMethods = {
+    setHours: 'setUTCHours',
+    setDate: 'setUTCDate',
+    getDate: 'getUTCDate',
+    setMonth: 'setUTCMonth',
+    getDay: 'getUTCDay',
+    getMonth: 'getUTCMonth',
+    setFullYear: 'setUTCFullYear',
+    getFullYear: 'getUTCFullYear',
+};
+
+const createPeriodMap = (dateMethods) => ({
 
     day: {
         cast: function (d) {
             var date = new Date(d);
-            return new Date(date.setHours(0, 0, 0, 0));
+            return new Date(date[dateMethods.setHours](0, 0, 0, 0));
         },
         next: function (d) {
             var prev = new Date(d);
-            var next = new Date(prev.setDate(prev.getDate() + 1));
+            var next = new Date(prev[dateMethods.setDate](prev[dateMethods.getDate]() + 1));
             return this.cast(next);
         }
     },
@@ -24,12 +57,12 @@ var PERIODS_MAP: PeriodMap = {
     week: {
         cast: function (d) {
             var date = new Date(d);
-            date = new Date(date.setHours(0, 0, 0, 0));
-            return new Date(date.setDate(date.getDate() - date.getDay()));
+            date = new Date(date[dateMethods.setHours](0, 0, 0, 0));
+            return new Date(date[dateMethods.setDate](date[dateMethods.getDate]() - date[dateMethods.getDay]()));
         },
         next: function (d) {
             var prev = new Date(d);
-            var next = (new Date(prev.setDate(prev.getDate() + 7)));
+            var next = (new Date(prev[dateMethods.setDate](prev[dateMethods.getDate]() + 7)));
             return this.cast(next);
         }
     },
@@ -37,13 +70,13 @@ var PERIODS_MAP: PeriodMap = {
     month: {
         cast: function (d) {
             var date = new Date(d);
-            date = new Date(date.setHours(0, 0, 0, 0));
-            date = new Date(date.setDate(1));
+            date = new Date(date[dateMethods.setHours](0, 0, 0, 0));
+            date = new Date(date[dateMethods.setDate](1));
             return date;
         },
         next: function (d) {
             var prev = new Date(d);
-            var next = new Date(prev.setMonth(prev.getMonth() + 1));
+            var next = new Date(prev[dateMethods.setMonth](prev[dateMethods.getMonth]() + 1));
             return this.cast(next);
         }
     },
@@ -51,15 +84,15 @@ var PERIODS_MAP: PeriodMap = {
     quarter: {
         cast: function (d) {
             var date = new Date(d);
-            date = new Date(date.setHours(0, 0, 0, 0));
-            date = new Date(date.setDate(1));
-            var currentMonth = date.getMonth();
+            date = new Date(date[dateMethods.setHours](0, 0, 0, 0));
+            date = new Date(date[dateMethods.setDate](1));
+            var currentMonth = date[dateMethods.getMonth]();
             var firstQuarterMonth = currentMonth - (currentMonth % 3);
-            return new Date(date.setMonth(firstQuarterMonth));
+            return new Date(date[dateMethods.setMonth](firstQuarterMonth));
         },
         next: function (d) {
             var prev = new Date(d);
-            var next = new Date(prev.setMonth(prev.getMonth() + 3));
+            var next = new Date(prev[dateMethods.setMonth](prev[dateMethods.getMonth]() + 3));
             return this.cast(next);
         }
     },
@@ -67,91 +100,22 @@ var PERIODS_MAP: PeriodMap = {
     year: {
         cast(d) {
             var date = new Date(d);
-            date = new Date(date.setHours(0, 0, 0, 0));
-            date = new Date(date.setDate(1));
-            date = new Date(date.setMonth(0));
+            date = new Date(date[dateMethods.setHours](0, 0, 0, 0));
+            date = new Date(date[dateMethods.setDate](1));
+            date = new Date(date[dateMethods.setMonth](0));
             return date;
         },
         next: function (d) {
             var prev = new Date(d);
-            var next = new Date(prev.setFullYear(prev.getFullYear() + 1));
+            var next = new Date(prev[dateMethods.setFullYear](prev[dateMethods.getFullYear]() + 1));
             return this.cast(next);
         }
     }
-};
+});
 
-var PERIODS_MAP_UTC: PeriodMap = {
+const PERIODS_MAP: PeriodMap = createPeriodMap(localDateMethods);
 
-    day: {
-        cast: function (d) {
-            var date = new Date(d);
-            return new Date(date.setUTCHours(0, 0, 0, 0));
-        },
-        next: function (d) {
-            var prev = new Date(d);
-            var next = new Date(prev.setUTCDate(prev.getUTCDate() + 1));
-            return this.cast(next);
-        }
-    },
-
-    week: {
-        cast: function (d) {
-            var date = new Date(d);
-            date = new Date(date.setUTCHours(0, 0, 0, 0));
-            return new Date(date.setUTCDate(date.getUTCDate() - date.getUTCDay()));
-        },
-        next: function (d) {
-            var prev = new Date(d);
-            var next = (new Date(prev.setUTCDate(prev.getUTCDate() + 7)));
-            return this.cast(next);
-        }
-    },
-
-    month: {
-        cast: function (d) {
-            var date = new Date(d);
-            date = new Date(date.setUTCHours(0, 0, 0, 0));
-            date = new Date(date.setUTCDate(1));
-            return date;
-        },
-        next: function (d) {
-            var prev = new Date(d);
-            var next = new Date(prev.setUTCMonth(prev.getUTCMonth() + 1));
-            return this.cast(next);
-        }
-    },
-
-    quarter: {
-        cast: function (d) {
-            var date = new Date(d);
-            date = new Date(date.setUTCHours(0, 0, 0, 0));
-            date = new Date(date.setUTCDate(1));
-            var currentMonth = date.getUTCMonth();
-            var firstQuarterMonth = currentMonth - (currentMonth % 3);
-            return new Date(date.setUTCMonth(firstQuarterMonth));
-        },
-        next: function (d) {
-            var prev = new Date(d);
-            var next = new Date(prev.setUTCMonth(prev.getUTCMonth() + 3));
-            return this.cast(next);
-        }
-    },
-
-    year: {
-        cast(d) {
-            var date = new Date(d);
-            date = new Date(date.setUTCHours(0, 0, 0, 0));
-            date = new Date(date.setUTCDate(1));
-            date = new Date(date.setUTCMonth(0));
-            return date;
-        },
-        next: function (d) {
-            var prev = new Date(d);
-            var next = new Date(prev.setUTCFullYear(prev.getUTCFullYear() + 1));
-            return this.cast(next);
-        }
-    }
-};
+var PERIODS_MAP_UTC: PeriodMap = createPeriodMap(UTCDateMethods);
 
 var UnitDomainPeriodGenerator = {
 
