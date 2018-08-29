@@ -50,7 +50,7 @@
     "build:production": "webpack --mode=production",
     "build:dev": "webpack",
     "test": "npm run build && karma start",
-    "lint": "tslint src/**/*.ts src/**/*.js plugins/**/*.ts plugins/**/*.js task/**/*.js config/**/*.js --exclude src/addons/**/*.*",
+    "lint": "tslint full/**/*.ts src/**/*.ts src/**/*.js plugins/**/*.ts plugins/**/*.js task/**/*.js config/**/*.js --exclude src/addons/**/*.*",
     "devtest": "npm run build:dev && karma start --taucharts-debug",
     "prepublishOnly": "npm run build",
     "publishToReleaseBranch": "node tasks/publishToReleaseBranch.js"

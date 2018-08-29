@@ -28,7 +28,6 @@ import '../plugins/tooltip';
 import '../plugins/trendline';
 import '../src/addons/color-brewer';
 
-
 export {
     GPL,
     Plot,
