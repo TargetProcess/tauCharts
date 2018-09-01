@@ -6,7 +6,7 @@ import Taucharts from '../src/tau.charts';
 const scalesRegistry = Taucharts.api.scalesRegistry.instance();
 import {ScalesFactory} from '../src/scales-factory';
 
-    describe('Spec engine factory', function () {
+    describe.only('Spec engine factory', function () {
 
         var data = [
             { team: 'A',    count: '1',  date: new Date('2014-01-01T00:00:00+00:00') },
@@ -375,7 +375,8 @@ import {ScalesFactory} from '../src/scales-factory';
                     "guide": {
                         showGridLines: 'x',
                         x: {
-                            tickFormatNullAlias: '(NIL)'
+                            tickFormatNullAlias: '(NIL)',
+                            rotate: 90,
                         }
                     },
                     "unit": [
@@ -402,6 +403,7 @@ import {ScalesFactory} from '../src/scales-factory';
             var part = full.unit.units[0];
 
             expect(full.unit.guide.x.tickFormatNullAlias).to.equal('(NIL)');
+            expect(full.unit.guide.x.rotate).to.equal(90);
             expect(full.unit.guide.showGridLines).to.equal('x');
             expect(part.guide.showGridLines).to.equal('');
         });

@@ -593,7 +593,7 @@ var SpecEngineTypeMap: SpecEngines = {
 
                 var isXVertical = !isFacetUnit && (Boolean(xMeta.dimType) && xMeta.dimType !== 'measure');
 
-                unit.guide.x.rotate = (isXVertical ? -90 : 0);
+                unit.guide.x.rotate = unit.guide.x.rotate || (isXVertical ? -90 : 0);
                 unit.guide.x.textAnchor = getTextAnchorByAngle(unit.guide.x.rotate);
 
                 unit.guide.x.tickFormat = unit.guide.x.tickFormat || getTickFormat(xMeta, settings.defaultFormats);
