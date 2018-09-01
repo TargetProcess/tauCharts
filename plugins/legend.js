@@ -884,6 +884,7 @@ function ChartLegend(xSettings) {
                 .filter((node) => !isColorHidden(getColorData(node).key))
                 .map((node) => JSON.parse(getColorData(node).val));
             settings.onSelect({
+                type: mode,
                 selectedCategories: selectedCategories
             });
             this._chart.refresh();
