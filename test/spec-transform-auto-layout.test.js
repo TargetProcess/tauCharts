@@ -6,7 +6,7 @@ import Taucharts from '../src/tau.charts';
 const scalesRegistry = Taucharts.api.scalesRegistry.instance();
 import {ScalesFactory} from '../src/scales-factory';
 
-    describe.only('Spec engine factory', function () {
+    describe('Spec engine factory', function () {
 
         var data = [
             { team: 'A',    count: '1',  date: new Date('2014-01-01T00:00:00+00:00') },
