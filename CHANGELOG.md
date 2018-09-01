@@ -1,3 +1,9 @@
+## 2.6.0 (september 1, 2018)
+
+- add support d3 v5
+- now user can set rotate guide params for x dimensions both with auto layout spec [#550](https://github.com/TargetProcess/tauCharts/pull/550)
+- add event type for onSelect legend plugin settings  [#550](https://github.com/TargetProcess/tauCharts/pull/550)
+
 ## 2.5.1 (august 19, 2018)
 
 - return color brewer addon to package [#547](https://github.com/TargetProcess/tauCharts/pull/547)
