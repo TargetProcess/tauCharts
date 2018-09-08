@@ -25,7 +25,7 @@ module.exports = {
     externals: {...externals, taucharts: {
             commonjs: 'taucharts',
             commonjs2: 'taucharts',
-            umd:'taucharts',
+            amd:'taucharts',
             root: 'Taucharts',
         }
     },

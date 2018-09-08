@@ -1,4 +1,4 @@
-import ElementTooltip, {TooltipSettings} from '../tooltip/tooltip';
+import ElementTooltip, {TooltipSettings} from './tooltip-base';
 
 export const TOOLTIP_CLS = 'tau-chart__tooltip';
 
@@ -30,11 +30,7 @@ export default function FieldsTemplate(tooltip: ElementTooltip, settings: Toolti
         },
 
         filterFields(fields) {
-            return fields.filter((field) => {
-                const tokens = field.split('.');
-                const matchX = ((tokens.length === 2) && tooltip.skipInfo[tokens[0]]);
-                return !matchX;
-            });
+            return fields;
         },
 
         getLabel(field) {

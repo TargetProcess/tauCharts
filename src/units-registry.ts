@@ -51,7 +51,7 @@ var unitsRegistry: UnitsRegistry = {
                         this.node().draw();
                     }
                 },
-                xUnit);
+                xUnit) as GrammarElement;
         } else {
             UnitsMap[unitType] = xUnit as ElementConsructor;
         }

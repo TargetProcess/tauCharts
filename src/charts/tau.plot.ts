@@ -308,7 +308,7 @@ export class Plot extends Emitter {
     }
 
     addBalloon(conf) {
-        return new Balloon('', conf || {});
+        return new (<any>Balloon)('', conf || {});
     }
 
     destroyNodes() {

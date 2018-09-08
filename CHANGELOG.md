@@ -1,3 +1,7 @@
+## 2.6.1 (september 8, 2018)
+
+- fix amd build for plugins
+
 ## 2.6.0 (september 1, 2018)
 
 - add support d3 v5

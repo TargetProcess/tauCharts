@@ -103,7 +103,7 @@ export class ColorScale extends BaseScale {
 
         } else if (typeof brewer === 'function') {
 
-            func = (d) => brewer(d,
+            func = (d) => (<any>brewer)(d,
                 wrapString(
                     buildArrayGetClass(varSet,
                         utils.range(20).map((i) => 'color20-' + (1 + i)))));

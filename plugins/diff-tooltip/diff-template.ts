@@ -1,6 +1,6 @@
 import getFieldsTemplate, {TOOLTIP_CLS} from '../tooltip/fields-template';
 import {GrammarElement} from '../../src/definitions';
-import ElementTooltip, {TooltipSettings} from '../tooltip/tooltip';
+import ElementTooltip, {TooltipSettings} from '../tooltip/tooltip-base';
 
 export const DIFF_TOOLTIP_CLS = 'diff-tooltip';
 export const ROW_CLS = `${DIFF_TOOLTIP_CLS}__item`;
