@@ -1,3 +1,56 @@
+
+var now = new Date();
+
+var chart = new Taucharts.Chart({
+    type: 'line',
+    x: 'x',
+    y: 'y',
+   // autoResize: false,
+
+    dimensions: {
+        x: {
+            type: `measure`,
+            scale: `time`,
+        },
+        y: {
+            type: `measure`,
+            scale: `linear`,
+        }
+    },
+    plugins: [Taucharts.api.plugins.get('quick-filter')()],
+    guide: {
+        'x': {
+            "tickFormat": "%d-%b-%y",
+            "tickPeriod": 'day',
+            rotate: 90,
+        },
+        'y': {
+            "autoScale": false,
+            'nice': false,
+            "min": 0,
+            "max": 100
+        }
+    },
+    data: Array.from({length: 85})
+        .reduce(function (memo, el, i) {
+            return memo.concat([{
+                x: new Date(now - days(i)),
+                y: Math.random() * 100
+            }]);
+        }, [])
+});
+function days(i) {
+    return i * 1000 * 60 * 60 * 24;
+};
+
+chart.on('*', (el) => {
+    console.log(el);
+});
+
+chart.renderTo('#placeholder');
+
+
+/*
 const data = [{
     "time": "2018-06-24T15:30:01.904Z",
     "cpu": 23.145552105656076,
@@ -143,15 +196,20 @@ let config = {
             type: 'category'
         }
     },
-    guide:{
-        color:{
-            brewer: Taucharts.api.colorBrewers.get('tauBrewer')('RdYlBu', 9)
+    guide: {
+        x:{
+            rotate: 90,
         }
     },
     plugins: [
         Taucharts.api.plugins.get('legend')({
-            onSelect({selectedCategories}) {
-                location.hash = 'filter=' + JSON.stringify(selectedCategories);
+            onSelect({type, selectedCategories}) {
+                if(type !== 'reset') {
+                    location.hash = 'filter=' + JSON.stringify(selectedCategories);
+                } else {
+                    location.hash = '';
+                }
+
             },
             selectedCategories: selectedCategories
         }),
@@ -161,5 +219,5 @@ let config = {
 };
 const chart = new Taucharts.Chart(config);
 
-chart.renderTo(document.body);
+chart.renderTo(document.body);*/
 
