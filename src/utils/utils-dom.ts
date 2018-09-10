@@ -102,13 +102,15 @@ var scrollbarSizes: WeakMap<Node, {width: number; height: number;}> = new WeakMa
         div.style.top = '0';
         document.body.appendChild(div);
 
-        div.innerHTML = `<svg class="tau-chart__svg">
+        div.innerHTML = `<div class="tau-chart__layout">
+                <svg class="tau-chart__svg">
                 <g class="tau-chart__cell cell">
                 <g class="x axis">
                 <g class="tick"><text>${text}</text></g>
                 </g>
                 </g>
-                </svg>`;
+                </svg>
+                </div>`;
 
         var textNode = div.querySelector('.x.axis .tick text');
 
@@ -124,7 +126,7 @@ var scrollbarSizes: WeakMap<Node, {width: number; height: number;}> = new WeakMa
 
         var avgLetterSize = (text.length !== 0) ? (size.width / text.length) : 0;
         size.width = size.width + (1.5 * avgLetterSize);
-
+        console.log(size.width)
         document.body.removeChild(div);
 
         return size;
