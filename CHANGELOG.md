@@ -1,3 +1,7 @@
+## 2.6.2 (september 20, 2018)
+
+- fix xss vulnerability on tick size detection
+
 ## 2.6.1 (september 8, 2018)
 
 - fix amd build for plugins
