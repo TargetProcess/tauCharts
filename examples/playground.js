@@ -2,12 +2,15 @@
 var now = new Date();
 
 var chart = new Taucharts.Chart({
-    type: 'line',
+    type: 'scatterplot',
+    settings:{
+        asyncRendering: false,
+    },
     x: 'x',
     y: 'y',
    // autoResize: false,
 
-    dimensions: {
+    /*dimensions: {
         x: {
             type: `measure`,
             scale: `time`,
@@ -16,13 +19,17 @@ var chart = new Taucharts.Chart({
             type: `measure`,
             scale: `linear`,
         }
-    },
+    },*/
     plugins: [Taucharts.api.plugins.get('quick-filter')()],
+    settings: {
+        $maxTickTextW: 1000,
+        $maxTickTextH: 1000,
+    },
     guide: {
         'x': {
             "tickFormat": "%d-%b-%y",
             "tickPeriod": 'day',
-            rotate: 90,
+            rotate: -90,
         },
         'y': {
             "autoScale": false,
@@ -31,10 +38,11 @@ var chart = new Taucharts.Chart({
             "max": 100
         }
     },
-    data: Array.from({length: 85})
+    data: Array.from({length: 25})
         .reduce(function (memo, el, i) {
+            let date = new Date(now - days(i));
             return memo.concat([{
-                x: new Date(now - days(i)),
+                x: date, //new Intl.DateTimeFormat('ru', {year:"numeric", month:"short", day: "numeric"}).format(date),
                 y: Math.random() * 100
             }]);
         }, [])
@@ -43,9 +51,11 @@ function days(i) {
     return i * 1000 * 60 * 60 * 24;
 };
 
+/*
 chart.on('*', (el) => {
     console.log(el);
 });
+*/
 
 chart.renderTo('#placeholder');
 
