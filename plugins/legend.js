@@ -422,7 +422,7 @@ function ChartLegend(xSettings) {
 
                     self._container
                         .insertAdjacentHTML('beforeend', self._template({
-                            name: title,
+                            name: utils.escape(title),
                             top: null,
                             items: '<div class="tau-chart__legend__gradient-wrapper"></div>'
                         }));
@@ -595,7 +595,7 @@ function ChartLegend(xSettings) {
                     const labels = values.map(castNum);
                     self._container
                         .insertAdjacentHTML('beforeend', self._template({
-                            name: title,
+                            name: utils.escape(title),
                             top: null,
                             items: '<div class="tau-chart__legend__size-wrapper"></div>'
                         }));
@@ -766,7 +766,7 @@ function ChartLegend(xSettings) {
                 const {legendColorItems, title, colorScale, noVal} = legendColorByScales[key];
                 self._container
                     .insertAdjacentHTML('beforeend', self._template({
-                        name: title,
+                        name: utils.escape(title),
                         top: self._resetTemplate({
                             classDisabled: (legendColorItems.some(function (d) {
                                 return d.disabled;

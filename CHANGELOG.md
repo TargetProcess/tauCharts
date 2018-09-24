@@ -1,3 +1,7 @@
+## 2.6.3 (september 24, 2018)
+
+- fix xss vulnerability in legend plugin
+
 ## 2.6.2 (september 20, 2018)
 
 - fix xss vulnerability on tick size detection
