@@ -36,7 +36,7 @@ Include a CSS file, as well
 <link rel="stylesheet" type="text/css" href=//cdn.jsdelivr.net/npm/taucharts@2/dist/taucharts.min.css">
 ```
 
-NOTE: taucharts@2 is compatible with D3 v4 only. Use taucharts@1 if you work with obsolete D3 versions.
+NOTE: taucharts@2 is compatible with D3 v4 and v5. Use taucharts@1 if you work with obsolete D3 versions.
 
 #### Downloading Taucharts using Bower
 
