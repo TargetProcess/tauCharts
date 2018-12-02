@@ -86,10 +86,10 @@
     "tslint": "5.11.0",
     "tslint-eslint-rules": "5.4.0",
     "typescript": "3.0.1",
-    "webpack": "4.17.0",
+    "webpack": "4.19.1",
     "webpack-bundle-analyzer": "2.13.1",
     "webpack-cli": "3.1.0",
-    "webpack-dev-server": "3.1.5"
+    "webpack-dev-server": "3.1.10"
   },
   "types": "./types/index.d.ts"
 }

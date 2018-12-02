@@ -1,11 +1,11 @@
 import React from 'react';
 import createClass from 'create-react-class'
 import tauCharts from 'taucharts';
-import 'taucharts/build/development/plugins/tauCharts.tooltip';
-import 'taucharts/build/development/plugins/tauCharts.legend';
-import 'taucharts/build/development/plugins/tauCharts.quick-filter';
-import 'taucharts/build/development/plugins/tauCharts.trendline';
-import 'taucharts/build/production/tauCharts.min.css';
+import 'taucharts/dist/plugins/tooltip';
+import 'taucharts/dist/plugins/legend';
+import 'taucharts/dist/plugins/quick-filter';
+import 'taucharts/dist/plugins/trendline';
+import 'taucharts/dist/taucharts.min.css';
 import _ from 'underscore';
 import './Editor.css';
 
@@ -283,6 +283,8 @@ const Editor = createClass({
 
                 config.description = ['Scatterplot ' + config.x + ' vs ' + config.y, 'Does it make sense?'];
                 break;
+            default:
+                break;
         }
 
         config.plugins = pluginsList;
@@ -299,7 +301,7 @@ var SelectPropertyLink = createClass({
         var apost = ((this.props.type === 'string' || this.props.type === 'array') && this.props.name !== 'data') ? ['\'', '\''] : ['', ''];
 
         return (
-            <span><a
+            <span><a role="button"
                 href="javascript: void 0">{apost[0]}{value}{apost[1]}</a>{(this.props.isNotLast) ? ', ' : null}</span>
         )
     }
