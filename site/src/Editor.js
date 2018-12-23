@@ -301,8 +301,7 @@ var SelectPropertyLink = createClass({
         var apost = ((this.props.type === 'string' || this.props.type === 'array') && this.props.name !== 'data') ? ['\'', '\''] : ['', ''];
 
         return (
-            <span><a role="button"
-                href="javascript: void 0">{apost[0]}{value}{apost[1]}</a>{(this.props.isNotLast) ? ', ' : null}</span>
+            <span><button className="btn-link">{apost[0]}{value}{apost[1]}</button>{(this.props.isNotLast) ? ', ' : null}</span>
         )
     }
 });
@@ -330,11 +329,11 @@ var DropDownMenu = createClass({
             var isChecked = (self.state.checked.indexOf(item) > -1) ? 'checked' : null;
             return (
                 <li key={i} className={isChecked}>
-                    <a href="javascript: void 0" onClick={self.handleClick} data-name={name} data-value={item}
-                       data-maxchecked="1">{item}</a>
+                    <button className="btn-link" onClick={self.handleClick} data-name={name} data-value={item}
+                       data-maxchecked="1">{item}</button>
                     {(maxChecked > 1 && !isChecked) ?
-                        <a href="javascript: void 0" onClick={self.handleClick} data-name={name} data-value={item}
-                           data-maxchecked={maxChecked} className="add">&nbsp;</a> : null}
+                        <button className="btn-link add" onClick={self.handleClick} data-name={name} data-value={item}
+                           data-maxchecked={maxChecked}>&nbsp;</button> : null}
                 </li>
             )
         });
@@ -441,7 +440,7 @@ var PluginLine = createClass({
         var isEnabled = this.props.isEnabled ? null : 'disabled';
 
         return (
-            <li className={isEnabled} onClick={this.handleClick}>tauCharts.api.plugins.get(<a href="javascript: void 0">'{name}'</a>)(),
+            <li className={isEnabled} onClick={this.handleClick}>tauCharts.api.plugins.get(<button className="btn-link">'{name}'</button>)(),
             </li>
         )
     },
@@ -531,11 +530,11 @@ const NavButtons = createClass({
     render: function () {
         return (
             <div className="navigator">
-                <button className="prev-chart" href="javascript: void 0" onClick={this.prevChartClick}
+                <button className="prev-chart" onClick={this.prevChartClick}
                         disabled={this.state.configNumber <= 0}>&nbsp;</button>
-                <button className="next-chart" href="javascript: void 0" onClick={this.nextChartClick}
+                <button className="next-chart" onClick={this.nextChartClick}
                         disabled={this.state.configNumber >= (this.props.maxConfig - 1)}><span>Next example</span></button>
-                <button className="lucky-chart" href="javascript: void 0" onClick={this.luckyClick}>&nbsp;</button>
+                <button className="lucky-chart" onClick={this.luckyClick}>&nbsp;</button>
 
             </div>
         )

@@ -460,7 +460,7 @@ span._lnk{border-bottom: 1px solid;}
   vertical-align: top;
   margin: auto;
   font: 1rem/2rem 'Open Sans', 'sans-serif';
-  color: #6e9d3b;
+  color: #405d22;
   padding-bottom: 2rem;
 }
 .section .description .scroll-tip > a:after{
@@ -726,11 +726,7 @@ span._lnk{border-bottom: 1px solid;}
 }
 
 .editor .navigator button[disabled] {
-  -moz-filter: grayscale(100%);
-  -ms-filter: grayscale(100%);
-  -o-filter: grayscale(100%);
   filter: grayscale(100%);
-  filter: gray;
 }
 .editor .navigator button[disabled]:hover {
   background-color: transparent;
