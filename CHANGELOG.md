@@ -1,3 +1,7 @@
+## 2.6.4 (december 27, 2018)
+
+- fix stretching of vertical annotation
+
 ## 2.6.3 (september 24, 2018)
 
 - fix xss vulnerability in legend plugin
