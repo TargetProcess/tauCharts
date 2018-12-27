@@ -93,14 +93,12 @@ function template(str: string, obj: {[prop: string]: string}) {
                 {
                     dim: model.scaleX.dim,
                     scale: model.scaleY,
-                    method: 'yi',
-                    k: -1
+                    method: 'yi'
                 },
                 {
                     dim: model.scaleY.dim,
                     scale: model.scaleX,
-                    method: 'xi',
-                    k: 1
+                    method: 'xi'
                 },
                 {
                     dim: null,
@@ -120,12 +118,11 @@ function template(str: string, obj: {[prop: string]: string}) {
             }
 
             var marker = '__pos__';
-            var kAxis = seed.k;
             var koeff = {l: -0.5, r: 0.5};
             var method = seed.method as ('xi' | 'yi');
             var scale = seed.scale;
             res[method] = (function (row) {
-                var k = (koeff[row[marker]] || 0) * kAxis;
+                var k = koeff[row[marker]] || 0;
                 if (scale.discrete) {
                     return (model[method](row) + scale.stepSize(row[scale.dim]) * k);
                 }
