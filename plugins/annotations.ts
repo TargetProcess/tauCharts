@@ -180,6 +180,7 @@ function template(str: string, obj: {[prop: string]: string}) {
                     var to = metaInfo.to;
 
                     var primaryScaleInfo = chart.getScaleInfo(metaInfo.primaryScale);
+                    var primaryScaleDomain = primaryScaleInfo.domain();
 
                     if ((primaryScaleInfo.period)) {
                         var periodCaster = Taucharts.api.tickPeriod.get(primaryScaleInfo.period,
@@ -187,6 +188,9 @@ function template(str: string, obj: {[prop: string]: string}) {
                         from = periodCaster.cast(new Date(metaInfo.from));
                         to = periodCaster.cast(new Date(metaInfo.to));
                     }
+
+                    from = from === null ? primaryScaleDomain[0] : from;
+                    to = to === null ? primaryScaleDomain[primaryScaleDomain.length - 1] : to;
 
                     var isX0OutOfDomain = !primaryScaleInfo.isInDomain(from);
                     var isX1OutOfDomain = !primaryScaleInfo.isInDomain(to);

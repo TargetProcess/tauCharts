@@ -1,3 +1,7 @@
+## 2.6.5 (february 8, 2019)
+
+- stretch area annotation to first or last ticks if min or max values are skipped
+
 ## 2.6.4 (december 27, 2018)
 
 - fix stretching of vertical annotation
