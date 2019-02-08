@@ -1,7 +1,7 @@
 /*!
  * /*
- * taucharts@2.6.4 (2018-12-27)
- * Copyright 2018 Targetprocess, Inc.
+ * taucharts@2.6.5 (2019-02-08)
+ * Copyright 2019 Targetprocess, Inc.
  * Licensed under Apache License 2.0
  * * /
  * 
