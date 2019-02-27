@@ -10,7 +10,6 @@ const d3 = {
 import * as utils from '../src/utils/utils';
 import * as drawUtils from '../src/utils/utils-draw';
 import * as domUtils from '../src/utils/utils-dom';
-import * as d3 from 'd3-selection';
 import {avoidTickTextCollision} from '../src/utils/d3-decorators';
 
     var check = function (samples) {

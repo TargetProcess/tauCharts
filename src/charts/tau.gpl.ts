@@ -27,7 +27,7 @@ type Iteratee = (node: Unit, parentNode: Unit, currFrame: DataFrame) => void;
 
 var cast = (v) => (utils.isDate(v) ? v.getTime() : v);
 
-const MixinModel: {new (prev: GrammarModel): GrammarModel} = <any>function (prev: GrammarModel) {
+const MixinModel: new (prev: GrammarModel) => GrammarModel = <any>function (prev: GrammarModel) {
     Object
         .keys(prev)
         .forEach((k) => this[k] = prev[k]);

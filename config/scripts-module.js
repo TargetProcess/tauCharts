@@ -1,3 +1,5 @@
+const {resolve} = require('path');
+
 module.exports = {
     rules: [
         {
@@ -5,17 +7,18 @@ module.exports = {
             test: /\.css$/
         },
         {
-            loader: 'ts-loader',
+            loader: 'babel-loader',
             test: /\.(js|ts)$/,
             exclude: [
-                'node_modules',
+                resolve(__dirname, '../node_modules'),
             ],
             options: {
-                compilerOptions: {
-                    sourceMap: true
-                },
-                transpileOnly: true
-            }
+                babelrc: false,
+                presets: [
+                    require.resolve(`@babel/preset-typescript`)
+                ],
+                cacheDirectory: true,
+            },
         },
     ],
 };
