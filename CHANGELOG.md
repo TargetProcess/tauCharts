@@ -1,3 +1,7 @@
+## 2.7.0 (march 8, 2019)
+- improve tooltip plugin. Add onExclude event.
+- update dependencies
+
 ## 2.6.5 (february 8, 2019)
 
 - stretch area annotation to first or last ticks if min or max values are skipped
