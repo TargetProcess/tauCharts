@@ -7,8 +7,7 @@ interface TaskRunnerCallbacks {
 
 type Task = (x: any) => any;
 
-export default class TaskRunner {
-
+class TaskRunner {
     private _running: boolean;
     private _queue: Task[];
     private _result: any;
@@ -228,5 +227,9 @@ export default class TaskRunner {
         }
     }
 
-    static runnersInProgress = 0;
+    static runnersInProgress: number;
 }
+
+TaskRunner.runnersInProgress = 0;
+
+export default TaskRunner;

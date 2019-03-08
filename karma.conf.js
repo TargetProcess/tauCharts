@@ -1,3 +1,5 @@
+const path = require('path');
+
 module.exports = function (config) {
 
     const DEBUG = Boolean(config.tauchartsDebug);
@@ -26,21 +28,27 @@ module.exports = function (config) {
             }
         },
 
-        preprocessors: {'test/tests-main.js': ['webpack', 'sourcemap']},
+        preprocessors: {'test/tests-main.js': ['webpack']},
         reporters: (DEBUG ?
             ['spec'] :
-            ['coverage', 'spec', 'remap-coverage', 'coveralls']),
+            ['coverage-istanbul', 'spec', 'coveralls']),
         coverageReporter: (DEBUG ? null : {
             type: 'in-memory'
         }),
-        remapCoverageReporter: (
-            DEBUG
-                ? null
-                : process.env.TRAVIS
-                    ? {lcovonly: './coverage/lcov.info'}
-                    : {html: './coverage/'}
-        ),
-
+        coverageIstanbulReporter: {
+            reports: ['html', 'lcovonly', 'text-summary'],
+            dir: path.join(__dirname, 'coverage'),
+            combineBrowserReports: true,
+            fixWebpackSourcePaths: true,
+            // Omit files with no statements, no functions and no branches from the report
+            skipFilesWithNoCoverage: true,
+            'report-config': {
+                html: {
+                    // outputs the report in ./coverage/html
+                    subdir: 'html'
+                }
+            },
+        },
         webpack: getTestWebpackConfig(DEBUG),
         webpackMiddleware: {
             noInfo: true
@@ -51,7 +59,7 @@ module.exports = function (config) {
         colors: true,
         logLevel: config.LOG_INFO,
 
-        singleRun: (DEBUG ? false : true)
+        singleRun: (!DEBUG)
     });
 };
 
@@ -83,28 +91,36 @@ function getTestWebpackConfig(DEBUG) {
                     test: /\.css$/
                 },
                 {
-                    loader: 'ts-loader',
+                    loader: 'babel-loader',
                     test: /\.(js|ts)$/,
                     exclude: [
-                        'node_modules',
-                        'node_modules'
+                        path.resolve(__dirname, './node_modules'),
                     ],
                     options: {
-                        compilerOptions: {
-                            sourceMap: true
-                        },
-                        transpileOnly: true
-                    }
+                        babelrc: false,
+                        presets: [
+                            require.resolve(`@babel/preset-typescript`)
+                        ],
+                        plugins: DEBUG ? [] : [
+                           [
+                               require.resolve(`babel-plugin-istanbul`),
+                               {
+                                   exclude: [
+                                       'test',
+                                       'addons',
+                                       'plugins',
+                                       'node_modules',
+                                       'src/utils/polyfills.js',
+                                       'src/utils/d3-labeler.js',
+                                       'src/elements/coords.geomap.js',
+                                       'src/api/chart-map.ts',
+                                   ],
+                               }
+                           ]
+                        ],
+                        cacheDirectory: true,
+                    },
                 },
-                (DEBUG ? null : {
-                    loader: 'istanbul-instrumenter-loader',
-                    test: /\.(js|ts)$/,
-                    enforce: 'post',
-                    exclude: /test|addons|plugins|node_modules|polyfills\.js|d3-labeler\.js|coords\.geomap\.js|chart-map\.ts/,
-                    options: {
-                        esModules: true
-                    }
-                })
             ].filter((x) => x)
         },
         stats: {
@@ -117,4 +133,4 @@ function getTestWebpackConfig(DEBUG) {
             })
         ]
     };
-};
+}
