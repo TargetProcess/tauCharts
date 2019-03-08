@@ -1,6 +1,7 @@
 
 var now = new Date();
 
+
 var chart = new Taucharts.Chart({
     type: 'scatterplot',
     settings:{
@@ -8,6 +9,7 @@ var chart = new Taucharts.Chart({
     },
     x: 'x',
     y: 'y',
+    color: 'color',
    // autoResize: false,
 
     /*dimensions: {
@@ -20,7 +22,9 @@ var chart = new Taucharts.Chart({
             scale: `linear`,
         }
     },*/
-    plugins: [Taucharts.api.plugins.get('quick-filter')()],
+    plugins: [Taucharts.api.plugins.get('quick-filter')(), Taucharts.api.plugins.get('tooltip')({onExclude(raw) {
+         console.log(raw);
+        }})],
     settings: {
         $maxTickTextW: 1000,
         $maxTickTextH: 1000,
@@ -43,7 +47,8 @@ var chart = new Taucharts.Chart({
             let date = new Date(now - days(i));
             return memo.concat([{
                 x: date, //new Intl.DateTimeFormat('ru', {year:"numeric", month:"short", day: "numeric"}).format(date),
-                y: Math.random() * 100
+                y: Math.random() * 100,
+                color: i%2 ? `red`: `blue`
             }]);
         }, [])
 });
