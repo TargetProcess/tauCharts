@@ -1,5 +1,3 @@
-// jscs:disable disallowQuotedKeysInObjects
-// jscs:disable validateQuoteMarks
 import $ from 'jquery';
 import {expect} from 'chai';
 import testUtils from './utils/utils';
@@ -81,7 +79,7 @@ chartType.forEach(function (item) {
         }
     ];
     describeChart(
-        "tooltip for " + item,
+        'tooltip for ' + item,
         {
             type: item,
             x: 'x',
@@ -95,7 +93,7 @@ chartType.forEach(function (item) {
         },
         data,
         function (context) {
-            it("should work", function (done) {
+            it('should work', function (done) {
                 var originTimeout = stubTimeout();
                 this.timeout(5000);
                 showTooltip(expect, context.chart, 0, getSelectorByChartType(item), data)
@@ -172,13 +170,21 @@ chartType.forEach(function (item) {
     );
 });
 
+let excludeArgs;
+
+function onExclude(raw) {
+    excludeArgs = raw;
+}
+
 describeChart(
-    "tooltip for line chart",
+    'tooltip for line chart',
     {
         type: 'line',
         x: 'x',
         y: 'y',
-        plugins: [tooltip()]
+        plugins: [tooltip({
+            onExclude,
+        })]
     },
     [
         {x: 2, y: 2},
@@ -194,7 +200,8 @@ describeChart(
                     testUtils.simulateEvent('click', excluder);
                     var d = testUtils.Deferred();
                     var data = context.chart.getChartModelData();
-                    var expected = data.sort((a1, a2) =>a1.x - a2.x);
+                    var expected = data.sort((a1, a2) => a1.x - a2.x);
+                    excludeArgs.to.be.eql({x: 2, y: 2});
                     expect(expected).to.be.eql([{x: 4, y: 5}]);
                     return d.resolve();
                 })

@@ -40,6 +40,7 @@ export default class Tooltip {
             getTemplate: null,
             spacing: 24,
             winBound: 12,
+            onExclude: () => {},
         });
         this.onRender = this._getRenderHandler();
     }
@@ -330,6 +331,7 @@ export default class Tooltip {
                     return (row !== highlightedRow);
                 }
             });
+        this.settings.onExclude(highlightedRow);
         this._chart.refresh();
     }
 
@@ -375,6 +377,7 @@ interface TooltipState {
 
 export interface TooltipSettings {
     align?: string;
+    onExclude?: (excludedData: object) => void;
     clickable?: boolean;
     clsClickable?: string;
     clsStuck?: string;
