@@ -22,9 +22,7 @@ var chart = new Taucharts.Chart({
             scale: `linear`,
         }
     },*/
-    plugins: [Taucharts.api.plugins.get('quick-filter')(), Taucharts.api.plugins.get('tooltip')({onExclude(raw) {
-         console.log(raw);
-        }})],
+    plugins: [Taucharts.api.plugins.get('quick-filter')()],
     settings: {
         $maxTickTextW: 1000,
         $maxTickTextH: 1000,
@@ -48,7 +46,7 @@ var chart = new Taucharts.Chart({
             return memo.concat([{
                 x: date, //new Intl.DateTimeFormat('ru', {year:"numeric", month:"short", day: "numeric"}).format(date),
                 y: Math.random() * 100,
-                color: i%2 ? `red`: `blue`
+                color: i%2 ? 'red': 'blue'
             }]);
         }, [])
 });
