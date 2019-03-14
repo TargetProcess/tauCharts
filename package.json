@@ -1,6 +1,6 @@
 {
   "name": "taucharts",
-  "version": "2.7.0",
+  "version": "2.7.1",
   "homepage": "https://github.com/TargetProcess/taucharts",
   "description": "Data-focused charting library based on D3",
   "author": {
@@ -84,6 +84,7 @@
     "mocha": "^6.0.2",
     "style-loader": "^0.23.1",
     "tau-tooltip": "1.1.3",
+    "ts-loader": "^5.3.3",
     "tslint": "^5.13.0",
     "tslint-eslint-rules": "5.4.0",
     "typescript": "^3.3.3333",

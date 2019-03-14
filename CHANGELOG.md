@@ -1,3 +1,7 @@
+## 2.7.1 (march 14, 2019)
+- return support IE11
+
+
 ## 2.7.0 (march 8, 2019)
 - improve tooltip plugin. Add onExclude event.
 - update dependencies

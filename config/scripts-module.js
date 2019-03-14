@@ -7,18 +7,17 @@ module.exports = {
             test: /\.css$/
         },
         {
-            loader: 'babel-loader',
+            loader: 'ts-loader',
             test: /\.(js|ts)$/,
             exclude: [
                 resolve(__dirname, '../node_modules'),
             ],
             options: {
-                babelrc: false,
-                presets: [
-                    require.resolve(`@babel/preset-typescript`)
-                ],
-                cacheDirectory: true,
-            },
+                compilerOptions: {
+                    sourceMap: true
+                },
+                transpileOnly: true
+            }
         },
     ],
 };
