@@ -496,7 +496,10 @@ GrammarRegistry
         const merge = (templateSorted, fiberSorted, sign) => {
             const groups = utils.groupBy(fiberSorted, (row) => row[dx]);
             const sample = fiberSorted[0];
-            return templateSorted.reduce((memo, k) => memo.concat((groups[k] || (gen(k, sample, sign)))), []);
+            return templateSorted.reduce((memo, k) => {
+                memo.push(...(groups[k] || [gen(k, sample, sign)]));
+                return memo;
+            }, []);
         };
 
         const asc = (a, b) => a - b;
