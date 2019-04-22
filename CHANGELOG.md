@@ -1,3 +1,6 @@
+## 2.7.2 (april 22, 2019)
+- fix performance for measure dates on very old dates [#573](https://github.com/TargetProcess/tauCharts/pull/573)
+
 ## 2.7.1 (march 14, 2019)
 - return support IE11
 
