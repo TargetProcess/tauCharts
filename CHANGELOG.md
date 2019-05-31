@@ -1,3 +1,5 @@
+## 2.7.3 (may 31, 2019)
+- preserve padding values during auto layout, even if user has hidden x or y guide (@rDr4g0n in [#575](https://github.com/TargetProcess/tauCharts/pull/575))
 ## 2.7.2 (april 22, 2019)
 - fix performance for measure dates on very old dates [#573](https://github.com/TargetProcess/tauCharts/pull/573)
 
