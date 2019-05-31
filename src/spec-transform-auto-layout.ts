@@ -314,6 +314,11 @@ function calcXYGuide(
     var rotXBox = rotateBox(multiLinesXBox, guide.x.rotate);
     var rotYBox = rotateBox(multiLinesYBox, guide.y.rotate);
 
+    var paddingB = (guide.padding && guide.padding.b) ? guide.padding.b : 0;
+    var paddingL = (guide.padding && guide.padding.l) ? guide.padding.l : 0;
+    var paddingNoTicksB = (guide.paddingNoTicks && guide.paddingNoTicks.b) ? guide.paddingNoTicks.b : 0;
+    var paddingNoTicksL = (guide.paddingNoTicks && guide.paddingNoTicks.l) ? guide.paddingNoTicks.l : 0;
+
     if (inlineLabels) {
 
         xLabel.padding = (-settings.xAxisPadding - settings.xFontLabelHeight) / 2 + settings.xFontLabelHeight;
@@ -349,14 +354,14 @@ function calcXYGuide(
         (guide.padding),
         {
             b: (guide.x.hide) ?
-                (0) :
+                paddingB :
                 sum([
                     (guide.x.padding),
                     (kxAxisW * (settings.xTickWidth + rotXBox.height)),
                     (kxLabelW * (settings.distToXAxisLabel + settings.xFontLabelHeight + bottomBorder))
                 ]),
             l: (guide.y.hide) ?
-                (0) :
+                paddingL :
                 sum([
                     (guide.y.padding),
                     (isFacetUnit ? 0 : (kyAxisW * (settings.yTickWidth + rotYBox.width))),
@@ -368,13 +373,13 @@ function calcXYGuide(
         (guide.paddingNoTicks),
         {
             b: (guide.x.hide) ?
-                (0) :
+                paddingNoTicksB :
                 sum([
                     (guide.x.padding),
                     (kxLabelW * (settings.distToXAxisLabel + settings.xFontLabelHeight + bottomBorder))
                 ]),
             l: (guide.y.hide) ?
-                (0) :
+                paddingNoTicksL :
                 sum([
                     (guide.y.padding),
                     (kyLabelW * (settings.distToYAxisLabel + settings.yFontLabelHeight))
