@@ -4,15 +4,15 @@
   "private": true,
   "dependencies": {
     "create-react-class": "15.6.3",
-    "jquery": "3.3.1",
+    "jquery": "^3.4.1",
     "react": "^16.8.3",
     "react-dom": "^16.8.3",
-    "taucharts": "^2.6.5",
+    "taucharts": "^2.7.3",
     "underscore": "1.9.1"
   },
   "devDependencies": {
     "gh-pages": "^2.0.1",
-    "react-scripts": "^2.1.5"
+    "react-scripts": "^3.0.1"
   },
   "scripts": {
     "start": "react-scripts start",
