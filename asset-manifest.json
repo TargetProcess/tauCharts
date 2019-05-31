@@ -1,16 +1,18 @@
 {
-  "main.css": "/static/css/main.d9bd75bf.chunk.css",
-  "main.js": "/static/js/main.4442aa85.chunk.js",
-  "main.js.map": "/static/js/main.4442aa85.chunk.js.map",
-  "static/css/1.0f9b2375.chunk.css": "/static/css/1.0f9b2375.chunk.css",
-  "static/js/1.fb9b37b6.chunk.js": "/static/js/1.fb9b37b6.chunk.js",
-  "static/js/1.fb9b37b6.chunk.js.map": "/static/js/1.fb9b37b6.chunk.js.map",
-  "runtime~main.js": "/static/js/runtime~main.229c360f.js",
-  "runtime~main.js.map": "/static/js/runtime~main.229c360f.js.map",
-  "static/media/index.css": "/static/media/slack-logo.f074caef.png",
-  "static/css/1.0f9b2375.chunk.css.map": "/static/css/1.0f9b2375.chunk.css.map",
-  "static/css/main.d9bd75bf.chunk.css.map": "/static/css/main.d9bd75bf.chunk.css.map",
-  "index.html": "/index.html",
-  "precache-manifest.cdf7d6fa56551f4b9b78e1090e819028.js": "/precache-manifest.cdf7d6fa56551f4b9b78e1090e819028.js",
-  "service-worker.js": "/service-worker.js"
+  "files": {
+    "main.css": "/static/css/main.dc5f1b37.chunk.css",
+    "main.js": "/static/js/main.dbf0e86d.chunk.js",
+    "main.js.map": "/static/js/main.dbf0e86d.chunk.js.map",
+    "runtime~main.js": "/static/js/runtime~main.a8a9905a.js",
+    "runtime~main.js.map": "/static/js/runtime~main.a8a9905a.js.map",
+    "static/css/2.c496dcb6.chunk.css": "/static/css/2.c496dcb6.chunk.css",
+    "static/js/2.48669432.chunk.js": "/static/js/2.48669432.chunk.js",
+    "static/js/2.48669432.chunk.js.map": "/static/js/2.48669432.chunk.js.map",
+    "index.html": "/index.html",
+    "precache-manifest.0a7d9be6750076678f4bb47359f47eb4.js": "/precache-manifest.0a7d9be6750076678f4bb47359f47eb4.js",
+    "service-worker.js": "/service-worker.js",
+    "static/css/2.c496dcb6.chunk.css.map": "/static/css/2.c496dcb6.chunk.css.map",
+    "static/css/main.dc5f1b37.chunk.css.map": "/static/css/main.dc5f1b37.chunk.css.map",
+    "static/media/index.css": "/static/media/uv-logo-hover2x.9503c417.png"
+  }
 }
