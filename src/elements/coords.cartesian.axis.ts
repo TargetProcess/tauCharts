@@ -525,15 +525,13 @@ function createAxis(config: AxisConfig) {
                     return label;
                 })
                 .then((label) => {
-
                     const ly = (kh * guide.padding);
                     const size = Math.abs(range1 - range0);
                     const lx = isHorizontal ? size : 0;
 
                     label
                         .attr('x', lx)
-                        .attr('y', ly)
-                        .attr('text-anchor', 'end');
+                        .attr('y', ly);
                 });
 
             const delimiter = ' \u2192 ';
@@ -542,15 +540,31 @@ function createAxis(config: AxisConfig) {
                 textParts.splice(i, 0, delimiter);
             }
 
-            const tspans = labelTextNode.selectAll('tspan')
+            let tspans = labelTextNode.selectAll('tspan')
                 .data(textParts)
                 .enter()
                 .append('tspan')
+                .attr('opacity', epsilon)
                 .attr('class', (d, i) => i % 2 ?
                     (`label-token-delimiter label-token-delimiter-${i}`) :
                     (`label-token label-token-${i}`))
-                .text((d) => d)
-                .exit()
+                .text((d) => d);
+
+            let tspansExit = tspans
+                .exit();
+
+            if (transition) {
+                tspans = tspans
+                    .transition(transition);
+
+                tspansExit = tspansExit
+                    .transition(transition)
+                    .attr('opacity', epsilon);
+            }
+
+            tspans.attr('opacity', 1);
+
+            tspansExit
                 .remove();
         }
 
@@ -562,7 +576,7 @@ function createAxis(config: AxisConfig) {
         if (!scaleGuide.facetAxis) {
             drawLines(ticks);
         }
-        if (isOrdinalScale && gridOnly) { // Todo: Explicitly determine if grid 
+        if (isOrdinalScale && gridOnly) { // Todo: Explicitly determine if grid
             drawExtraOrdinalLine();
         }
         if (!gridOnly) {

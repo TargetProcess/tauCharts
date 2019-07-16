@@ -107,14 +107,19 @@ var applyNodeDefaults = (node: Unit) => {
     node.guide = node.guide || {};
     node.guide.padding = utils.defaults(node.guide.padding || {}, {l: 0, b: 0, r: 0, t: 0});
 
-    node.guide.x = extendLabel(node.guide, 'x');
+    node.guide.x = extendLabel(node.guide, 'x', {
+        textAnchor: 'end'
+    });
     node.guide.x = extendAxis(node.guide, 'x', {
         cssClass: 'x axis',
         scaleOrient: 'bottom',
         textAnchor: 'middle'
     });
 
-    node.guide.y = extendLabel(node.guide, 'y', {rotate: -90});
+    node.guide.y = extendLabel(node.guide, 'y', {
+        rotate: -90,
+        textAnchor: 'end',
+    });
     node.guide.y = extendAxis(node.guide, 'y', {
         cssClass: 'y axis',
         scaleOrient: 'left',
