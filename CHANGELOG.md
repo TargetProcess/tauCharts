@@ -1,4 +1,4 @@
-## next release
+## 2.7.4 (jul 17, 2019)
 - fix blinking and shaking of axis labels during re-renders of chart [#580](https://github.com/TargetProcess/tauCharts/pull/580)
 ## 2.7.3 (may 31, 2019)
 - preserve padding values during auto layout, even if user has hidden x or y guide ([@rDr4g0n](https://github.com/rDr4g0n) in [#575](https://github.com/TargetProcess/tauCharts/pull/575))
