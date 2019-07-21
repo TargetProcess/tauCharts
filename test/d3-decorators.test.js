@@ -95,7 +95,7 @@ describe('d3-decorators', function () {
     it('should extend D3 transition attr and store future values', function (done) {
         var node = div.querySelector('text');
         var transition = d3Decorator.d3_transition;
-
+        var transitionInterrupted = false;
         var check = function (fn, final) {
             return function () {
                 var err;
@@ -118,8 +118,6 @@ describe('d3-decorators', function () {
         var final = function (fn) {
             return check(fn, true);
         };
-
-        var transitionInterrupted = false;
 
         check(function () {
 

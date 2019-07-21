@@ -139,8 +139,7 @@ export function avoidTickTextCollision(ticks, isHorizontal) {
                 .attr('transform')
                 .replace('translate(', '')
                 .replace(' ', ',') // IE specific
-                .split(',')
-            [translateParam];
+                .split(',')[translateParam];
 
             var translateX = directionKoeff * parseFloat(translateXStr);
             var tNode = tick.select('text');
@@ -192,7 +191,7 @@ export function avoidTickTextCollision(ticks, isHorizontal) {
             var text = curr.textRef.text();
 
             if (size > 1) {
-                text = text.replace(/([\.]*$)/gi, '') + '...';
+                text = text.replace(/([.]*$)/gi, '') + '...';
             }
 
             var dy = (curr.l * textOffsetStep); // -1 | 0 | +1
@@ -229,6 +228,7 @@ export function avoidTickTextCollision(ticks, isHorizontal) {
             }
 
             utilsDom.selectOrAppend(curr.tickRef, 'line.label-ref')
+            // eslint-disable-next-line @typescript-eslint/no-use-before-define
                 .call(d3_setAttrs(attrs));
         } else {
             curr.tickRef.selectAll('line.label-ref').remove();
@@ -241,9 +241,11 @@ export function avoidTickTextCollision(ticks, isHorizontal) {
 var d3_transition = (selection, animationSpeed, nameSpace) => {
     if (animationSpeed > 0 && !document.hidden) {
         selection = selection.transition(nameSpace).duration(animationSpeed);
+        // eslint-disable-next-line @typescript-eslint/no-use-before-define
         selection.attr = d3_transition_attr;
     }
     selection.onTransitionEnd = function (callback) {
+        // eslint-disable-next-line @typescript-eslint/no-use-before-define
         d3_add_transition_end_listener(this, callback);
         return this;
     };
@@ -267,6 +269,7 @@ var d3_transition_attr = function (keyOrMap, value) {
     // until transition ends.
     var store = '__transitionAttrs__';
     var idStore = '__lastTransitions__';
+    // eslint-disable-next-line @typescript-eslint/no-use-before-define
     var id = getTransitionAttrId();
     this.each(function () {
         var newAttrs = {};
@@ -335,11 +338,13 @@ var d3_animationInterceptor = (speed, initAttrs, doneAttrs, afterUpdate) => {
         var flow = selection;
 
         if (initAttrs) {
+            // eslint-disable-next-line @typescript-eslint/no-use-before-define
             flow = flow.call(d3_setAttrs(utils.defaults(initAttrs, doneAttrs)));
         }
 
         flow = d3_transition(flow, speed);
 
+        // eslint-disable-next-line @typescript-eslint/no-use-before-define
         flow = flow.call(d3_setAttrs(doneAttrs));
 
         if (speed > 0) {

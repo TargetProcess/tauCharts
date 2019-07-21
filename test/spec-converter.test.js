@@ -379,8 +379,7 @@ import {SpecConverter as Converter} from '../src/spec-converter';
             var x1TimeScale = Object
                 .keys(spec1.scales)
                 .map((s) => spec1.scales[s])
-                .filter((s) => s.dim === 'x1')
-                [0];
+                .filter((s) => s.dim === 'x1')[0];
 
             expect(x1TimeScale.type).to.equals('time');
 
@@ -401,8 +400,7 @@ import {SpecConverter as Converter} from '../src/spec-converter';
             var x1PeriodScale = Object
                 .keys(spec2.scales)
                 .map((s) => spec2.scales[s])
-                .filter((s) => s.dim === 'x1')
-                [0];
+                .filter((s) => s.dim === 'x1')[0];
 
             expect(x1PeriodScale.type).to.equals('period');
             expect(x1PeriodScale.period).to.equals('month');
@@ -427,8 +425,7 @@ import {SpecConverter as Converter} from '../src/spec-converter';
             var x1PeriodScale = Object
                 .keys(spec2.scales)
                 .map((s) => spec2.scales[s])
-                .filter((s) => s.dim === 'x1')
-                [0];
+                .filter((s) => s.dim === 'x1')[0];
 
             expect(x1PeriodScale.type).to.equals('period');
             expect(x1PeriodScale.period).to.equals(null);

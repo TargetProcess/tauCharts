@@ -98,7 +98,7 @@ const {noScrollStyle} = testUtils;
                 return map;
             }, {});
 
-            var parseTranslate = (t) => t.split(/\(|\,|\)/g).slice(1, 3).map(parseFloat);
+            var parseTranslate = (t) => t.split(/\(|,|\)/g).slice(1, 3).map(parseFloat);
             var labelMap = labels.reduce((map, node) => {
                 var s = d3.select(node);
                 var name = s.data()[0].name;

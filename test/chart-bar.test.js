@@ -4,6 +4,7 @@ import tauChart from '../src/tau.charts';
 import testUtils from './utils/utils';
 const {noScrollStyle} = testUtils;
 
+var removeTestDiv;
 var createTestDiv = function (id) {
     noScrollStyle.create();
     var testDiv = document.createElement('div');
@@ -17,7 +18,7 @@ var createTestDiv = function (id) {
     };
     return testDiv;
 };
-var removeTestDiv;
+
 
 describe('Bar chart', function () {
     var testData = [

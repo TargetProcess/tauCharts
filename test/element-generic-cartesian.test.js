@@ -32,7 +32,7 @@ import testUtils from './utils/utils';
                     })
                 }
             },
-            unitsRegistry: unitsRegistry,
+            unitsRegistry: {},
             transformations: {
                 where: function (data, tuple) {
                     var predicates = tuple.map(function (v, k) {

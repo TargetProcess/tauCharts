@@ -1,4 +1,5 @@
 import {assert, expect} from 'chai';
+import schema from 'js-schema';
 import schemes from './utils/schemes';
 import tauChart from '../src/tau.charts';
 

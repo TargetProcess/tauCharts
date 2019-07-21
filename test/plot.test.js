@@ -774,6 +774,7 @@ import * as d3 from 'd3-selection';
             });
 
             var threwError = false;
+            var srcOnUnitDraw = chart.onUnitDraw;
             chart.on('renderingerror', function (chart, err) {
                 threwError = true;
                 expect(err.message).to.equal('Test rendering error.');
@@ -793,7 +794,7 @@ import * as d3 from 'd3-selection';
             });
 
             var timer = 10;
-            var srcOnUnitDraw = chart.onUnitDraw;
+
             chart.onUnitDraw = function () {
                 timer--;
                 if (timer === 0) {

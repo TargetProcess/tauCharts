@@ -375,8 +375,7 @@ function ChartLegend(xSettings) {
             self._fill.forEach(c => {
                 const firstNode = self
                     ._chart
-                    .select(unit => unit.config.color === c)
-                    [0];
+                    .select(unit => unit.config.color === c)[0];
 
                 if (firstNode) {
 
@@ -545,8 +544,7 @@ function ChartLegend(xSettings) {
             self._size.forEach(c => {
                 const firstNode = self
                     ._chart
-                    .select(unit => unit.config.size === c)
-                    [0];
+                    .select(unit => unit.config.size === c)[0];
 
                 if (firstNode) {
 
@@ -701,8 +699,7 @@ function ChartLegend(xSettings) {
             return self._color.reduce((legendColorsInfo, c) => {
                 const firstNode = self
                     ._chart
-                    .select(unit => unit.config.color === c)
-                    [0];
+                    .select(unit => unit.config.color === c)[0];
 
                 if (firstNode) {
 
