@@ -29,7 +29,7 @@ async function publish() {
                 resolve();
             }
         });
-    })
+    });
 }
 
 publish()

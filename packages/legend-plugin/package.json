@@ -1,4 +1,8 @@
 {
   "name": "@taucharts/legend-plugin",
-  "version": "3.0.0"
+  "version": "3.0.0",
+  "peerDependencies": {
+    "@taucharts/core": "3.0.0",
+    "d3-format": "^1.3.2"
+  }
 }
