@@ -86,7 +86,7 @@ const Line = {
         const countCss = getLineClassesByCount(screenModel.model.scaleColor.domain().length);
         const tag = isEmptySize ? 'line' : 'area';
         const groupPref = `${CSS_PREFIX}${tag} ${tag} i-role-path ${widthCss} ${countCss} ${guide.cssClass} `;
-
+        const baseModel = BasePath.baseModel(screenModel);
         const pathAttributes = isEmptySize ?
             ({
                 stroke: (fiber) => baseModel.color(fiber[0]),
@@ -100,7 +100,6 @@ const Line = {
             (isEmptySize ? getCurve : getBrushCurve) :
             (isEmptySize ? getPolyline : getBrushLine));
 
-        const baseModel = BasePath.baseModel(screenModel);
 
         const toPoint = isEmptySize ?
             (d) => ({

@@ -462,6 +462,7 @@ const domUtils = Taucharts.api.domUtils;
                     if (s.backgroundColor !== 'transparent' && s.backgroundColor !== 'rgba(0, 0, 0, 0)') {
                         return s.backgroundColor;
                     }
+                    // eslint-disable-next-line no-cond-assign
                 } while (current = current.parentElement);
                 return null;
             }

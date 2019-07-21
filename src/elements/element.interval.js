@@ -199,7 +199,17 @@ const Interval = {
 
         node.subscribe(new LayerLabels(screenModel.model, screenModel.model.flip, config.guide.label, options)
             .draw(fibers));
-
+        const sortByOrder = (() => {
+            const order = data.reduce((map, d, i) => {
+                map.set(d, i + 1);
+                return map;
+            }, new Map());
+            return (a, b) => {
+                const orderA = (order.get(d3Data(a)) || -1);
+                const orderB = (order.get(d3Data(b)) || -1);
+                return (orderA - orderB);
+            };
+        })();
         const sortByWidthThenY = ((a, b) => {
             const dataA = d3Data(a);
             const dataB = d3Data(b);
@@ -230,17 +240,6 @@ const Interval = {
             }
             return (heightB - heightA);
         });
-        const sortByOrder = (() => {
-            const order = data.reduce((map, d, i) => {
-                map.set(d, i + 1);
-                return map;
-            }, new Map());
-            return (a, b) => {
-                const orderA = (order.get(d3Data(a)) || -1);
-                const orderB = (order.get(d3Data(b)) || -1);
-                return (orderA - orderB);
-            };
-        })();
 
         this._barsSorter = (config.guide.sortByBarHeight ?
             (config.flip ?

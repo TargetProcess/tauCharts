@@ -306,7 +306,7 @@ import * as utils from '../src/utils/utils';
                 period: 'day',
                 utcTime: true
             }).create([0, 100]);
-    
+
         var monthScale = new TimeScale(
             {
                 part: () => data.slice(),

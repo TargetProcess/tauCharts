@@ -127,8 +127,7 @@ import Taucharts from 'taucharts';
                         ._chart
                         .select(function (unit) {
                             return (unit.config.color === c);
-                        })
-                        [0];
+                        })[0];
 
                     if (firstNode) {
                         var colorScale = firstNode.getScale('color');

@@ -167,6 +167,7 @@ const BasePath = {
 
             const series = selection
                 .selectAll(`${model.pathElement}:not(.i-data-anchor)`)
+                // eslint-disable-next-line @typescript-eslint/no-use-before-define
                 .data((fiber) => (fiber.length > 1) ? [fiber] : [], getDataSetId);
             series
                 .exit()

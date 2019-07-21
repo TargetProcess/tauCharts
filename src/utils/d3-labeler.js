@@ -60,6 +60,7 @@ var d3Labeler = function () {
             if (i != index) {
 
                 // penalty for intersection of leader lines
+                // eslint-disable-next-line @typescript-eslint/no-use-before-define
                 overlap = intersect(anc[index].x, lab[index].x, anc[i].x, lab[i].x,
                     anc[index].y, lab[index].y, anc[i].y, lab[i].y);
                 if (overlap) {
