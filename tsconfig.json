@@ -7,17 +7,10 @@
         ],
         "allowJs": true,
         "target": "es5",
-        "baseUrl": ".",
-        "paths": {
-            "taucharts": [
-                "src/tau.charts"
-            ]
-        }
+        "baseUrl": "."
     },
     "include": [
-        "plugins/**/*",
-        "src/**/*",
-        "test/**/*"
+        "packages/**/*"
     ],
     "exclude": [
         "node_modules"

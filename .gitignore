@@ -6,6 +6,5 @@ coverage
 .idea
 .vscode
 .DS_Store
-yarn.lock
 prepared
 lerna-debug.log

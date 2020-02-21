@@ -1,0 +1,41 @@
+{
+  "name": "taucharts",
+  "version": "3.0.0",
+  "description": "Data-focused charting library based on D3",
+  "keywords": [
+    "d3",
+    "svg",
+    "charts",
+    "graphics",
+    "barchart",
+    "linechart",
+    "scatterplot",
+    "visualization",
+    "targetprocess",
+    "vizydrop"
+  ],
+  "author": "konstantin krivlenia <krivlenia@gmail.com>",
+  "homepage": "https://github.com/TargetProcess/taucharts/tree/master/packages/taucharts#readme",
+  "license": "Apache-2.0",
+  "main": "lib/taucharts.js",
+  "directories": {
+    "lib": "lib",
+    "test": "__tests__"
+  },
+  "files": [
+    "lib"
+  ],
+  "publishConfig": {
+    "registry": "https://registry.yarnpkg.com"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/TargetProcess/tauCharts.git"
+  },
+  "scripts": {
+    "test": "echo \"Error: run tests from root\" && exit 1"
+  },
+  "bugs": {
+    "url": "https://github.com/TargetProcess/tauCharts/issues"
+  }
+}
