@@ -103,25 +103,30 @@ var FORMATS_MAP: {[format: string]: (x: any, nullAlias: string) => string} = {
 
 var FormatterRegistry = {
 
-    get: (formatAlias: string, nullOrUndefinedAlias?: string) => {
-        var identity = FORMATS_MAP['_identity'];
+    get: (formatAlias: (x: any) => string | string, nullOrUndefinedAlias?: string) => {
+        var formatter = null;
+        if (typeof formatAlias === `function`) {
+            formatter = formatAlias;
+        } else {
+            var identity = FORMATS_MAP['_identity'];
 
-        var hasFormat = FORMATS_MAP.hasOwnProperty(formatAlias);
-        var formatter = hasFormat ? FORMATS_MAP[formatAlias] : identity;
+            var hasFormat = FORMATS_MAP.hasOwnProperty(formatAlias);
+            formatter = hasFormat ? FORMATS_MAP[formatAlias] : identity;
 
-        if (hasFormat) {
-            formatter = FORMATS_MAP[formatAlias];
-        }
+            if (hasFormat) {
+                formatter = FORMATS_MAP[formatAlias];
+            }
 
-        if (!hasFormat && formatAlias) {
-            formatter = (v) => {
-                var f: ((x) => string) = utils.isDate(v) ? d3.timeFormat(formatAlias) : d3.format(formatAlias);
-                return f(v);
-            };
-        }
+            if (!hasFormat && formatAlias) {
+                formatter = (v) => {
+                    var f: ((x) => string) = utils.isDate(v) ? d3.timeFormat(formatAlias) : d3.format(formatAlias);
+                    return f(v);
+                };
+            }
 
-        if (!hasFormat && !formatAlias) {
-            formatter = identity;
+            if (!hasFormat && !formatAlias) {
+                formatter = identity;
+            }
         }
 
         return formatter !== null ? (x) => formatter(x, nullOrUndefinedAlias || '') : null;

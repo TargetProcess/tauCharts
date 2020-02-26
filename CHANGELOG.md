@@ -1,3 +1,6 @@
+## next
+- add possibility to use functions in tickFormat
+
 ## 2.7.4 (jul 17, 2019)
 - fix blinking and shaking of axis labels during re-renders of chart [#580](https://github.com/TargetProcess/tauCharts/pull/580)
 ## 2.7.3 (may 31, 2019)
