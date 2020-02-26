@@ -103,7 +103,7 @@ var FORMATS_MAP: {[format: string]: (x: any, nullAlias: string) => string} = {
 
 var FormatterRegistry = {
 
-    get: (formatAlias: (x: any) => string | string, nullOrUndefinedAlias?: string) => {
+    get: (formatAlias: string | ((x: any) => string) , nullOrUndefinedAlias?: string) => {
         var formatter = null;
         if (typeof formatAlias === `function`) {
             formatter = formatAlias;

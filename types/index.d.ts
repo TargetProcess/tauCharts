@@ -37,7 +37,7 @@ interface ChartGuide {
         max?: number;
         label?: string | { text: string; padding: number; };
         tickPeriod?: string;
-        tickFormat?: (x: any) => string | string;
+        tickFormat?: string | ((x: any) => string);
     };
     y?: {
         nice?: boolean;
@@ -45,7 +45,7 @@ interface ChartGuide {
         max?: number;
         label?: string | { text: string; padding: number; };
         tickPeriod?: string;
-        tickFormat?: (x: any) => string | string;
+        tickFormat?: string | ((x: any) => string);
     };
     padding?: {
         t: number;
