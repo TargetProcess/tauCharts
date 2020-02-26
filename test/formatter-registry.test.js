@@ -125,4 +125,13 @@ import tauChart from '../src/tau.charts';
 
             expect(registry.get('custom')(42)).to.equal('42?!');
         });
+
+        it("should use function passed as formatAlias", function () {
+            function formatter(value, defaultValue) {
+                return value != null ? value + '123' : defaultValue;
+            }
+
+            expect(registry.get(formatter, 'No Value')(null)).to.equal('No Value');
+            expect(registry.get(formatter)(0)).to.equal('0123');
+        });
     });
