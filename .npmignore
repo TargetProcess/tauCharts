@@ -1,10 +1,10 @@
  /*
  !dist/**
- !examples/**
  !types/**
  !LICENSE
  !package.json
  !README.md
- examples/playground.html
- examples/playground.js
+ examples
  dist/**/*.styles.js
+ types/tsconfig.json
+ types/taucharts-tests.ts

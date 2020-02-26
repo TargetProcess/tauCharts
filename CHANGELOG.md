@@ -1,4 +1,4 @@
-## next
+## 2.8.0 (feb 26, 2020)
 - add possibility to use functions in tickFormat
 
 ## 2.7.4 (jul 17, 2019)
