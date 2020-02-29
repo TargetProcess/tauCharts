@@ -26,14 +26,14 @@ If you want to contribute - see [how to run the project locally](#how-to-run-the
 Load JavaScript dependencies
 
 ```html
-<script src="//cdn.jsdelivr.net/d3js/latest/d3.min.js" charset="utf-8"></script>
-<script src="//cdn.jsdelivr.net/npm/taucharts@2/dist/taucharts.min.js" type="text/javascript"></script>
+<script src="https://cdn.jsdelivr.net/d3js/latest/d3.min.js" charset="utf-8"></script>
+<script src="https://cdn.jsdelivr.net/npm/taucharts@2/dist/taucharts.min.js" type="text/javascript"></script>
 ```
 
 Include a CSS file, as well
 
 ```html
-<link rel="stylesheet" type="text/css" href=//cdn.jsdelivr.net/npm/taucharts@2/dist/taucharts.min.css">
+<link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/taucharts@2/dist/taucharts.min.css">
 ```
 
 NOTE: taucharts@2 is compatible with D3 v4 and v5. Use taucharts@1 if you work with obsolete D3 versions.
