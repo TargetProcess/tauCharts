@@ -64,8 +64,8 @@ var chart = new Taucharts.Chart({
     size   : 'Sum(User Stories Count)',
     data   : [{'Cycle Time': 186, 'SUM(Bugs Count)': 34, 'Team': 'HDP'...}, ...],
     plugins: [
-        Taucharts.api.plugins.get('legend'),
-        Taucharts.api.plugins.get('tooltip')
+        Taucharts.api.plugins.get('legend')(),
+        Taucharts.api.plugins.get('tooltip')()
     ]
 });
 ```
