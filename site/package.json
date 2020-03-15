@@ -5,13 +5,13 @@
   "dependencies": {
     "create-react-class": "15.6.3",
     "jquery": "^3.4.1",
-    "react": "^16.8.3",
-    "react-dom": "^16.8.3",
-    "taucharts": "^2.7.3",
-    "underscore": "1.9.1"
+    "react": "^16.13.0",
+    "react-dom": "^16.13.0",
+    "taucharts": "^2.8.0",
+    "underscore": "1.9.2"
   },
   "devDependencies": {
-    "gh-pages": "^2.0.1",
+    "gh-pages": "^2.2.0",
     "react-scripts": "^3.4.0"
   },
   "scripts": {
