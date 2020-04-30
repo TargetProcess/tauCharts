@@ -4,7 +4,7 @@
   "private": true,
   "dependencies": {
     "create-react-class": "15.6.3",
-    "jquery": "^3.4.1",
+    "jquery": "^3.5.0",
     "react": "^16.13.0",
     "react-dom": "^16.13.0",
     "taucharts": "^2.8.0",
