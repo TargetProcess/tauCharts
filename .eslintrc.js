@@ -15,7 +15,13 @@ module.exports =  {
     "es6": true
   },
   "rules": {
+    "no-var": 0,
+    "prefer-const": 0,
+    "prefer-spread": 0,
+    "prefer-rest-params": 0,
+    "@typescript-eslint/no-this-alias": 0,
     "@typescript-eslint/no-var-requires": 0,
+    "@typescript-eslint/no-empty-function": 0,
     "@typescript-eslint/indent": 0,
     "no-prototype-builtins": 0,
     "@typescript-eslint/camelcase": 0,
