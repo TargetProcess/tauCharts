@@ -8,7 +8,7 @@
     "react": "^16.13.1",
     "react-dom": "^16.13.1",
     "taucharts": "^2.8.0",
-    "underscore": "1.10.2"
+    "underscore": "1.12.1"
   },
   "devDependencies": {
     "gh-pages": "^2.2.0",
