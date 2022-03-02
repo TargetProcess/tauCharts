@@ -74,7 +74,7 @@
     "gh-pages": "^2.0.1",
     "jquery": "^3.5.0",
     "js-schema": "1.0.1",
-    "karma": "^5.0.4",
+    "karma": "^6.3.16",
     "karma-chrome-launcher": "3.1.0",
     "karma-coverage-istanbul-reporter": "^3.0.0",
     "karma-coveralls": "^2.1.0",
