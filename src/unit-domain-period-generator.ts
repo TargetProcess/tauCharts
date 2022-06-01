@@ -8,6 +8,7 @@ interface PeriodMap {
 }
 
 interface DateMethods {
+    setMinutes: string;
     setHours: string;
     setDate: string;
     getDate: string;
@@ -19,6 +20,7 @@ interface DateMethods {
 }
 
 const localDateMethods: DateMethods = {
+    setMinutes: 'setMinutes',
     setHours: 'setHours',
     setDate: 'setDate',
     getDate: 'getDate',
@@ -30,6 +32,7 @@ const localDateMethods: DateMethods = {
 };
 
 const UTCDateMethods = {
+    setMinutes: 'setUTCMinutes',
     setHours: 'setUTCHours',
     setDate: 'setUTCDate',
     getDate: 'getUTCDate',
@@ -40,7 +43,20 @@ const UTCDateMethods = {
     getFullYear: 'getUTCFullYear',
 };
 
-const createPeriodMap = (dateMethods) => ({
+const createPeriodMap = (dateMethods: DateMethods) => ({
+    hour: {
+        cast: function (d) {
+            const date = new Date(d);
+            date[dateMethods.setMinutes](0, 0, 0);
+            return date;
+        },
+        next: function (d) {
+            const prev = new Date(d);
+            const hour = 1000 * 60 * 60;
+            const next = new Date(prev.getTime() + hour);
+            return this.cast(next);
+        }
+    },
 
     day: {
         cast: function (d) {

@@ -89,6 +89,23 @@ import tauChart from '../src/tau.charts';
             expect(r[4].toJSON()).to.equal(new Date(iso('2002-01-01T00:00:00')).toJSON());
         });
 
+        it('should generate [hour] range', function () {
+            const r = PeriodGenerator.generate(
+                iso('2022-06-01T08:59:59'),
+                iso('2022-06-01T14:00:00'),
+                'hour');
+
+            expect(r.length).to.equal(7);
+
+            expect(r[0].toJSON()).to.equal(new Date(iso('2022-06-01T08:00:00')).toJSON());
+            expect(r[1].toJSON()).to.equal(new Date(iso('2022-06-01T09:00:00')).toJSON());
+            expect(r[2].toJSON()).to.equal(new Date(iso('2022-06-01T10:00:00')).toJSON());
+            expect(r[3].toJSON()).to.equal(new Date(iso('2022-06-01T11:00:00')).toJSON());
+            expect(r[4].toJSON()).to.equal(new Date(iso('2022-06-01T12:00:00')).toJSON());
+            expect(r[5].toJSON()).to.equal(new Date(iso('2022-06-01T13:00:00')).toJSON());
+            expect(r[6].toJSON()).to.equal(new Date(iso('2022-06-01T14:00:00')).toJSON());
+        });
+
         it("should allow to add custom generators", function () {
             PeriodGenerator.add(
                 '2h',
@@ -204,6 +221,24 @@ import tauChart from '../src/tau.charts';
             expect(r[2].toJSON()).to.equal(new Date(utc('2000-01-01T00:00:00')).toJSON());
             expect(r[3].toJSON()).to.equal(new Date(utc('2001-01-01T00:00:00')).toJSON());
             expect(r[4].toJSON()).to.equal(new Date(utc('2002-01-01T00:00:00')).toJSON());
+        });
+
+        it('should generate [UTC hour] range', function () {
+            const r = PeriodGenerator.generate(
+                utc('2022-06-01T08:59:59'),
+                utc('2022-06-01T14:00:00'),
+                'hour',
+                {utc: true});
+
+            expect(r.length).to.equal(7);
+
+            expect(r[0].toJSON()).to.equal(new Date(utc('2022-06-01T08:00:00')).toJSON());
+            expect(r[1].toJSON()).to.equal(new Date(utc('2022-06-01T09:00:00')).toJSON());
+            expect(r[2].toJSON()).to.equal(new Date(utc('2022-06-01T10:00:00')).toJSON());
+            expect(r[3].toJSON()).to.equal(new Date(utc('2022-06-01T11:00:00')).toJSON());
+            expect(r[4].toJSON()).to.equal(new Date(utc('2022-06-01T12:00:00')).toJSON());
+            expect(r[5].toJSON()).to.equal(new Date(utc('2022-06-01T13:00:00')).toJSON());
+            expect(r[6].toJSON()).to.equal(new Date(utc('2022-06-01T14:00:00')).toJSON());
         });
 
         it("should allow to add custom UTC generators", function () {
