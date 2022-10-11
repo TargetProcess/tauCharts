@@ -64,7 +64,7 @@
     "@typescript-eslint/parser": "^2.30.0",
     "babel-loader": "^8.1.0",
     "babel-plugin-istanbul": "^6.0.0",
-    "canvg": "^1.5.3",
+    "canvg": "^4.0.1",
     "chai": "^4.2.0",
     "css-loader": "^3.5.3",
     "d3": "^5.16.0",
